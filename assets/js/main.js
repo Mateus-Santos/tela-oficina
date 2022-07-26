@@ -1,15 +1,6 @@
-/**
-* Template Name: Arsha - v4.3.0
-* Template URL: https://bootstrapmade.com/arsha-free-bootstrap-html-template-corporate/
-* Author: BootstrapMade.com
-* License: https://bootstrapmade.com/license/
-*/
 (function() {
-  "use strict";
 
-  /**
-   * Easy selector helper function
-   */
+  //Função de selecionar o "icone".
   const select = (el, all = false) => {
     el = el.trim()
     if (all) {
@@ -19,9 +10,8 @@
     }
   }
 
-  /**
-   * Easy event listener function
-   */
+  //Função para carregamento das telas.
+
   const on = (type, el, listener, all = false) => {
     let selectEl = select(el, all)
     if (selectEl) {
@@ -36,16 +26,17 @@
   /**
    * Easy on scroll event listener 
    */
+
+  //Para carregamento das telas.
   const onscroll = (el, listener) => {
     el.addEventListener('scroll', listener)
   }
+  
+  //Função que ativa os links da navbar superior.
 
-  /**
-   * Navbar links active state on scroll
-   */
   let navbarlinks = select('#navbar .scrollto', true)
   const navbarlinksActive = () => {
-    let position = window.scrollY + 200
+    let position = window.scrollY + 300
     navbarlinks.forEach(navbarlink => {
       if (!navbarlink.hash) return
       let section = select(navbarlink.hash)
@@ -57,12 +48,10 @@
       }
     })
   }
+
   window.addEventListener('load', navbarlinksActive)
   onscroll(document, navbarlinksActive)
 
-  /**
-   * Scrolls to an element with header offset
-   */
   const scrollto = (el) => {
     let header = select('#header')
     let offset = header.offsetHeight
@@ -75,7 +64,7 @@
   }
 
   /**
-   * Toggle .header-scrolled class to #header when page is scrolled
+   * Adicionar  
    */
   let selectHeader = select('#header')
   if (selectHeader) {
@@ -125,9 +114,6 @@
     }
   }, true)
 
-  /**
-   * Scrool with ofset on links with a class name .scrollto
-   */
   on('click', '.scrollto', function(e) {
     if (select(this.hash)) {
       e.preventDefault()

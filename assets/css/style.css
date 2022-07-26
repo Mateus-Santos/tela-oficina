@@ -1786,3 +1786,14 @@ section {
     padding-top: 4px;
   }
 }
+
+.div_flutuante{
+  width: 500px;
+  height: 500px;
+  background:#f00;
+  position:absolute;
+  z-index:100;
+  top:30%;
+  left:25%;
+}
+
