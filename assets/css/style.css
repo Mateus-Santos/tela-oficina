@@ -1787,13 +1787,31 @@ section {
   }
 }
 
-.div_flutuante{
-  width: 500px;
-  height: 500px;
-  background:#f00;
-  position:absolute;
-  z-index:100;
-  top:30%;
-  left:25%;
+.popup{
+  width: 50%;
+  height: 70%;
+  background:#8294586c;
+  position:fixed;
+  z-index: 1001;
+  top: 20%;
+  left: 25%;
 }
 
+.popup-content{
+  position: absolute;
+  top: 10%;
+  margin-left: 5%;
+}
+
+.mensagem{ 
+  top: 150%;
+  left: 0%;
+  position: absolute;
+  font-size: 15px;
+  width: 80%;
+  height: 200%;
+}
+
+.send-button{
+  position: relative;
+}
