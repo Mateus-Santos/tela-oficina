@@ -312,7 +312,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /*Botão de contato*/
 #hero .btn-get-started:hover {
-  background: #3eff38;
+  background: #6efd69;
 }
   
 /*Imagem flutuante*/
@@ -598,12 +598,12 @@ section {
 --------------------------------------------------------------*/
 #footer {
   font-size: 14px;
-  background: #ffffff;
+  background: rgba(21, 24, 7, 0.815);
 }
 
 #footer .footer-newsletter {
   padding: 50px 0;
-  background: #afafa3;
+  background: #a7a704;
   text-align: center;
   font-size: 15px;
   color: #000000;
@@ -634,25 +634,10 @@ section {
   width: calc(100% - 100px);
 }
 
-#footer .footer-newsletter form input[type="submit"] {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  border: 0;
-  background: none;
-  font-size: 16px;
-  padding: 0 20px;
-  background: #47e469;
-  color: #fff;
-  transition: 0.3s;
-  border-radius: 50px;
-  box-shadow: 0px 2px 15px rgba(0, 0, 0, 0.1);
-}
 
 #footer .footer-top {
   padding: 60px 0 30px 0;
-  background: rgb(172, 201, 174);
+  background: #413543;
 }
 
 #footer .footer-top .footer-contact {
@@ -666,7 +651,7 @@ section {
   line-height: 1;
   text-transform: uppercase;
   font-weight: 600;
-  color: #056405;
+  color: #fbff02;
 }
 
 #footer .footer-top .footer-contact p {
@@ -674,13 +659,13 @@ section {
   line-height: 24px;
   margin-bottom: 0;
   font-family: "Jost", sans-serif;
-  color: #056405;
+  color: #fbff02;
 }
 
 #footer .footer-top h4 {
   font-size: 16px;
   font-weight: bold;
-  color: #056405;
+  color: #e9ec04;
   position: relative;
   padding-bottom: 12px;
 }
@@ -697,7 +682,7 @@ section {
 
 #footer .footer-top .footer-links ul i {
   padding-right: 2px;
-  color: #001801;
+  color: #ff3030;
   font-size: 18px;
   line-height: 1;
 }
@@ -713,7 +698,7 @@ section {
 }
 
 #footer .footer-top .footer-links ul a {
-  color: #777777;
+  color: #0aff02;
   transition: 0.3s;
   display: inline-block;
   line-height: 1;
@@ -740,15 +725,20 @@ section {
 }
 
 #footer .footer-top .social-links a:hover {
-  background: #20d839;
+  background: #e3f301;
   color: #fff;
   text-decoration: none;
 }
 
+.redes{
+  color:rgb(21, 255, 13)
+}
+
+/*PARTE INFERIOR*/
 #footer .footer-bottom {
   padding-top: 30px;
   padding-bottom: 30px;
-  color: #034906;
+  color: #43ff62;
 }
 
 #footer .copyright {
@@ -782,7 +772,7 @@ section {
 .popup{
   width: 50%;
   height: 70%;
-  background:#8294586c;
+  background:#b3ff006c;
   position:fixed;
   z-index: 1001;
   top: 20%;
