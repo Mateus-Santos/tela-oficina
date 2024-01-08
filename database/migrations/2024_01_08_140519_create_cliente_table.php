@@ -11,15 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('colaborador', function (Blueprint $table) {
-            $table->bigIncrements('id_colaborador');
-
+        Schema::create('cliente', function (Blueprint $table) {
+            $table->bigIncrements('id_cliente');
+            $table->integer('pontos');
             $table->unsignedBigInteger('id_pessoa');
             $table->unsignedBigInteger('id_user');
-
-            $table->string('chave_pix', 50)->unique();
-            $table->string('conta_banco', 30)->unique();
-            $table->timestamps();
 
             $table->foreign('id_user')->references('id_user')->on('users');
             $table->foreign('id_pessoa')->references('id_pessoa')->on('pessoa');
@@ -31,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::dropIfExists('cliente');
     }
 };
