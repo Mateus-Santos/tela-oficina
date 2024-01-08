@@ -1,0 +1,20 @@
+.cadastro {
+  background-color: #206e00;
+  text-align: center;
+  border-radius: 20px;
+  position: relative;
+  margin-top: 100px;
+  margin-bottom: 100px;
+  width: 50%;
+}
+
+.cadastro h1 {
+  padding: 12px 12px 12px 12px;
+}
+
+.campos {
+  background-color: #206e00;
+  text-align: left;
+  position: relative;
+  padding: 12px 12px 12px 12px;
+}/*# sourceMappingURL=style_cad.css.map */

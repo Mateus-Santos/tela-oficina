@@ -1,0 +1,23 @@
+$color_5: #206e00; // Faixa Pedestre
+$larguras: 12px;
+
+.cadastro {
+    background-color: $color_5;
+    text-align: center;
+    border-radius: 20px;
+    position: relative;
+    margin-top: 100px;
+    margin-bottom: 100px;
+    width: 50%;
+}
+
+.cadastro h1{
+    padding: $larguras $larguras $larguras $larguras;
+}
+
+.campos {
+    background-color: $color_5;
+    text-align: left;
+    position: relative;
+    padding: $larguras $larguras $larguras $larguras;
+}

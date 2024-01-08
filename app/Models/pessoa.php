@@ -5,7 +5,23 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class pessoa extends Model
+class Pessoa extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        'id_pessoa',
+        'email',
+        'name',
+        'data_nascimento',
+        'telefone_1',
+        'telefone_2'
+    ];
+
+    protected $hidden = [
+        'cpf',
+        'rg',
+        'endereco',
+    ];
+
 }

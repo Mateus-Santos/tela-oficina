@@ -1,23 +1,23 @@
-﻿$color_1: #000000;
-$color_2: #0af852;
-$color_3: #ff0000;
-$color_4: #fffb00;
-$color_5: #ffff;
-$color_6: #007a10;
+﻿@import url(style_cad.css);
+
+$color_1: #000000; // Preto Plata de trânsito.
+$color_2: #00FF00; //Verde Semáforo.
+$color_2_1: #008000; //Verde Semáforo.
+$color_3: #FF0000; // Vermelho Semáforo.
+$color_4: #FFFF00; // Amarelo Semáforo.
+$color_5: #FFFFFF; // Faixa Pedestre
+$color_6: #8B4513; // Marrom Meio-fio/Calçadas.
 $font-family_1: "Open Sans", sans-serif;
 $font-family_2: "Jost", sans-serif;
 $font-family_3: "Poppins", sans-serif;
-$background-color_1: rgba(0, 0, 0, 0.9);
-$background-color_2: rgba(21, 24, 7, 0.815);
-$border-top-color_1: #ffffff;
-$border-bottom-color_1: #000000;
+$background-color_1: rgba(0, 0, 0, 0.877);
+$background-color_2: rgba(15, 17, 3, 0.815);
 
 /**
-* Template Name: Arsha - v4.3.0
 * Template URL: https://bootstrapmade.com/arsha-free-bootstrap-html-template-corporate/
 * Author: BootstrapMade.com
 * License: https://bootstrapmade.com/license/
-* modified by: Mateus Santos: www.github.com/Mateus-Santos/oficina-sos-mecanica
+* modified by: Mateus Santos: www.github.com/Mateus-Santos/tela-oficina
 */
 /*--------------------------------------------------------------
 # General
@@ -126,15 +126,15 @@ h6 {
 	bottom: 0;
 	z-index: 9999;
 	overflow: hidden;
-	background: #119644;
+	background: $color_2_1;
 	&:before {
 		content: "";
 		position: fixed;
 		top: calc(50% - 30px);
 		left: calc(50% - 30px);
-		border: 6px solid #c8ff00;
-		border-top-color: $border-top-color_1;
-		border-bottom-color: $border-bottom-color_1;
+		border: 6px solid $color_4;
+		border-top-color: $color_5;
+		border-bottom-color: $color_1;
 		border-radius: 50%;
 		width: 60px;
 		height: 60px;
@@ -152,7 +152,7 @@ h6 {
 	right: 15px;
 	bottom: 15px;
 	z-index: 996;
-	background: #e5ff00;
+	background: $color_4;
 	width: 40px;
 	height: 40px;
 	border-radius: 50px;
@@ -163,7 +163,7 @@ h6 {
 		line-height: 0;
 	}
 	&:hover {
-		background: #0aff02;
+		background: $color_2_1;
 		color: $color_3;
 	}
 }
@@ -176,18 +176,16 @@ h6 {
 	z-index: 997;
 	padding: 15px 0;
 	.logo {
-		font-size: 30px;
+		font-size: 35px;
 		margin: 0;
 		padding: 0;
 		line-height: 1;
 		font-weight: 500;
-		letter-spacing: 2px;
+		letter-spacing: 3px;
 		text-transform: uppercase;
+		margin-right: 80px;
 		a {
 			color: $color_4;
-		}
-		img {
-			max-height: 40px;
 		}
 	}
 }
@@ -205,17 +203,20 @@ h6 {
 		display: flex;
 		list-style: none;
 		align-items: center;
+		color: $color_4;
 	}
 	li {
 		position: relative;
-		padding: 5px 0 5px 10px;
+		padding: 5px 0 5px 5px;
 		color: $color_4;
 	}
-	a {
+
+	li a {
 		display: flex;
 		transition: 0.3s;
 		margin-left: 5px;
 		display: block;
+		color: $color_4;
 		&:focus {
 			display: flex;
 			padding: 10px 0 10px 30px;
@@ -337,9 +338,9 @@ h6 {
 		transition: 0.5s;
 		margin: 10px 0 0 0;
 		color: $color_1;
-		background: #eeff00;
+		background: $color_4;
 		&:hover {
-			background: #6efd69;
+			background: $color_2_1;
 		}
 	}
 	.animated {
@@ -382,7 +383,7 @@ section {
 			display: block;
 			width: 40px;
 			height: 3px;
-			background: #e5ff00;
+			background: $color_4;
 			bottom: 0;
 			left: calc(50% - 20px);
 		}
@@ -440,7 +441,7 @@ section {
 			animation-delay: 0.8s;
 			margin-top: 6px;
 			border: 2px solid #ffffff;
-			background: #fbff00;
+			background: $color_4;
 			&:hover {
 				background: #cccccc;
 				border: 2px solid #000000;
@@ -484,7 +485,7 @@ section {
 				display: block;
 				width: 50px;
 				height: 1px;
-				background: #0bff20;
+				background: $color_2;
 				bottom: 0;
 				left: 0;
 			}
@@ -513,7 +514,7 @@ section {
 					margin: 0 2px;
 				}
 				&:hover {
-					background: #04c70e;
+					background: $color_2;
 					i {
 						color: $color_5;
 					}
@@ -539,7 +540,7 @@ section {
 	background: rgba(21, 24, 7, 0.815);
 	.footer-newsletter {
 		padding: 50px 0;
-		background: #a7a704;
+		background: $color_4;
 		text-align: center;
 		font-size: 15px;
 		color: $color_1;
@@ -631,7 +632,7 @@ section {
 			a {
 				font-size: 18px;
 				display: inline-block;
-				background: #034906;
+				background: $color_2;
 				color: $color_5;
 				line-height: 1;
 				padding: 8px 0;
@@ -642,7 +643,7 @@ section {
 				height: 36px;
 				transition: 0.3s;
 				&:hover {
-					background: #e3f301;
+					background: $color_4;
 					color: $color_5;
 					text-decoration: none;
 				}
@@ -672,7 +673,7 @@ section {
 .popup {
 	width: 50%;
 	height: 70%;
-	background: #b3ff006c;
+	background: $color_2;
 	position: fixed;
 	z-index: 1001;
 	top: 20%;
