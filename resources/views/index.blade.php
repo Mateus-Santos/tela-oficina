@@ -35,17 +35,13 @@
 
       <nav id="navbar" class="navbar">
         <ul>
-
           <li><a class="nav-link scrollto active" href="#hero">Home</a></li>
           <li><a class="nav-link scrollto" href="#about">Sobre</a></li>
           <li><a class="nav-link scrollto" href="#team">Equipe</a></li>
-          <li><a class="nav-link scrollto" href="#contact">Contato</a></li>
-          <li><a type="button" class="btn btn-light">Entrar</a></li>
-
+          <li><a class="nav-link scrollto" href="#contact">Contatos</a></li>
+          <li><a href="/" type="button" class="login btn btn-light">Entrar</a></li>
         </ul>
-        <i class="bi bi-list mobile-nav-toggle"></i>
       </nav>
-
     </div>
   </header>
 
