@@ -21,6 +21,11 @@
     transform: rotate(360deg);
   }
 }
+.bi .bi-instagram {
+  fill: var(#FFFF00, currentColor); /* Use currentColor como cor padrão */
+  width: var(--icone-tamanho, 16px); /* Use 16px como tamanho padrão */
+}
+
 /*--------------------------------------------------------------
 # Botão do inicio
 --------------------------------------------------------------*/
@@ -162,6 +167,7 @@ h6 {
   transition: all 0.5s;
   z-index: 997;
   padding: 15px 0;
+  background: rgba(0, 0, 0, 0.9);
 }
 #header .logo {
   font-size: 35px;
@@ -260,7 +266,7 @@ h6 {
   right: 0;
   left: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.774);
+  background: #000000;
   transition: 0.3s;
   z-index: 999;
 }
@@ -278,7 +284,7 @@ h6 {
   left: 15px;
   padding: 10px 0;
   border-radius: 10px;
-  background-image: linear-gradient(rgba(252, 235, 4, 0.979), rgba(152, 163, 1, 0.979));
+  background-color: #FFFF00;
   overflow-y: auto;
   transition: 0.3s;
 }
@@ -344,7 +350,7 @@ section {
 }
 
 .section-bg {
-  background-color: rgba(0, 0, 0, 0.877);
+  background-color: rgba(0, 0, 0, 0.9);
 }
 
 .section-title {
@@ -366,7 +372,7 @@ section {
   display: block;
   width: 120px;
   height: 1px;
-  background: #ffffff;
+  background: #FFFFFF;
   bottom: 1px;
   left: calc(50% - 60px);
 }
@@ -408,7 +414,7 @@ section {
   left: 0;
   top: 2px;
   font-size: 20px;
-  color: #00FF00;
+  color: #FFFF00;
   line-height: 1;
 }
 .about .content p:last-child {
@@ -427,11 +433,11 @@ section {
   color: #000000;
   animation-delay: 0.8s;
   margin-top: 6px;
-  border: 2px solid #ffffff;
+  border: 2px solid #FFFFFF;
   background: #FFFF00;
 }
 .about .content .btn-learn-more:hover {
-  background: #cccccc;
+  background: #FFFFFF;
   border: 2px solid #000000;
   color: #FF0000;
   text-decoration: none;
@@ -442,7 +448,7 @@ section {
 }
 .team .member {
   position: relative;
-  box-shadow: 0px 2px 15px rgb(21, 255, 13);
+  box-shadow: 0px 2px 15px #00FF00;
   padding: 30px;
   border-radius: 5px;
   background: rgb(168, 168, 168);
@@ -497,7 +503,7 @@ section {
   border-radius: 50px;
   width: 32px;
   height: 32px;
-  background: #eff8ef;
+  background: #FFFFFF;
 }
 .team .member .social a i {
   color: #000000;
@@ -523,7 +529,7 @@ section {
 
 #footer {
   font-size: 14px;
-  background: rgba(21, 24, 7, 0.815);
+  background: rgba(0, 0, 0, 0.9);
 }
 #footer .footer-newsletter {
   padding: 50px 0;
@@ -546,7 +552,7 @@ section {
   padding: 6px 10px;
   position: relative;
   border-radius: 50px;
-  box-shadow: 0px 2px 15px rgba(0, 0, 0, 0.06);
+  box-shadow: 0px 2px 15px rgba(0, 0, 0, 0.9);
   text-align: left;
 }
 #footer .footer-newsletter form input[type=email] {
@@ -556,7 +562,7 @@ section {
 }
 #footer .footer-top {
   padding: 60px 0 30px 0;
-  background: #413543;
+  background: rgba(0, 0, 0, 0.9);
 }
 #footer .footer-top .footer-contact {
   margin-bottom: 30px;
@@ -619,7 +625,7 @@ section {
 #footer .footer-top .social-links a {
   font-size: 18px;
   display: inline-block;
-  background: #00FF00;
+  background: #FFFF00;
   color: #FFFFFF;
   line-height: 1;
   padding: 8px 0;
@@ -631,7 +637,7 @@ section {
   transition: 0.3s;
 }
 #footer .footer-top .social-links a:hover {
-  background: #FFFF00;
+  background: #00FF00;
   color: #FFFFFF;
   text-decoration: none;
 }
