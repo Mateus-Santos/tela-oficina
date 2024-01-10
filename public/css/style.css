@@ -415,6 +415,9 @@ section {
 .about .content p:last-child {
   margin-bottom: 0;
 }
+.about .content .txt-just {
+  text-align: justify;
+}
 .about .content .btn-learn-more {
   font-family: "Poppins", sans-serif;
   font-weight: 500;

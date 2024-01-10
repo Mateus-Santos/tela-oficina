@@ -8,8 +8,8 @@
     <div class="container">
       <div class="row">
         <div class="col-lg-6 d-flex flex-column justify-content-center pt-4 pt-lg-0 order-2 order-lg-1" data-aos="fade-up" data-aos-delay="200">
-          <h1>Melhor oficina para o seu automóvel</h1>
-          <h2>Mecânico profissional e competente para solucionar o problema do seu veículo.</h2>
+          <h1>Bem-vindo à Oficina SOS Mecânica.</h1>
+          <h2>O Seu Parceiro de Confiança para Soluções Automotivas!</h2>
           <div class="d-flex justify-content-center justify-content-lg-start">
             <a href=" https://wa.me/557581086649" class="btn-get-started scrollto">Entre em contato! <img src="svg/whatsapp.svg" alt="Logo" /></a> 
           </div>
@@ -34,14 +34,13 @@
 
         <div class="row content">
           <div class="col-lg-6">
-            <p>
-              A Oficina SOS Mecânica possui como objetivo o melhor atendimento ao cliente e solução de problemas na área mecânica do 
-              automóvel com prestação de serviço e vendas de peças de qualidade.
-            </p>
+            <p class="txt-just">Na OFICINA SOS MECÂNICA, não apenas consertamos carros, mas também oferecemos uma experiência excepcional. Nossa equipe dedicada e apaixonada, com um histórico comprovado de sucesso, tornou-nos uma referência em excelência automotiva, conquistando a confiança dos clientes ao longo dos anos.</p>
             <ul>
+              <li><img src="svg/check2-all.svg" alt="Logo" />  Experiência Confiável.</li>
               <li><img src="svg/check2-all.svg" alt="Logo" />  Manutenção e revisão do automóvel.</li>
               <li><img src="svg/check2-all.svg" alt="Logo" />  Venda de peças de qualidade.</li>
               <li><img src="svg/check2-all.svg" alt="Logo" />  Garantia do serviço por 30 dias.</li>
+              <li><img src="svg/check2-all.svg" alt="Logo" />  Satisfação do Cliente.</li>
             </ul>
           </div>
           <div class="col-lg-6 pt-4 pt-lg-0">
@@ -61,7 +60,7 @@
 
         <div class="section-title">
           <h2>Team</h2>
-          <p>Equipe de trabalho da oficina.</p>
+          <p>Na OFICINA SOS MECÂNICA, contamos com uma equipe altamente qualificada e dedicada, apaixonada por carros e comprometida com a satisfação do cliente. Juntos, enfrentamos desafios mecânicos com eficiência, proporcionando serviços de excelência e um toque pessoal diferenciado.</p>
         </div>
 
         <div class="row">
@@ -71,8 +70,8 @@
               <div class="pic"><img src="img/team/team-1.jpeg" class="img-fluid" alt=""></div>
               <div class="member-info">
                 <h4>Jaime Pinto de Jesus</h4>
-                <span>Mecânico Chefe</span>
-                <p>Informe o problema ao mecânico e logo ele será solucionado.</p>
+                <span>Dono e Mecânico Chefe</span>
+                <p>Jaime, com mais de 30 anos de experiência automotiva na OFICINA SOS MECÂNICA.</p>
                 <div class="social">
                   <a href=""><img src="svg/facebook.svg" alt="Logo" /></a>
                   <a href=""><img src="svg/instagram.svg" alt="Logo" /></i></a>

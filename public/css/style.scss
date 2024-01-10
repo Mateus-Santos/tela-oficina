@@ -131,6 +131,7 @@ h6 {
 		height: 60px;
 		-webkit-animation: animate-preloader 1s linear infinite;
 		animation: animate-preloader 1s linear infinite;
+		
 	}
 	
 }
@@ -417,6 +418,9 @@ section {
 			&:last-child {
 				margin-bottom: 0;
 			}
+		}
+		.txt-just{
+			text-align: justify;
 		}
 		.btn-learn-more {
 			font-family: $font-family_3;
