@@ -1,17 +1,7 @@
-﻿@import url(style_cad.css);
+﻿@import 'style_cad.css';
+@import 'colors.scss';
 
-$color_1: #000000; // Preto Plata de trânsito.
-$color_2: #00FF00; //Verde Semáforo.
-$color_2_1: #008000; //Verde Semáforo.
-$color_3: #FF0000; // Vermelho Semáforo.
-$color_4: #FFFF00; // Amarelo Semáforo.
-$color_5: #FFFFFF; // Faixa Pedestre
-$color_6: #8B4513; // Marrom Meio-fio/Calçadas.
-$font-family_1: "Open Sans", sans-serif;
-$font-family_2: "Jost", sans-serif;
-$font-family_3: "Poppins", sans-serif;
-$background-color_1: rgba(0, 0, 0, 0.9);
-$background-color_2: rgba(15, 17, 3, 0.815);
+
 
 /**
 * Template URL: https://bootstrapmade.com/arsha-free-bootstrap-html-template-corporate/
@@ -42,12 +32,6 @@ $background-color_2: rgba(15, 17, 3, 0.815);
 		transform: rotate(360deg);
 	}
 }
-
-
-.bi .bi-instagram {
-    fill: var($color_4, currentColor); /* Use currentColor como cor padrão */
-    width: var(--icone-tamanho, 16px); /* Use 16px como tamanho padrão */
-  }
 
 /*--------------------------------------------------------------
 # Botão do inicio
@@ -170,7 +154,7 @@ h6 {
 		line-height: 0;
 	}
 	&:hover {
-		background: $color_2_1;
+		background: $color_2;
 		color: $color_3;
 	}
 }
@@ -215,7 +199,7 @@ h6 {
 	}
 	li {
 		position: relative;
-		padding: 5px 0 5px 5px;
+		padding: 2px 15px 0px 15px;
 		color: $color_4;
 	}
 
@@ -302,7 +286,7 @@ h6 {
 		font-size: 15px;
 		color: $color_1;
 		&:hover {
-			color: $color_4;
+			color: $color_2;
 		}
 	}
 	.active {
@@ -348,7 +332,7 @@ h6 {
 		color: $color_1;
 		background: $color_4;
 		&:hover {
-			background: $color_2_1;
+			background: $color_2;
 		}
 	}
 	.animated {
