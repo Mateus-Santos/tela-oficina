@@ -81,14 +81,12 @@
           <label class="form-label" for="numero">Número:</label>
           <input type="text" class="form-control" id="numero">
         </div>
-    </div>
-    
-      <div class="row mb-3">
+
         <div class="col">
           <label class="form-label" for="pont_ref">Ponto de referência:</label>
           <input type="text" class="form-control" id="pont_ref" placeholder="Exemplo: Próximo ao restaurante, loja, igreja...">
         </div>
-      </div>
+    </div>
 
     <div class="row mb-3">
       <div class="col">
