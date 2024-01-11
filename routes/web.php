@@ -1,6 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PessoaController;
+use App\Http\Controllers\EnderecoController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,6 +20,7 @@ Route::get('/', function () {
     return view('index');
 });
 
-Route::get('/cadastropessoa', function () {
-    return view('cadastropessoa');
-});
+//Rotas index.
+Route::resource('pessoa', PessoaController::class);
+Route::resource('endereco', EnderecoController::class);
+Route::resource('user', UserController::class);

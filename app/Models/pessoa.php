@@ -10,7 +10,6 @@ class Pessoa extends Model
     use HasFactory;
 
     protected $fillable = [
-        'id_pessoa',
         'email',
         'name',
         'data_nascimento',
@@ -21,7 +20,6 @@ class Pessoa extends Model
     protected $hidden = [
         'cpf',
         'rg',
-        'endereco',
     ];
 
 }

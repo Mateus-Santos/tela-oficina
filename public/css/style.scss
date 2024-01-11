@@ -54,6 +54,9 @@
 --------------------------------------------------------------*/
 /*Botão de contato*/
 /*Imagem flutuante*/
+
+
+
 @keyframes up-down {
 	0% {
 		transform: translateY(10px);
@@ -164,7 +167,7 @@ h6 {
 	transition: all 0.5s;
 	z-index: 997;
 	padding: 15px 0;
-	background: $background-color_1;
+	background-color: $background-color_1 !important;
 	.logo {
 		font-size: 35px;
 		margin: 0;
