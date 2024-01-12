@@ -18,11 +18,11 @@ return new class extends Migration
             $table->unsignedBigInteger('id_user');
 
             $table->string('chave_pix', 50)->unique();
-            $table->string('conta_banco', 30)->unique();
-            $table->timestamps();
+            $table->string('conta_banco', 30);
 
             $table->foreign('id_user')->references('id_user')->on('users');
             $table->foreign('id_pessoa')->references('id_pessoa')->on('pessoa');
+            $table->timestamps();
         });
     }
 

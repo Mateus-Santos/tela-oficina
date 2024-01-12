@@ -4,21 +4,20 @@
 
   <div class="container cadastro">
   
-  <h1>CADASTRO DE PESSOA FÍSICA</h1>
-
-  <form action="{{ route('pessoas.store') }}" method="post" class="row g-3">
+  <h1>EDIÇÃO DE PESSOA FÍSICA</h1>
   @csrf
+  <form action="{{ route('pessoas.update'), ['pessoa'] -> $pessoa->id_pessoa }}" class="row g-3">
       <div class="campos">
       <div class="row mb-3">
 
         <div class="col-md-6">
         <label class="form-label" for="nome">Nome Completo:*</label>
-        <input type="text" class="form-control" id="nome" placeholder="Digite seu Nome Completo." name="nome" required>
+        <input type="text" class="form-control" id="nome" value="{{ $pessoa->nome }}" name="nome" required>
         </div>
 
         <div class="col-md-6">
             <label class="form-label" for="email">E-mail:*</label>
-            <input type="email" class="form-control" id="email" placeholder="Digite o seu Email." name="email" required>
+            <input type="email" class="form-control" id="email" value="{{ $pessoa->email }}" name="email" required>
         </div>
         
       </div>
@@ -27,42 +26,34 @@
 
           <div class="col-md-3"> 
             <label class="form-label" for="rg">RG:</label>
-            <input type="text" class="form-control" id="rg" placeholder="0123456-7" name="rg">
+            <input type="text" class="form-control" id="rg" value="{{ $pessoa->rg }}" name="rg">
           </div>
 
           <div class="col-md-2">          
             <label class="form-label" for="cpf">CPF:*</label>
-            <input type="text" class="form-control" id="cpf" placeholder="999.999.999-99" name="cpf" required>
+            <input type="text" class="form-control" id="cpf" value="{{ $pessoa->cpf }}" name="cpf" required>
           </div>
         
         <div class="col-md-3">
           <label class="form-label" for="telefone_1">Telefone Principal:*</label>
-          <input type="text" class="form-control" id="telefone_1" placeholder="(99) 9 9999-9999" name="telefone_1" required>
+          <input type="text" class="form-control" id="telefone_1" value="{{ $pessoa->tel_1 }}" name="telefone_1" required>
         </div>
 
         <div class="col-md-3">
           <label class="form-label" for="telefone_2">Telefone Secundario:*</label>
-          <input type="text" class="form-control" id="telefone_2" placeholder="(99) 9 9999-9999" name="telefone_2" required>
+          <input type="text" class="form-control" id="telefone_2" value="{{ $pessoa->tel_2 }}" name="telefone_2" required>
         </div>
 
       </div>
-
-      <div class="row mb-3">
-        <div class="col-2">
-          <label class="form-label" for="data_nascimento">Data Nascimento:*</label>
-          <input type="date" class="form-control" id="data_nascimento" name="data_nascimento" required>
-        </div>
-
-      <!--
       <div class="row mb-3">
         <div class="col-2">
           <label class="form-label" for="cep">CEP:*</label>
-          <input type="text" class="form-control" id="cep" placeholder="00000-000" name="cep" required>
+          <input type="text" class="form-control" id="cep"  name="cep" required>
         </div>
 
       <div class="col">
         <label class="form-label" for="cidade">Cidade:*</label>
-        <input type="text" class="form-control" id="cidade" placeholder="Exemplo: Belmonte, Serraville, Tranquilópolis, Rio Verde..." name="cidade" required>
+        <input type="text" class="form-control" id="cidade" name="cidade" required>
       </div>
 
       <div class="col-md-2">
@@ -83,7 +74,7 @@
       <div class="row mb-3">
         <div class="col-md-5">
           <label class="form-label" for="endereco">Endereço:*</label>
-          <input type="text" class="form-control" id="endereco" placeholder="Apartamento, hotel, casa, etc." name="endereco" required>
+          <input type="text" class="form-control" id="endereco" required>
         </div>
         
         <div class="col-md-1">
@@ -93,10 +84,10 @@
 
         <div class="col">
           <label class="form-label" for="pont_ref">Ponto de referência:*</label>
-          <input type="text" class="form-control" id="pont_ref" placeholder="Exemplo: Próximo ao restaurante, loja, igreja..." name="pont_ref" required>
+          <input type="text" class="form-control" id="pont_ref" name="pont_ref" required>
         </div>
     </div>
-      -->
+
     <div class="row mb-3">
       <div class="col">
         <input class="form-check-input" type="checkbox" id="confirmacao">

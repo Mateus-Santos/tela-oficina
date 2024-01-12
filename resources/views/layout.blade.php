@@ -40,7 +40,8 @@
           <li><a class="nav-link scrollto" href="#about">Sobre</a></li>
           <li><a class="nav-link scrollto" href="#team">Equipe</a></li>
           <li><a class="nav-link scrollto" href="#contact">Contatos</a></li>
-          <a href="{{ route('pessoa.create') }}" type="button" class="login btn btn-success">Cadastrar Pessoa</a>
+          <a href="{{ route('pessoas.create') }}" type="button" class="login btn btn-success">Cadastrar pessoas</a>
+          <a href="{{ route('pessoas.index') }}" type="button" class="login btn btn-success">Listar Pessoas</a>
         </ul>
     </div>
   </nav>

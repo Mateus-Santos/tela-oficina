@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('rua', 50);
             $table->string('endereco', 50);
             $table->integer('numero');
-            $table->string('ponto_referencia', 100);
+            $table->string('ponto_referencia', 200);
 
             $table->unsignedBigInteger('id_pessoa');
             $table->foreign('id_pessoa')->references('id_pessoa')->on('pessoa');

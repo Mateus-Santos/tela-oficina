@@ -1,17 +1,16 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Models\Pessoa;
 use Illuminate\Http\Request;
 
-class PessoaController extends Controller
-{
-    /**
-     * Display a listing of the resource.
-     */
+class PessoaController extends Controller {
+
+
     public function index()
     {
-        //
+        $pessoas = Pessoa::all();
+        return view('listarpessoa', compact('pessoas'));
     }
 
     /**
@@ -27,20 +26,17 @@ class PessoaController extends Controller
      */
     public function store(Request $request)
     {
-        $dados = $request->validate([
-            'nome' => 'required|string|max:255',
-            'email' => 'required|email|unique:create',
-            'data_nascimento' => 'required|date',
-            'telefone_1' => 'required|string|unique:create',
-            'telefone_2' => 'required|string|unique:create',
-            'cpf' => 'required|string|unique:create',
-            'rg' => 'required|string',
-        ]);
+        $pessoa = new Pessoa();
+        $pessoa->nome = $request->input("nome");
+        $pessoa->email = $request->input("email");
+        $pessoa->data_nascimento = $request->input("data_nascimento");
+        $pessoa->telefone_1 = $request->input("telefone_1");
+        $pessoa->telefone_2 = $request->input("telefone_2");
+        $pessoa->cpf = $request->input("cpf");
+        $pessoa->rg = $request->input("rg");
+        $pessoa->save();
+        return redirect()->route('pessoas.index');
 
-        Create::create($dados);
-
-        $response = $this->call('store', 'endereco');
-        return redirect()->route('cadastro.create')->with('success', 'Cadastro realizado com sucesso!');
     }
 
     /**
@@ -54,9 +50,9 @@ class PessoaController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(string $pessoa)
     {
-        //
+        return view('editarpessoa', ['pessoa' -> $pessoa]);
     }
 
     /**

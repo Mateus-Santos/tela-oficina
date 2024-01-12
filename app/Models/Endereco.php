@@ -10,4 +10,10 @@ class Endereco extends Model
     use HasFactory;
     protected $table = 'endereco';
 
+
+    public function pessoa()
+    {
+        return $this->hasOne(Pessoa::class);
+    }
+
 }

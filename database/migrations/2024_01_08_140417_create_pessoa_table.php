@@ -17,10 +17,9 @@ return new class extends Migration
             $table->string('cpf', 11)->unique();
             $table->string('nome', 150);
             $table->string('rg', 9);
-            $table->string('endereco', 200);
-            $table->date('data_nascimento', 9);
-            $table->string('telefone_1', 15);
-            $table->string('telefone_2', 15);
+            $table->date('data_nascimento');
+            $table->string('telefone_1', 11);
+            $table->string('telefone_2', 11);
             $table->timestamps();
         });
 
