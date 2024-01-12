@@ -17,4 +17,4 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
-/BASE DE DADOS
+/database/BASE DE DADOS
