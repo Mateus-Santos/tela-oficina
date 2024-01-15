@@ -16,21 +16,21 @@
                 <th scope="col">Telefone Secundario</th>
             </tr>
     </thead>
-
-    <tbody>
-    <tr>
-    @foreach($pessoas as $pessoa)
-      <th scope="row">1</th>
-      <td>{{ $pessoa->nome }}</td>
-      <td>{{ $pessoa->data_nascimento }}</td>
-      <td>{{ $pessoa->email }}</td>
-      <td>{{ $pessoa->cpf }}</td>
-      <td>{{ $pessoa->rg }}</td>
-      <td>{{ $pessoa->telefone_1 }}</td>
-      <td>{{ $pessoa->telefone_2 }}</td>
-    @endforeach
-  </tbody>
-</table>
+        <tbody>
+            @foreach($pessoas as $pessoa)
+            <tr>
+            <th scope="row">1</th>
+            <td>{{ $pessoa->nome }}</td>
+            <td>{{ $pessoa->data_nascimento }}</td>
+            <td>{{ $pessoa->email }}</td>
+            <td>{{ $pessoa->cpf }}</td>
+            <td>{{ $pessoa->rg }}</td>
+            <td>{{ $pessoa->telefone_1 }}</td>
+            <td>{{ $pessoa->telefone_2 }}</td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
 </div>
 
 @endsection

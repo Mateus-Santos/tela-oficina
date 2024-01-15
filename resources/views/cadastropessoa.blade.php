@@ -55,49 +55,6 @@
       </div>
 
       
-      <div class="row mb-3">
-        <div class="col-2">
-          <label class="form-label" for="cep">CEP:*</label>
-          <input type="text" class="form-control" id="cep" placeholder="00000-000" name="cep" required>
-        </div>
-
-      <div class="col">
-        <label class="form-label" for="cidade">Cidade:*</label>
-        <input type="text" class="form-control" id="cidade" placeholder="Exemplo: Belmonte, Serraville, Tranquilópolis, Rio Verde..." name="cidade" required>
-      </div>
-
-      <div class="col-md-2">
-        <label class="form-label" for="estado">Estado:*</label>
-        <select id="estado" class="form-control" name="cidade" required>
-          <option selected>Escolher...</option>
-          <option>BA</option>
-        </select>
-      </div>
-
-      <div class="col-md-5">
-        <label class="form-label" for="rua">Rua:*</label>
-        <input type="text" class="form-control" id="rua" name="rua" required>
-      </div>
-
-      </div>
-
-      <div class="row mb-3">
-        <div class="col-md-5">
-          <label class="form-label" for="endereco">Endereço:*</label>
-          <input type="text" class="form-control" id="endereco" placeholder="Apartamento, hotel, casa, etc." name="endereco" required>
-        </div>
-        
-        <div class="col-md-1">
-          <label class="form-label" for="numero">Número:*</label>
-          <input type="text" class="form-control" id="numero" name="numero" required>
-        </div>
-
-        <div class="col">
-          <label class="form-label" for="pont_ref">Ponto de referência:*</label>
-          <input type="text" class="form-control" id="pont_ref" placeholder="Exemplo: Próximo ao restaurante, loja, igreja..." name="pont_ref" required>
-        </div>
-    </div>
-      
     <div class="row mb-3">
       <div class="col">
         <input class="form-check-input" type="checkbox" id="confirmacao">

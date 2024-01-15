@@ -1,7 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Models\Pessoa;
+use App\Models\Endereco;
 use Illuminate\Http\Request;
 
 class EnderecoController extends Controller
@@ -11,7 +12,8 @@ class EnderecoController extends Controller
      */
     public function index()
     {
-        //
+        $enderecos = Endereco::with(['pessoa:id_pessoa,nome'])->get();
+        return view('listarendereco', compact('enderecos'));
     }
 
     /**
@@ -19,7 +21,8 @@ class EnderecoController extends Controller
      */
     public function create()
     {
-
+        $pessoas = Pessoa::all();
+        return view('cadastroendereco', compact('pessoas'));
     }
 
     /**
@@ -27,7 +30,18 @@ class EnderecoController extends Controller
      */
     public function store(Request $request)
     {
-        
+        $endereco = new Endereco();
+        $endereco->cep = $request->input("cep");
+        $endereco->cidade = $request->input("cidade");
+        $endereco->bairro = $request->input("bairro");
+        $endereco->estado = $request->input("estado");
+        $endereco->rua = $request->input("rua");
+        $endereco->endereco = $request->input("endereco");
+        $endereco->numero = $request->input("numero");
+        $endereco->ponto_referencia = $request->input("ponto_referencia");
+        $endereco->id_pessoa = $request->input("id_pessoa");
+        $endereco->save();
+        return redirect()->route('enderecos.index');
     }
 
     /**
@@ -43,7 +57,7 @@ class EnderecoController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        return view('editarendereco', ['endereco' -> $endereco]);
     }
 
     /**

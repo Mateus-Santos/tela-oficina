@@ -11,20 +11,11 @@ class Pessoa extends Model
 
     protected $table = 'pessoa';
 
-    protected $fillable = [
-        'email',
-        'name',
-        'data_nascimento',
-        'telefone_1',
-        'telefone_2',
-        'cpf',
-        'rg',
-    ];
-
+    protected $foreignKey = 'id_endereco';
 
     public function endereco()
     {
-        return $this->hasMany(Endereco::class);
+        return $this->hasMany(Endereco::class, 'id_endereco');
     }
 
 }

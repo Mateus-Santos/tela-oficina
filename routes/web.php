@@ -28,3 +28,12 @@ Route::post('/pessoas/{pessoa}', [PessoaController::class, 'show'])->name('pesso
 Route::post('/pessoas/{pessoa}/edit', [PessoaController::class, 'edit'])->name('pessoas.edit');
 Route::put('/pessoas/{pessoa}', [PessoaController::class, 'update'])->name('pessoas.update');
 Route::delete('/pessoas/{pessoa}', [PessoaController::class, 'destroy'])->name('pessoas.destroy');
+
+// Rotas Endereços.
+Route::get('/enderecos', [EnderecoController::class, 'index'])->name('enderecos.index');
+Route::get('/enderecos/create', [EnderecoController::class, 'create'])->name('enderecos.create');
+Route::post('/enderecos', [EnderecoController::class, 'store'])->name('enderecos.store');
+Route::post('/enderecos/{endereco}', [EnderecoController::class, 'show'])->name('enderecos.show');
+Route::post('/enderecos/{endereco}/edit', [EnderecoController::class, 'edit'])->name('enderecos.edit');
+Route::put('/enderecos/{endereco}', [EnderecoController::class, 'update'])->name('enderecos.update');
+Route::delete('/enderecos/{endereco}', [EnderecoController::class, 'destroy'])->name('enderecos.destroy');
