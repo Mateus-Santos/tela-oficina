@@ -52,8 +52,9 @@
           <label class="form-label" for="data_nascimento">Data Nascimento:*</label>
           <input type="date" class="form-control" id="data_nascimento" name="data_nascimento" required>
         </div>
+      </div>
 
-      <!--
+      
       <div class="row mb-3">
         <div class="col-2">
           <label class="form-label" for="cep">CEP:*</label>
@@ -96,7 +97,7 @@
           <input type="text" class="form-control" id="pont_ref" placeholder="Exemplo: Próximo ao restaurante, loja, igreja..." name="pont_ref" required>
         </div>
     </div>
-      -->
+      
     <div class="row mb-3">
       <div class="col">
         <input class="form-check-input" type="checkbox" id="confirmacao">

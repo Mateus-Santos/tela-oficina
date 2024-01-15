@@ -1,10 +1,10 @@
 .cadastro {
   background-color: rgba(228, 228, 228, 0.6588235294);
   text-align: center;
-  border-radius: 20px;
-  position: relative;
-  margin-top: 100px;
+  border-radius: 15px;
+  margin-top: 150px;
   margin-bottom: 100px;
+  position: relative;
 }
 
 .cadastro h1 {
