@@ -4,6 +4,8 @@
 * Author: BootstrapMade.com
 * License: https://bootstrapmade.com/license/
 * modified by: Mateus Santos: www.github.com/Mateus-Santos/tela-oficina
+
+
 */
 /*--------------------------------------------------------------
 # General
@@ -92,6 +94,14 @@ h6 {
 }
 
 /*MENU PRINCIPAL */
+nav .btn-light {
+  color: black !important;
+}
+navhover {
+  font-weight: bold !important;
+  color: black !important;
+}
+
 .offcanvas {
   z-index: 9999;
   color: #FFFF00;
@@ -114,9 +124,6 @@ h6 {
 
 .navbar-text a {
   color: #FFFF00;
-}
-.navbar-text .nav-item:hover {
-  color: #00FF00 !important;
 }
 
 .back-to-top {
@@ -172,6 +179,10 @@ h6 {
 }
 #header .navbar-toggler {
   background-color: #FFFFFF;
+}
+#header .btn-light:hover {
+  color: #008000 !important;
+  font-weight: bold;
 }
 
 .mobile-nav-toggle {
@@ -550,7 +561,7 @@ section {
 }
 #footer .footer-top .footer-links ul a:hover {
   text-decoration: none;
-  color: #8B4513;
+  color: #ff7919;
 }
 #footer .footer-top .social-links a {
   font-size: 18px;

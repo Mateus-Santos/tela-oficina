@@ -105,9 +105,9 @@
           <div class="col-lg-3 col-md-6 footer-links">
             <h4>Links</h4>
             <ul>
-              <li><img src="svg/chevron-double-right.svg" alt="Logo" /><a href="#"> Home</a></li>
-              <li><img src="svg/chevron-double-right.svg" alt="Logo" /><a href="#about"> Sobre</a></li>
-              <li><img src="svg/chevron-double-right.svg" alt="Logo" /><a href="#team"> Equipe</a></li>
+              <li><img src="svg/chevron-double-right.svg" alt="Logo" /><a href="#">  Home</a></li>
+              <li><img src="svg/chevron-double-right.svg" alt="Logo" /><a href="#about">  Sobre</a></li>
+              <li><img src="svg/chevron-double-right.svg" alt="Logo" /><a href="#team">  Equipe</a></li>
             </ul>
           </div>
 

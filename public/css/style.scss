@@ -5,6 +5,8 @@
 * Author: BootstrapMade.com
 * License: https://bootstrapmade.com/license/
 * modified by: Mateus Santos: www.github.com/Mateus-Santos/tela-oficina
+
+
 */
 /*--------------------------------------------------------------
 # General
@@ -99,7 +101,15 @@ h6 {
 
 /*MENU PRINCIPAL */
 
-// MENU
+nav{
+	.btn-light{
+		color: black !important;
+	}
+	&hover{
+		font-weight: bold !important;
+		color: black !important;
+	}
+}
 
 .offcanvas{
 	z-index: 9999;
@@ -126,9 +136,6 @@ h6 {
 .navbar-text{
 	a{
 		color: $color_4;
-	}
-	.nav-item:hover{
-		color: $color_2 !important;
 	}
 }
 
@@ -184,6 +191,10 @@ h6 {
 	}
 	.navbar-toggler{
 		background-color: $color_5;
+	}
+	.btn-light:hover{
+		color: $color_2_1 !important;
+		font-weight: bold;
 	}
 }
 

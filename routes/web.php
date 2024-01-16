@@ -37,3 +37,13 @@ Route::post('/enderecos/{endereco}', [EnderecoController::class, 'show'])->name(
 Route::post('/enderecos/{endereco}/edit', [EnderecoController::class, 'edit'])->name('enderecos.edit');
 Route::put('/enderecos/{endereco}', [EnderecoController::class, 'update'])->name('enderecos.update');
 Route::delete('/enderecos/{endereco}', [EnderecoController::class, 'destroy'])->name('enderecos.destroy');
+
+Route::middleware([
+    'auth:sanctum',
+    config('jetstream.auth_session'),
+    'verified',
+])->group(function () {
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
+});
