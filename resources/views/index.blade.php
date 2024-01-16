@@ -8,14 +8,14 @@
     <div class="container">
       <div class="row">
         <div class="col-lg-6 d-flex flex-column justify-content-center pt-4 pt-lg-0 order-2 order-lg-1" data-aos="fade-up" data-aos-delay="200">
-          <h1>Bem-vindo à Oficina SOS Mecânica.</h1>
+          <h1>Bem-vindo(a) à Oficina SOS Mecânica.</h1>
           <h2>O Seu Parceiro de Confiança para Soluções Automotivas!</h2>
           <div class="d-flex justify-content-center justify-content-lg-start">
             <a href=" https://wa.me/557581086649" class="btn-get-started scrollto">Entre em contato! <img src="svg/whatsapp.svg" alt="Logo" /></a> 
           </div>
         </div>
         <div class="col-lg-6 order-1 order-lg-2 hero-img" data-aos="zoom-in" data-aos-delay="200">
-          <img href='https://br.freepik.com/vetores/carro' src="img/ilustracao.jpg" class="img-fluid animated">
+          <img src="img/mecanico-consertando-carro.jpg" class="img-fluid animated">
         </div>
       </div>
     </div>

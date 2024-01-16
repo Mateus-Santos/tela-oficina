@@ -28,25 +28,60 @@
 </head>
 
 <body>
-
 <!-- ======= Header ======= -->
 
-  <nav id="header" class="nav fixed-top navbar navbar-expand-lg bg-body-tertiary">
-    <div class="container d-flex align-items-center">
-
-      <h1 class="logo me-auto"><a href="/">Oficina SOS Mecânica</a></h1>
-        <ul>
-          <li><a class="nav-link scrollto active" href="#hero">Home</a></li>
-          <li><a class="nav-link scrollto" href="#about">Sobre</a></li>
-          <li><a class="nav-link scrollto" href="#team">Equipe</a></li>
-          <li><a class="nav-link scrollto" href="#contact">Contatos</a></li>
-          <li><a href="{{ route('pessoas.create') }}" type="button" class="login btn btn-success">Cadastrar pessoas</a><li>
-          <li><a href="{{ route('pessoas.index') }}" type="button" class="login btn btn-success">Listar Pessoas</a><li>
-          <li><a href="{{ route('enderecos.index') }}" type="button" class="login btn btn-success">Listar Endereços</a><li>
-          <li><a href="{{ route('enderecos.create') }}" type="button" class="login btn btn-success">Cadastrar Endereços</a><li>
-        </ul>
+<nav id="header" class="navbar bg-body-tertiary fixed-top">
+  <div class="container-fluid">
+    <a class="logo navbar-brand" href="/">Oficina SOS Mecânica</a>
+    <ul class="nav navbar-text">
+    <li class="nav-item"><a class="nav-link active" href="#">Home</a></li>
+    <li class="nav-item"><a class="nav-link" href="#about">Sobre</a></li>
+    <li class="nav-item"><a class="nav-link" href="#team">Equipe</a></li>
+    </ul>
+    <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="offcanvas offcanvas-end" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+      <div class="offcanvas-header">
+        <!-- TÍTULO MENU -->
+        <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Oficina SOS Mecânica</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body">
+          <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+            <li class="nav-item">
+                <a class="nav-link active" href="#">OFICINA</a>
+            </li>
+          <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Pessoas
+              </a>
+            <ul class="dropdown-menu">
+                <li>
+                  <a href="{{ route('pessoas.create') }}" type="button" class="dropdown-item">Cadastrar pessoas</a>
+                </li>
+                <li>
+                  <a href="{{ route('pessoas.index') }}" type="button" class="dropdown-item">Listar Pessoas</a>
+                </li>
+            </ul>
+          </li>
+          <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Endereços
+              </a>
+            <ul class="dropdown-menu">
+                <li>
+                  <a href="{{ route('enderecos.create') }}" type="button" class="dropdown-item">Cadastrar Endereços</a>
+              </li>
+              <li>
+                  <a href="{{ route('enderecos.index') }}" type="button" class="dropdown-item">Listar Endereços</a>
+              </li>
+            </ul>
+          </li>
+      </div>
     </div>
-  </nav>
+  </div>
+</nav>
 
   @yield('content')
   

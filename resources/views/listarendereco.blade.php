@@ -3,6 +3,7 @@
 @section('content')
 
 <div class="container cadastro">
+    <h1>LISTAR ENDEREÇOS</h1>
     <table class="table">
         <thead>
             <tr>
