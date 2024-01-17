@@ -59,8 +59,6 @@
       <span class="navbar-toggler-icon"></span>
     </button>
     
-
-    
     <div class="offcanvas offcanvas-end" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
       <div class="offcanvas-header">
         <!-- TÍTULO MENU -->
