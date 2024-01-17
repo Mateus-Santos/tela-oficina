@@ -1,0 +1,27 @@
+@import 'colors.scss';
+
+$larguras: 20px;
+
+
+
+.cadastro {
+    background-color: $color_5_1;
+    text-align: center;
+    border-radius: 15px;
+    margin-top: 150px;
+    margin-bottom: 100px;
+    position: relative;
+}
+
+.cadastro h1{
+    padding: $larguras $larguras $larguras $larguras;
+    font-family: $font-family_2;
+}
+
+.campos {
+    font-family: $font-family_8;
+    font-size: large;
+    text-align: left;
+    position: relative;
+    padding: 0px $larguras $larguras $larguras;
+}
