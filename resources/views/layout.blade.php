@@ -41,20 +41,25 @@
     @auth
     <form action="/logout" method="POST">
       @csrf
-    <a action="/logout" method="POST" class="nav-link btn btn-light" href="/logout" 
+    <a action="/logout" method="POST" class="btn btn-light" href="/logout" 
     onclick="event.preventDefault();
     this.closest('form').submit();"> 
       Sair
-
     </a>
     </form>
     @endauth
+
     @guest
     <a class="btn btn-light" href="/login"> Entrar</a>
     <a class="btn btn-warning" href="/register"> Cadastre-se</a>
+    @endguest
+
+    @auth
     <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
+    
+
     
     <div class="offcanvas offcanvas-end" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
       <div class="offcanvas-header">
@@ -95,8 +100,8 @@
           </li>
       </div>
     </div>
-    @endguest
   </div>
+  @endauth
 </nav>
 
   @yield('content')
