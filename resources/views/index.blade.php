@@ -14,8 +14,16 @@
             <a href=" https://wa.me/557581086649" class="btn-get-started scrollto">Entre em contato! <img src="svg/whatsapp.svg" alt="Logo" /></a> 
           </div>
         </div>
-        <div class="col-lg-6 order-1 order-lg-2 hero-img" data-aos="zoom-in" data-aos-delay="200">
-          <textarea class="form-control" aria-label="With textarea"></textarea>
+        <div class="box-questions col-lg-6 order-1 order-lg-2">
+          <div class="header">
+            <p>Perguntas e respostas - CHATGPT</p>
+          </div>
+          <div id="historic"></div>
+
+          <div class="footer">
+              <input type="text" id="message" placeholder="Pergunte aqui...">
+              <button id="btn-submit">Enviar</button>
+          </div>
         </div>
       </div>
     </div>
