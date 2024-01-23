@@ -51,7 +51,7 @@ class ChatController extends Controller
         // Decodifica o JSON para um objeto PHP
         $objetoPHP = json_decode($apiResponse);
 
-        // Acessa a palavra "queijo"
+        // Acessa a "resposta".
         $resposta = $objetoPHP->choices[0]->message->content;
         return $resposta;
     }

@@ -1,4 +1,5 @@
-@tailwind base;
+/*@tailwind base; - Ajustar para consertar ícones. */
+
 @tailwind components;
 @tailwind utilities;
 
