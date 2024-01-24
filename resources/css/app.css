@@ -1,7 +1,6 @@
-/*@tailwind base; - Ajustar para consertar ícones. */
-
-@tailwind components;
-@tailwind utilities;
+/*@import 'tailwindcss/base';*/
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
 
 [x-cloak] {
     display: none;

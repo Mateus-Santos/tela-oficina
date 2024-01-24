@@ -52,18 +52,19 @@ section {
 			font-weight: 600;
 			font-size: 26px;
 		}
+		img{
+			width: 20px;
+			height: 20px;
+		}
 		ul {
 			list-style: none;
 			padding: 0;
 			li {
-				padding-left: 28px;
+				padding-left: 20px;
 				position: relative;
-				+ {
-					li {
-						margin-top: 10px;
-					}
-				}
+				margin-top: 10px;
 			}
+			
 			i {
 				position: absolute;
 				left: 0;
@@ -121,9 +122,7 @@ section {
 			overflow: hidden;
 			width: 180px;
 			border-radius: 50%;
-			img {
-				transition: ease-in-out 0.3s;
-			}
+			
 		}
 		&:hover {
 			transform: translateY(-10px);
@@ -388,6 +387,10 @@ section {
 			}
 		}
 	}
+}
+
+.redes{
+	color: $color_2;
 }
 #hero {
 	width: 100%;
