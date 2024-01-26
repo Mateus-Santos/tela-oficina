@@ -31,7 +31,7 @@
 
 <nav id="header" class="navbar bg-body-tertiary fixed-top">
   <div class="container-fluid">
-    <a class="logo navbar-brand" href="/">Oficina SOS Mecânica</a>
+    <h1 class="logo navbar-brand" href="/">Oficina SOS Mecânica</h1>
     <ul class="nav navbar-text">
     <li class="nav-item"><a class="nav-link active" href="#">Home</a></li>
     <li class="nav-item"><a class="nav-link" href="#about">Sobre</a></li>

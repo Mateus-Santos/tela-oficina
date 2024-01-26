@@ -38,6 +38,9 @@
     color: $color_1;
     border-radius: 10px 10px 0 0;
     font-size: 1.4rem;
+    p {
+        font-family: $font-family_5;
+    }
 }
   
 .footer{
@@ -80,4 +83,22 @@
 .response-message{
     text-align: left;
     background-color: $color_2;
+}
+
+@media screen and (max-width: 300px){
+    .box-questions{
+        margin-top: 20rem;
+        background-color: $color_5_1;
+        color: $color_1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 300px;
+        width: 290px;
+        border-radius: 10px;
+        text-align: center;
+    }
+    .logo {
+        font-size: 10px;
+    }
 }
