@@ -82,3 +82,26 @@
 		}
 	}
 }
+
+
+// Menu Principal
+
+@media screen and (max-width: 300px){
+    .box-questions{
+        margin-top: 10rem;
+        background-color: $color_5_1;
+        color: $color_1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 300px;
+        width: 290px;
+        border-radius: 10px;
+        text-align: center;
+    }
+    #header {
+		.logo {
+			font-size: 12px;
+		}
+	}
+}

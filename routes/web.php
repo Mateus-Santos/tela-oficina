@@ -52,4 +52,5 @@ Route::middleware([
     })->name('dashboard');
 });
 
-Route::post('/chat', [ChatController::class, 'chat']);
+Route::post('/chat', [ChatController::class, 'chat'])->name('chat');
+Route::get('/chat/tela', [ChatController::class, 'index'])->name('chat.index');

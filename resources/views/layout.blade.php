@@ -31,29 +31,27 @@
 
 <nav id="header" class="navbar bg-body-tertiary fixed-top">
   <div class="container-fluid">
-    <h1 class="logo navbar-brand" href="/">Oficina SOS Mecânica</h1>
+    <h1 class="logo navbar-brand">Oficina SOS Mecânica</h1>
     <ul class="nav navbar-text">
     <li class="nav-item"><a class="nav-link active" href="#">Home</a></li>
     <li class="nav-item"><a class="nav-link" href="#about">Sobre</a></li>
     <li class="nav-item"><a class="nav-link" href="#team">Equipe</a></li>
+    <li class="nav-item"><a class="nav-link" href="{{ route('chat.index') }}">Dúvidas</a></li>
+    @guest
+    <li class="nav-item"><a class="btn btn-light" href="/login"> Entrar</a></li>
+    <li class="nav-item"><a class="btn btn-warning" href="/register"> Cadastre-se</a></li>
+    @endguest
     </ul>
     @auth
     <form action="/logout" method="POST">
       @csrf
-    <a action="/logout" method="POST" class="btn btn-light" href="/logout" 
+    <a action="/logout" method="POST" class="btn btn-light" href="/logout"
     onclick="event.preventDefault();
     this.closest('form').submit();"> 
       Sair
     </a>
     </form>
-    @endauth
 
-    @guest
-    <a class="btn btn-light" href="/login"> Entrar</a>
-    <a class="btn btn-warning" href="/register"> Cadastre-se</a>
-    @endguest
-
-    @auth
     <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>

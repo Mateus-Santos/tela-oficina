@@ -14,7 +14,8 @@
             <a href=" https://wa.me/557581086649" class="btn-get-started scrollto">Entre em contato! <img src="svg/whatsapp.svg" alt="Logo" /></a> 
           </div>
         </div>
-        
+        <div class="col-lg-6 order-1">	
+    
         </div>
       </div>
     </div>

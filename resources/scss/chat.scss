@@ -1,14 +1,13 @@
 @import 'colors.scss';
 
 .box-questions{
-  margin-top: 3rem;
+  margin-top: 6rem;
   background-color: $color_5_1;
   color: $color_1;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 300px;
-  width: 500px;
+  height: 27rem;
   border-radius: 10px;
   text-align: center;
 
@@ -87,18 +86,8 @@
 
 @media screen and (max-width: 300px){
     .box-questions{
-        margin-top: 20rem;
-        background-color: $color_5_1;
-        color: $color_1;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        height: 300px;
-        width: 290px;
+        margin-top: 10rem;
         border-radius: 10px;
         text-align: center;
-    }
-    .logo {
-        font-size: 10px;
     }
 }

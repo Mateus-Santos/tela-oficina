@@ -92,30 +92,3 @@ nav{
 		font-weight: bold;
 	}
 }
-
-@media screen and (max-width: 300px){
-    .box-questions{
-        margin-top: 20rem;
-        background-color: $color_5_1;
-        color: $color_1;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        height: 300px;
-        width: 290px;
-        border-radius: 10px;
-        text-align: center;
-    }
-    #header {
-		transition: all 0.5s;
-		z-index: 997;
-		background-color: $background-color_1 !important;
-		.logo {
-			color: $color_4 !important;
-			font-family: $font-family_3;
-			font-size: 18px;
-			padding: 0 0 0 2px;
-			line-height: 1;
-		}
-	}
-}

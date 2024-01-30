@@ -55,4 +55,9 @@ class ChatController extends Controller
         $resposta = $objetoPHP->choices[0]->message->content;
         return $resposta;
     }
+
+    public function index()
+    {
+        return view('chat');
+    }
 }
