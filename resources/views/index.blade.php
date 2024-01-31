@@ -6,18 +6,13 @@
   <section id="hero" class="d-flex align-items-center">
 
     <div class="container">
-      <div class="row">
-        <div class="col-lg-6 d-flex flex-column justify-content-center pt-4 pt-lg-0 order-2 order-lg-1" data-aos="fade-up" data-aos-delay="200">
+        <div class="d-flex flex-column justify-content-center">
           <h1>Bem-vindo(a) à Oficina SOS Mecânica.</h1>
           <h2>O Seu Parceiro de Confiança para Soluções Automotivas!</h2>
           <div class="d-flex justify-content-center justify-content-lg-start">
             <a href=" https://wa.me/557581086649" class="btn-get-started scrollto">Entre em contato! <img src="svg/whatsapp.svg" alt="Logo" /></a> 
           </div>
         </div>
-        <div class="col-lg-6 order-1">	
-    
-        </div>
-      </div>
     </div>
     
   </section>
@@ -35,7 +30,7 @@
         <div class="row content">
           <div class="col-lg-6">      
 
-            <p class="txt-just">Na OFICINA SOS MECÂNICA, não apenas consertamos carros, mas também oferecemos uma experiência excepcional. Nossa equipe dedicada e apaixonada, com um histórico comprovado de sucesso, tornou-nos uma referência em excelência automotiva, conquistando a confiança dos clientes ao longo dos anos.</p>
+            <p>Na OFICINA SOS MECÂNICA, não apenas consertamos carros, mas também oferecemos uma experiência excepcional. Nossa equipe dedicada e apaixonada, com um histórico comprovado de sucesso, tornou-nos uma referência em excelência automotiva, conquistando a confiança dos clientes ao longo dos anos.</p>
             <ul>
                 <li><img src="svg/check2-all.svg" alt="Logo" />Experiência Confiável.</li>
                 <li><img src="svg/check2-all.svg" alt="Logo" />Manutenção e revisão do automóvel.</li>

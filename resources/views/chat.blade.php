@@ -5,14 +5,14 @@
 
 <div class="box-questions">	
           <div class="header">
-            <p>Perguntas e respostas - CHATGPT</p>	
-          </div>	
+            <h1>FAÇA SUA PERGUNTA</h1>
+          </div>
           <div id="historic"></div>	
           <div class="footer">	
               <input type="text" id="message" placeholder="Pergunte aqui...">	
               @auth	
               <button id="btn-submit">Enviar</button>	
-              @endauth	
+              @endauth
               @guest
               <a class="btn btn-light" href="/login"> Entrar</a>	
               @endguest	

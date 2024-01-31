@@ -81,6 +81,9 @@ nav{
 		letter-spacing: 3px;
 		text-transform: uppercase;
 	}
+	a{
+		color: $color_4;
+	}
 	a:hover{
 		color: $color_2 !important;
 	}
@@ -88,6 +91,10 @@ nav{
 		background-color: $color_5;
 	}
 	.btn-light:hover{
+		color: $color_2_1 !important;
+		font-weight: bold;
+	}
+	.btn-warning:hover{
 		color: $color_2_1 !important;
 		font-weight: bold;
 	}
