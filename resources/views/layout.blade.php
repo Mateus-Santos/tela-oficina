@@ -27,6 +27,7 @@
 </head>
 
 <body>
+
 <!-- ======= Header ======= -->
 
 <nav id="header" class="navbar navbar-expand-lg bg-body-tertiary fixed-top">
@@ -38,69 +39,62 @@
   </div>
 
   <div class="collapse navbar-collapse" id="navbarNavDropdown">
-      @guest
-      <a class="btn btn-success" href="/login"> Entrar</a>
-      <a class="btn btn-warning" href="/register"> Cadastre-se</a>
-      @endguest
-    <ul class="navbar-nav navbar-text">
-      <li class="nav-item"><a class="nav-link active" href="#">Home</a></li>
-      <li class="nav-item"><a class="nav-link" href="#about">Sobre</a></li>
-      <li class="nav-item"><a class="nav-link" href="#team">Equipe</a></li>
-      <li class="nav-item"><a class="nav-link" href="{{ route('chat.index') }}">Dúvidas</a></li>
-    </ul>
-  </div>
 
-    @auth
-    <form action="/logout" method="POST">
-      @csrf
-    <a action="/logout" method="POST" class="btn btn-light" href="/logout"
-    onclick="event.preventDefault();
-    this.closest('form').submit();"> 
-      Sair
-    </a>
-    </form>
-
-    <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    
-    <div class="offcanvas offcanvas-end" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
-      <div class="offcanvas-header">
-        <!-- TÍTULO MENU -->
-        <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Oficina SOS Mecânica</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-      </div>
       <div class="offcanvas-body">
-          <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
-          <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Pessoas
-              </a>
-            <ul class="dropdown-menu">
-                <li>
-                  <a href="{{ route('pessoas.create') }}" type="button" class="dropdown-item">Cadastrar pessoas</a>
-                </li>
-                <li>
-                  <a href="{{ route('pessoas.index') }}" type="button" class="dropdown-item">Listar Pessoas</a>
-                </li>
-            </ul>
-          </li>
+        @guest
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="btn btn-success" href="/login">Entrar</a></li>
+          <li class="nav-item"><a class="btn btn-warning" href="/register">Cadastre-se</a></li>
+          <li class="nav-item"><a class="btn btn-info" href="{{ route('chat.index') }}">Dúvidas</a></li>
+        </ul>
+        @endguest
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link active" href="#">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="#about">Sobre</a></li>
+          <li class="nav-item"><a class="nav-link" href="#team">Equipe</a></li>          
+        </ul>
+        
+        @auth
+        <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Pessoas
+            </a>
+          <ul class="dropdown-menu">
+              <li>
+                <a href="{{ route('pessoas.create') }}" type="button" class="dropdown-item">Cadastrar pessoas</a>
+              </li>
+              <li>
+                <a href="{{ route('pessoas.index') }}" type="button" class="dropdown-item">Listar Pessoas</a>
+              </li>
+          </ul>
+        </li>
           <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Endereços
               </a>
             <ul class="dropdown-menu">
-                <li>
-                  <a href="{{ route('enderecos.create') }}" type="button" class="dropdown-item">Cadastrar Endereços</a>
+              <li>
+                <a href="{{ route('enderecos.create') }}" type="button" class="dropdown-item">Cadastrar Endereços</a>
               </li>
               <li>
-                  <a href="{{ route('enderecos.index') }}" type="button" class="dropdown-item">Listar Endereços</a>
+                <a href="{{ route('enderecos.index') }}" type="button" class="dropdown-item">Listar Endereços</a>
               </li>
             </ul>
           </li>
-      </div>
+          <form action="/logout" method="POST">
+          @csrf
+            <a action="/logout" method="POST" class="btn btn-light" href="/logout"
+            onclick="event.preventDefault();
+            this.closest('form').submit();"> 
+              Sair
+            </a>
+          </form>
+      </ul>
     </div>
-  @endauth
+
+    @endauth
+  
 </nav>
 
   @yield('content')
