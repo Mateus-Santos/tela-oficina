@@ -1,0 +1,44 @@
+﻿@import 'colors.scss';
+
+/**
+* Template URL: https://bootstrapmade.com/arsha-free-bootstrap-html-template-corporate/
+* Author: BootstrapMade.com
+* License: https://bootstrapmade.com/license/
+* modified by: Mateus Santos: www.github.com/Mateus-Santos/tela-oficina
+
+
+*/
+/*--------------------------------------------------------------
+# General
+--------------------------------------------------------------*/
+
+body {
+	font-family: $font-family_1;
+	color: $color_1;
+}
+a {
+	color: $color_1;
+	text-decoration: none;
+	&:hover {
+		color: $color_2;
+		text-decoration: none;
+	}
+}
+h1 {
+	font-family: $font-family_2;
+}
+h2 {
+	font-family: $font-family_2;
+}
+h3 {
+	font-family: $font-family_2;
+}
+h4 {
+	font-family: $font-family_2;
+}
+h5 {
+	font-family: $font-family_2;
+}
+h6 {
+	font-family: $font-family_2;
+}
