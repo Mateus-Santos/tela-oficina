@@ -1,0 +1,74 @@
+.back-to-top {
+  position: fixed;
+  visibility: hidden;
+  opacity: 0;
+  right: 15px;
+  bottom: 15px;
+  z-index: 996;
+  background: #fbff00;
+  width: 40px;
+  height: 40px;
+  border-radius: 50px;
+  transition: all 0.4s;
+}
+.back-to-top i {
+  font-size: 24px;
+  color: #000000;
+  line-height: 0;
+}
+.back-to-top:hover {
+  background: #00FF00;
+  color: #FF0000;
+}
+
+.back-to-top.active {
+  visibility: visible;
+  opacity: 1;
+}
+
+#header {
+  transition: all 0.5s;
+  z-index: 997;
+  padding: 15px 0;
+  background-color: rgba(0, 0, 0, 0.842) !important;
+}
+#header ul {
+  margin: 0 10px 0px 10px;
+}
+#header ul li {
+  margin: 3px 5px 3px 5px;
+  white-space: nowrap;
+}
+#header ul li a {
+  color: #fbff00;
+}
+#header .logo {
+  color: #fbff00 !important;
+  font-family: "Poppins", sans-serif;
+  font-size: 35px;
+  padding: 0 0 0 25px;
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+#header .logo a {
+  color: #fbff00;
+}
+#header .logo a:hover {
+  color: #00FF00;
+}
+#header .navbar-toggler {
+  background-color: #FFFFFF;
+  overflow: hidden;
+}
+#header .btn-success, #header .btn-warning, #header .btn-info {
+  color: #FFFFFF;
+}
+#header .btn-success:hover, #header .btn-warning:hover, #header .btn-info:hover {
+  color: #FFFFFF;
+  font-weight: bold;
+}
+#header .dropdown-menu {
+  background-color: black;
+}
