@@ -1,44 +1,30 @@
 ﻿@import 'colors.scss';
 
 body {
-	font-family: $font-family_1;
-	color: $color_1;
+	height: 100%;
+	width: 100%;
 }
 
 a {
-	color: $color_1;
+	font-family: $font-family_2;
+	color: $color_4;
 	text-decoration: none;
-	&:hover {
-		color: $color_2;
-		text-decoration: none;
-	}
-}
-h1 {
-	font-family: $font-family_2;
-}
-h2 {
-	font-family: $font-family_2;
-}
-h3 {
-	font-family: $font-family_2;
-}
-h4 {
-	font-family: $font-family_2;
-}
-h5 {
-	font-family: $font-family_2;
-}
-h6 {
-	font-family: $font-family_2;
+	transition: 300ms;
+}a:hover {
+	color: $color_2;
+	transition: 300ms;
 }
 
+h1, h2, h3, h4, h5, h6 {
+	font-family: $font-family_2;
+	color: $color_4;
+}
 
 /**
 * Template URL: https://bootstrapmade.com/arsha-free-bootstrap-html-template-corporate/
 * Author: BootstrapMade.com
 * License: https://bootstrapmade.com/license/
 * modified by: Mateus Santos: www.github.com/Mateus-Santos/tela-oficina
-
 
 */
 /*--------------------------------------------------------------

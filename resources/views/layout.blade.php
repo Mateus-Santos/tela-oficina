@@ -18,7 +18,7 @@
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Jost:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
   
   <!-- Template Main CSS File -->
-  @vite(['resources/js/app.js', 'resources/scss/_app.scss'])
+  @vite(['resources/js/app.js', 'resources/scss/_app.scss', 'resources/css/app.css'])
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
   <title>Oficina SOS Mecânica</title>
 </head>
@@ -30,7 +30,7 @@
 <nav id="header" class="navbar navbar-expand-lg fixed-top">
     <!-- Example single danger button -->
   <div class="container-fluid">
-    <h1 class="logo navbar-brand"><a href="/">Oficina SOS Mecânica</a></h1>
+    <h1><a href="/">Oficina SOS Mecânica</a></h1>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
