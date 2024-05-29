@@ -17,3 +17,8 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+/*
+Route::post('/chat', [ChatController::class, 'chat'])->name('chat');
+Route::get('/chat/tela', [ChatController::class, 'index'])->name('chat.index');
+*/

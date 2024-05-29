@@ -47,7 +47,6 @@
           @guest
           <li class="nav-item"><a class="btn btn-success" href="/login">Entrar</a></li>
           <li class="nav-item"><a class="btn btn-warning" href="/register">Cadastre-se</a></li>
-          <li class="nav-item"><a class="btn btn-info" href="{{ route('chat.index') }}">Dúvidas</a></li>
           @endguest
 
           @auth
@@ -113,41 +112,6 @@
   <script src="{{ asset('/vendor/swiper/swiper-bundle.min.js') }}"></script>
   <script src="{{ asset('/vendor/waypoints/noframework.waypoints.js') }}"></script>
   <!-- Template Main JS File -->
-  <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
-  <script>
-    $.ajaxSetup({
-      headers: {
-        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-      }
-    })
-    $('#btn-submit').on('click', function(){
-      $message = $('#message').val();
-      $('#historic').append(`<div class="mb-2">
-      <div class="box-my-message">
-        <p class="my-message"> `+$message+` </p>
-      </div>
-      </div>`);
-
-      $.ajax({
-        type: 'post',
-        url: '{{url('chat')}}',
-        data: {
-          'input': $message
-        },
-        success: function(data){
-          $('#historic').append(`<div class="d-flex mb-2">
-
-            <div class="box-response-message">
-                <p class="response-message"> `+data+` </p>
-            </div>
-
-          </div>
-          `)
-          $message = $('#message').val('');
-        }
-      })
-    })
-  </script>
-  
+  <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>  
 </body>
 </html>
