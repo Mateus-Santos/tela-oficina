@@ -17,7 +17,7 @@
 		color: $color_1;
 		line-height: 0;
 	}
-	&:hover {
+	i:hover {
 		background: $color_2;
 		color: $color_3;
 	}
@@ -38,18 +38,28 @@
 		li{
 			margin: 3px 5px 3px 5px;
 			white-space: nowrap;
-			a{
-				color: $color_4;
-				text-decoration: none;
-				transition: 300ms;
-			}a:hover{
-				color: $color_2;
-				text-decoration: none;
-				transition: 300ms;
-			}
-			.btn{
-				color: $color_5;
-			}
+		}
+		.btn-light, .btn-success, .btn-warning, .btn-info, .btn-danger{
+			color: $color_5;
+		}
+		.btn-light{
+			color: $color_1;
+		}
+		.btn:hover{
+			transition: 300ms;
+			color: $color_1;
+		}
+		.dropdown-menu{
+			background-color: $color_1;
+		}
+		a {
+			font-family: $font-family_2;
+			color: $color_4;
+			text-decoration: none;
+			transition: 300ms;
+		}a:hover{
+			transition: 300ms;
+			color: $color_2;
 		}
 	}
 }

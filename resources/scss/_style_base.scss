@@ -10,10 +10,30 @@ a {
 	color: $color_4;
 	text-decoration: none;
 	transition: 300ms;
+
+	.btn {
+		color: $color_5;
+	}
+
+	.btn:hover{
+		color: $color_5;
+		text-decoration: none;
+		transition: 300ms;
+	}
+	
+	.btn-light .btn-success .btn-warning .btn-info{
+		color: $color_1;
+	}
+
+	.dropdown-menu{
+		background-color: $color_1;
+	}
 }a:hover {
 	color: $color_2;
 	transition: 300ms;
 }
+
+
 
 h1, h2, h3, h4, h5, h6 {
 	font-family: $font-family_2;

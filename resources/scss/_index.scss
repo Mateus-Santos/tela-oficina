@@ -265,7 +265,6 @@ section {
 				margin: 0;
 				i {
 					padding-right: 2px;
-					color: $color_3;
 					font-size: 18px;
 					line-height: 1;
 				}
@@ -370,23 +369,8 @@ section {
 		overflow-y: hidden;
 		transition: 0.3s;
 	}
-	a {
-		padding: 10px 20px;
-		font-size: 15px;
-		color: $color_1;
-		&:hover {
-			color: $color_2;
-		}
-	}
 	.active {
 		color: $color_4;
-	}
-	li {
-		&:hover {
-			>a {
-				color: $color_4;
-			}
-		}
 	}
 }
 
