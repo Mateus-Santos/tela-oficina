@@ -1,36 +1,4 @@
-/*MENU PRINCIPAL */
-
-nav{
-	.btn-light{
-		color: $color_1 !important;
-	}
-	&hover{
-		font-weight: bold !important;
-		color: $color_1 !important;
-	}
-}
-
-.offcanvas{
-	z-index: 9999;
-	color: $color_4;
-	.offcanvas-header{
-		background-color: $background-color_2;
-	}
-	.offcanvas-body{
-		background-color: $background-color_2;
-	}
-	
-	a{
-		color: $color_4 !important;
-	}
-	
-	.dropdown-menu{
-		background-color: $background-color_2;
-		.dropdown-item:hover{
-			background-color: $color_5_1;
-		}
-	}
-}
+@import 'colors.scss';
 
 .back-to-top {
 	position: fixed;
@@ -87,21 +55,23 @@ nav{
 		a{
 			color: $color_4;
 		}
+		a:hover{
+			color: $color_2;
+		}
 	}
 
-	a:hover{
-		color: $color_2 !important;
-	}
+	
 	.navbar-toggler{
 		background-color: $color_5;
+		overflow: hidden;
 	}
 
 	.btn-success, .btn-warning, .btn-info{
-		color: $color_5 !important;
+		color: $color_5;
 	}
 
 	.btn-success:hover, .btn-warning:hover, .btn-info:hover{
-		color: $color_5 !important;
+		color: $color_5;
 		font-weight: bold;
 	}
 	.dropdown-menu{
