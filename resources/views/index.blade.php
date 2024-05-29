@@ -26,7 +26,6 @@
         <div class="section-title">
           <h2>Sobre</h2>
         </div>
-
         <div class="row content">
           <div class="col-lg-6">      
 
