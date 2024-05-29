@@ -27,7 +27,7 @@
 
 <!-- ======= Header ======= -->
 
-<nav id="header" class="navbar navbar-expand-lg bg-body-tertiary fixed-top">
+<nav id="header" class="navbar navbar-expand-lg fixed-top">
     <!-- Example single danger button -->
   <div class="container-fluid">
     <h1 class="logo navbar-brand"><a href="/">Oficina SOS Mecânica</a></h1>
@@ -38,32 +38,31 @@
 
 
   <div class="collapse navbar-collapse" id="navbarNavDropdown">
-      <div class="offcanvas-body">
-        @guest
+
         <ul class="navbar-nav">
           <li class="nav-item"><a class="nav-link active" href="#">Home</a></li>
           <li class="nav-item"><a class="nav-link" href="#about">Sobre</a></li>
-          <li class="nav-item"><a class="nav-link" href="#team">Equipe</a></li>  
+          <li class="nav-item"><a class="nav-link" href="#team">Equipe</a></li>
+
+          @guest
           <li class="nav-item"><a class="btn btn-success" href="/login">Entrar</a></li>
           <li class="nav-item"><a class="btn btn-warning" href="/register">Cadastre-se</a></li>
           <li class="nav-item"><a class="btn btn-info" href="{{ route('chat.index') }}">Dúvidas</a></li>
-        </ul>
-        @endguest
-        
-        @auth
-    
-        <ul class="navbar-nav">
-          <div class="btn-group">
-            <button type="button" class="btn btn-danger dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+          @endguest
+
+          @auth
+          <li class="nav-item dropdown">
+            <a type="button" class="btn btn-danger dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
             Pessoas
-            </button>
+            </a>
             <ul class="dropdown-menu">
               <li><a class="dropdown-item" href="{{ route('pessoas.create') }}">Cadastrar pessoas</a></li>
               <li><a class="dropdown-item" href="{{ route('pessoas.index') }}">Listar Pessoas</a></li>
             </ul>
-          </div>
+          </li>
+
           <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <a class="btn btn-danger dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Endereços
               </a>
             <ul class="dropdown-menu">
@@ -75,18 +74,20 @@
               </li>
             </ul>
           </li>
-          <form action="/logout" method="POST">
-          @csrf
-            <a action="/logout" method="POST" class="btn btn-light" href="/logout"
-            onclick="event.preventDefault();
-            this.closest('form').submit();"> 
-              Sair
-            </a>
-          </form>
+
+          <li class="nav-item">
+            <form action="/logout" method="POST">
+            @csrf
+              <a action="/logout" method="POST" class="btn btn-light" href="/logout"
+              onclick="event.preventDefault();
+              this.closest('form').submit();"> 
+                Sair
+              </a>
+            </form>
+          </li>
+          @endauth
         </ul>
-    </div>
   </div>
-    @endauth
 </nav>
 
   @yield('content')
