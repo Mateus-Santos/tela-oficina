@@ -74,6 +74,34 @@
             </ul>
           </li>
 
+          <li class="nav-item dropdown">
+              <a class="btn btn-danger dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Peças
+              </a>
+            <ul class="dropdown-menu">
+              <li>
+                <a href="{{ route('pecas.create') }}" type="button" class="dropdown-item">Cadastrar Peças</a>
+              </li>
+              <li>
+                <a href="{{ route('pecas.index') }}" type="button" class="dropdown-item">Listar Peças</a>
+              </li>
+            </ul>
+          </li>
+
+          <li class="nav-item dropdown">
+              <a class="btn btn-danger dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Colaboradores
+              </a>
+            <ul class="dropdown-menu">
+              <li>
+                <a href="{{ route('colaboradors.create') }}" type="button" class="dropdown-item">Cadastrar Colaboradores</a>
+              </li>
+              <li>
+                <a href="{{ route('colaboradors.index') }}" type="button" class="dropdown-item">Listar Colaboradores</a>
+              </li>
+            </ul>
+          </li>
+
           <li class="nav-item">
             <form action="/logout" method="POST">
             @csrf

@@ -10,8 +10,8 @@
   @csrf
       <div class="campos">
 
-      <div class="row mb-4">
-        <div class="col-md-2">
+        <div class="row mb-4">
+            <div class="col-md-2">
                 <label class="form-label" for="id_pessoa">Pessoa:</label>
                 <select id="id_pessoa" class="form-control" name="id_pessoa" required>
                 <option selected>Escolher...</option>
@@ -19,8 +19,9 @@
                 <option value="{{$pessoa->id_pessoa}}">{{ $pessoa->nome }}</option>
                 @endforeach
                 </select>
+            </div>
         </div>
-        </div>
+        
         <div class="row mb-2">
             <div class="col-md-2">
             <label class="form-label" for="cep">CEP:*</label>
