@@ -5,39 +5,38 @@ body {
 	width: 100%;
 }
 
+h1, h2, h3, h4, h5, h6 {
+	font-family: $font-family_2;
+	color: $color_4;
+}
+
 a {
 	font-family: $font-family_2;
 	color: $color_4;
 	text-decoration: none;
-	transition: 300ms;
-
-	.btn {
-		color: $color_5;
-	}
-
-	.btn:hover{
-		color: $color_5;
-		text-decoration: none;
-		transition: 300ms;
-	}
-	
-	.btn-light .btn-success .btn-warning .btn-info{
-		color: $color_1;
-	}
-
-	.dropdown-menu{
-		background-color: $color_1;
-	}
+	transition: 300ms;	
 }a:hover {
 	color: $color_2;
 	transition: 300ms;
 }
 
+.back-to-top {
+	position: fixed;
+	visibility: hidden;
+	opacity: 0;
+	right: 15px;
+	bottom: 15px;
+	z-index: 996;
+	background: $color_4;
+	width: 40px;
+	height: 40px;
+	border-radius: 50px;
+	transition: all 0.4s;
+}
 
-
-h1, h2, h3, h4, h5, h6 {
-	font-family: $font-family_2;
-	color: $color_4;
+.back-to-top.active {
+	visibility: visible;
+	opacity: 1;
 }
 
 /**

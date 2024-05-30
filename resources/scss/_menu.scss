@@ -1,42 +1,14 @@
-@import 'colors.scss';
-
-.back-to-top {
-	position: fixed;
-	visibility: hidden;
-	opacity: 0;
-	right: 15px;
-	bottom: 15px;
-	z-index: 996;
-	background: $color_4;
-	width: 40px;
-	height: 40px;
-	border-radius: 50px;
-	transition: all 0.4s;
-	i {
-		font-size: 24px;
-		color: $color_1;
-		line-height: 0;
-	}
-	i:hover {
-		background: $color_2;
-		color: $color_3;
-	}
-}
-
-.back-to-top.active {
-	visibility: visible;
-	opacity: 1;
-}
+@import '_colors.scss';
 
 #header {
-	transition: all 0.5s;
-	z-index: 997;
-	padding: 15px 0;
+	transition: all 1s;
+	z-index: 9997;
+	padding: 1rem;
 	background-color: $background-color_1;
 	ul{
-		margin: 0 10px 0px 10px;
+		margin: 0rem 1rem 0rem 1rem;
 		li{
-			margin: 3px 5px 3px 5px;
+			margin: 0.5rem 0.5rem 0.5rem 0.5rem;
 			white-space: nowrap;
 		}
 		.btn-light, .btn-success, .btn-warning, .btn-info, .btn-danger{
@@ -52,10 +24,13 @@
 		.dropdown-menu{
 			background-color: $color_1;
 		}
+		.dropdown-item:hover{
+			background-color: $color_1;
+		}
+		
 		a {
 			font-family: $font-family_2;
 			color: $color_4;
-			text-decoration: none;
 			transition: 300ms;
 		}a:hover{
 			transition: 300ms;
