@@ -18,12 +18,12 @@
                 <th scope="col">Produtos</th>
                 <th scope="col">Vulvula</th>
                 <th scope="col">Quantidade</th>
+                <th scope="col">Ano</th>
             </tr>
     </thead>
         <tbody>
             @foreach($pecas as $peca)
             <tr>
-            <th scope="row">1</th>
             <td>{{ $peca->id_peca }}</td>
             <td>{{ $peca->montadora }}</td>
             <td>{{ $peca->nome }}</td>
@@ -35,6 +35,7 @@
             <td>{{ $peca->produtos }}</td>
             <td>{{ $peca->vulvula }}</td>
             <td>{{ $peca->quantidade }}</td>
+            <td>{{ $peca->ano }}</td>
             </tr>
             @endforeach
         </tbody>

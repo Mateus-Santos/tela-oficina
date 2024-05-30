@@ -48,6 +48,14 @@
                   <label class="form-label" for="vulvula">Vulvula:*</label>
                   <input type="text" class="form-control" id="vulvula" name="vulvula" required>
                 </div>
+                <div class="col-md-2">
+                  <label class="form-label" for="motor">Motor:*</label>
+                  <input type="text" class="form-control" id="motor" name="motor" required>
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label" for="descricao_peca">Descrição da peça:*</label>
+                  <input type="text" class="form-control" id="descricao_peca" name="descricao_peca" required>
+                </div>
             </div>
             <div class="row mb-3">
               <div class="col">

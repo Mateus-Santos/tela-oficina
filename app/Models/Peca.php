@@ -9,6 +9,8 @@ class Peca extends Model
 {
     use HasFactory;
 
+    protected $table = 'peca';
+
     protected $fillable = [
         'id_peca',
         'montadora',
@@ -21,6 +23,7 @@ class Peca extends Model
         'produtos',
         'vulvula',
         'quantidade',
+        'anos'
     ];
     
 }

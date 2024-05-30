@@ -23,14 +23,15 @@ class PecaController extends Controller
         $peca = new Peca();
         $peca->montadora = $request->input("montadora");
         $peca->nome = $request->input("nome");
-        $peca->veiculos = $request->input("veiculos");
+        $peca->veiculos = $request->input("veiculo");
         $peca->motor = $request->input("motor");
         $peca->descricao_peca = $request->input("descricao_peca");
         $peca->marcas = $request->input("marcas");
-        $peca->departamentos = $request->input("departamentos");
-        $peca->produtos = $request->input("produtos");
+        $peca->departamentos = $request->input("departamento");
+        $peca->produtos = $request->input("produto");
         $peca->vulvula = $request->input("vulvula");
         $peca->quantidade = $request->input("quantidade");
+        $peca->ano = $request->input("ano");
         $peca->save();
         return redirect()->route('pecas.index');
     }
