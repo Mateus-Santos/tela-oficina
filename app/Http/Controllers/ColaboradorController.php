@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Colaborador;
+use App\Models\Pessoa;
+
 
 class ColaboradorController extends Controller
 {
     public function index()
     {
-        $colaboradors = Colaborador::all();
+        $colaboradors = Colaborador::with('pessoa', 'users')->get();
         return view('listarcolaborador', compact('colaboradors'));
     }
 

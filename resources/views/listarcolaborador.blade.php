@@ -10,8 +10,8 @@
                 <th scope="col">ID</th>
                 <th scope="col">Chave Pix</th>
                 <th scope="col">Conta Banco</th>
-                <th scope="col">Usuario Pessoa</th>
-                <th scope="col">Nome Pessoa</th>
+                <th scope="col">E-mail Conta</th>
+                <th scope="col">Nome</th>
             </tr>
     </thead>
         <tbody>
@@ -20,8 +20,8 @@
             <th scope="row">1</th>
             <td>{{ $colaborador->id_colaborador }}</td>
             <td>{{ $colaborador->chave_pix }}</td>
-            <td>{{ $colaborador->id_user }}</td>
-            <td>{{ $colaborador->id_pessoa }}</td>
+            <td>{{ $colaborador->users->email }}</td>
+            <td>{{ $colaborador->pessoa->nome }}</td>
             </tr>
             @endforeach
         </tbody>

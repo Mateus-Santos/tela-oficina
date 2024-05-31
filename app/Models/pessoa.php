@@ -18,9 +18,9 @@ class Pessoa extends Model
         return $this->hasMany(Endereco::class, 'id_endereco');
     }
 
-    public function colaborador(): HasOne
+    public function colaborador()
     {
-        return $this->belongsTo(Colaborador::class);
+        return $this->belongsTo(Colaborador::class, 'id_pessoa', 'id_pessoa');
     }
 
     public function cliente(): HasOne
