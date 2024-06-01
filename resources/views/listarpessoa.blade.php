@@ -30,8 +30,13 @@
             <td>{{ $pessoa->rg }}</td>
             <td>{{ $pessoa->telefone_1 }}</td>
             <td>{{ $pessoa->telefone_2 }}</td>
-            <td><a href="/pessoas/edit/{{$pessoa->id_pessoa}}" class="btn btn-info">Editar</a></td>
-            <td><a href="/pessoas/destroy/{$pessoa->id_pessoa} }}" class="btn btn-danger">Deletar</a></td>
+            <td><a href="/pessoas/edit/{{$pessoa->id_pessoa}}" class="btn btn-info"><i class="bi bi-pencil-square"></i>Editar</a></td>
+            <form action="/pessoas/{{$pessoa->id_pessoa}}" method="post">
+                @csrf
+                @method('DELETE')
+                <td><button href="" class="btn btn-danger delete-btn"><i class="bi bi-trash3"></i>Deletar</button></td>
+            </form>
+            
             </tr>
             @endforeach
         </tbody>

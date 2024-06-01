@@ -35,7 +35,7 @@ class Pessoa extends Model
         return $this->belongsTo(Colaborador::class, 'id_pessoa', 'id_pessoa');
     }
 
-    public function cliente(): HasOne
+    public function cliente()
     {
         return $this->belongsTo(Cliente::class);
     }

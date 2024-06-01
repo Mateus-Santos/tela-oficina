@@ -48,7 +48,7 @@ class PessoaController extends Controller {
         $pessoa = Pessoa::where('id_pessoa', $id_pessoa)->first();
 
         $pessoa->update([
-            'id_pessoa' => 1,
+            'id_pessoa' => $id_pessoa,
             'nome' => $request->nome,
             'data_nascimento' => $request->data_nascimento,
             'email' => $request->email,
@@ -61,11 +61,9 @@ class PessoaController extends Controller {
         return redirect()->route('pessoas.index');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(string $id_pessoa)
     {
-        //
+        $pessoa = Pessoa::where('id_pessoa', $id_pessoa)->delete();
+        return redirect()->route('pessoas.index');
     }
 }
