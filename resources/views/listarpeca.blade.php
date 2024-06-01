@@ -19,6 +19,8 @@
                 <th scope="col">Vulvula</th>
                 <th scope="col">Quantidade</th>
                 <th scope="col">Ano</th>
+                <th scope="col">Editar</th>
+                <th scope="col">Excluir</th>
             </tr>
     </thead>
         <tbody>
@@ -36,6 +38,14 @@
             <td>{{ $peca->vulvula }}</td>
             <td>{{ $peca->quantidade }}</td>
             <td>{{ $peca->ano }}</td>
+            <td><a href="/pecas/edit/{{$peca->id_peca}}" class="btn btn-info"><i class="bi bi-pencil-square"></i>Editar</a></td>
+            <td>
+                <form action="/pecas/{{$peca->id_peca}}" method="post">
+                    @csrf
+                    @method('DELETE')
+                    <button href="" class="btn btn-danger delete-btn"><i class="bi bi-trash3"></i>Deletar</button>
+                </form>
+            </td>
             </tr>
             @endforeach
         </tbody>

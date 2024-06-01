@@ -11,6 +11,8 @@ class Peca extends Model
 
     protected $table = 'peca';
 
+    protected $primaryKey = 'id_peca';
+
     protected $fillable = [
         'id_peca',
         'montadora',
@@ -23,7 +25,7 @@ class Peca extends Model
         'produtos',
         'vulvula',
         'quantidade',
-        'anos'
+        'ano'
     ];
     
 }

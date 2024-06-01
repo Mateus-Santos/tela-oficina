@@ -41,19 +41,37 @@ class PecaController extends Controller
         //
     }
 
-    public function edit(string $id)
+    public function edit(string $id_peca)
     {
-        //
+        $peca = Peca::where('id_peca', $id_peca)->first();
+        return view('editarpeca', array('peca' => $peca));
     }
 
-
-    public function update(Request $request, string $id)
+    public function update(Request $request, string $id_peca)
     {
-        //
+        $peca = Peca::where('id_peca', $id_peca)->first();
+
+        $peca->update([
+            'id_peca' => $id_peca,
+            'montadora' => $request->montadora,
+            'nome' => $request->nome,
+            'veiculos' => $request->veiculos,
+            'motor' => $request->motor,
+            'descricao_peca' => $request->descricao_peca,
+            'marcas' => $request->marcas,
+            'departamentos' => $request->departamentos,
+            'produtos' => $request->produtos,
+            'vulvula' => $request->vulvula,
+            'quantidade' => $request->quantidade,
+            'ano' => $request->ano,
+        ]);
+        
+        return redirect()->route('pecas.index');
     }
 
-    public function destroy(string $id)
+    public function destroy(string $id_peca)
     {
-        //
+        $peca = Peca::where('id_peca', $id_peca)->delete();
+        return redirect()->route('pecas.index');
     }
 }

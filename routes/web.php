@@ -48,21 +48,21 @@ Route::delete('/enderecos/{id}', [EnderecoController::class, 'destroy'])->name('
 //Rotas Colaborador.
 Route::get('/colaborador', [ColaboradorController::class, 'index'])->name('colaboradors.index');
 Route::get('/colaboradors/create', [ColaboradorController::class, 'create'])->name('colaboradors.create');
-Route::post('/colaborador', [ColaboradorController::class, 'store'])->name('colaboradors.store');
-Route::post('/colaborador/{id}', [ColaboradorController::class, 'show'])->name('colaboradors.show');
-Route::post('/colaborador/edit/{id}', [ColaboradorController::class, 'edit'])->name('colaboradors.edit');
-Route::put('/colaborador/update/{id}', [ColaboradorController::class, 'update'])->name('colaboradors.update');
-Route::delete('/colaborador/{id}', [ColaboradorController::class, 'destroy'])->name('colaboradors.destroy');
+Route::post('/colaboradors', [ColaboradorController::class, 'store'])->name('colaboradors.store');
+Route::post('/colaboradors/{id}', [ColaboradorController::class, 'show'])->name('colaboradors.show');
+Route::get('/colaboradors/edit/{id}', [ColaboradorController::class, 'edit'])->name('colaboradors.edit');
+Route::put('/colaboradors/update/{id}', [ColaboradorController::class, 'update'])->name('colaboradors.update');
+Route::delete('/colaboradors/{id}', [ColaboradorController::class, 'destroy'])->name('colaboradors.destroy');
 
 
 //Rotas peca.
 Route::get('/peca', [PecaController::class, 'index'])->name('pecas.index');
 Route::get('/pecas/create', [PecaController::class, 'create'])->name('pecas.create');
-Route::post('/peca', [PecaController::class, 'store'])->name('pecas.store');
-Route::post('/peca/{id}', [PecaController::class, 'show'])->name('pecas.show');
-Route::post('/peca/edit/{id}', [PecaController::class, 'edit'])->name('pecas.edit');
-Route::put('/peca/update/{id}', [PecaController::class, 'update'])->name('pecas.update');
-Route::delete('/peca/{id}', [PecaController::class, 'destroy'])->name('pecas.destroy');
+Route::post('/pecas', [PecaController::class, 'store'])->name('pecas.store');
+Route::post('/pecas/{id}', [PecaController::class, 'show'])->name('pecas.show');
+Route::get('/pecas/edit/{id}', [PecaController::class, 'edit'])->name('pecas.edit');
+Route::put('/pecas/update/{id}', [PecaController::class, 'update'])->name('pecas.update');
+Route::delete('/pecas/{id}', [PecaController::class, 'destroy'])->name('pecas.destroy');
 
 Route::middleware([
     'auth:sanctum',

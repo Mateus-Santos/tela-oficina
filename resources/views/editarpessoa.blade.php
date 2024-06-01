@@ -7,7 +7,7 @@
   <h1>EDIÇÃO DE PESSOA FÍSICA</h1>
   
   
-  <form action="/pessoas/update/{{$pessoa->id_pessoa}}" method="POST" class="row g-3">
+    <form action="/pessoas/update/{{$pessoa->id_pessoa}}" method="POST" class="row g-3">
       @csrf
       @method('PUT')
       <div class="campos">
