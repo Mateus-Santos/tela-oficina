@@ -13,17 +13,11 @@ class PessoaController extends Controller {
         return view('listarpessoa', compact('pessoas'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         return view('cadastropessoa');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $pessoa = new Pessoa();
@@ -36,31 +30,35 @@ class PessoaController extends Controller {
         $pessoa->rg = $request->input("rg");
         $pessoa->save();
         return redirect()->route('pessoas.index');
-
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $pessoa)
+    public function edit(string $id_pessoa)
     {
-        return view('editarpessoa', ['pessoa' -> $pessoa]);
+        $pessoa = Pessoa::where('id_pessoa', $id_pessoa)->first();
+        return view('editarpessoa', array('pessoa' => $pessoa));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function update(Request $request, string $id_pessoa)
     {
-        //
+        $pessoa = Pessoa::where('id_pessoa', $id_pessoa)->first();
+
+        $pessoa->update([
+            'id_pessoa' => 1,
+            'nome' => $request->nome,
+            'data_nascimento' => $request->data_nascimento,
+            'email' => $request->email,
+            'cpf' => $request->cpf,
+            'rg' => $request->rg,
+            'telefone_1' => $request->telefone_1,
+            'telefone_2' => $request->telefone_2,
+        ]);
+        
+        return redirect()->route('pessoas.index');
     }
 
     /**

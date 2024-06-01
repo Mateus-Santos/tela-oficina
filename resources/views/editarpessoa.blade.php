@@ -5,8 +5,11 @@
   <div class="container cadastro">
   
   <h1>EDIÇÃO DE PESSOA FÍSICA</h1>
-  @csrf
-  <form action="{{ route('pessoas.update'), ['pessoa'] -> $pessoa->id_pessoa }}" class="row g-3">
+  
+  
+  <form action="/pessoas/update/{{$pessoa->id_pessoa}}" method="POST" class="row g-3">
+      @csrf
+      @method('PUT')
       <div class="campos">
       <div class="row mb-3">
 
@@ -36,57 +39,22 @@
         
         <div class="col-md-3">
           <label class="form-label" for="telefone_1">Telefone Principal:*</label>
-          <input type="text" class="form-control" id="telefone_1" value="{{ $pessoa->tel_1 }}" name="telefone_1" required>
+          <input type="text" class="form-control" id="telefone_1" value="{{ $pessoa->telefone_1 }}" name="telefone_1" required>
         </div>
 
         <div class="col-md-3">
           <label class="form-label" for="telefone_2">Telefone Secundario:*</label>
-          <input type="text" class="form-control" id="telefone_2" value="{{ $pessoa->tel_2 }}" name="telefone_2" required>
+          <input type="text" class="form-control" id="telefone_2" value="{{ $pessoa->telefone_2 }}" name="telefone_2" required>
         </div>
-
       </div>
-      <div class="row mb-3">
-        <div class="col-2">
-          <label class="form-label" for="cep">CEP:*</label>
-          <input type="text" class="form-control" id="cep"  name="cep" required>
-        </div>
-
-      <div class="col">
-        <label class="form-label" for="cidade">Cidade:*</label>
-        <input type="text" class="form-control" id="cidade" name="cidade" required>
-      </div>
-
-      <div class="col-md-2">
-        <label class="form-label" for="estado">Estado:*</label>
-        <select id="estado" class="form-control" name="cidade" required>
-          <option selected>Escolher...</option>
-          <option>BA</option>
-        </select>
-      </div>
-
-      <div class="col-md-5">
-        <label class="form-label" for="rua">Rua:*</label>
-        <input type="text" class="form-control" id="rua" name="rua" required>
-      </div>
-
-      </div>
-
-      <div class="row mb-3">
-        <div class="col-md-5">
-          <label class="form-label" for="endereco">Endereço:*</label>
-          <input type="text" class="form-control" id="endereco" required>
-        </div>
-        
-        <div class="col-md-1">
-          <label class="form-label" for="numero">Número:*</label>
-          <input type="text" class="form-control" id="numero" name="numero" required>
-        </div>
-
-        <div class="col">
-          <label class="form-label" for="pont_ref">Ponto de referência:*</label>
-          <input type="text" class="form-control" id="pont_ref" name="pont_ref" required>
-        </div>
     </div>
+
+    <div class="row mb-3">
+        <div class="col-2">
+          <label class="form-label" for="data_nascimento">Data Nascimento:*</label>
+          <input type="date" class="form-control" id="data_nascimento" name="data_nascimento" required>
+        </div>
+      </div>
 
     <div class="row mb-3">
       <div class="col">

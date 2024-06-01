@@ -12,6 +12,18 @@ class Pessoa extends Model
     protected $table = 'pessoa';
 
     protected $foreignKey = 'id_endereco';
+    protected $primaryKey = 'id_pessoa';
+
+    protected $fillable = [
+        'id_pessoa',
+        'nome',
+        'data_nascimento',
+        'email',
+        'cpf',
+        'rg',
+        'telefone_1',
+        'telefone_2',
+    ];
 
     public function endereco()
     {

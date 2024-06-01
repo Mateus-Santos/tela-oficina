@@ -14,13 +14,15 @@
                 <th scope="col">CPF</th>
                 <th scope="col">RG</th>
                 <th scope="col">Telefone Principal</th>
-                <th scope="col">Telefone Secundario</th>
+                <th scope="col">Telefone Secundário</th>
+                <th scope="col">Editar</th>
+                <th scope="col">Excluir</th>
             </tr>
     </thead>
         <tbody>
             @foreach($pessoas as $pessoa)
             <tr>
-            <th scope="row">1</th>
+            <th scope="row">{{$pessoa->id_pessoa}}</th>
             <td>{{ $pessoa->nome }}</td>
             <td>{{ $pessoa->data_nascimento }}</td>
             <td>{{ $pessoa->email }}</td>
@@ -28,6 +30,8 @@
             <td>{{ $pessoa->rg }}</td>
             <td>{{ $pessoa->telefone_1 }}</td>
             <td>{{ $pessoa->telefone_2 }}</td>
+            <td><a href="/pessoas/edit/{{$pessoa->id_pessoa}}" class="btn btn-info">Editar</a></td>
+            <td><a href="/pessoas/destroy/{$pessoa->id_pessoa} }}" class="btn btn-danger">Deletar</a></td>
             </tr>
             @endforeach
         </tbody>
