@@ -54,7 +54,6 @@ Route::get('/colaboradors/edit/{id}', [ColaboradorController::class, 'edit'])->n
 Route::put('/colaboradors/update/{id}', [ColaboradorController::class, 'update'])->name('colaboradors.update');
 Route::delete('/colaboradors/{id}', [ColaboradorController::class, 'destroy'])->name('colaboradors.destroy');
 
-
 //Rotas peca.
 Route::get('/peca', [PecaController::class, 'index'])->name('pecas.index');
 Route::get('/pecas/create', [PecaController::class, 'create'])->name('pecas.create');

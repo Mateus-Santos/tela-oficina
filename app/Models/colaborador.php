@@ -13,13 +13,22 @@ class Colaborador extends Model
 
     protected $table = 'colaborador';
 
+    protected $primaryKey = 'id_colaborador';
 
-    public function pessoa()
+    protected $fillable = [
+        'id_colaborador',
+        'id_pessoa',
+        'id_user',
+        'chave_pix',
+        'conta_banco',
+    ];
+
+    public function pessoa(): hasOne
     {
         return $this->hasOne(Pessoa::class, 'id_pessoa', 'id_pessoa');
     }
 
-    public function users()
+    public function user(): hasOne
     {
         return $this->hasOne(User::class, 'id', 'id_user');
     }

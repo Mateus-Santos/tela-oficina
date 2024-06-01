@@ -39,8 +39,8 @@ class User extends Authenticatable
         'profile_photo_url',
     ];
 
-    public function colaborador()
+    public function colaborador(): belongsTo
     {
-        return $this->belongsTo(Colaborador::class, 'id_colaborador');
+        return $this->belongsTo(Colaborador::class, 'id_user');
     }
 }

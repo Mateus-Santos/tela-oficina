@@ -30,7 +30,7 @@ class Pessoa extends Model
         return $this->hasMany(Endereco::class, 'id_endereco');
     }
 
-    public function colaborador()
+    public function colaborador(): belongsTo
     {
         return $this->belongsTo(Colaborador::class, 'id_pessoa', 'id_pessoa');
     }
