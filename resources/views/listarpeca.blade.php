@@ -4,52 +4,35 @@
 
 <div class="container cadastro">
     <h1>LISTAR PEÇAS</h1>
-    <table class="table">
-        <thead>
-            <tr>
-                <th scope="col">ID</th>
-                <th scope="col">Montadora</th>
-                <th scope="col">Nome</th>
-                <th scope="col">Veículos</th>
-                <th scope="col">Motor</th>
-                <th scope="col">Descrição Peça</th>
-                <th scope="col">Marcas</th>
-                <th scope="col">Departamentos</th>
-                <th scope="col">Produtos</th>
-                <th scope="col">Vulvula</th>
-                <th scope="col">Quantidade</th>
-                <th scope="col">Ano</th>
-                <th scope="col">Editar</th>
-                <th scope="col">Excluir</th>
-            </tr>
-    </thead>
-        <tbody>
-            @foreach($pecas as $peca)
-            <tr>
-            <td>{{ $peca->id_peca }}</td>
-            <td>{{ $peca->montadora }}</td>
-            <td>{{ $peca->nome }}</td>
-            <td>{{ $peca->veiculos }}</td>
-            <td>{{ $peca->motor }}</td>
-            <td>{{ $peca->descricao_peca }}</td>
-            <td>{{ $peca->marcas }}</td>
-            <td>{{ $peca->departamentos }}</td>
-            <td>{{ $peca->produtos }}</td>
-            <td>{{ $peca->vulvula }}</td>
-            <td>{{ $peca->quantidade }}</td>
-            <td>{{ $peca->ano }}</td>
-            <td><a href="/pecas/edit/{{$peca->id_peca}}" class="btn btn-info"><i class="bi bi-pencil-square"></i>Editar</a></td>
-            <td>
-                <form action="/pecas/{{$peca->id_peca}}" method="post">
-                    @csrf
-                    @method('DELETE')
-                    <button href="" class="btn btn-danger delete-btn"><i class="bi bi-trash3"></i>Deletar</button>
-                </form>
-            </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+        @foreach($pecas as $peca)
+        <div class="peca-container">
+            <div class="peca-item">
+                <div class="peca-item-title">{{ $peca->nome }}</div>
+                <div class="peca-item-img">
+                    {{ $peca->img }}
+                    img
+                </div>
+                <div class="peca-item-info">
+                    <a class="row">ID: {{ $peca->id_peca }}</a>
+                    <a class="row">Montadora: {{ $peca->montadora }}</a>
+                    <a class="row">Veículos: {{ $peca->veiculos }}</a>
+                    <a class="row">Motor: {{ $peca->motor }}</a>
+                    <a class="row">Marcas: {{ $peca->marcas }}</a>
+                    <a class="row">Produtos: {{ $peca->produtos }}</a>
+                    <a class="row">Vulvula: {{ $peca->vulvula }}</a>
+                    <a class="row">Quantidade: {{ $peca->quantidade }}</a>
+                    <a class="row">{{ $peca->descricao_peca }}</a>
+                    <a href="/pecas/edit/{{$peca->id_peca}}" class="btn btn-info"><i class="bi bi-pencil-square"></i>Editar</a>
+                    <form action="/pecas/{{$peca->id_peca}}" method="post">
+                        @csrf
+                        @method('DELETE')
+                        <button href="" class="btn btn-danger delete-btn"><i class="bi bi-trash3"></i>Deletar</button>
+                    </form>
+                </div>
+                
+            </div>
+        </div>
+        @endforeach
 </div>
 
 @endsection

@@ -25,7 +25,8 @@ class Peca extends Model
         'produtos',
         'vulvula',
         'quantidade',
-        'ano'
+        'ano',
+        'img'
     ];
     
 }

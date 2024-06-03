@@ -32,6 +32,7 @@ class PecaController extends Controller
         $peca->vulvula = $request->input("vulvula");
         $peca->quantidade = $request->input("quantidade");
         $peca->ano = $request->input("ano");
+        $peca->img = null;
         $peca->save();
         return redirect()->route('pecas.index');
     }

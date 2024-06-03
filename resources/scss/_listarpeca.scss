@@ -1,0 +1,30 @@
+@import './colors.scss';
+
+.peca-container{
+    width: 22rem;
+    padding: 1rem 1rem 1rem 1rem;
+    margin: 2rem 2rem 2rem 2rem;
+    background-color: $color_5_1;
+}
+
+.peca-item{
+    padding: 1rem 1rem 1rem 1rem;
+    a{
+        color: $color_1;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+        padding: 1px;
+        font-size: 1.2rem;
+    }
+}
+
+.peca-item-img{
+    margin: 1rem 1rem 1rem 1rem;
+    width: 90%;
+    height: 50%;
+}
+
+.peca-item-info{
+    padding: 1rem 1rem 1rem 1rem;
+}
