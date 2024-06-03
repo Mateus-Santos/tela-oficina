@@ -7,7 +7,7 @@
         @foreach($pecas as $peca)
         <div class="peca-container">
             <div class="peca-item">
-                <div class="peca-item-title">{{ $peca->nome }}</div>
+                <h1 class="peca-item-title">{{ $peca->nome }}</h1>
                 <div class="peca-item-img">
                     {{ $peca->img }}
                     img
