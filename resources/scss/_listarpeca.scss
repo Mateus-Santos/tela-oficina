@@ -1,11 +1,13 @@
 @import './colors.scss';
 
 .peca-container{
-    width: 22rem;
+    position: relative;
+    width: 19rem;
     padding: 1rem 1rem 1rem 1rem;
     margin: 2rem 2rem 2rem 2rem;
     background-color: $color_5_1;
     box-shadow: -0rem 0rem 1rem $color_2_1;
+    float: left;
 }
 
 .peca-item{
