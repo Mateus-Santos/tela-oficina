@@ -17,10 +17,10 @@ $espacamento: 1rem;
 			margin: 0.5rem 0.5rem 0.5rem 0.5rem;
 			white-space: nowrap;
 		}
-		.btn-light, .btn-success, .btn-warning, .btn-info, .btn-danger{
+		.btn-light, .btn-success, .btn-info, .btn-danger{
 			color: $color_5;
 		}
-		.btn-light{
+		.btn-light, .btn-warning{
 			color: $color_1;
 		}
 		.btn:hover{

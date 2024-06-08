@@ -33,6 +33,7 @@ class PecaController extends Controller
         $peca->quantidade = $request->input("quantidade");
         $peca->ano = $request->input("ano");
         $peca->img = null;
+        $peca->codigo_fabricante = $request->input("codigo_fabricante");
         $peca->save();
         return redirect()->route('pecas.index');
     }

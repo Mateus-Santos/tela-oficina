@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('vulvula', 100);
             $table->integer('quantidade');
             $table->string('img')->nullable();
+            $table->string('codigo_fabricante')->unique();
             $table->timestamps();
         });
     }

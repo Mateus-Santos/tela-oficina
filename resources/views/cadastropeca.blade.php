@@ -56,6 +56,10 @@
                   <label class="form-label" for="descricao_peca">Descrição da peça:*</label>
                   <input type="text" class="form-control" id="descricao_peca" name="descricao_peca" required>
                 </div>
+                <div class="col-md-2">
+                  <label class="form-label" for="codigo_fabricante">Código Fabricante:*</label>
+                  <input type="text" class="form-control" id="codigo_fabricante" name="codigo_fabricante" required>
+                </div>
             </div>
             <div class="row mb-3">
               <div class="col">

@@ -41,18 +41,19 @@
   <div class="collapse navbar-collapse" id="navbarNavDropdown">
 
         <ul class="navbar-nav">
+        @guest
           <li class="nav-item"><a class="nav-link active" href="#">Home</a></li>
           <li class="nav-item"><a class="nav-link" href="#about">Sobre</a></li>
           <li class="nav-item"><a class="nav-link" href="#team">Equipe</a></li>
 
-          @guest
+          
           <li class="nav-item"><a class="btn btn-success" href="/login">Entrar</a></li>
           <li class="nav-item"><a class="btn btn-warning" href="/register">Cadastre-se</a></li>
           @endguest
 
           @auth
           <li class="nav-item dropdown">
-            <a type="button" class="btn btn-danger dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            <a type="button" class="btn btn-warning dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
             Pessoas
             </a>
             <ul class="dropdown-menu">
@@ -62,7 +63,7 @@
           </li>
 
           <li class="nav-item dropdown">
-              <a class="btn btn-danger dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <a class="btn btn-warning dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Endereços
               </a>
             <ul class="dropdown-menu">
@@ -76,7 +77,7 @@
           </li>
 
           <li class="nav-item dropdown">
-              <a class="btn btn-danger dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <a class="btn btn-warning dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Peças
               </a>
             <ul class="dropdown-menu">
@@ -90,7 +91,7 @@
           </li>
 
           <li class="nav-item dropdown">
-              <a class="btn btn-danger dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <a class="btn btn-warning dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Colaboradores
               </a>
             <ul class="dropdown-menu">
