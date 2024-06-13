@@ -4,6 +4,11 @@
     </IfModule>
 
     RewriteEngine On
+	
+    RewriteCond %{HTTP_HOST} ^oficinasosmecanica.com [NR, OR]
+    RewriteCond %{HTTP_HOST} ^https://www.oficinasosmecanica.com$
+    RewriteCond %{REQUEST_URI} !oficinasosmecanica/public
+    RewriteRule (.*)$ /oficinasosmecanica/public/$1 [L]
 
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
