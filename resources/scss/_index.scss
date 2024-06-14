@@ -50,6 +50,10 @@ section {
 	background-color: $background-color_2;
 	color: $color_5;
 	.content {
+		p {
+			font-size: 1rem;
+			text-align: justify;
+		}
 		h3 {
 			font-weight: 600;
 			font-size: 26px;
@@ -75,11 +79,6 @@ section {
 				font-size: 20px;
 				color: $color_4;
 				line-height: 1;
-			}
-		}
-		p {
-			&:last-child {
-				margin-bottom: 0;
 			}
 		}
 
@@ -184,6 +183,12 @@ section {
 				}
 			}
 		}
+	}
+	p {
+		font-size: 1rem;
+	}
+	h4{
+		color: $color_1;
 	}
 	color: $color_5;
 }
