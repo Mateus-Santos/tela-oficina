@@ -1,80 +1,46 @@
-@import 'colors.scss';
+@import '_colors.scss';
 
-.back-to-top {
-	position: fixed;
-	visibility: hidden;
-	opacity: 0;
-	right: 15px;
-	bottom: 15px;
-	z-index: 996;
-	background: $color_4;
-	width: 40px;
-	height: 40px;
-	border-radius: 50px;
-	transition: all 0.4s;
-	i {
-		font-size: 24px;
-		color: $color_1;
-		line-height: 0;
-	}
-	&:hover {
-		background: $color_2;
-		color: $color_3;
-	}
-}
-
-.back-to-top.active {
-	visibility: visible;
-	opacity: 1;
-}
+$espacamento: 1rem;
 
 #header {
-	transition: all 0.5s;
-	z-index: 997;
-	padding: 15px 0;
-	background-color: $background-color_1 !important;
-	ul{
-		margin: 0 10px 0px 10px;
-		li{
-			a{
-			  color: $color_4;
-			}
-			margin: 3px 5px 3px 5px;
-			white-space: nowrap;
-		}
-	}
-	.logo {
-		color: $color_4 !important;
-		font-family: $font-family_3;
-		font-size: 35px;
-		padding: 0 0 0 25px; 
-		line-height: 1;
-		font-weight: 500;
-		letter-spacing: 3px;
-		text-transform: uppercase;
-		a{
-			color: $color_4;
-		}
-		a:hover{
-			color: $color_2;
-		}
-	}
-
-	
+	transition: all 1s;
+	z-index: 9997;
+	padding: 1rem;
+	background-color: $background-color_1;
 	.navbar-toggler{
 		background-color: $color_5;
-		overflow: hidden;
+		margin: $espacamento;
 	}
-
-	.btn-success, .btn-warning, .btn-info{
-		color: $color_5;
-	}
-
-	.btn-success:hover, .btn-warning:hover, .btn-info:hover{
-		color: $color_5;
-		font-weight: bold;
-	}
-	.dropdown-menu{
-		background-color: black;
+	ul{
+		margin: 0rem 1rem 0rem 1rem;
+		li{
+			margin: 0.5rem 0.5rem 0.5rem 0.5rem;
+			white-space: nowrap;
+		}
+		.btn-light, .btn-success, .btn-info, .btn-danger{
+			color: $color_5;
+		}
+		.btn-light, .btn-warning{
+			color: $color_1;
+		}
+		.btn:hover{
+			transition: 300ms;
+			color: $color_1;
+		}
+		.dropdown-menu{
+			background-color: $color_1;
+		}
+		.dropdown-item:hover{
+			background-color: $color_1;
+		}
+		
+		a {
+			font-family: $font-family_2;
+			color: $color_4;
+			transition: 300ms;
+		}a:hover{
+			transition: 300ms;
+			color: $color_2;
+		}
 	}
 }

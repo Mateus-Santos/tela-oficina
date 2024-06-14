@@ -16,7 +16,6 @@ return new class extends Migration
             $table->integer('pontos');
             $table->unsignedBigInteger('id_pessoa');
             $table->unsignedBigInteger('id_user');
-
             $table->foreign('id_user')->references('id')->on('users');
             $table->foreign('id_pessoa')->references('id_pessoa')->on('pessoa');
             $table->timestamps();

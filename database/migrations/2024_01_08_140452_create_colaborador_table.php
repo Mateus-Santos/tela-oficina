@@ -17,7 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('id_pessoa');
             $table->unsignedBigInteger('id_user');
 
-            $table->string('chave_pix', 50)->unique();
+            $table->string('chave_pix', 100)->unique();
             $table->string('conta_banco', 30);
 
             $table->foreign('id_user')->references('id')->on('users');

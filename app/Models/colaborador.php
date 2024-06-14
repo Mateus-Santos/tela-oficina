@@ -4,10 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+
 
 class Colaborador extends Model
 {
     use HasFactory;
+
+    protected $table = 'colaborador';
+
+    protected $primaryKey = 'id_colaborador';
 
     protected $fillable = [
         'id_colaborador',
@@ -17,4 +23,13 @@ class Colaborador extends Model
         'conta_banco',
     ];
 
+    public function pessoa(): hasOne
+    {
+        return $this->hasOne(Pessoa::class, 'id_pessoa', 'id_pessoa');
+    }
+
+    public function user(): hasOne
+    {
+        return $this->hasOne(User::class, 'id', 'id_user');
+    }
 }

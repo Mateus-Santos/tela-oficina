@@ -1,19 +1,29 @@
-@import 'colors.scss';
+@import '_colors.scss';
 
-$larguras: 20px;
+$larguras: 1rem;
 
 .cadastro {
     background-color: $color_5_1;
     text-align: center;
     border-radius: 15px;
-    margin-top: 150px;
-    margin-bottom: 100px;
+    margin-top: 9rem;
+    margin-bottom: 5rem;
     position: relative;
+    padding: $larguras $larguras $larguras $larguras;
+    overflow-x: auto;
+    overflow-y: auto;
+    .btn{
+        white-space: nowrap;
+        i{
+            padding: 0 $larguras 0 0;
+        }
+    }
 }
 
 .cadastro h1{
     padding: $larguras $larguras $larguras $larguras;
     font-family: $font-family_2;
+    color: $color_1;
 }
 
 .campos {
@@ -21,5 +31,5 @@ $larguras: 20px;
     font-size: large;
     text-align: left;
     position: relative;
-    padding: 0px $larguras $larguras $larguras;
+    padding: 0rem $larguras $larguras $larguras;
 }

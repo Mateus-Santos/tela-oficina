@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('veiculo', function (Blueprint $table) {
             $table->bigIncrements('id_veiculo');
-            $table->integer('placa')->unique();
-            $table->integer('ano');
+            $table->string('placa')->unique();
+            $table->string('ano', 4);
             $table->string('marca', 20);
             $table->string('cor', 15);
 
