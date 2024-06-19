@@ -72,3 +72,9 @@ Route::middleware([
         return view('dashboard');
     })->name('dashboard');
 });
+
+Route::middleware(['auth', 'check.blocked'])->group(function () {
+    // Suas rotas protegidas
+});
+
+Route::patch('/users/{id}/block', [UserController::class, 'toggleBlock'])->name('toggleBlock');
