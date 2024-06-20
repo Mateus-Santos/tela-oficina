@@ -14,14 +14,14 @@ return new class extends Migration
         Schema::create('venda', function (Blueprint $table) {
             $table->id();
             $table->float('valor_total');
-            $table->date('data_venda');
             $table->integer('quantidade');
             $table->double('valor_uni');
             $table->double('desconto');
             $table->double('juros');
             $table->double('valor_pagto')->nullable();
+            $table->date('data_venda');
             $table->date('data_venc');
-            $table->integer('data_pagto');
+            $table->date('data_pagto');
             $table->timestamps();
         });
     }

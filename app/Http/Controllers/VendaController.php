@@ -10,7 +10,7 @@ class VendaController extends Controller
     
     public function index()
     {
-        $vendas = Pessoa::all();
+        $vendas = Venda::all();
         return view('listarvenda', compact('vendas'));
     }
 
@@ -22,15 +22,16 @@ class VendaController extends Controller
     public function store(Request $request)
     {
         $venda = new Venda();
-        $venda->valor_total = $request->input("valor_total");
-        $venda->data_venda = $request->input("data_venda");
+        $qtd = $request->input("quantidade");
+        $valor_unitario1 = $request->input("valor_uni");
+        $venda->valor_total = $qtd*$valor_unitario1;
         $venda->quantidade = $request->input("quantidade");
         $venda->valor_uni = $request->input("valor_uni");
         $venda->desconto = $request->input("desconto");
         $venda->juros = $request->input("juros");
-        $venda->valor_uni = $request->input("valor_uni");
+        $venda->data_venda = $request->input("data_venda");
         $venda->data_venc = $request->input("data_venc");
-        $venda->data_pagto = $request->input("data_pagto");
+        $venda->data_pagto = '2000';
         $venda->save();
         return redirect()->route('vendas.index');
     }
@@ -40,18 +41,20 @@ class VendaController extends Controller
         //
     }
 
-    public function edit(Venda $venda)
+    public function edit(string $id)
     {
         $venda = Venda::where('id', $id)->first();
         return view('editarvenda', array('venda' => $venda));
     }
 
-    public function update(Request $request, Venda $venda)
+    public function update(Request $request, string $id)
     {
         $venda = Venda::where('id', $id)->first();
+        $qtd = $request->input("quantidade");
+        $valor_unitario1 = $request->input("valor_uni");
 
         $venda->update([
-            'valor_total' => $valor_total,
+            'valor_total' => $qtd*$valor_unitario1,
             'data_venda' => $request->data_venda,
             'quantidade' => $request->quantidade,
             'valor_uni' => $request->valor_uni,
@@ -59,13 +62,13 @@ class VendaController extends Controller
             'juros' => $request->juros,
             'valor_pagto' => $request->valor_pagto,
             'data_venc' => $request->data_venc,
-            'data_pagto' => $request->data_pagto,
+            'data_pagto' => '2000',
         ]);
         
         return redirect()->route('vendas.index');
     }
 
-    public function destroy(Venda $venda)
+    public function destroy(string $id)
     {
         $venda = Venda::where('id', $id)->delete();
         return redirect()->route('vendas.index');

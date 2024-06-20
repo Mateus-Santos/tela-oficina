@@ -103,6 +103,16 @@
             </ul>
           </li>
 
+          <li class="nav-item dropdown">
+            <a type="button" class="btn btn-warning dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            Vendas
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="{{ route('vendas.create') }}">Cadastrar Vendas</a></li>
+              <li><a class="dropdown-item" href="{{ route('vendas.index') }}">Listar Vendas</a></li>
+            </ul>
+          </li>
+
           <li class="nav-item">
             <form action="/logout" method="POST">
             @csrf

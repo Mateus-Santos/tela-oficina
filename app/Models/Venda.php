@@ -9,6 +9,8 @@ class Venda extends Model
 {
     use HasFactory;
 
+    protected $table = 'venda';
+
     protected $fillable = [
         'valor_total',
         'data_venda',
