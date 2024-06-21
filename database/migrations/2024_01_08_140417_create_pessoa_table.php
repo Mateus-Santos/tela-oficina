@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('pessoa', function (Blueprint $table) {
             $table->bigIncrements('id_pessoa');
-            $table->string('email', 20);
+            $table->string('email');
             $table->string('cpf', 11)->unique();
             $table->string('nome', 150);
             $table->string('rg', 13);

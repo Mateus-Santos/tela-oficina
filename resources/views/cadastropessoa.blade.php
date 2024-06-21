@@ -32,17 +32,17 @@
 
           <div class="col-md-2">          
             <label class="form-label" for="cpf">CPF:*</label>
-            <input type="text" class="form-control" id="cpf" placeholder="999.999.999-99" name="cpf" required>
+            <input maxlength="14" type="text" class="form-control" id="cpf" placeholder="999.999.999-99" name="cpf" required>
           </div>
         
         <div class="col-md-3">
           <label class="form-label" for="telefone_1">Telefone Principal:*</label>
-          <input type="text" class="form-control" id="telefone_1" placeholder="(99) 9 9999-9999" name="telefone_1" required>
+          <input maxlength="16" type="text" class="form-control" id="telefone_1" placeholder="(99) 9 9999-9999" name="telefone_1" required>
         </div>
 
         <div class="col-md-3">
           <label class="form-label" for="telefone_2">Telefone Secundario:*</label>
-          <input type="text" class="form-control" id="telefone_2" placeholder="(99) 9 9999-9999" name="telefone_2" required>
+          <input maxlength="16" type="text" class="form-control" id="telefone_2" placeholder="(99) 9 9999-9999" name="telefone_2" required>
         </div>
 
       </div>
