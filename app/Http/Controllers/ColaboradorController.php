@@ -17,7 +17,9 @@ class ColaboradorController extends Controller
 
     public function create()
     {
-        return view('cadastrocolaborador');
+        $users = User::all();
+        $pessoas = Pessoa::all();
+        return view('cadastrocolaborador', compact('users', 'pessoas'));
     }
 
     public function store(Request $request)

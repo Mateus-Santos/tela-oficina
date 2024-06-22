@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Venda;
+use App\Models\Cliente;
+use App\Models\Colaborador;
+use App\Models\Peca;
 use Illuminate\Http\Request;
 
 class VendaController extends Controller
@@ -11,12 +14,18 @@ class VendaController extends Controller
     public function index()
     {
         $vendas = Venda::all();
-        return view('listarvenda', compact('vendas'));
+        $clientes = Cliente::all();
+        $colaboradores = Colaborador::all();
+        $pecas = Peca::all();
+        return view('listarvenda', compact('vendas', 'clientes', 'colaboradores', 'pecas'));
     }
 
     public function create()
     {
-        return view('cadastrovenda');
+        $clientes = Cliente::all();
+        $colaboradores = Colaborador::all();
+        $pecas = Peca::all();
+        return view('cadastrovenda', compact('clientes', 'colaboradores', 'pecas'));
     }
 
     public function store(Request $request)

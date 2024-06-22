@@ -64,6 +64,34 @@
 
           <li class="nav-item dropdown">
               <a class="btn btn-warning dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Colaboradores
+              </a>
+            <ul class="dropdown-menu">
+              <li>
+                <a href="{{ route('colaboradors.create') }}" type="button" class="dropdown-item">Cadastrar Colaboradores</a>
+              </li>
+              <li>
+                <a href="{{ route('colaboradors.index') }}" type="button" class="dropdown-item">Listar Colaboradores</a>
+              </li>
+            </ul>
+          </li>
+
+          <li class="nav-item dropdown">
+              <a class="btn btn-warning dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Clientes
+              </a>
+            <ul class="dropdown-menu">
+              <li>
+                <a href="{{ route('clientes.create') }}" type="button" class="dropdown-item">Cadastrar Clientes</a>
+              </li>
+              <li>
+                <a href="{{ route('clientes.index') }}" type="button" class="dropdown-item">Listar Clientes</a>
+              </li>
+            </ul>
+          </li>
+
+          <li class="nav-item dropdown">
+              <a class="btn btn-warning dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Endereços
               </a>
             <ul class="dropdown-menu">
@@ -86,20 +114,6 @@
               </li>
               <li>
                 <a href="{{ route('pecas.index') }}" type="button" class="dropdown-item">Listar Peças</a>
-              </li>
-            </ul>
-          </li>
-
-          <li class="nav-item dropdown">
-              <a class="btn btn-warning dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Colaboradores
-              </a>
-            <ul class="dropdown-menu">
-              <li>
-                <a href="{{ route('colaboradors.create') }}" type="button" class="dropdown-item">Cadastrar Colaboradores</a>
-              </li>
-              <li>
-                <a href="{{ route('colaboradors.index') }}" type="button" class="dropdown-item">Listar Colaboradores</a>
               </li>
             </ul>
           </li>

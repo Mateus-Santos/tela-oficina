@@ -7,6 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\PecaController;
 use App\Http\Controllers\ColaboradorController;
 use App\Http\Controllers\VendaController;
+use App\Http\Controllers\ClienteController;
 //use App\Http\Controllers\ChatController;
 
 /*
@@ -72,6 +73,16 @@ Route::post('/vendas/{id}', [VendaController::class, 'show'])->name('vendas.show
 Route::get('/vendas/edit/{id}', [VendaController::class, 'edit'])->name('vendas.edit');
 Route::put('/vendas/update/{id}', [VendaController::class, 'update'])->name('vendas.update');
 Route::delete('/vendas/{id}', [VendaController::class, 'destroy'])->name('vendas.destroy');
+
+
+//Rotas Clientes.
+Route::get('/cliente', [ClienteController::class, 'index'])->name('clientes.index');
+Route::get('/clientes/create', [ClienteController::class, 'create'])->name('clientes.create');
+Route::post('/clientes', [ClienteController::class, 'store'])->name('clientes.store');
+Route::post('/clientes/{id}', [ClienteController::class, 'show'])->name('clientes.show');
+Route::get('/clientes/edit/{id}', [ClienteController::class, 'edit'])->name('clientes.edit');
+Route::put('/clientes/update/{id}', [ClienteController::class, 'update'])->name('clientes.update');
+Route::delete('/clientes/{id}', [ClienteController::class, 'destroy'])->name('clientes.destroy');
 
 Route::middleware([
     'auth:sanctum',
