@@ -40,7 +40,7 @@ class VendaController extends Controller
         $venda->juros = $request->input("juros");
         $venda->data_venda = $request->input("data_venda");
         $venda->data_venc = $request->input("data_venc");
-        $venda->data_pagto = '2000';
+        $venda->data_pagto = $request->input("data_pagto");
         $venda->save();
         return redirect()->route('vendas.index');
     }

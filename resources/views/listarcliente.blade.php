@@ -16,22 +16,22 @@
             </tr>
     </thead>
         <tbody>
-            <tr>
             @foreach($clientes as $cliente)
-            <td>{{ $cliente->id_cliente }}</td>
-            <td>{{ $cliente->pessoa->nome }}</td>
-            <td>{{ $cliente->user->email }}</td>
-            <td>{{ $cliente->pontos }}</td>
-            <td><a href="/clientes/edit/{{$cliente->id_cliente}}" class="btn btn-info"><i class="bi bi-pencil-square"></i>Editar</a></td>
-            <td>
-                <form action="/clientes/{{$cliente->id_cliente}}" method="post">
-                    @csrf
-                    @method('DELETE')
-                    <button href="" class="btn btn-danger delete-btn"><i class="bi bi-trash3"></i>Deletar</button>
-                </form>
-            </td>
-            @endforeach
+            <tr>
+                <td>{{ $cliente->id_cliente }}</td>
+                <td>{{ $cliente->pessoa->nome }}</td>
+                <td>{{ $cliente->user->email }}</td>
+                <td>{{ $cliente->pontos }}</td>
+                <td><a href="/clientes/edit/{{$cliente->id_cliente}}" class="btn btn-info"><i class="bi bi-pencil-square"></i>Editar</a></td>
+                <td>
+                    <form action="/clientes/{{$cliente->id_cliente}}" method="post">
+                        @csrf
+                        @method('DELETE')
+                        <button href="" class="btn btn-danger delete-btn"><i class="bi bi-trash3"></i>Deletar</button>
+                    </form>
+                </td>
             </tr>
+            @endforeach
         </tbody>
     </table>
 </div>

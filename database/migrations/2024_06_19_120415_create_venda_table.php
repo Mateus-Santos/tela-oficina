@@ -21,7 +21,7 @@ return new class extends Migration
             $table->double('valor_pagto')->nullable();
             $table->date('data_venda');
             $table->date('data_venc');
-            $table->date('data_pagto');
+            $table->date('data_pagto')->nullable();;
             $table->timestamps();
         });
     }
