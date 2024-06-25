@@ -33,7 +33,7 @@
 
           <div class="col-3">
             <label class="form-label" for="valor_total">Valor total:*</label>
-            <input maxlength="16" type="text" class="form-control" id="valor_total" name="valor_total" required>
+            <input type="text" class="form-control" id="valor_total" name="valor_total" readonly>
           </div>
 
           <div class="col-2">
@@ -53,6 +53,10 @@
             <div class="col-2">
               <label class="form-label" for="valor_uni">Valor Unitario:*</label>
               <input type="text" class="form-control" id="valor_uni" name="valor_uni" required>
+            </div>
+
+            <div class="col-1">
+              <button onclick="pegar_valor()"> calcular</button>
             </div>
 
             <div class="col-2">

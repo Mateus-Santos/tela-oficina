@@ -6,6 +6,7 @@ use App\Models\Venda;
 use App\Models\Cliente;
 use App\Models\Colaborador;
 use App\Models\Peca;
+use App\Models\PecaVenda;
 use Illuminate\Http\Request;
 
 class VendaController extends Controller
@@ -34,14 +35,18 @@ class VendaController extends Controller
         $qtd = $request->input("quantidade");
         $valor_unitario1 = $request->input("valor_uni");
         $venda->valor_total = $qtd*$valor_unitario1;
-        $venda->quantidade = $request->input("quantidade");
-        $venda->valor_uni = $request->input("valor_uni");
         $venda->desconto = $request->input("desconto");
         $venda->juros = $request->input("juros");
         $venda->data_venda = $request->input("data_venda");
         $venda->data_venc = $request->input("data_venc");
-        $venda->data_pagto = $request->input("data_pagto");
         $venda->save();
+
+        $pecavenda = new PecaVenda();
+        $pecavenda->quantidade = $request->input("quantidade");
+        $pecavenda->valor_uni = $request->input("valor_uni");
+        $pecavenda->data_pagto = $request->input("data_pagto");
+        $pecavenda->valor_pagto = $request->input("valor_pagto");
+        $pecavenda->save();
         return redirect()->route('vendas.index');
     }
 

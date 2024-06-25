@@ -21,9 +21,7 @@ campoCPF.addEventListener("keypress", function(e) {
     
 });
 
-
 let telefone1 =  document.getElementById("telefone_1");
-
 
 telefone1.addEventListener("keypress", function(e) {
 
