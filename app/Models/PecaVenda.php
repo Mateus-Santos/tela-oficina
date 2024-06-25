@@ -10,7 +10,10 @@ class PecaVenda extends Model
     protected $table = 'peca_venda';
 
     protected $fillable = [
-        'quantidade'
+        'quantidade',
+        'valor_uni',
+        'valor_pagto',
+        'data_pagto'
     ];
 
     public function cliente(): hasOne

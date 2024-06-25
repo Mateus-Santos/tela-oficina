@@ -6,14 +6,14 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('peca_venda', function (Blueprint $table) {
             $table->id();
             $table->integer('quantidade');
+            $table->double('valor_uni');
+            $table->double('valor_pagto')->nullable();
+            $table->date('data_pagto')->nullable();
             $table->unsignedBigInteger('id_venda');
             $table->unsignedBigInteger('id_peca');
             $table->unsignedBigInteger('id_colaborador');
@@ -26,9 +26,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('peca_venda');

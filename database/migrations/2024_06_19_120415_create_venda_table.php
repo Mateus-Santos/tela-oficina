@@ -13,15 +13,11 @@ return new class extends Migration
     {
         Schema::create('venda', function (Blueprint $table) {
             $table->id();
-            $table->float('valor_total');
-            $table->integer('quantidade');
-            $table->double('valor_uni');
-            $table->double('desconto');
-            $table->double('juros');
-            $table->double('valor_pagto')->nullable();
+            $table->double('valor_total');
+            $table->integer('desconto');
+            $table->integer('juros');
             $table->date('data_venda');
             $table->date('data_venc');
-            $table->date('data_pagto')->nullable();;
             $table->timestamps();
         });
     }
