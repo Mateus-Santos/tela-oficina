@@ -3,7 +3,12 @@
         let valor_total =  document.getElementById("valor_total");
         let quantidade =  document.getElementById("quantidade").value.replace(',','.');
         let valor_uni =  document.getElementById("valor_uni").value.replace(',','.');
-        valor_total.value = quantidade * valor_uni;
+        var valor_atual = quantidade * valor_uni;
+        let juros =  document.getElementById("juros").value.replace('%','');
+        let desconto =  document.getElementById("desconto").value.replace('%','');
+        juros = juros/100;
+        desconto = desconto/100;
+        valor_total.value = (valor_atual * juros) - (valor_atual * desconto) +  valor_atual;
     }
     window.pegar_valor = pegar_valor;
 })();
