@@ -6,7 +6,6 @@ use App\Http\Controllers\EnderecoController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PecaController;
 use App\Http\Controllers\ColaboradorController;
-use App\Http\Controllers\VendaController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\PecaVendaController;
 //use App\Http\Controllers\ChatController;
@@ -54,15 +53,6 @@ Route::post('/pecas/{id}', [PecaController::class, 'show'])->name('pecas.show');
 Route::get('/pecas/edit/{id}', [PecaController::class, 'edit'])->name('pecas.edit');
 Route::put('/pecas/update/{id}', [PecaController::class, 'update'])->name('pecas.update');
 Route::delete('/pecas/{id}', [PecaController::class, 'destroy'])->name('pecas.destroy');
-
-//Rotas vendas.
-Route::get('/venda', [VendaController::class, 'index'])->name('vendas.index');
-Route::get('/vendas/create', [VendaController::class, 'create'])->name('vendas.create');
-Route::post('/vendas', [VendaController::class, 'store'])->name('vendas.store');
-Route::post('/vendas/{id}', [VendaController::class, 'show'])->name('vendas.show');
-Route::get('/vendas/edit/{id}', [VendaController::class, 'edit'])->name('vendas.edit');
-Route::put('/vendas/update/{id}', [VendaController::class, 'update'])->name('vendas.update');
-Route::delete('/vendas/{id}', [VendaController::class, 'destroy'])->name('vendas.destroy');
 
 //Rotas vendas.
 Route::get('/pecavenda', [PecaVendaController::class, 'index'])->name('pecavendas.index');

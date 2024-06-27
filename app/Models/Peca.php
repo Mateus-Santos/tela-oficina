@@ -32,9 +32,9 @@ class Peca extends Model
         'valor_uni'
     ];
 
-    public function PecaVenda(): beLongsTo
+    public function PecaVenda(): hasMany
     {
-        return $this->beLongsTo(PecaVenda::class, 'id', 'id_peca');
+        return $this->hasMany(PecaVenda::class, 'id', 'id_peca');
     }
     
 }

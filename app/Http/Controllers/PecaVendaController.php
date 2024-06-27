@@ -15,11 +15,12 @@ class PecaVendaController extends Controller
 {
     public function index()
     {
+        $pecavendas = PecaVenda::all();
         $vendas = Venda::all();
         $clientes = Cliente::all();
         $colaboradores = Colaborador::all();
         $pecas = Peca::all();
-        return view('listarpecavenda', compact('clientes', 'colaboradores', 'pecas', 'vendas'));
+        return view('listarpecavenda', compact('clientes', 'colaboradores', 'pecas', 'vendas', 'pecavendas'));
     }
 
     public function create()
@@ -54,6 +55,8 @@ class PecaVendaController extends Controller
             'valor_pagto' => $request->input('valor_pagto'),
             'data_pagto' => $request->input('data_pagto'),
         ]);
+
+        return view('listarvendapecas');
     }
 
     public function edit(string $id_peca)

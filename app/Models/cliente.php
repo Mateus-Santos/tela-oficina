@@ -27,4 +27,9 @@ class Cliente extends Model
     {
         return $this->hasOne(User::class, 'id', 'id_user');
     }
+
+    public function pecavenda(): hasMany
+    {
+        return $this->hasMany(PecaVenda::class, 'id', 'id_user');
+    }
 }

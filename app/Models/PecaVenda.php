@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+
+
 
 class PecaVenda extends Model
 {
@@ -23,23 +26,23 @@ class PecaVenda extends Model
         'id_venda'
     ];
 
-    public function cliente(): hasMany
+    public function cliente(): hasOne
     {
-        return $this->hasMany(Cliente::class, 'id_cliente', 'id_cliente');
+        return $this->hasOne(Cliente::class, 'id_cliente', 'id_cliente');
     }
 
-    public function colaborador(): hasMany
+    public function colaborador(): hasOne
     {
-        return $this->hasMany(Colaborador::class, 'id_colaborador', 'id_colaborador');
+        return $this->hasOne(Colaborador::class, 'id_colaborador', 'id_colaborador');
     }
     
-    public function peca(): hasMany
+    public function peca(): hasOne
     {
-        return $this->hasMany(hasMany::class, 'id_peca', 'id_peca');
+        return $this->hasOne(Peca::class, 'id_peca', 'id_peca');
     }
 
-    public function venda(): hasMany
+    public function venda(): hasOne
     {
-        return $this->hasMany(hasMany::class, 'id', 'id_venda');
+        return $this->hasOne(Venda::class, 'id', 'id_venda');
     }
 }

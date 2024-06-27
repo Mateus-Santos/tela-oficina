@@ -18,9 +18,9 @@ class Venda extends Model
         'data_venc',
     ];
 
-    public function PecaVenda(): beLongsTo
+    public function PecaVenda(): hasMany
     {
-        return $this->beLongsTo(PecaVenda::class, 'id', 'id_venda');
+        return $this->hasMany(PecaVenda::class, 'id', 'id_venda');
     }
 
 }
