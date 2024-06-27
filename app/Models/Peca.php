@@ -15,6 +15,7 @@ class Peca extends Model
 
     protected $fillable = [
         'id_peca',
+        'id_venda',
         'montadora',
         'nome',
         'veiculos',
@@ -27,7 +28,13 @@ class Peca extends Model
         'quantidade',
         'ano',
         'img',
-        'codigo_fabricante'
+        'codigo_fabricante',
+        'valor_uni'
     ];
+
+    public function PecaVenda(): beLongsTo
+    {
+        return $this->beLongsTo(PecaVenda::class, 'id', 'id_peca');
+    }
     
 }

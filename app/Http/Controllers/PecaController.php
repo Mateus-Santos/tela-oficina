@@ -21,6 +21,7 @@ class PecaController extends Controller
     public function store(Request $request)
     {
         $peca = new Peca();
+        
         $peca->montadora = $request->input("montadora");
         $peca->nome = $request->input("nome");
         $peca->veiculos = $request->input("veiculo");
@@ -32,7 +33,8 @@ class PecaController extends Controller
         $peca->vulvula = $request->input("vulvula");
         $peca->quantidade = $request->input("quantidade");
         $peca->ano = $request->input("ano");
-        $peca->img = null;
+        $peca->preco_uni = $request->input("valor_uni");
+        $peca->img = $request->input("img");
         $peca->codigo_fabricante = $request->input("codigo_fabricante");
         $peca->save();
         return redirect()->route('pecas.index');

@@ -14,40 +14,17 @@ class VendaController extends Controller
     
     public function index()
     {
-        $vendas = Venda::all();
-        $clientes = Cliente::all();
-        $colaboradores = Colaborador::all();
-        $pecas = Peca::all();
-        return view('listarvenda', compact('vendas', 'clientes', 'colaboradores', 'pecas'));
+        return view('listarvenda');
     }
 
     public function create()
     {
-        $clientes = Cliente::all();
-        $colaboradores = Colaborador::all();
-        $pecas = Peca::all();
-        return view('cadastrovenda', compact('clientes', 'colaboradores', 'pecas'));
+        return view('cadastrovenda');
     }
 
     public function store(Request $request)
     {
-        $venda = new Venda();
-        $qtd = $request->input("quantidade");
-        $valor_unitario1 = $request->input("valor_uni");
-        $venda->valor_total = $qtd*$valor_unitario1;
-        $venda->desconto = $request->input("desconto");
-        $venda->juros = $request->input("juros");
-        $venda->data_venda = $request->input("data_venda");
-        $venda->data_venc = $request->input("data_venc");
-        $venda->save();
-
-        $pecavenda = new PecaVenda();
-        $pecavenda->quantidade = $request->input("quantidade");
-        $pecavenda->valor_uni = $request->input("valor_uni");
-        $pecavenda->data_pagto = $request->input("data_pagto");
-        $pecavenda->valor_pagto = $request->input("valor_pagto");
-        $pecavenda->save();
-        return redirect()->route('vendas.index');
+        
     }
 
     public function show(Venda $venda)

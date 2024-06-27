@@ -11,4 +11,12 @@
         valor_total.value = (valor_atual * juros) - (valor_atual * desconto) +  valor_atual;
     }
     window.pegar_valor = pegar_valor;
-})();
+
+    function valor_unitario(valor_peca) {
+        let valor_uni =  document.getElementById("valor_uni");
+        var jsonPeca= JSON.parse(valor_peca);
+        var precoUni = jsonPeca.preco_uni;
+        valor_uni.value = precoUni;
+    }
+    window.valor_unitario = valor_unitario;
+})();   

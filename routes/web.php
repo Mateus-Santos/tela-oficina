@@ -8,18 +8,8 @@ use App\Http\Controllers\PecaController;
 use App\Http\Controllers\ColaboradorController;
 use App\Http\Controllers\VendaController;
 use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\PecaVendaController;
 //use App\Http\Controllers\ChatController;
-
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
-*/
 
 Route::get('/', function () {
     return view('index');
@@ -73,6 +63,15 @@ Route::post('/vendas/{id}', [VendaController::class, 'show'])->name('vendas.show
 Route::get('/vendas/edit/{id}', [VendaController::class, 'edit'])->name('vendas.edit');
 Route::put('/vendas/update/{id}', [VendaController::class, 'update'])->name('vendas.update');
 Route::delete('/vendas/{id}', [VendaController::class, 'destroy'])->name('vendas.destroy');
+
+//Rotas vendas.
+Route::get('/pecavenda', [PecaVendaController::class, 'index'])->name('pecavendas.index');
+Route::get('/pecavendas/create', [PecaVendaController::class, 'create'])->name('pecavendas.create');
+Route::post('/pecavendas', [PecaVendaController::class, 'store'])->name('pecavendas.store');
+Route::post('/pecavendas/{id}', [PecaVendaController::class, 'show'])->name('pecavendas.show');
+Route::get('/pecavendas/edit/{id}', [PecaVendaController::class, 'edit'])->name('pecavendas.edit');
+Route::put('/pecavendas/update/{id}', [PecaVendaController::class, 'update'])->name('pecavendas.update');
+Route::delete('/pecavendas/{id}', [PecaVendaController::class, 'destroy'])->name('pecavendas.destroy');
 
 
 //Rotas Clientes.

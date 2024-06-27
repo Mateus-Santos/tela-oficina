@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('produtos', 100);
             $table->string('vulvula', 100);
             $table->integer('quantidade');
+            $table->double('preco_uni');
             $table->string('img')->nullable();
             $table->string('codigo_fabricante')->unique();
             $table->timestamps();

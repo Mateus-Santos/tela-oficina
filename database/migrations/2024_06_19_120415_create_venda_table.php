@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('venda', function (Blueprint $table) {
             $table->id();
-            $table->double('valor_total');
             $table->integer('desconto');
             $table->integer('juros');
             $table->date('data_venda');

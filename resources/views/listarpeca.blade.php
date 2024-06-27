@@ -14,6 +14,7 @@
                 </div>
                 <div class="peca-item-info">
                     <a class="row">ID: {{ $peca->id_peca }}</a>
+                    <a class="row">Preço Unitário: {{ $peca->preco_uni }}</a>
                     <a class="row">Montadora: {{ $peca->montadora }}</a>
                     <a class="row">Veículos: {{ $peca->veiculos }}</a>
                     <a class="row">Motor: {{ $peca->motor }}</a>

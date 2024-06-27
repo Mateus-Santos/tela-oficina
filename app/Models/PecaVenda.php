@@ -7,32 +7,39 @@ use Illuminate\Database\Eloquent\Model;
 
 class PecaVenda extends Model
 {
+
+    use HasFactory;
+
     protected $table = 'peca_venda';
 
     protected $fillable = [
         'quantidade',
         'valor_uni',
         'valor_pagto',
-        'data_pagto'
+        'data_pagto',
+        'id_cliente',
+        'id_colaborador',
+        'id_peca',
+        'id_venda'
     ];
 
-    public function cliente(): hasOne
+    public function cliente(): hasMany
     {
-        return $this->hasOne(Cliente::class, 'id_cliente', 'id_cliente');
+        return $this->hasMany(Cliente::class, 'id_cliente', 'id_cliente');
     }
 
-    public function colaborador(): hasOne
+    public function colaborador(): hasMany
     {
-        return $this->hasOne(Colaborador::class, 'id_colaborador', 'id_colaborador');
+        return $this->hasMany(Colaborador::class, 'id_colaborador', 'id_colaborador');
     }
     
-    public function peca(): hasOne
+    public function peca(): hasMany
     {
-        return $this->hasOne(Peca::class, 'id_peca', 'id_peca');
+        return $this->hasMany(hasMany::class, 'id_peca', 'id_peca');
     }
 
-    public function venda(): hasOne
+    public function venda(): hasMany
     {
-        return $this->hasOne(Venda::class, 'id_venda', 'id_venda');
+        return $this->hasMany(hasMany::class, 'id', 'id_venda');
     }
 }

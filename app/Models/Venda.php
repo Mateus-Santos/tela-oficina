@@ -12,14 +12,15 @@ class Venda extends Model
     protected $table = 'venda';
 
     protected $fillable = [
-        'valor_total',
         'data_venda',
-        'quantidade',
-        'valor_uni',
         'desconto',
         'juros',
-        'valor_pagto',
         'data_venc',
-        'data_pagto',
     ];
+
+    public function PecaVenda(): beLongsTo
+    {
+        return $this->beLongsTo(PecaVenda::class, 'id', 'id_venda');
+    }
+
 }

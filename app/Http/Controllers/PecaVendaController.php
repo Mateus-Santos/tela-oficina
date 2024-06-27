@@ -1,35 +1,59 @@
 <?php
 
 namespace App\Http\Controllers;
+use Illuminate\Support\Facades\DB;
 
 use Illuminate\Http\Request;
 use App\Models\PecaVenda;
 use App\Models\Peca;
 use App\Models\Cliente;
 use App\Models\Colaborador;
+use App\Models\Venda;
 
 
 class PecaVendaController extends Controller
 {
     public function index()
     {
-
+        $vendas = Venda::all();
+        $clientes = Cliente::all();
+        $colaboradores = Colaborador::all();
+        $pecas = Peca::all();
+        return view('listarpecavenda', compact('clientes', 'colaboradores', 'pecas', 'vendas'));
     }
 
     public function create()
     {
-
+        $clientes = Cliente::all();
+        $colaboradores = Colaborador::all();
+        $pecas = Peca::all();
+        return view('cadastropecavenda', compact('clientes', 'colaboradores', 'pecas'));
     }
 
     public function store(Request $request)
     {
-        $peca_venda = new PecaVenda();
-        $peca_venda->id_cliente = $request->input("id_cliente");
-        $peca_venda->id_colaborador = $request->input("id_colaborador");
-        $peca_venda->id_peca = $request->input("id_peca");
-        $peca_venda->id_venda = $request->input("id_venda");
-        $peca_venda->quantidade = $request->input("quantidade");
-        $peca_venda->save();
+        $venda = Venda::create([
+            'desconto' => $request->input('desconto'),
+            'juros' => $request->input('juros'),
+            'data_venda' => $request->input('data_venda'),
+            'data_venc' => $request->input('data_venc'),
+        ]);
+
+        $peca_request = $request->input('id_peca');
+        $peca = json_decode($peca_request, true);
+        $id_peca = $peca['id_peca'];
+        $valor_uni = $peca['preco_uni'];
+        
+        $pecavenda = PecaVenda::create([
+            'id_venda' => $venda->id,
+            'id_cliente' => $request->input('id_cliente'),
+            'id_colaborador' => $request->input('id_colaborador'),
+            'id_peca' => $id_peca,
+            'valor_uni' => $valor_uni,
+            'quantidade' => $request->input('quantidade'),
+            'valor_pagto' => $request->input('valor_pagto'),
+            'data_pagto' => $request->input('data_pagto'),
+        ]);
     }
 
     public function edit(string $id_peca)

@@ -123,8 +123,8 @@
             Vendas
             </a>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="{{ route('vendas.create') }}">Cadastrar Vendas</a></li>
-              <li><a class="dropdown-item" href="{{ route('vendas.index') }}">Listar Vendas</a></li>
+              <li><a class="dropdown-item" href="{{ route('pecavendas.create') }}">Cadastrar Vendas</a></li>
+              <li><a class="dropdown-item" href="{{ route('pecavendas.index') }}">Listar Vendas</a></li>
             </ul>
           </li>
 
