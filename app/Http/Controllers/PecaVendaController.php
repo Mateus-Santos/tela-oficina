@@ -9,6 +9,7 @@ use App\Models\Peca;
 use App\Models\Cliente;
 use App\Models\Colaborador;
 use App\Models\Venda;
+use App\Events\VendaPeca;
 
 
 class PecaVendaController extends Controller
@@ -16,11 +17,7 @@ class PecaVendaController extends Controller
     public function index()
     {
         $pecavendas = PecaVenda::all();
-        $vendas = Venda::all();
-        $clientes = Cliente::all();
-        $colaboradores = Colaborador::all();
-        $pecas = Peca::all();
-        return view('listarpecavenda', compact('clientes', 'colaboradores', 'pecas', 'vendas', 'pecavendas'));
+        return view('listarpecavenda', compact('pecavendas'));
     }
 
     public function create()
@@ -44,6 +41,8 @@ class PecaVendaController extends Controller
         $peca = json_decode($peca_request, true);
         $id_peca = $peca['id_peca'];
         $valor_uni = $peca['preco_uni'];
+
+        $quantidade = $request->input('quantidade');
         
         $pecavenda = PecaVenda::create([
             'id_venda' => $venda->id,
@@ -51,12 +50,14 @@ class PecaVendaController extends Controller
             'id_colaborador' => $request->input('id_colaborador'),
             'id_peca' => $id_peca,
             'valor_uni' => $valor_uni,
-            'quantidade' => $request->input('quantidade'),
+            'quantidade' => $quantidade,
             'valor_pagto' => $request->input('valor_pagto'),
             'data_pagto' => $request->input('data_pagto'),
         ]);
 
-        return view('listarvendapecas');
+        event(new VendaPeca($pecavenda));
+
+        return redirect()->route('pecavendas.index');
     }
 
     public function edit(string $id_peca)
