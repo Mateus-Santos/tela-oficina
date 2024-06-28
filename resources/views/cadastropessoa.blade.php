@@ -54,11 +54,10 @@
         </div>
       </div>
 
-      
     <div class="row mb-3">
       <div class="col">
         <input class="form-check-input" type="checkbox" id="confirmacao">
-        <label for="confirmacao" name="cidade" required>
+        <label for="confirmacao" name="confirmacao" required>
           Confirmo que toda as informações adicionadas são verdadeiras.
         </label>
       </div>
