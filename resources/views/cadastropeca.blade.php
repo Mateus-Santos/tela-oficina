@@ -5,7 +5,7 @@
   
     <h1>CADASTRO DE PEÇAS</h1>
 
-    <form action="{{ route('pecas.store') }}" method="post" class="row g-3">
+    <form action="{{ route('pecas.store') }}" enctype="multipart/form-data" method="post" class="row g-3">
     @csrf
         <div class="campos">
             <div class="row md-3">

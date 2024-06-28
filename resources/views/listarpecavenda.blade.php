@@ -25,7 +25,7 @@
             @foreach($pecavendas as $pecavenda)
             <tr>
             <th scope="row">{{$pecavenda->id}}</th>
-            <th>{{$pecavenda->id}}</th>
+            <th>{{$pecavenda->peca->nome}}</th>
             <td>{{ $pecavenda->quantidade }}</td>
             <td>{{ $pecavenda->valor_uni }}</td>
             <td>{{ $pecavenda->venda->desconto }}</td>
