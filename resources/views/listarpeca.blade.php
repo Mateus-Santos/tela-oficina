@@ -9,11 +9,15 @@
             <div class="peca-item">
                 <h4>{{ $peca->nome }}</h4>
                 <div class="peca-item-img">
-                    {{ $peca->img }}
+                    @if($peca->img == null)
                     img
+                    @else
+                    <img class="peca-item-img" src="/img/pecas/{{$peca->img}}" alt="">
+                    @endif
                 </div>
                 <div class="peca-item-info">
                     <a class="row">ID: {{ $peca->id_peca }}</a>
+                    <a class="row">Preço Unitário: {{ $peca->preco_uni }}</a>
                     <a class="row">Montadora: {{ $peca->montadora }}</a>
                     <a class="row">Veículos: {{ $peca->veiculos }}</a>
                     <a class="row">Motor: {{ $peca->motor }}</a>

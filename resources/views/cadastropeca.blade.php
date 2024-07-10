@@ -5,10 +5,10 @@
   
     <h1>CADASTRO DE PEÇAS</h1>
 
-    <form action="{{ route('pecas.store') }}" method="post" class="row g-3">
+    <form action="{{ route('pecas.store') }}" enctype="multipart/form-data" method="post" class="row g-3">
     @csrf
         <div class="campos">
-            <div class="row">
+            <div class="row md-3">
               <div class="col-md-3">
                 <label class="form-label" for="montadora">Montadora:*</label>
                 <input type="text" class="form-control" id="montadora" name="montadora" required>
@@ -27,7 +27,7 @@
               </div>
             </div>
 
-            <div class="row">
+            <div class="row mb-3">
               <div class="col-md-3">
                   <label class="form-label" for="quantidade">Quantidade em estoque:*</label>
                   <input type="text" class="form-control" id="quantidade" name="quantidade" required>
@@ -59,6 +59,14 @@
                 <div class="col-md-2">
                   <label class="form-label" for="codigo_fabricante">Código Fabricante:*</label>
                   <input type="text" class="form-control" id="codigo_fabricante" name="codigo_fabricante" required>
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label" for="valor_uni">Valor Unitario:*</label>
+                  <input type="text" class="form-control" id="valor_uni" name="valor_uni" required>
+                </div>
+                <div>
+                  <label class="form-label" for="img">Imagem:*</label>
+                  <input type="file" class="form-control" id="img" name="img">
                 </div>
             </div>
             <div class="row mb-3">

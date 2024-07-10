@@ -21,12 +21,13 @@ class PessoaController extends Controller {
     public function store(Request $request)
     {
         $pessoa = new Pessoa();
+        $onlyconsonants = str_replace(['-', ''], "", $request);
         $pessoa->nome = $request->input("nome");
         $pessoa->email = $request->input("email");
         $pessoa->data_nascimento = $request->input("data_nascimento");
-        $pessoa->telefone_1 = $request->input("telefone_1");
-        $pessoa->telefone_2 = $request->input("telefone_2");
-        $pessoa->cpf = $request->input("cpf");
+        $pessoa->telefone_1 = str_replace(['-', ' ', '(', ')'], "", $request->input("telefone_1"));
+        $pessoa->telefone_2 = str_replace(['-', ' ', '(', ')'], "", $request->input("telefone_2"));
+        $pessoa->cpf = str_replace(['.', '-'], "", $request->input("cpf"));;
         $pessoa->rg = $request->input("rg");
         $pessoa->save();
         return redirect()->route('pessoas.index');

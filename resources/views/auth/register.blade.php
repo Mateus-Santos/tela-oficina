@@ -14,6 +14,31 @@
                 <x-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
             </div>
 
+            <div>
+                <x-label for="cpf" value="CPF:*" />
+                <x-input id="cpf" class="block mt-1 w-full" type="text" name="cpf" :value="old('cpf')" required autofocus autocomplete="cpf" />
+            </div>
+
+            <div>
+                <x-label for="rg" value="RG" />
+                <x-input id="rg" class="block mt-1 w-full" type="text" name="rg" :value="old('rg')" required autofocus autocomplete="rg" />
+            </div>
+
+            <div>
+                <x-label for="data_nascimento" value="Data Nascimento" />
+                <x-input id="data_nascimento" class="block mt-1 w-full" type="date" name="data_nascimento" :value="old('data_nascimento')" required autofocus autocomplete="data_nascimento" />
+            </div>
+
+            <div>
+                <x-label for="telefone_1" value="Telefone Principal:*" />
+                <x-input id="telefone_1" class="block mt-1 w-full" type="text" name="telefone_1" :value="old('telefone_1')" required autofocus autocomplete="telefone_1" />
+            </div>
+
+            <div>
+                <x-label for="telefone_2" value="Telefone Secundario" />
+                <x-input id="telefone_2" class="block mt-1 w-full" type="text" name="telefone_2" :value="old('telefone_2')" required autofocus autocomplete="telefone_2" />
+            </div>
+
             <div class="mt-4">
                 <x-label for="email" value="{{ __('Email') }}" />
                 <x-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />

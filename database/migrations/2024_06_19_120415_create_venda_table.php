@@ -11,13 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('peca_colaborador', function (Blueprint $table) {
+        Schema::create('venda', function (Blueprint $table) {
             $table->id();
-
-            $table->unsignedBigInteger('id_colaborador');
-            $table->unsignedBigInteger('id_peca');
-            $table->foreign('id_peca')->references('id_peca')->on('peca');
-            $table->foreign('id_colaborador')->references('id_colaborador')->on('colaborador');
+            $table->integer('desconto');
+            $table->integer('juros');
+            $table->date('data_venda');
+            $table->date('data_venc');
             $table->timestamps();
         });
     }
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('peca_colaborador');
+        Schema::dropIfExists('venda');
     }
 };

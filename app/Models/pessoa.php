@@ -11,7 +11,6 @@ class Pessoa extends Model
 
     protected $table = 'pessoa';
 
-    protected $foreignKey = 'id_endereco';
     protected $primaryKey = 'id_pessoa';
 
     protected $fillable = [
@@ -25,9 +24,9 @@ class Pessoa extends Model
         'telefone_2',
     ];
 
-    public function endereco()
+    public function endereco(): hasMany
     {
-        return $this->hasMany(Endereco::class, 'id_endereco');
+        return $this->hasMany(Endereco::class, 'id_endereco', 'id_endereco');
     }
 
     public function colaborador(): belongsTo
@@ -35,9 +34,9 @@ class Pessoa extends Model
         return $this->belongsTo(Colaborador::class, 'id_pessoa', 'id_pessoa');
     }
 
-    public function cliente()
+    public function cliente(): belongsTo
     {
-        return $this->belongsTo(Cliente::class);
+        return $this->belongsTo(Cliente::class, 'id_cliente' ,'id_cliente');
     }
 
 }

@@ -42,6 +42,11 @@ class User extends Authenticatable
 
     public function colaborador(): belongsTo
     {
-        return $this->belongsTo(Colaborador::class, 'id_user');
+        return $this->belongsTo(Colaborador::class, 'id', 'id_user');
+    }
+
+    public function cliente(): belongsTo
+    {
+        return $this->belongsTo(Cliente::class, 'id', 'id_user');
     }
 }

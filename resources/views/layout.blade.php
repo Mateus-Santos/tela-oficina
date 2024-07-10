@@ -18,9 +18,10 @@
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Jost:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
   
   <!-- Template Main CSS File -->
-  @vite(['resources/js/app.js', 'resources/scss/_app.scss', 'resources/css/app.css'])
+  <script src="{{ asset('/vendor/waypoints/noframework.waypoints.js') }}"></script>
+  @vite(['resources/js/cadColaborador.js', 'resources/js/calcOrcamento.js', 'resources/js/app.js', 'resources/scss/_app.scss'])
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-  <title>Oficina SOS Mecânica</title>
+  <title>Oficina SOS Mecânica - BETA 1.0</title>
 </head>
 
 <body>
@@ -30,7 +31,7 @@
 <nav id="header" class="navbar navbar-expand-lg fixed-top">
     <!-- Example single danger button -->
   <div class="container-fluid">
-    <h1><a href="/">Oficina SOS Mecânica</a></h1>
+    <h1><a href="/">Oficina SOS Mecânica - BETA v1.0</a></h1>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -40,7 +41,7 @@
   <div class="collapse navbar-collapse" id="navbarNavDropdown">
 
         <ul class="navbar-nav">
-        @guest
+          @guest
           <li class="nav-item"><a class="nav-link active" href="#">Home</a></li>
           <li class="nav-item"><a class="nav-link" href="#about">Sobre</a></li>
           <li class="nav-item"><a class="nav-link" href="#team">Equipe</a></li>
@@ -59,6 +60,26 @@
               <li><a class="dropdown-item" href="{{ route('pessoas.create') }}">Cadastrar pessoas</a></li>
               <li><a class="dropdown-item" href="{{ route('pessoas.index') }}">Listar Pessoas</a></li>
             </ul>
+          </li>
+
+          <li class="nav-item dropdown">
+              <a class="btn btn-warning dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Colaboradores
+              </a>
+            <ul class="dropdown-menu">
+              <li>
+                <a href="{{ route('colaboradors.create') }}" type="button" class="dropdown-item">Cadastrar Colaboradores</a>
+              </li>
+              <li>
+                <a href="{{ route('colaboradors.index') }}" type="button" class="dropdown-item">Listar Colaboradores</a>
+              </li>
+            </ul>
+          </li>
+
+          <li class="nav-item dropdown">
+              <a class="btn btn-warning" href="{{ route('clientes.index') }}" aria-expanded="false">
+                Clientes
+              </a>
           </li>
 
           <li class="nav-item dropdown">
@@ -90,16 +111,12 @@
           </li>
 
           <li class="nav-item dropdown">
-              <a class="btn btn-warning dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Colaboradores
-              </a>
+            <a type="button" class="btn btn-warning dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            Vendas
+            </a>
             <ul class="dropdown-menu">
-              <li>
-                <a href="{{ route('colaboradors.create') }}" type="button" class="dropdown-item">Cadastrar Colaboradores</a>
-              </li>
-              <li>
-                <a href="{{ route('colaboradors.index') }}" type="button" class="dropdown-item">Listar Colaboradores</a>
-              </li>
+              <li><a class="dropdown-item" href="{{ route('pecavendas.create') }}">Cadastrar Vendas</a></li>
+              <li><a class="dropdown-item" href="{{ route('pecavendas.index') }}">Listar Vendas</a></li>
             </ul>
           </li>
 

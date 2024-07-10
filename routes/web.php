@@ -6,18 +6,9 @@ use App\Http\Controllers\EnderecoController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PecaController;
 use App\Http\Controllers\ColaboradorController;
+use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\PecaVendaController;
 //use App\Http\Controllers\ChatController;
-
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
-*/
 
 Route::get('/', function () {
     return view('index');
@@ -62,6 +53,25 @@ Route::post('/pecas/{id}', [PecaController::class, 'show'])->name('pecas.show');
 Route::get('/pecas/edit/{id}', [PecaController::class, 'edit'])->name('pecas.edit');
 Route::put('/pecas/update/{id}', [PecaController::class, 'update'])->name('pecas.update');
 Route::delete('/pecas/{id}', [PecaController::class, 'destroy'])->name('pecas.destroy');
+
+//Rotas vendas.
+Route::get('/pecavenda', [PecaVendaController::class, 'index'])->name('pecavendas.index');
+Route::get('/pecavendas/create', [PecaVendaController::class, 'create'])->name('pecavendas.create');
+Route::post('/pecavendas', [PecaVendaController::class, 'store'])->name('pecavendas.store');
+Route::post('/pecavendas/{id}', [PecaVendaController::class, 'show'])->name('pecavendas.show');
+Route::get('/pecavendas/edit/{id}', [PecaVendaController::class, 'edit'])->name('pecavendas.edit');
+Route::put('/pecavendas/update/{id}', [PecaVendaController::class, 'update'])->name('pecavendas.update');
+Route::delete('/pecavendas/{id}', [PecaVendaController::class, 'destroy'])->name('pecavendas.destroy');
+
+
+//Rotas Clientes.
+Route::get('/cliente', [ClienteController::class, 'index'])->name('clientes.index');
+Route::get('/clientes/create', [ClienteController::class, 'create'])->name('clientes.create');
+Route::post('/clientes', [ClienteController::class, 'store'])->name('clientes.store');
+Route::post('/clientes/{id}', [ClienteController::class, 'show'])->name('clientes.show');
+Route::get('/clientes/edit/{id}', [ClienteController::class, 'edit'])->name('clientes.edit');
+Route::put('/clientes/update/{id}', [ClienteController::class, 'update'])->name('clientes.update');
+Route::delete('/clientes/{id}', [ClienteController::class, 'destroy'])->name('clientes.destroy');
 
 Route::middleware([
     'auth:sanctum',

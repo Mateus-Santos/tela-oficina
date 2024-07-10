@@ -11,6 +11,26 @@
       <div class="campos">
       <div class="row">
 
+        <div class="col-md-4">
+          <label class="form-label" for="id_user">Usuário:</label>
+          <select onchange="colaborador(this.value)"  id="id_user" class="form-control" name="id_user" required>
+          <option selected>Escolher...</option>
+          @foreach($clientes as $cliente)
+          <option value="{{ $cliente }}">{{ $cliente->user->email }}</option>
+          @endforeach
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label" for="id_pessoa">Pessoa:</label>
+          <select id="id_pessoa" class="form-control" name="id_pessoa" required disabled>
+          <option selected>Escolher...</option>
+          @foreach($clientes as $cliente)
+          <option value="{{ $cliente->pessoa->id_pessoa }}">{{ $cliente->pessoa->nome }}</option>
+          @endforeach
+          </select>
+        </div>
+ 
         <div class="col-md-2">
           <label class="form-label" for="chave_pix">Chave Pix:*</label>
           <input type="text" class="form-control" id="chave_pix" placeholder="Digite seu Nome Completo." name="chave_pix" required>
@@ -21,16 +41,6 @@
           <input type="text" class="form-control" id="conta_banco" placeholder="Digite seu Nome Completo." name="conta_banco" required>
         </div>
 
-        <div class="col-md-3">
-          <label class="form-label" for="id_user">Usuário da Pessoa:*</label>
-          <input type="text" class="form-control" id="id_user" placeholder="Digite seu Nome Completo." name="id_user" required>
-        </div>
-
-        <div class="col-md-3">
-          <label class="form-label" for="id_pessoa">Nome da Pessoa:*</label>
-          <input type="text" class="form-control" id="id_pessoa" placeholder="Digite seu Nome Completo." name="id_pessoa" required>
-        </div>
-        
       </div>
 
       

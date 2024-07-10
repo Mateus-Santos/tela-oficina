@@ -21,6 +21,7 @@ class PecaController extends Controller
     public function store(Request $request)
     {
         $peca = new Peca();
+        
         $peca->montadora = $request->input("montadora");
         $peca->nome = $request->input("nome");
         $peca->veiculos = $request->input("veiculo");
@@ -32,8 +33,22 @@ class PecaController extends Controller
         $peca->vulvula = $request->input("vulvula");
         $peca->quantidade = $request->input("quantidade");
         $peca->ano = $request->input("ano");
-        $peca->img = null;
+        $peca->preco_uni = $request->input("valor_uni");
         $peca->codigo_fabricante = $request->input("codigo_fabricante");
+        
+        if($request->hasFile("img") && $request->file("img")->isValid()){
+
+            $requestImage = $request->img;
+
+            $extention = $requestImage->extension();
+
+            $imageName = md5($requestImage->getClientOriginalName() . strtotime("now")) . "." . $extention;
+
+            $requestImage->move(public_path('img/pecas'), $imageName);
+
+            $peca->img = $imageName;
+        }
+        
         $peca->save();
         return redirect()->route('pecas.index');
     }

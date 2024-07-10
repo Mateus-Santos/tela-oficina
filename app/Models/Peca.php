@@ -15,6 +15,7 @@ class Peca extends Model
 
     protected $fillable = [
         'id_peca',
+        'id_venda',
         'montadora',
         'nome',
         'veiculos',
@@ -27,7 +28,13 @@ class Peca extends Model
         'quantidade',
         'ano',
         'img',
-        'codigo_fabricante'
+        'codigo_fabricante',
+        'valor_uni'
     ];
+
+    public function PecaVenda(): hasMany
+    {
+        return $this->hasMany(PecaVenda::class, 'id', 'id_peca');
+    }
     
 }
