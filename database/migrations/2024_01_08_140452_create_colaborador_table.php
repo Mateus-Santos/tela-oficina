@@ -13,13 +13,10 @@ return new class extends Migration
     {
         Schema::create('colaborador', function (Blueprint $table) {
             $table->bigIncrements('id_colaborador');
-
             $table->unsignedBigInteger('id_pessoa');
             $table->unsignedBigInteger('id_user');
-
             $table->string('chave_pix', 100)->unique();
             $table->string('conta_banco', 30);
-
             $table->foreign('id_user')->references('id')->on('users');
             $table->foreign('id_pessoa')->references('id_pessoa')->on('pessoa');
             $table->timestamps();

@@ -13,24 +13,24 @@
 
         <div class="col-md-4">
           <label class="form-label" for="id_user">Usuário:</label>
-          <select id="id_user" class="form-control" name="id_user" required>
+          <select onchange="colaborador(this.value)"  id="id_user" class="form-control" name="id_user" required>
           <option selected>Escolher...</option>
-          @foreach($users as $user)
-          <option value="{{$user->id}}">{{ $user->email }}</option>
+          @foreach($clientes as $cliente)
+          <option value="{{ $cliente }}">{{ $cliente->user->email }}</option>
           @endforeach
           </select>
         </div>
 
         <div class="col-md-3">
           <label class="form-label" for="id_pessoa">Pessoa:</label>
-          <select id="id_pessoa" class="form-control" name="id_pessoa" required>
+          <select id="id_pessoa" class="form-control" name="id_pessoa" required disabled>
           <option selected>Escolher...</option>
-          @foreach($pessoas as $pessoa)
-          <option value="{{$pessoa->id_pessoa}}">{{ $pessoa->nome }}</option>
+          @foreach($clientes as $cliente)
+          <option value="{{ $cliente->pessoa->id_pessoa }}">{{ $cliente->pessoa->nome }}</option>
           @endforeach
           </select>
         </div>
-
+ 
         <div class="col-md-2">
           <label class="form-label" for="chave_pix">Chave Pix:*</label>
           <input type="text" class="form-control" id="chave_pix" placeholder="Digite seu Nome Completo." name="chave_pix" required>
