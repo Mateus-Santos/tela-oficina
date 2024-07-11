@@ -19,7 +19,7 @@
   
   <!-- Template Main CSS File -->
   <script src="{{ asset('/vendor/waypoints/noframework.waypoints.js') }}"></script>
-  @vite(['resources/js/cadColaborador.js', 'resources/js/calcOrcamento.js', 'resources/js/app.js', 'resources/scss/_app.scss'])
+  @vite(['resources/js/app.js', 'resources/scss/_app.scss'])
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
   <title>Oficina SOS Mecânica - BETA 1.0</title>
 </head>
