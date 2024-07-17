@@ -24,9 +24,9 @@ class Pessoa extends Model
         'telefone_2',
     ];
 
-    public function endereco(): hasMany
+    public function endereco(): hasOne
     {
-        return $this->hasMany(Endereco::class, 'id_endereco', 'id_endereco');
+        return $this->hasOne(Endereco::class, 'id_endereco', 'id_endereco');
     }
 
     public function colaborador(): belongsTo

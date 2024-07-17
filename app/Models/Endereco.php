@@ -13,9 +13,19 @@ class Endereco extends Model
 
     protected $foreignKey = 'id_pessoa';
 
-    public function pessoa()
-    {
-        return $this->hasOne(Pessoa::class, 'id_pessoa');
-    }
+    protected $fillable = [
+        'cep',
+        'cidade',
+        'bairro',
+        'estado',
+        'rua',
+        'endereco',
+        'numero',
+        'ponto_referencia',
+    ];
 
+    public function pessoa(): belongsTo
+    {
+        return $this->belongsTo(Pessoa::class, 'id_pessoa', 'id_pessoa');
+    }
 }

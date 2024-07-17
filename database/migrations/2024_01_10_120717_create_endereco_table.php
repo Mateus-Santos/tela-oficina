@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('endereco', function (Blueprint $table) {
@@ -21,17 +18,12 @@ return new class extends Migration
             $table->string('endereco', 50);
             $table->integer('numero');
             $table->string('ponto_referencia', 200);
-
             $table->unsignedBigInteger('id_pessoa');
             $table->foreign('id_pessoa')->references('id_pessoa')->on('pessoa');
-
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('endereco');

@@ -64,6 +64,20 @@
 
           <li class="nav-item dropdown">
               <a class="btn btn-warning dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Endereços
+              </a>
+            <ul class="dropdown-menu">
+              <li>
+                <a href="{{ route('enderecos.create') }}" type="button" class="dropdown-item">Cadastrar Endereços</a>
+              </li>
+              <li>
+                <a href="{{ route('enderecos.index') }}" type="button" class="dropdown-item">Listar Endereços</a>
+              </li>
+            </ul>
+          </li>
+
+          <li class="nav-item dropdown">
+              <a class="btn btn-warning dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Colaboradores
               </a>
             <ul class="dropdown-menu">
@@ -80,20 +94,6 @@
               <a class="btn btn-warning" href="{{ route('clientes.index') }}" aria-expanded="false">
                 Clientes
               </a>
-          </li>
-
-          <li class="nav-item dropdown">
-              <a class="btn btn-warning dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Endereços
-              </a>
-            <ul class="dropdown-menu">
-              <li>
-                <a href="{{ route('enderecos.create') }}" type="button" class="dropdown-item">Cadastrar Endereços</a>
-              </li>
-              <li>
-                <a href="{{ route('enderecos.index') }}" type="button" class="dropdown-item">Listar Endereços</a>
-              </li>
-            </ul>
           </li>
 
           <li class="nav-item dropdown">
