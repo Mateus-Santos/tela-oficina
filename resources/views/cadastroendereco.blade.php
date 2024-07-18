@@ -109,3 +109,7 @@
 </form>
 </div>
 @endsection
+
+@section('scripts')
+    @vite(['resources/js/cep.js'])
+@endsection

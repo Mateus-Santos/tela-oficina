@@ -12,7 +12,7 @@ const closeButton = document.querySelector("#close-message");
 cepInput.addEventListener("keypress", (e) => {
     const onlyNumbers = /[0-9]|\./;
     const key = String.fromCharCode(e.keyCode);
-  
+
     console.log(key);  
     console.log(onlyNumbers.test(key));
 
