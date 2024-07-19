@@ -30,7 +30,7 @@
 
         <div class="col-md-2">
             <label class="form-label" for="region">Estado:*</label>
-            <select id="region" class="form-control" name="region" disabled required>
+            <select id="region" class="form-control" name="region" readonly required>
             <option selected>Estado</option>
               <option value="AC">Acre</option>
               <option value="AL">Alagoas</option>
@@ -64,17 +64,17 @@
 
         <div class="col-md-2">
             <label class="form-label" for="city">Cidade:*</label>
-            <input type="text" class="form-control" id="city" placeholder="Exemplo: Feira de Santana..." name="cidade" disabled required>
+            <input type="text" class="form-control" id="city" placeholder="Exemplo: Feira de Santana..." name="city" readonly required>
         </div>
 
         <div class="col-md-3">
             <label class="form-label" for="neighborhood">Bairro:*</label>
-            <input type="text" class="form-control" id="neighborhood" placeholder="Exemplo: Tranquilópolis, Rio Verde..." name="neighborhood" disabled required>
+            <input type="text" class="form-control" id="neighborhood" placeholder="Exemplo: Tranquilópolis, Rio Verde..." name="neighborhood" readonly required>
         </div>
 
         <div class="col-md-3">
             <label class="form-label" for="address">Rua:*</label>
-            <input type="text" class="form-control" id="address" name="rua" disabled required>
+            <input type="text" class="form-control" id="address" name="address" readonly required>
         </div>
 
         </div>

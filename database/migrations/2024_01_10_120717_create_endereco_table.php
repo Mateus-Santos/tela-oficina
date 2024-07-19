@@ -15,7 +15,6 @@ return new class extends Migration
             $table->string('bairro', 50);
             $table->string('estado', 50);
             $table->string('rua', 50);
-            $table->string('endereco', 50);
             $table->integer('numero');
             $table->string('ponto_referencia', 200);
             $table->unsignedBigInteger('id_pessoa');

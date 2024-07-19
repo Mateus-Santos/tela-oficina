@@ -22,6 +22,7 @@ class EnderecoController extends Controller
 
     public function store(Request $request)
     {
+
         $endereco = new Endereco();
         $endereco->cep = $request->input("cep");
         $endereco->cidade = $request->input("city");
@@ -32,6 +33,7 @@ class EnderecoController extends Controller
         $endereco->ponto_referencia = $request->input("ponto_referencia");
         $endereco->id_pessoa = $request->input("id_pessoa");
         $endereco->save();
+
         return redirect()->route('enderecos.index');
     }
 

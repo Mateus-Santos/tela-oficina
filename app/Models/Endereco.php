@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Endereco extends Model
 {
@@ -24,8 +25,8 @@ class Endereco extends Model
         'ponto_referencia',
     ];
 
-    public function pessoa(): belongsTo
+    public function pessoa(): hasOne
     {
-        return $this->belongsTo(Pessoa::class, 'id_pessoa', 'id_pessoa');
+        return $this->hasOne(Pessoa::class, 'id_pessoa', 'id_pessoa');
     }
 }
