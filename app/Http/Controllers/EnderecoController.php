@@ -14,10 +14,10 @@ class EnderecoController extends Controller
         return view('listarendereco', compact('enderecos'));
     }
 
-    public function create()
+    public function create(string $id)
     {
-        $pessoas = Pessoa::all();
-        return view('cadastroendereco', compact('pessoas'));
+        $pessoa = Pessoa::where('id_pessoa', $id)->first();
+        return view('cadastroendereco', compact('pessoa'));
     }
 
     public function store(Request $request)
@@ -34,7 +34,7 @@ class EnderecoController extends Controller
         $endereco->id_pessoa = $request->input("id_pessoa");
         $endereco->save();
 
-        return redirect()->route('enderecos.index');
+        return redirect()->route('listarpessoa.index');
     }
 
     public function show(string $id)

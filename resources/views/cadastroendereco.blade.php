@@ -11,14 +11,13 @@
       <div class="campos">
 
         <div class="row mb-4">
+            <div class="col-md-1">
+                <label class="form-label" for="id_pessoa">ID:</label>
+                <input class="form-control" value="{{$pessoa->id_pessoa}}" type="text" name="id_pessoa" id="id_pessoa" readonly>
+            </div>
             <div class="col-md-2">
-                <label class="form-label" for="id_pessoa">Pessoa:</label>
-                <select id="id_pessoa" class="form-control" name="id_pessoa" required>
-                <option selected>Escolher...</option>
-                @foreach($pessoas as $pessoa)
-                <option value="{{$pessoa->id_pessoa}}">{{ $pessoa->nome }}</option>
-                @endforeach
-                </select>
+                <label class="form-label" for="id_pessoa">Nome pessoa:</label>
+                <input class="form-control" value="{{$pessoa->nome}}" type="text" name="id_pessoa" id="id_pessoa" disabled readonly>
             </div>
         </div>
         

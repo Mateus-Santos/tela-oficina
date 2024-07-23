@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\Models\Pessoa;
+use App\Models\Endereco;
 use Illuminate\Http\Request;
 
 class PessoaController extends Controller {
@@ -35,7 +36,9 @@ class PessoaController extends Controller {
 
     public function show(string $id)
     {
-        //
+        $pessoa = Pessoa::find($id);
+        $enderecos = Endereco::where('id_pessoa', $id)->get();
+        return view('showpessoa', ['pessoa' => $pessoa, 'enderecos' => $enderecos]);
     }
 
     public function edit(string $id_pessoa)

@@ -23,7 +23,7 @@
         <tbody>
             @foreach($enderecos as $endereco)
             <tr>
-            <th scope="row">1</th>
+            <th scope="row">{{ $endereco->id_endereco }}</th>
             <td>{{ $endereco->pessoa->nome }}</td>
             <td>{{ $endereco->cep }}</td>
             <td>{{ $endereco->cidade }}</td>
