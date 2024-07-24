@@ -36,7 +36,11 @@ class PecaController extends Controller
         $peca->preco_uni = $request->input("valor_uni");
         $peca->codigo_fabricante = $request->input("codigo_fabricante");
         if($request->hasFile("img") && $request->file("img")->isValid()){
-            $peca->img = $request->img->store('/public/pecas');
+            // Armazenar a imagem na pasta public/pecas
+            $imgPath = $request->file('img')->store('public/pecas');
+            // Remover o 'public/' para armazenar o caminho.
+            $imgPath = str_replace('public/', '', $imgPath);
+            $peca->img = $imgPath;
         }
         $peca->save();
         return redirect()->route('pecas.index');
