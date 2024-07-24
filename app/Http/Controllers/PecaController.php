@@ -37,16 +37,11 @@ class PecaController extends Controller
         $peca->codigo_fabricante = $request->input("codigo_fabricante");
         
         if($request->hasFile("img") && $request->file("img")->isValid()){
-
-            $requestImage = $request->img;
-
-            $extention = $requestImage->extension();
-
-            $imageName = md5($requestImage->getClientOriginalName() . strtotime("now")) . "." . $extention;
-
-            $requestImage->move(public_path('img/pecas'), $imageName);
-
-            $peca->img = $imageName;
+            //$requestImage = $request->img;
+            //$extention = $requestImage->extension();
+            //$imageName = md5($requestImage->getClientOriginalName() . strtotime("now")) . "." . $extention;
+            //$requestImage->move(public_path('img/pecas'), $imageName);
+            $peca->img = $request->img->store('pecas');
         }
         
         $peca->save();
