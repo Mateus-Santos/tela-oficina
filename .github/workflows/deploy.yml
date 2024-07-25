@@ -15,62 +15,27 @@ jobs:
       - name: Build
         run: echo Building the app
       
-  deploy-development:
+  deploy-production:
     runs-on: ubuntu-latest
     environment:
-      name: development
+      name: production
       url: ${{ vars.URL }}
     needs: build
     steps:
       - name: Repo Checkout
         uses: actions/checkout@v2
+
+      - name: Create Exclude File
+        run: |
+          git ls-files --ignored --exclude-standard -o > .rsync-exclude
+
       - name: Hostgator Deployment
         uses: easingthemes/ssh-deploy@v2.1.5
         with:
           SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}
-          ARGS: "-rlgoDzvc --delete"
-          SOURCE: "/"
+          ARGS: "-avz --delete --exclude-from='.rsync-exclude' --update"
+          SOURCE: "./"
           REMOTE_HOST: ${{ vars.REMOTE_HOST }}
           REMOTE_USER: ${{ vars.REMOTE_USER }}
           REMOTE_PORT: ${{ vars.REMOTE_PORT }}
           TARGET: ${{ vars.TARGET }}
-
-  deploy-staging:
-    runs-on: ubuntu-latest
-    environment:
-      name: staging
-      url: ${{ vars.URL }}
-    needs: deploy-development
-    steps:
-      - name: Repo Checkout
-        uses: actions/checkout@v2
-      - name: Hostgator Deployment
-        uses: easingthemes/ssh-deploy@v2.1.5
-        with:
-          SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}
-          ARGS: "-rlgoDzvc --delete"
-          SOURCE: "/"
-          REMOTE_HOST: ${{ vars.REMOTE_HOST }}
-          REMOTE_USER: ${{ vars.REMOTE_USER }}
-          REMOTE_PORT: ${{ vars.REMOTE_PORT }}
-          TARGET: ${{ vars.TARGET }}
-
-  deploy-production: 
-      runs-on: ubuntu-latest
-      environment:
-        name: staging
-        url: ${{ vars.URL }}
-      needs: deploy-development
-      steps:
-        - name: Repo Checkout
-          uses: actions/checkout@v2
-        - name: Hostgator Deployment
-          uses: easingthemes/ssh-deploy@v2.1.5
-          with:
-            SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}
-            ARGS: "-rlgoDzvc --delete"
-            SOURCE: "/"
-            REMOTE_HOST: ${{ vars.REMOTE_HOST }}
-            REMOTE_USER: ${{ vars.REMOTE_USER }}
-            REMOTE_PORT: ${{ vars.REMOTE_PORT }}
-            TARGET: ${{ vars.TARGET }}
