@@ -12,9 +12,8 @@
                 <th scope="col">Data de Nascimento</th>
                 <th scope="col">E-mail</th>
                 <th scope="col">CPF</th>
-                <th scope="col">RG</th>
                 <th scope="col">Telefone Principal</th>
-                <th scope="col">Telefone Secundário</th>
+                <th scope="col">Detalhes</th>
                 <th scope="col">Editar</th>
                 <th scope="col">Excluir</th>
             </tr>
@@ -27,9 +26,8 @@
                 <td>{{ $pessoa->data_nascimento }}</td>
                 <td>{{ $pessoa->email }}</td>
                 <td>{{ $pessoa->cpf }}</td>
-                <td>{{ $pessoa->rg }}</td>
                 <td>{{ $pessoa->telefone_1 }}</td>
-                <td>{{ $pessoa->telefone_2 }}</td>
+                <td><a href="/pessoas/{{$pessoa->id_pessoa}}" class="btn btn-success"><i class="bi bi-eye"></i>Detalhes</a></td>
                 <td><a href="/pessoas/edit/{{$pessoa->id_pessoa}}" class="btn btn-info"><i class="bi bi-pencil-square"></i>Editar</a></td>
                 <td>
                     <form action="/pessoas/{{$pessoa->id_pessoa}}" method="post">

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Pessoa extends Model
 {
@@ -24,9 +25,9 @@ class Pessoa extends Model
         'telefone_2',
     ];
 
-    public function endereco(): hasMany
+    public function endereco(): belongsTo
     {
-        return $this->hasMany(Endereco::class, 'id_endereco', 'id_endereco');
+        return $this->belongsTo(Endereco::class, 'id_endereco', 'id_endereco');
     }
 
     public function colaborador(): belongsTo

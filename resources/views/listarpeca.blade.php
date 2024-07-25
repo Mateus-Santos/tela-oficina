@@ -12,7 +12,7 @@
                     @if($peca->img == null)
                     img
                     @else
-                    <img class="peca-item-img" src="/img/pecas/{{$peca->img}}" alt="">
+                    <img class="peca-item-img" alt="" src="{{ url("storage/{$peca->img}") }}">
                     @endif
                 </div>
                 <div class="peca-item-info">

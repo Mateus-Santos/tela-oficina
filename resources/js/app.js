@@ -1,3 +1,3 @@
-import './bootstrap';
 import './main';
-import './forms';
+import './cadColaborador.js';
+import './calcOrcamento.js';

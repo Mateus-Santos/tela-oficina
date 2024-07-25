@@ -19,9 +19,9 @@
   
   <!-- Template Main CSS File -->
   <script src="{{ asset('/vendor/waypoints/noframework.waypoints.js') }}"></script>
-  @vite(['resources/js/cadColaborador.js', 'resources/js/calcOrcamento.js', 'resources/js/app.js', 'resources/scss/_app.scss'])
+  @vite(['resources/js/app.js', 'resources/scss/_app.scss'])
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-  <title>Oficina SOS Mecânica - BETA 1.0</title>
+  <title>Oficina SOS Mecânica {{ env('APP_VERSION') }}</title>
 </head>
 
 <body>
@@ -31,7 +31,7 @@
 <nav id="header" class="navbar navbar-expand-lg fixed-top">
     <!-- Example single danger button -->
   <div class="container-fluid">
-    <h1><a href="/">Oficina SOS Mecânica - BETA v1.0</a></h1>
+    <h1><a href="/">Oficina SOS Mecânica {{ env('APP_VERSION') }}</a></h1>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -80,20 +80,6 @@
               <a class="btn btn-warning" href="{{ route('clientes.index') }}" aria-expanded="false">
                 Clientes
               </a>
-          </li>
-
-          <li class="nav-item dropdown">
-              <a class="btn btn-warning dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Endereços
-              </a>
-            <ul class="dropdown-menu">
-              <li>
-                <a href="{{ route('enderecos.create') }}" type="button" class="dropdown-item">Cadastrar Endereços</a>
-              </li>
-              <li>
-                <a href="{{ route('enderecos.index') }}" type="button" class="dropdown-item">Listar Endereços</a>
-              </li>
-            </ul>
           </li>
 
           <li class="nav-item dropdown">
@@ -151,6 +137,7 @@
   <div id="preloader"></div>
   <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><img src="{{ asset('svg/arrow-up.svg') }}"  alt="Logo" /></a>
   <!-- Vendor JS Files -->
+  @yield('scripts')
   <script src="{{ asset('/vendor/aos/aos.js') }}"></script>
   <script src="{{ asset('/vendor/glightbox/js/glightbox.min.js') }}"></script>
   <script src="{{ asset('/vendor/isotope-layout/isotope.pkgd.min.js') }}"></script>

@@ -71,3 +71,7 @@
 </form>
 </div>
 @endsection
+
+@section('scripts')
+    @vite(['resources/js/cadPessoa.js'])
+@endsection

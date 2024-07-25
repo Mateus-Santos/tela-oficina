@@ -14,24 +14,32 @@
                 <th scope="col">Bairro</th>
                 <th scope="col">Estado</th>
                 <th scope="col">Rua</th>
-                <th scope="col">Endereco</th>
                 <th scope="col">Número</th>
                 <th scope="col">Ponto Refêrencia</th>
+                <th scope="col">Editar</th>
+                <th scope="col">Excluir</th>
             </tr>
     </thead>
         <tbody>
             @foreach($enderecos as $endereco)
             <tr>
-            <th scope="row">1</th>
-            <td>{{ $endereco->id_pessoa }}</td>
+            <th scope="row">{{ $endereco->id_endereco }}</th>
+            <td>{{ $endereco->pessoa->nome }}</td>
             <td>{{ $endereco->cep }}</td>
             <td>{{ $endereco->cidade }}</td>
             <td>{{ $endereco->bairro }}</td>
             <td>{{ $endereco->estado }}</td>
             <td>{{ $endereco->rua }}</td>
-            <td>{{ $endereco->endereco }}</td>
             <td>{{ $endereco->numero }}</td>
             <td>{{ $endereco->ponto_referencia }}</td>
+            <td><a href="/enderecos/edit/{{$endereco->id_endereco}}" class="btn btn-info"><i class="bi bi-pencil-square"></i>Editar</a></td>
+            <td>
+                <form action="/enderecos/{{$endereco->id_endereco}}" method="post">
+                    @csrf
+                    @method('DELETE')
+                    <button href="" class="btn btn-danger delete-btn"><i class="bi bi-trash3"></i>Deletar</button>
+                </form>
+            </td>
             </tr>
             @endforeach
         </tbody>

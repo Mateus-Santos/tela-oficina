@@ -7,70 +7,52 @@ use Illuminate\Http\Request;
 
 class EnderecoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
     public function index()
     {
         $enderecos = Endereco::with(['pessoa:id_pessoa,nome'])->get();
         return view('listarendereco', compact('enderecos'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function create(string $id)
     {
-        $pessoas = Pessoa::all();
-        return view('cadastroendereco', compact('pessoas'));
+        $pessoa = Pessoa::where('id_pessoa', $id)->first();
+        return view('cadastroendereco', compact('pessoa'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
+
         $endereco = new Endereco();
         $endereco->cep = $request->input("cep");
-        $endereco->cidade = $request->input("cidade");
-        $endereco->bairro = $request->input("bairro");
-        $endereco->estado = $request->input("estado");
-        $endereco->rua = $request->input("rua");
-        $endereco->endereco = $request->input("endereco");
+        $endereco->cidade = $request->input("city");
+        $endereco->bairro = $request->input("neighborhood");
+        $endereco->estado = $request->input("region");
+        $endereco->rua = $request->input("address");
         $endereco->numero = $request->input("numero");
         $endereco->ponto_referencia = $request->input("ponto_referencia");
         $endereco->id_pessoa = $request->input("id_pessoa");
         $endereco->save();
-        return redirect()->route('enderecos.index');
+
+        return redirect()->route('listarpessoa.index');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
+
     public function edit(string $id)
     {
         return view('editarendereco', ['endereco' -> $endereco]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         //
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         //
