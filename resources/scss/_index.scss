@@ -46,14 +46,18 @@ section {
 
 // Sessão sobre:
 
+.about, .team{
+	p{
+		font-size: 1rem;
+	}
+}
+
 .about {
 	background-color: $background-color_2;
 	color: $color_5;
+	
 	.content {
-		p {
-			font-size: 1rem;
-			text-align: justify;
-		}
+		
 		h3 {
 			font-weight: 600;
 			font-size: 26px;
@@ -184,9 +188,7 @@ section {
 			}
 		}
 	}
-	p {
-		font-size: 1rem;
-	}
+	
 	h4{
 		color: $color_1;
 	}
