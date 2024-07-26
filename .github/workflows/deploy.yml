@@ -27,13 +27,17 @@ jobs:
 
       - name: Create Exclude File
         run: |
-          git ls-files --ignored --exclude-standard -o > .rsync-exclude
+          echo ".git/" > .rsync-exclude
+          echo "node_modules/" >> .rsync-exclude
+          echo "storage/" >> .rsync-exclude
+          echo ".env" >> .rsync-exclude
+          git ls-files --ignored --exclude-standard -o >> .rsync-exclude
 
       - name: Hostgator Deployment
         uses: easingthemes/ssh-deploy@v2.1.5
         with:
           SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}
-          ARGS: "-avz --delete --exclude-from='.rsync-exclude' --update"
+          ARGS: "-avz --exclude-from='.rsync-exclude' --update"
           SOURCE: "./"
           REMOTE_HOST: ${{ vars.REMOTE_HOST }}
           REMOTE_USER: ${{ vars.REMOTE_USER }}
