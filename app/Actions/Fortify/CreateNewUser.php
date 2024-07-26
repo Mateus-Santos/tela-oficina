@@ -28,6 +28,11 @@ class CreateNewUser implements CreatesNewUsers
             'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
         ])->validate();
 
+        $input['cpf'] = str_replace(['.', '-'], "", $input['cpf']);
+        $input['rg'] = str_replace(['-', ' ', '(', ')'], "", $input['rg']);
+        $input['telefone_1'] = str_replace(['-', ' ', '(', ')'], "", $input['telefone_1']);
+        $input['telefone_2'] = str_replace(['-', ' ', '(', ')'], "", $input['telefone_2']);
+
         $pessoa = Pessoa::create([
             'nome' => $input['name'],
             'data_nascimento' => $input['data_nascimento'],

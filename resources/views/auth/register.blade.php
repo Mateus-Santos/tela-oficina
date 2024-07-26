@@ -3,6 +3,7 @@
         <x-slot name="logo">
             <x-authentication-card-logo />
         </x-slot>
+        @vite(['resources/js/cadPessoa.js'])
 
         <x-validation-errors class="mb-4" />
 
@@ -11,17 +12,17 @@
 
             <div>
                 <x-label for="name" value="{{ __('Name') }}" />
-                <x-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
+                <x-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name"  />
             </div>
 
             <div>
                 <x-label for="cpf" value="CPF:*" />
-                <x-input id="cpf" class="block mt-1 w-full" type="text" name="cpf" :value="old('cpf')" required autofocus autocomplete="cpf" />
+                <x-input id="cpf" class="block mt-1 w-full" type="text" name="cpf" :value="old('cpf')" required autofocus autocomplete="cpf" maxlength="14"/>
             </div>
 
             <div>
                 <x-label for="rg" value="RG" />
-                <x-input id="rg" class="block mt-1 w-full" type="text" name="rg" :value="old('rg')" required autofocus autocomplete="rg" />
+                <x-input id="rg" class="block mt-1 w-full" type="text" name="rg" :value="old('rg')" required autofocus autocomplete="rg" maxlength="12"/>
             </div>
 
             <div>
@@ -31,12 +32,12 @@
 
             <div>
                 <x-label for="telefone_1" value="Telefone Principal:*" />
-                <x-input id="telefone_1" class="block mt-1 w-full" type="text" name="telefone_1" :value="old('telefone_1')" required autofocus autocomplete="telefone_1" />
+                <x-input id="telefone_1" class="block mt-1 w-full" type="text" name="telefone_1" :value="old('telefone_1')" required autofocus autocomplete="telefone_1" maxlength="15"/>
             </div>
 
             <div>
                 <x-label for="telefone_2" value="Telefone Secundario" />
-                <x-input id="telefone_2" class="block mt-1 w-full" type="text" name="telefone_2" :value="old('telefone_2')" required autofocus autocomplete="telefone_2" />
+                <x-input id="telefone_2" class="block mt-1 w-full" type="text" name="telefone_2" :value="old('telefone_2')" required autofocus autocomplete="telefone_2" maxlength="15"/>
             </div>
 
             <div class="mt-4">

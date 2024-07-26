@@ -1,88 +1,86 @@
-let campoCPF =  document.getElementById("cpf");
+const campoCPF =  document.querySelector("#cpf");
+const campoRG =  document.querySelector("#rg");
+const telefone1 =  document.querySelector("#telefone_1");
+const telefone2 =  document.querySelector("#telefone_2");
 
-campoCPF.addEventListener("keypress", function(e) {
-
-    const keyCode = (e.key ? e.key : e.wich);
-
+// Validate CPF
+campoCPF.addEventListener("keypress", (e) => {
     let tamanhoCampo = campoCPF.value.length;
-
-    if ("1234567890".indexOf(keyCode) >= 0){
-        if(tamanhoCampo == 3 || tamanhoCampo == 7){
-            campoCPF.value += ".";
-        }
-
-        if(tamanhoCampo == 11){
-            campoCPF.value += "-";
-        }
+    const onlyNumbers = /[0-9]|\./;
+    const key = String.fromCharCode(e.keyCode);
+    // allow only numbers
+    if (!onlyNumbers.test(key)) {
+      e.preventDefault();
+      return;
     }
-    else{
-        e.preventDefault();
+    //Formatação visual do CPF
+    if(tamanhoCampo == 3 || tamanhoCampo == 7){
+        campoCPF.value += ".";
     }
-    
+    if(tamanhoCampo == 11){
+        campoCPF.value += "-";
+    }
 });
 
-let telefone1 =  document.getElementById("telefone_1");
-
-telefone1.addEventListener("keypress", function(e) {
-
-    const keyCode = (e.key ? e.key : e.wich);
-
-    let tamanhoCampo = telefone1.value.length;
-
-    if ("1234567890".indexOf(keyCode) >= 0){
-        if(tamanhoCampo == 0){
-            telefone1.value += "(";
-        }
-        
-        if(tamanhoCampo == 3){
-            telefone1.value += ") ";
-        }
-
-        if(tamanhoCampo == 6 && keyCode == 9){
-            telefone1.value += " ";
-        }
-
-        if(tamanhoCampo == 11 && telefone1.value[5] == 9){
-            telefone1.value += "-";
-        }else if(tamanhoCampo == 9 && telefone1.value[5] != 9){
-            telefone1.value += "-";
-        }
+// Validate RG
+campoRG.addEventListener("keypress", (e) => {
+    const onlyNumbers = /[0-9]|\./;
+    const key = String.fromCharCode(e.keyCode);
+    let tamanhoCampo = campoRG.value.length;
+    // allow only numbers
+    if (!onlyNumbers.test(key)) {
+      e.preventDefault();
+      return;
     }
-    else{
-        e.preventDefault();
+    //Formatação visual do CPF
+    if(tamanhoCampo == 2 || tamanhoCampo == 6){
+        campoRG.value += ".";
     }
-    
+    if(tamanhoCampo == 10){
+        campoRG.value += "-";
+    }
 });
 
-let telefone2 =  document.getElementById("telefone_2");
+// Validate Tell 1
+telefone1.addEventListener("input", function(e) {
+    let value = telefone1.value.replace(/\D/g, ''); // Remove todos os caracteres não numéricos
 
-telefone2.addEventListener("keypress", function(e) {
+    if (value.length > 0) {
+        value = "(" + value;
+    }
+    if (value.length > 3) {
+        value = value.slice(0, 3) + ") " + value.slice(3);
+    }
 
-    const keyCode = (e.key ? e.key : e.wich);
-
-    let tamanhoCampo = telefone2.value.length;
-
-    if ("1234567890".indexOf(keyCode) >= 0){
-        if(tamanhoCampo == 0){
-            telefone2.value += "(";
-        }
-        
-        if(tamanhoCampo == 3){
-            telefone2.value += ") ";
-        }
-
-        if(tamanhoCampo == 6 && keyCode == 9){
-            telefone2.value += " ";
-        }
-
-        if(tamanhoCampo == 11 && telefone2.value[5] == 9){
-            telefone2.value += "-";
-        }else if(tamanhoCampo == 9 && telefone2.value[5] != 9){
-            telefone2.value += "-";
+    if (value.length > 9) {
+        if (value[5] == '9') {
+            value = value.slice(0, 10) + "-" + value.slice(10, 15);
+        } else {
+            value = value.slice(0, 9) + "-" + value.slice(9, 13);
         }
     }
 
-    else{
-        e.preventDefault();
+    telefone1.value = value;
+});
+
+// Validate Tell 2
+telefone2.addEventListener("input", function(e) {
+    let value = telefone2.value.replace(/\D/g, ''); // Remove todos os caracteres não numéricos
+
+    if (value.length > 0) {
+        value = "(" + value;
     }
+    if (value.length > 3) {
+        value = value.slice(0, 3) + ") " + value.slice(3);
+    }
+
+    if (value.length > 9) {
+        if (value[5] == '9') {
+            value = value.slice(0, 10) + "-" + value.slice(10, 15);
+        } else {
+            value = value.slice(0, 9) + "-" + value.slice(9, 13);
+        }
+    }
+
+    telefone2.value = value;
 });
