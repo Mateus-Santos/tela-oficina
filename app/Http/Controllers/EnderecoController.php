@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 use App\Models\Pessoa;
 use App\Models\Endereco;
 use Illuminate\Http\Request;
+use App\Http\Requests\EnderecoStoreRequest;
 
 class EnderecoController extends Controller
 {
-
     public function index()
     {
         $enderecos = Endereco::with(['pessoa:id_pessoa,nome'])->get();
@@ -20,9 +20,8 @@ class EnderecoController extends Controller
         return view('cadastroendereco', compact('pessoa'));
     }
 
-    public function store(Request $request)
+    public function store(EnderecoStoreRequest $request)
     {
-
         $endereco = new Endereco();
         $endereco->cep = $request->input("cep");
         $endereco->cidade = $request->input("city");
@@ -33,15 +32,13 @@ class EnderecoController extends Controller
         $endereco->ponto_referencia = $request->input("ponto_referencia");
         $endereco->id_pessoa = $request->input("id_pessoa");
         $endereco->save();
-
-        return redirect()->route('listarpessoa.index');
+        return redirect()->route('pessoas.index');
     }
 
     public function show(string $id)
     {
         //
     }
-
 
     public function edit(string $id)
     {
