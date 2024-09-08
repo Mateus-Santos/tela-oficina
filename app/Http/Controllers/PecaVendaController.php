@@ -17,7 +17,7 @@ class PecaVendaController extends Controller
     public function index()
     {
         $pecavendas = PecaVenda::all();
-        return view('listarpecavenda', compact('pecavendas'));
+        return view('peca.listarpecavenda', compact('pecavendas'));
     }
 
     public function create()
@@ -25,7 +25,7 @@ class PecaVendaController extends Controller
         $clientes = Cliente::all();
         $colaboradores = Colaborador::all();
         $pecas = Peca::all();
-        return view('cadastropecavenda', compact('clientes', 'colaboradores', 'pecas'));
+        return view('peca.cadastropecavenda', compact('clientes', 'colaboradores', 'pecas'));
     }
 
     public function store(Request $request)

@@ -10,12 +10,12 @@ class PecaController extends Controller
     public function index()
     {
         $pecas = Peca::all();
-        return view('listarpeca', compact('pecas'));
+        return view('peca.listarpeca', compact('pecas'));
     }
 
     public function create()
     {
-        return view('cadastropeca');
+        return view('peca.cadastropeca');
     }
 
     public function store(Request $request)
@@ -54,7 +54,7 @@ class PecaController extends Controller
     public function edit(string $id_peca)
     {
         $peca = Peca::where('id_peca', $id_peca)->first();
-        return view('editarpeca', array('peca' => $peca));
+        return view('peca.editarpeca', array('peca' => $peca));
     }
 
     public function update(Request $request, string $id_peca)

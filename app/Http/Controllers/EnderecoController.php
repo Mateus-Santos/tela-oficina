@@ -11,13 +11,13 @@ class EnderecoController extends Controller
     public function index()
     {
         $enderecos = Endereco::with(['pessoa:id_pessoa,nome'])->get();
-        return view('listarendereco', compact('enderecos'));
+        return view('endereco.listarendereco', compact('enderecos'));
     }
 
     public function create(string $id)
     {
         $pessoa = Pessoa::where('id_pessoa', $id)->first();
-        return view('cadastroendereco', compact('pessoa'));
+        return view('endereco.cadastroendereco', compact('pessoa'));
     }
 
     public function store(EnderecoStoreRequest $request)

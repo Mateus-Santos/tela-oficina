@@ -11,12 +11,12 @@ class PessoaController extends Controller {
     public function index()
     {
         $pessoas = Pessoa::all();
-        return view('listarpessoa', compact('pessoas'));
+        return view('pessoa.listarpessoa', compact('pessoas'));
     }
 
     public function create()
     {
-        return view('cadastropessoa');
+        return view('pessoa.cadastropessoa');
     }
 
     public function store(Request $request)
@@ -38,13 +38,13 @@ class PessoaController extends Controller {
     {
         $pessoa = Pessoa::find($id);
         $enderecos = Endereco::where('id_pessoa', $id)->get();
-        return view('showpessoa', ['pessoa' => $pessoa, 'enderecos' => $enderecos]);
+        return view('pessoa.showpessoa', ['pessoa' => $pessoa, 'enderecos' => $enderecos]);
     }
 
     public function edit(string $id_pessoa)
     {
         $pessoa = Pessoa::where('id_pessoa', $id_pessoa)->first();
-        return view('editarpessoa', array('pessoa' => $pessoa));
+        return view('pessoa.editarpessoa', array('pessoa' => $pessoa));
     }
 
     public function update(Request $request, string $id_pessoa)
