@@ -6,7 +6,14 @@ export default defineConfig({
         laravel({
             input: [
                 'resources/css/app.css',
+                'resources/scss/_app.scss',
                 'resources/js/app.js',
+                'resources/js/cadColaborador.js',
+                'resources/js/cadError.js',
+                'resources/js/cadPessoa.js',
+                'resources/js/calcOrcamento.js',
+                'resources/js/cep.js',
+                'resources/js/main.js',
                 'resources/scss/_app.scss',
             ],
             refresh: true,

@@ -128,3 +128,7 @@
 </form>
 </section>
 @endsection
+
+@section('scripts')
+    @vite(['resources/js/cadOrcamento.js'])
+@endsection

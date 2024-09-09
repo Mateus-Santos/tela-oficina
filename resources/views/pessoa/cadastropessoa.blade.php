@@ -73,5 +73,5 @@
 @endsection
 
 @section('scripts')
-    @vite(['resources/js/cadPessoa.js'])
+    @vite(['resources/js/cadPessoa.js', 'resources/js/cep.js'])
 @endsection
