@@ -18,14 +18,6 @@ Route::get('/home', function () {
     return view('index');
 });
 
-//Rotas Pessoas.
-Route::get('/pessoas', [PessoaController::class, 'index'])->name('pessoas.index');
-Route::get('/pessoas/create', [PessoaController::class, 'create'])->name('pessoas.create');
-Route::post('/pessoas', [PessoaController::class, 'store'])->name('pessoas.store');
-Route::get('/pessoas/{id}', [PessoaController::class, 'show'])->name('pessoas.show');
-Route::get('/pessoas/edit/{id}', [PessoaController::class, 'edit'])->name('pessoas.edit');
-Route::put('/pessoas/update/{id}', [PessoaController::class, 'update'])->name('pessoas.update');
-Route::delete('/pessoas/{id}', [PessoaController::class, 'destroy'])->name('pessoas.destroy');
 
 // Rotas Endereços.
 Route::get('/enderecos', [EnderecoController::class, 'index'])->name('enderecos.index');
@@ -72,6 +64,16 @@ Route::post('/clientes/{id}', [ClienteController::class, 'show'])->name('cliente
 Route::get('/clientes/edit/{id}', [ClienteController::class, 'edit'])->name('clientes.edit');
 Route::put('/clientes/update/{id}', [ClienteController::class, 'update'])->name('clientes.update');
 Route::delete('/clientes/{id}', [ClienteController::class, 'destroy'])->name('clientes.destroy');
+
+Route::middleware(['admin'])->group(function () {
+    Route::get('/pessoas', [PessoaController::class, 'index'])->name('pessoas.index');
+    Route::get('/pessoas/create', [PessoaController::class, 'create'])->name('pessoas.create');
+    Route::post('/pessoas', [PessoaController::class, 'store'])->name('pessoas.store');
+    Route::get('/pessoas/{id}', [PessoaController::class, 'show'])->name('pessoas.show');
+    Route::get('/pessoas/edit/{id}', [PessoaController::class, 'edit'])->name('pessoas.edit');
+    Route::put('/pessoas/update/{id}', [PessoaController::class, 'update'])->name('pessoas.update');
+    Route::delete('/pessoas/{id}', [PessoaController::class, 'destroy'])->name('pessoas.destroy');
+});
 
 Route::middleware([
     'auth:sanctum',

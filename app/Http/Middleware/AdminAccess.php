@@ -5,9 +5,8 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Illuminate\Support\Facades\Auth;
 
-class CheckIfUserIsBlocked
+class AdminAccess
 {
     /**
      * Handle an incoming request.
@@ -16,10 +15,9 @@ class CheckIfUserIsBlocked
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (auth()->check() && (auth()->user()->status == 0)) {
-            Auth::logout();
-            return redirect()->route('login')->with('status', 'Sua conta está bloqueada. Entre em contato com Administrador para solucionar seu problema.');
+        if (auth()->check() && (auth()->user()->colaborador == 1)) {
+            return $next($request);
         }
-        return $next($request);
+        dd('Acesso Negado, você não é um colaborador.');
     }
 }
