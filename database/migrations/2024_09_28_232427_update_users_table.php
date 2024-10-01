@@ -15,6 +15,7 @@ return new class extends Migration
             $table->boolean('status')->default(true); //1: Ativado, 0: Desativado
             $table->boolean('cliente')->default(true); //1: Ativado, 0: Desativado
             $table->boolean('colaborador')->default(false); //1: Ativado, 0: Desativado
+            $table->boolean('google_id')->default(false);
         });
     }
 

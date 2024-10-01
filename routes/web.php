@@ -8,6 +8,7 @@ use App\Http\Controllers\PecaController;
 use App\Http\Controllers\ColaboradorController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\PecaVendaController;
+use App\Http\Controllers\googleAuthController;
 //use App\Http\Controllers\ChatController;
 
 Route::get('/', function () {
@@ -66,14 +67,11 @@ Route::put('/clientes/update/{id}', [ClienteController::class, 'update'])->name(
 Route::delete('/clientes/{id}', [ClienteController::class, 'destroy'])->name('clientes.destroy');
 
 Route::middleware(['admin'])->group(function () {
-    Route::get('/pessoas', [PessoaController::class, 'index'])->name('pessoas.index');
-    Route::get('/pessoas/create', [PessoaController::class, 'create'])->name('pessoas.create');
-    Route::post('/pessoas', [PessoaController::class, 'store'])->name('pessoas.store');
-    Route::get('/pessoas/{id}', [PessoaController::class, 'show'])->name('pessoas.show');
-    Route::get('/pessoas/edit/{id}', [PessoaController::class, 'edit'])->name('pessoas.edit');
-    Route::put('/pessoas/update/{id}', [PessoaController::class, 'update'])->name('pessoas.update');
-    Route::delete('/pessoas/{id}', [PessoaController::class, 'destroy'])->name('pessoas.destroy');
+    Route::resource('pessoas', PessoaController::class);
 });
+
+Route::get('login/google/redirect', [googleAuthController::class, 'redirect']);
+Route::get('login/google/callback', [googleAuthController::class, 'callback']);
 
 Route::middleware([
     'auth:sanctum',
