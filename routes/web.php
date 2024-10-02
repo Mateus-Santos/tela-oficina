@@ -13,7 +13,7 @@ use App\Http\Controllers\googleAuthController;
 
 // Tela principal
 Route::view('/', 'index');
-
+Route::view('/home', 'index');
 
 //Acesso a autenticação por conta google.
 Route::get('login/google/redirect', [googleAuthController::class, 'redirect']);

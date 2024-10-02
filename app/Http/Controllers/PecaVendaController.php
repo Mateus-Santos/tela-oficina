@@ -14,6 +14,11 @@ use App\Events\VendaPeca;
 
 class PecaVendaController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('admin:admin');
+    }
+    
     public function index()
     {
         $pecavendas = PecaVenda::all();

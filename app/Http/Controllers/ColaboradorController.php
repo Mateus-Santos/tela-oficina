@@ -8,6 +8,11 @@ use App\Models\Cliente;
 
 class ColaboradorController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('admin:admin');
+    }
+    
     public function index()
     {
         $colaboradors = Colaborador::with('pessoa', 'user')->get();
