@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PessoaController;
 use App\Http\Controllers\EnderecoController;
-use App\Http\Controllers\UserController;
+#use App\Http\Controllers\UserController;
 use App\Http\Controllers\PecaController;
 use App\Http\Controllers\ColaboradorController;
 use App\Http\Controllers\ClienteController;
@@ -20,7 +20,7 @@ Route::get('login/google/redirect', [googleAuthController::class, 'redirect']);
 Route::get('login/google/callback', [googleAuthController::class, 'callback']);
 
 //User bloqueado
-Route::patch('/users/{id}/block', [UserController::class, 'toggleBlock'])->name('toggleBlock');
+#Route::patch('/users/{id}/block', [UserController::class, 'toggleBlock'])->name('toggleBlock');
 
 Route::middleware([
     'auth:sanctum',
