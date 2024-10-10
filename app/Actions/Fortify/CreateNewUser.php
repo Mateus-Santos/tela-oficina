@@ -24,14 +24,14 @@ class CreateNewUser implements CreatesNewUsers
 
         //Realizando validações de dados
         $validator = Validator::make($input, [
-            'cpf' => 'required|string|unique:pessoa,cpf|min:11',
+            'cpf' => 'string|unique:pessoa,cpf|min:11',
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
             'data_nascimento' => 'required|date',
-            'rg' => 'required|string|min:9',
+            'rg' => 'string|min:9',
             'telefone_1' => 'required|string',
-            'telefone_2' => 'required|string',
+            'telefone_2' => 'string',
         ], [
             'name.required' => 'O campo nome é obrigatório.',
             'email.required' => 'O campo email é obrigatório.',

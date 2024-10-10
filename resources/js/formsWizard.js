@@ -16,6 +16,7 @@ $(function(){
 
     }
 
+    //Filtra os valores que devem ser exibidos no form-section
     function curIndex(){
         return $sections.index($sections.filter('.current'));
     }
