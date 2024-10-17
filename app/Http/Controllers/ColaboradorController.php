@@ -8,16 +8,21 @@ use App\Models\Cliente;
 
 class ColaboradorController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('admin:admin');
+    }
+    
     public function index()
     {
         $colaboradors = Colaborador::with('pessoa', 'user')->get();
-        return view('listarcolaborador', compact('colaboradors'));
+        return view('colaborador.listarcolaborador', compact('colaboradors'));
     }
 
     public function create()
     {
         $clientes = Cliente::all();
-        return view('cadastrocolaborador', compact('clientes'));
+        return view('colaborador.cadastrocolaborador', compact('clientes'));
     }
 
     public function store(Request $request)
@@ -45,7 +50,7 @@ class ColaboradorController extends Controller
     {
         $colaborador = Colaborador::where('id_colaborador', $id_colaborador)->first();
         $colaborador_pessoa_users = Colaborador::with('pessoa', 'user')->get();
-        return view('editarcolaborador', array('colaborador' => $colaborador), array('colaborador_pessoa_users' => $colaborador_pessoa_users));
+        return view('colaborador.editarcolaborador', array('colaborador' => $colaborador), array('colaborador_pessoa_users' => $colaborador_pessoa_users));
     }
 
 

@@ -13,14 +13,14 @@ class ClienteController extends Controller
     public function index()
     {
         $clientes = Cliente::all();
-        return view('listarcliente', compact('clientes'));
+        return view('cliente.listarcliente', compact('clientes'));
     }
 
     public function create()
     {
         $users = User::all();
         $pessoas = Pessoa::all();
-        return view('cadastrocliente', compact('users', 'pessoas'));
+        return view('cliente.cadastrocliente', compact('users', 'pessoas'));
     }
 
 

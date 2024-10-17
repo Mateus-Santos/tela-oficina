@@ -1,4 +1,4 @@
-@extends('layout')
+@extends('layouts.layout')
 
 @section('content')
 
@@ -107,8 +107,22 @@
   </div>
 </form>
 </div>
+
+@if ($errors->any())
+    @vite(['resources/js/cadError.js'])
+    <div id="content-to-remove" class="mensseger_error_container">
+        <div class="font-medium text-red-600">Ops, algo deu errado.</div>
+
+        <ul class="mt-3 list-disc list-inside text-sm">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+        <button id="remove-button" type="submit" class="btn btn-success">CLOSE</button>
+    </div>
+@endif
 @endsection
 
 @section('scripts')
-    @vite(['resources/js/cep.js'])
+    @vite(['resources/js/cep.js'])    
 @endsection

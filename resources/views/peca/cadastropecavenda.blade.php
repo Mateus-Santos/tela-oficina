@@ -1,4 +1,4 @@
-@extends('layout')
+@extends('layouts.layout')
 
 @section('content')
 
@@ -127,4 +127,8 @@
   </div>
 </form>
 </section>
+@endsection
+
+@section('scripts')
+    @vite(['resources/js/cadOrcamento.js'])
 @endsection

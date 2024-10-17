@@ -9,7 +9,7 @@
 
   <!-- IMPORTANDO BOOTSTRAP -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- Favicons -->
   <link href="{{ asset('img/favicon.png') }}" rel="icon">
   <link href="{{ asset('img/apple-touch-icon.png') }}" rel="apple-touch-icon">
@@ -135,9 +135,7 @@
 
     </div>
   <div id="preloader"></div>
-  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><img src="{{ asset('svg/arrow-up.svg') }}"  alt="Logo" /></a>
-  <!-- Vendor JS Files -->
-  @yield('scripts')
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><img src="{{ asset('svg/arrow-up.svg') }}"  alt="Logo" /></a>   
   <script src="{{ asset('/vendor/aos/aos.js') }}"></script>
   <script src="{{ asset('/vendor/glightbox/js/glightbox.min.js') }}"></script>
   <script src="{{ asset('/vendor/isotope-layout/isotope.pkgd.min.js') }}"></script>
@@ -145,6 +143,7 @@
   <script src="{{ asset('/vendor/swiper/swiper-bundle.min.js') }}"></script>
   <script src="{{ asset('/vendor/waypoints/noframework.waypoints.js') }}"></script>
   <!-- Template Main JS File -->
-  <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>  
+  <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+  @yield('scripts')
 </body>
 </html>
