@@ -4,9 +4,9 @@
 
   <div class="container cadastro">
   
-  <h1>CADASTRO DE PESSOA FÍSICA</h1>
+  <h1>CADASTRO DE USUÁRIO FÍSICA</h1>
 
-  <form action="{{ route('pessoas.store') }}" method="post" class="row g-3">
+  <form action="{{ route('users.store') }}" method="post" class="row g-3">
   @csrf
       <div class="campos">
       <div class="row mb-3">
@@ -73,5 +73,5 @@
 @endsection
 
 @section('scripts')
-    @vite(['resources/js/cadPessoa.js', 'resources/js/cep.js'])
+    @vite(['resources/js/cadUser.js', 'resources/js/cep.js'])
 @endsection

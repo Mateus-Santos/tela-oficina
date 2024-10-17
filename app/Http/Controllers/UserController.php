@@ -5,53 +5,53 @@ use App\Models\User;
 use App\Models\Endereco;
 use Illuminate\Http\Request;
 
-class PessoaController extends Controller {
+class UserController extends Controller {
 
     public function index()
     {
-        $pessoas = Pessoa::all();
-        return view('pessoa.listarpessoa', compact('pessoas'));
+        $users = User::all();
+        return view('user.listaruser', compact('users'));
     }
 
     public function create()
     {
-        return view('pessoa.cadastropessoa');
+        return view('user.cadastrouser');
     }
 
     public function store(Request $request)
     {
-        $pessoa = new Pessoa();
+        $user = new User();
         $onlyconsonants = str_replace(['-', ''], "", $request);
-        $pessoa->nome = $request->input("nome");
-        $pessoa->email = $request->input("email");
-        $pessoa->data_nascimento = $request->input("data_nascimento");
-        $pessoa->telefone_1 = str_replace(['-', ' ', '(', ')'], "", $request->input("telefone_1"));
-        $pessoa->telefone_2 = str_replace(['-', ' ', '(', ')'], "", $request->input("telefone_2"));
-        $pessoa->cpf = str_replace(['.', '-'], "", $request->input("cpf"));;
-        $pessoa->rg = $request->input("rg");
-        $pessoa->save();
-        return redirect()->route('pessoas.index');
+        $user->name = $request->input("nome");
+        $user->email = $request->input("email");
+        $user->data_nascimento = $request->input("data_nascimento");
+        $user->telefone_1 = str_replace(['-', ' ', '(', ')'], "", $request->input("telefone_1"));
+        $user->telefone_2 = str_replace(['-', ' ', '(', ')'], "", $request->input("telefone_2"));
+        $user->cpf = str_replace(['.', '-'], "", $request->input("cpf"));;
+        $user->rg = $request->input("rg");
+        $user->save();
+        return redirect()->route('user.index');
     }
 
     public function show(string $id)
     {
-        $pessoa = Pessoa::find($id);
-        $enderecos = Endereco::where('id_pessoa', $id)->get();
-        return view('pessoa.showpessoa', ['pessoa' => $pessoa, 'enderecos' => $enderecos]);
+        $user = User::find($id);
+        $enderecos = Endereco::where('id_user', $id)->get();
+        return view('user.showuser', ['user' => $user, 'enderecos' => $enderecos]);
     }
 
-    public function edit(string $id_pessoa)
+    public function edit(string $id_user)
     {
-        $pessoa = Pessoa::where('id_pessoa', $id_pessoa)->first();
-        return view('pessoa.editarpessoa', array('pessoa' => $pessoa));
+        $user = User::where('id_user', $id_user)->first();
+        return view('user.editaruser', array('user' => $user));
     }
 
-    public function update(Request $request, string $id_pessoa)
+    public function update(Request $request, string $id_user)
     {
-        $pessoa = Pessoa::where('id_pessoa', $id_pessoa)->first();
+        $user = User::where('id_user', $id_user)->first();
 
-        $pessoa->update([
-            'id_pessoa' => $id_pessoa,
+        $user->update([
+            'id_user' => $id_user,
             'nome' => $request->nome,
             'data_nascimento' => $request->data_nascimento,
             'email' => $request->email,
@@ -59,14 +59,16 @@ class PessoaController extends Controller {
             'rg' => $request->rg,
             'telefone_1' => $request->telefone_1,
             'telefone_2' => $request->telefone_2,
+            'status' => $request->id_cliente,
+            'permitions' => $request->permitions,
         ]);
         
-        return redirect()->route('pessoas.index');
+        return redirect()->route('users.index');
     }
 
-    public function destroy(string $id_pessoa)
+    public function destroy(string $id_user)
     {
-        $pessoa = Pessoa::where('id_pessoa', $id_pessoa)->delete();
-        return redirect()->route('pessoas.index');
+        $user = User::where('id_user', $id_user)->delete();
+        return redirect()->route('users.index');
     }
 }

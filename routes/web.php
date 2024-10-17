@@ -1,9 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PessoaController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\EnderecoController;
-#use App\Http\Controllers\UserController;
 use App\Http\Controllers\PecaController;
 use App\Http\Controllers\ColaboradorController;
 use App\Http\Controllers\ClienteController;

@@ -1,6 +1,6 @@
 <x-imp-jquery />
 
-@vite(['resources/js/cadPessoa.js', 'resources/js/formsWizard.js', 'resources/scss/_forms_wizard.scss'])
+@vite(['resources/js/cadUser.js', 'resources/js/formsWizard.js', 'resources/scss/_forms_wizard.scss'])
 <x-guest-layout>
     <x-authentication-card>
         <x-slot name="logo">
