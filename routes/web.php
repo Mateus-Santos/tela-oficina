@@ -18,6 +18,8 @@ Route::get('/home', function () {
     return view('index');
 });
 
+Route::middleware(['auth', 'check.blocked'])->group(function () {
+
 //Rotas Pessoas.
 Route::get('/pessoas', [PessoaController::class, 'index'])->name('pessoas.index');
 Route::get('/pessoas/create', [PessoaController::class, 'create'])->name('pessoas.create');
@@ -73,6 +75,8 @@ Route::get('/clientes/edit/{id}', [ClienteController::class, 'edit'])->name('cli
 Route::put('/clientes/update/{id}', [ClienteController::class, 'update'])->name('clientes.update');
 Route::delete('/clientes/{id}', [ClienteController::class, 'destroy'])->name('clientes.destroy');
 
+});
+
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
@@ -83,8 +87,10 @@ Route::middleware([
     })->name('dashboard');
 });
 
-Route::middleware(['auth', 'check.blocked'])->group(function () {
-    // Suas rotas protegidas
-});
+
+Route::get('/erro-autenticacao', function () {
+    return view('errors.403');
+})->name('erro-autenticacao');
+
 
 Route::patch('/users/{id}/block', [UserController::class, 'toggleBlock'])->name('toggleBlock');
