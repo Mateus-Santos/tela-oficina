@@ -21,7 +21,9 @@ return new class extends Migration
             $table->foreignId('current_team_id')->nullable();
             $table->string('profile_photo_path', 2048)->nullable();
             $table->timestamps();
-            $table->boolean('status')->default(false); //1: Ativado, 0: Desativado
+            $table->boolean('status')->default(true); //1: Ativado, 0: Bloqueado;
+            $table->boolean('cliente')->default(true); //1: É cliente, 0: Não é cliente;
+            $table->boolean('colaborador')->default(false); //1: É colaborador, 0: Não é Colaborador;
         });
     }
 
