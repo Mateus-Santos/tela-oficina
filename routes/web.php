@@ -34,7 +34,7 @@ Route::middleware([
 
 //Rotas para administradores.
 Route::middleware(['admin'])->group(function () {
-    Route::resource('pessoas', PessoaController::class);
+    Route::resource('users', UserController::class);
     Route::resource('clientes', ClienteController::class);
     Route::resource('pecavendas', PecaVendaController::class);
     Route::resource('pecas', PecaController::class);

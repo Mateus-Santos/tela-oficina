@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Models\Pessoa;
+use App\Models\User;
 use App\Models\Endereco;
 use Illuminate\Http\Request;
 

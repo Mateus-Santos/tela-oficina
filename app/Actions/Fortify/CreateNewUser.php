@@ -51,7 +51,7 @@ class CreateNewUser implements CreatesNewUsers
         //Realizando cadastro
         $validated = $validator->validated();
 
-        $pessoa = Pessoa::create([
+        $user = User::create([
             'nome' => $validated['name'],
             'data_nascimento' => $validated['data_nascimento'],
             'email' => $validated['email'],
@@ -59,16 +59,12 @@ class CreateNewUser implements CreatesNewUsers
             'rg' => $validated['rg'],
             'telefone_1' => $validated['telefone_1'],
             'telefone_2' => $validated['telefone_2'],
-        ]);
-
-        $user = User::create([
             'name' => $validated['name'],
-            'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
         ]);
 
         Cliente::create([
-            'id_pessoa' => $pessoa->id_pessoa,
+            'id_pessoa' => $user->id,
             'id_user' => $user->id,
             'pontos' => 0,
         ]);

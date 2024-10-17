@@ -9,11 +9,11 @@
         <div class="m-4">
             <label class="step step0">Etapa Um</label>
             <label class="step step1" >Etapa Dois</label>
-            <label class="step step1" >Etapa Três</label>
+            <label class="step step2" >Etapa Três</label>
         </div>
         <x-validation-errors class="mb-4" />      
         
-        <form class="employee-form" method="POST" action="{{ route('register') }}">
+        <form class="employee-form mb-4" method="POST" action="{{ route('register') }}">
             @csrf
             
             <div class="form-section">
