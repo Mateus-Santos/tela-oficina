@@ -1,9 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PessoaController;
-use App\Http\Controllers\EnderecoController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\EnderecoController;
 use App\Http\Controllers\PecaController;
 use App\Http\Controllers\ColaboradorController;
 use App\Http\Controllers\ClienteController;
@@ -94,3 +93,13 @@ Route::get('/erro-autenticacao', function () {
 
 
 Route::patch('/users/{id}/block', [UserController::class, 'toggleBlock'])->name('toggleBlock');
+
+//Rotas para administradores.
+Route::middleware(['admin'])->group(function () {
+    Route::resource('users', UserController::class);
+    Route::resource('clientes', ClienteController::class);
+    Route::resource('pecavendas', PecaVendaController::class);
+    Route::resource('pecas', PecaController::class);
+    Route::resource('colaboradors', ColaboradorController::class);
+    Route::resource('enderecos', EnderecoController::class);
+});

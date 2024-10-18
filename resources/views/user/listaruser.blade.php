@@ -19,18 +19,18 @@
             </tr>
     </thead>
         <tbody>
-            @foreach($pessoas as $pessoa)
+            @foreach($users as $user)
             <tr>
-                <th scope="row">{{$pessoa->id_pessoa}}</th>
-                <td>{{ $pessoa->nome }}</td>
-                <td>{{ $pessoa->data_nascimento }}</td>
-                <td>{{ $pessoa->email }}</td>
-                <td>{{ $pessoa->cpf }}</td>
-                <td>{{ $pessoa->telefone_1 }}</td>
-                <td><a href="/pessoas/{{$pessoa->id_pessoa}}" class="btn btn-success"><i class="bi bi-eye"></i>Detalhes</a></td>
-                <td><a href="/pessoas/edit/{{$pessoa->id_pessoa}}" class="btn btn-info"><i class="bi bi-pencil-square"></i>Editar</a></td>
+                <th scope="row">{{$user->id}}</th>
+                <td>{{ $user->name }}</td>
+                <td>{{ $user->data_nascimento }}</td>
+                <td>{{ $user->email }}</td>
+                <td>{{ $user->cpf }}</td>
+                <td>{{ $user->telefone_1 }}</td>
+                <td><a href="/users/{{$user->id}}" class="btn btn-success"><i class="bi bi-eye"></i>Detalhes</a></td>
+                <td><a href="/users/edit/{{$user->id}}" class="btn btn-info"><i class="bi bi-pencil-square"></i>Editar</a></td>
                 <td>
-                    <form action="/pessoas/{{$pessoa->id_pessoa}}" method="post">
+                    <form action="/users/{{$user->id}}" method="post">
                         @csrf
                         @method('DELETE')
                         <button href="" class="btn btn-danger delete-btn"><i class="bi bi-trash3"></i>Deletar</button>

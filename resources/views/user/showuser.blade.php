@@ -10,33 +10,33 @@
       <div class="row mb-3">
         <div class="col-md-6">
             <label class="form-label" for="nome">Nome Completo:*</label>
-            <input type="text" class="form-control" id="nome" value="{{ $pessoa->nome }}" name="nome" disabled>
+            <input type="text" class="form-control" id="nome" value="{{ $user->name }}" name="nome" disabled>
         </div>
         <div class="col-md-6">
             <label class="form-label" for="email">E-mail:*</label>
-            <input type="email" class="form-control" id="email" value="{{ $pessoa->email }}" name="email" disabled>
+            <input type="email" class="form-control" id="email" value="{{ $user->email }}" name="email" disabled>
         </div>
       </div>
 
       <div class="row mb-3">
         <div class="col-md-3"> 
             <label class="form-label" for="rg">RG:</label>
-            <input type="text" class="form-control" id="rg" value="{{ $pessoa->rg }}" name="rg" disabled>
+            <input type="text" class="form-control" id="rg" value="{{ $user->rg }}" name="rg" disabled>
         </div>
 
         <div class="col-md-2">          
             <label class="form-label" for="cpf">CPF:*</label>
-            <input type="text" class="form-control" id="cpf" value="{{ $pessoa->cpf }}" name="cpf" disabled>
+            <input type="text" class="form-control" id="cpf" value="{{ $user->cpf }}" name="cpf" disabled>
         </div>
         
         <div class="col-md-3">
           <label class="form-label" for="telefone_1">Telefone Principal:*</label>
-          <input type="text" class="form-control" id="telefone_1" value="{{ $pessoa->telefone_1 }}" name="telefone_1" disabled>
+          <input type="text" class="form-control" id="telefone_1" value="{{ $user->telefone_1 }}" name="telefone_1" disabled>
         </div>
 
         <div class="col-md-3">
           <label class="form-label" for="telefone_2">Telefone Secundario:*</label>
-          <input type="text" class="form-control" id="telefone_2" value="{{ $pessoa->telefone_2 }}" name="telefone_2" disabled>
+          <input type="text" class="form-control" id="telefone_2" value="{{ $user->telefone_2 }}" name="telefone_2" disabled>
         </div>
       </div>
     </div>
@@ -44,16 +44,16 @@
     <div class="row mb-3">
         <div class="col-2">
             <label class="form-label" for="data_nascimento">Data Nascimento:*</label>
-            <input type="date" class="form-control" id="data_nascimento" value="{{ $pessoa->data_nascimento }}" name="data_nascimento" disabled>
+            <input type="date" class="form-control" id="data_nascimento" value="{{ $user->data_nascimento }}" name="data_nascimento" disabled>
         </div>
     </div>
     @if($enderecos->isEmpty())
     <h1>Usuário não possui endereços cadastrados</h1>
-    <a class="btn btn-success" href="/enderecos/create/{{ $pessoa->id_pessoa }}">Cadastrar Novo endereço</a>
+    <a class="btn btn-success" href="/enderecos/create/{{ $user->id_user }}">Cadastrar Novo endereço</a>
     @else
     <h1>ENDEREÇOS CADASTRADOS</h1>
     <div class="row mb-3">
-    <a class="btn btn-success" href="/enderecos/create/{{ $pessoa->id_pessoa }}">Cadastrar Novo endereço</a>
+    <a class="btn btn-success" href="/enderecos/create/{{ $user->id_user }}">Cadastrar Novo endereço</a>
         <table class="table">
             <thead>
                 <tr>

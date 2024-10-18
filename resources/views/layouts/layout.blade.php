@@ -53,13 +53,9 @@
 
           @auth
           <li class="nav-item dropdown">
-            <a type="button" class="btn btn-warning dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-            Pessoas
+            <a class="btn btn-warning" href="{{ route('users.index') }}" aria-expanded="false">
+              Usuários
             </a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="{{ route('pessoas.create') }}">Cadastrar pessoas</a></li>
-              <li><a class="dropdown-item" href="{{ route('pessoas.index') }}">Listar Pessoas</a></li>
-            </ul>
           </li>
 
           <li class="nav-item dropdown">
@@ -81,6 +77,7 @@
                 Clientes
               </a>
           </li>
+
 
           <li class="nav-item dropdown">
               <a class="btn btn-warning dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">

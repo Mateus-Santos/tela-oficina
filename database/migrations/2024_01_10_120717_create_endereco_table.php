@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('rua', 50);
             $table->integer('numero');
             $table->string('ponto_referencia', 200);
-            $table->unsignedBigInteger('id_pessoa');
-            $table->foreign('id_pessoa')->references('id_pessoa')->on('pessoa');
+            $table->unsignedBigInteger('id_user');
+            $table->foreign('id_user')->references('id')->on('users');
             $table->timestamps();
         });
     }
