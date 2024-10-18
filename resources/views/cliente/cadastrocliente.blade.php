@@ -22,11 +22,11 @@
             </div>
 
             <div class="col-md-3">
-                <label class="form-label" for="id_pessoa">Pessoa:</label>
-                <select id="id_pessoa" class="form-control" name="id_pessoa" required>
+                <label class="form-label" for="id">Pessoa:</label>
+                <select id="id" class="form-control" name="id" required>
                 <option selected>Escolher...</option>
-                @foreach($pessoas as $pessoa)
-                <option value="{{$pessoa->id_pessoa}}">{{ $pessoa->nome }}</option>
+                @foreach($users as $user)
+                <option value="{{$user->id}}">{{ $user->name }}</option>
                 @endforeach
                 </select>
             </div>

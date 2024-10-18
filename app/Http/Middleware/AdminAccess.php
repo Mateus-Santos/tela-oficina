@@ -13,6 +13,6 @@ class AdminAccess
         if (auth()->check() && (auth()->user()->colaborador == 1)) {
             return $next($request);
         }
-        dd('Acesso Negado, você não é um colaborador.');
+        abort(403, 'Acesso não autorizado.');
     }
 }
