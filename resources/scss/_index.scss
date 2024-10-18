@@ -473,9 +473,10 @@ section {
 	}
 }
 
-// Sessão erro404:
+// Sessão erro404 e error-403:
 
-.erro404 {
+.erro403, .erro404 {
+  development
     display: flex;
     justify-content: center;
     align-items: center;
