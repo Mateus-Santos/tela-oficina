@@ -13,6 +13,7 @@
                 <th scope="col">E-mail</th>
                 <th scope="col">CPF</th>
                 <th scope="col">Telefone Principal</th>
+                <th scope="col">Ativado</th>
                 <th scope="col">Detalhes</th>
                 <th scope="col">Editar</th>
                 <th scope="col">Excluir</th>
@@ -27,6 +28,12 @@
                 <td>{{ $user->email }}</td>
                 <td>{{ $user->cpf }}</td>
                 <td>{{ $user->telefone_1 }}</td>
+                <td>
+                    @livewire('toggle-switch', [
+                    'model' => $user,
+                    'field' => 'status'
+                    ]);
+                </td>
                 <td><a href="/users/{{$user->id}}" class="btn btn-success"><i class="bi bi-eye"></i>Detalhes</a></td>
                 <td><a href="/users/edit/{{$user->id}}" class="btn btn-info"><i class="bi bi-pencil-square"></i>Editar</a></td>
                 <td>
