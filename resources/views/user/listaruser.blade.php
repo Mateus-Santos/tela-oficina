@@ -32,15 +32,15 @@
                     @livewire('toggle-switch', [
                     'model' => $user,
                     'field' => 'status'
-                    ]);
+                    ])
                 </td>
-                <td><a href="/users/{{$user->id}}" class="btn btn-success"><i class="bi bi-eye"></i>Detalhes</a></td>
-                <td><a href="/users/edit/{{$user->id}}" class="btn btn-info"><i class="bi bi-pencil-square"></i>Editar</a></td>
+                <td><a href="/users/{{$user->id}}" class="btn btn-success"><i class="bi bi-eye"></i></a></td>
+                <td><a href="/users/edit/{{$user->id}}" class="btn btn-info"><i class="bi bi-pencil-square"></i></a></td>
                 <td>
                     <form action="/users/{{$user->id}}" method="post">
                         @csrf
                         @method('DELETE')
-                        <button href="" class="btn btn-danger delete-btn"><i class="bi bi-trash3"></i>Deletar</button>
+                        <button href="" class="btn btn-danger delete-btn"><i class="bi bi-trash3"></i></button>
                     </form>
                 </td>
             </tr>

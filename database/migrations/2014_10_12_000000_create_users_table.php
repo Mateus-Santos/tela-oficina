@@ -26,7 +26,7 @@ return new class extends Migration
             $table->boolean('colaborador')->default(false); //1: É colaborador, 0: Não é Colaborador;
             $table->integer('permitions')->default(false); //1: É colaborador, 0: Não é Colaborador;
             $table->boolean('google_id')->nullable();
-            $table->string('cpf', 11)->unique()->nullable();
+            $table->string('cpf', 11)->nullable();
             $table->string('rg', 13)->nullable();
             $table->date('data_nascimento');
             $table->string('telefone_1', 11);

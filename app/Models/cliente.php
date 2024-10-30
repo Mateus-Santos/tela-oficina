@@ -13,17 +13,12 @@ class Cliente extends Model
 
     protected $fillable = [
         'id_cliente',
-        'id_pessoa',
         'id_user',
         'pontos',
     ];
 
-    public function pessoa()
-    {
-        return $this->hasOne(Pessoa::class, 'id_pessoa', 'id_pessoa');
-    }
 
-    public function user()
+    public function user(): hasOne
     {
         return $this->hasOne(User::class, 'id', 'id_user');
     }

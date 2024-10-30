@@ -6,6 +6,7 @@
 [x-cloak] {
     display: none;
 }
+
 .icons_login{
     a {
         .bi-google, .bi-facebook, .bi-apple{

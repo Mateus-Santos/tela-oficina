@@ -19,15 +19,6 @@ Route::get('/home', function () {
 
 Route::middleware(['auth', 'check.blocked'])->group(function () {
 
-//Rotas Pessoas.
-Route::get('/pessoas', [PessoaController::class, 'index'])->name('pessoas.index');
-Route::get('/pessoas/create', [PessoaController::class, 'create'])->name('pessoas.create');
-Route::post('/pessoas', [PessoaController::class, 'store'])->name('pessoas.store');
-Route::get('/pessoas/{id}', [PessoaController::class, 'show'])->name('pessoas.show');
-Route::get('/pessoas/edit/{id}', [PessoaController::class, 'edit'])->name('pessoas.edit');
-Route::put('/pessoas/update/{id}', [PessoaController::class, 'update'])->name('pessoas.update');
-Route::delete('/pessoas/{id}', [PessoaController::class, 'destroy'])->name('pessoas.destroy');
-
 // Rotas Endereços.
 Route::get('/enderecos', [EnderecoController::class, 'index'])->name('enderecos.index');
 Route::get('/enderecos/create/{id}', [EnderecoController::class, 'create'])->name('enderecos.create');
@@ -102,4 +93,5 @@ Route::middleware(['admin'])->group(function () {
     Route::resource('pecas', PecaController::class);
     Route::resource('colaboradors', ColaboradorController::class);
     Route::resource('enderecos', EnderecoController::class);
+    Route::get('/endereco/create/{id}', [EnderecoController::class, 'create']);
 });
