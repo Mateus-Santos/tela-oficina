@@ -54,5 +54,6 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'check.blocked' => \App\Http\Middleware\CheckIfUserIsBlocked::class,  // Aqui está o alias
         'admin' => \App\Http\Middleware\AdminAccess::class,
+        'permition.colaborator' => \App\Http\Middleware\PermitionAccess::class,
     ];
 }
