@@ -30,38 +30,43 @@ class UserController extends Controller {
         $user->cpf = str_replace(['.', '-'], "", $request->input("cpf"));;
         $user->rg = $request->input("rg");
         $user->save();
-        return redirect()->route('user.index');
+        return redirect()->route('users.index');
     }
 
     public function show(string $id)
     {
         $user = User::find($id);
         $enderecos = Endereco::where('id_user', $id)->get();
-        return view('user.showuser', ['user' => $user, 'enderecos' => $enderecos]);
+        return view('users.showuser', ['user' => $user, 'enderecos' => $enderecos]);
     }
 
-    public function edit(string $id_user)
+    public function edit(string $id)
     {
-        $user = User::where('id_user', $id_user)->first();
-        return view('user.editaruser', array('user' => $user));
+        $user = User::findOrFail($id);
+        return view('user.editaruser', compact('user'));
     }
 
-    public function update(Request $request, string $id_user)
+    public function update(Request $request, string $id)
     {
-        $user = User::where('id_user', $id_user)->first();
 
-        $user->update([
-            'id_user' => $id_user,
-            'nome' => $request->nome,
-            'data_nascimento' => $request->data_nascimento,
-            'email' => $request->email,
-            'cpf' => $request->cpf,
-            'rg' => $request->rg,
-            'telefone_1' => $request->telefone_1,
-            'telefone_2' => $request->telefone_2,
-            'status' => $request->id_cliente,
-            'permitions' => $request->permitions,
+        $request->merge([
+            'name' => trim($request->input('name')),
+            'email' => strtolower($request->input('email')),
+            'telefone_1' => preg_replace('/\D/', '', $request->input('telefone_1')),
+            'telefone_2' => preg_replace('/\D/', '', $request->input('telefone_2')),
         ]);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $id,
+            'cpf' => 'required|string|max:11|unique:users,cpf,' . $id,
+            'rg' => 'nullable|string',
+            'telefone_1' => 'required|string',
+            'telefone_2' => 'nullable|string',
+        ]);
+        
+        $user = User::findOrFail($id);
+        $user->update($validated);
         
         return redirect()->route('users.index');
     }

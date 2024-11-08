@@ -1,23 +1,36 @@
 @extends('layouts.layout')
 
+@vite(['resources/js/cadUser.js'])
+
 @section('content')
 
   <div class="container cadastro">
   
-  <h1>EDIÇÃO DE PESSOA FÍSICA</h1>
+  <h1>EDIÇÃO DE USUÁRIO</h1>
+
+    @if ($errors->any())
+      <div class="alert alert-danger">
+          <ul>
+              @foreach ($errors->all() as $error)
+                  <li>{{ $error }}</li>
+              @endforeach
+          </ul>
+      </div>
+    @endif
+
   
   
-    <form action="/users/update/{{$user->id}}" method="POST" class="row g-3">
+    <form action="{{ route('users.update', $user->id) }}" method="POST" class="row g-3">
       @csrf
-      @method('PUT')
+      @method('PATCH')
       <div class="campos">
       <div class="row mb-3">
 
         <div class="col-md-6">
         <label class="form-label" for="nome">Nome Completo:*</label>
-        <input type="text" class="form-control" id="nome" value="{{ $user->nome }}" name="nome" required>
+        <input type="text" class="form-control" id="nome" value="{{ $user->name }}" name="name" required>
         </div>
-
+        
         <div class="col-md-6">
             <label class="form-label" for="email">E-mail:*</label>
             <input type="email" class="form-control" id="email" value="{{ $user->email }}" name="email" required>
@@ -52,7 +65,7 @@
     <div class="row mb-3">
         <div class="col-2">
           <label class="form-label" for="data_nascimento">Data Nascimento:*</label>
-          <input type="date" class="form-control" id="data_nascimento" name="data_nascimento" required>
+          <input type="date" class="form-control" id="data_nascimento" value="{{ $user->data_nascimento }}" name="data_nascimento" required>
         </div>
       </div>
 
@@ -66,7 +79,7 @@
     </div>
 
     <div class="col text-center">
-        <button type="submit" class="btn btn-success">Cadastrar</button>
+        <button type="submit" class="btn btn-success">Atualizar</button>
     </div>
 
   </div>
