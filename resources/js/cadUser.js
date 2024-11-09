@@ -2,6 +2,7 @@ const campoCPF =  document.querySelector("#cpf");
 const campoRG =  document.querySelector("#rg");
 const telefone1 =  document.querySelector("#telefone_1");
 const telefone2 =  document.querySelector("#telefone_2");
+const password =  document.querySelector("#password");
 
 // Validate CPF
 campoCPF.addEventListener("keypress", (e) => {
@@ -81,6 +82,13 @@ telefone2.addEventListener("input", function(e) {
             value = value.slice(0, 9) + "-" + value.slice(9, 13);
         }
     }
-
-    telefone2.value = value;
 });
+
+password.addEventListener("input", function(e) {
+    const senha = senhaInput.value;
+    if (senha.length < 8) {
+      alert('A senha deve ter pelo menos 8 caracteres.');
+      return false; // Impede o envio do formulário
+    }
+    return true; // Permite o envio do formulário
+  });

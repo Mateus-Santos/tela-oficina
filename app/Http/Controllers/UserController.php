@@ -27,7 +27,7 @@ class UserController extends Controller {
         $user->data_nascimento = $request->input("data_nascimento");
         $user->telefone_1 = str_replace(['-', ' ', '(', ')'], "", $request->input("telefone_1"));
         $user->telefone_2 = str_replace(['-', ' ', '(', ')'], "", $request->input("telefone_2"));
-        $user->cpf = str_replace(['.', '-'], "", $request->input("cpf"));;
+        $user->cpf = str_replace(['.', '-'], "", $request->input("cpf"));
         $user->rg = $request->input("rg");
         $user->save();
         return redirect()->route('users.index');
@@ -48,7 +48,6 @@ class UserController extends Controller {
 
     public function update(Request $request, string $id)
     {
-
         $request->merge([
             'name' => trim($request->input('name')),
             'email' => strtolower($request->input('email')),
