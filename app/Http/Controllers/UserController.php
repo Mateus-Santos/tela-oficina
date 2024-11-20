@@ -37,7 +37,7 @@ class UserController extends Controller {
     {
         $user = User::find($id);
         $enderecos = Endereco::where('id_user', $id)->get();
-        return view('users.showuser', ['user' => $user, 'enderecos' => $enderecos]);
+        return view('user.showuser', ['user' => $user, 'enderecos' => $enderecos]);
     }
 
     public function edit(string $id)

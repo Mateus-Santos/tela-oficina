@@ -17,7 +17,7 @@
             <select id="id_cliente" class="form-control" name="id_cliente" required>
             <option selected>Escolher...</option>
             @foreach($clientes as $cliente)
-            <option value="{{$cliente->id_cliente}}">{{ $cliente->pessoa->nome }}</option>
+            <option value="{{$cliente->id_cliente}}">{{ $cliente->user->name }}</option>
             @endforeach
             </select>
           </div>
@@ -27,7 +27,7 @@
             <select class="form-control" id="id_colaborador" name="id_colaborador"  required>
             <option selected>Escolher...</option>
             @foreach($colaboradores as $colaborador)
-            <option value="{{$colaborador->id_colaborador}}">{{ $colaborador->pessoa->nome }}</option>
+            <option value="{{$colaborador->id_colaborador}}">{{ $colaborador->user->name }}</option>
             @endforeach
             </select>
           </div>

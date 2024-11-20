@@ -12,7 +12,7 @@ class Endereco extends Model
 
     protected $table = 'endereco';
 
-    protected $foreignKey = 'id_pessoa';
+    protected $foreignKey = 'id_user';
 
     protected $fillable = [
         'cep',
@@ -25,8 +25,8 @@ class Endereco extends Model
         'ponto_referencia',
     ];
 
-    public function pessoa(): hasOne
+    public function user(): hasOne
     {
-        return $this->hasOne(Pessoa::class, 'id_pessoa', 'id_pessoa');
+        return $this->hasOne(User::class, 'id_user', 'id');
     }
 }

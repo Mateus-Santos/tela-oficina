@@ -28,7 +28,6 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         Route::resource('colaboradors', ColaboradorController::class);
         Route::resource('enderecos', EnderecoController::class);
         Route::get('/endereco/create/{id}', [EnderecoController::class, 'create']);
-        Route::get('/cliente', [ClienteController::class, 'index'])->name('clientes.index');
     });
 });
 

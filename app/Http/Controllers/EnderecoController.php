@@ -16,7 +16,7 @@ class EnderecoController extends Controller
 
     public function create(string $id)
     {
-        $user = User::where('id_user', $id)->first();
+        $user = User::find($id);
         return view('endereco.cadastroendereco', compact('user'));
     }
 

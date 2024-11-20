@@ -49,11 +49,12 @@
     </div>
     @if($enderecos->isEmpty())
     <h1>Usuário não possui endereços cadastrados</h1>
-    <a class="btn btn-success" href="/enderecos/create/{{ $user->id_user }}">Cadastrar Novo endereço</a>
+    
+    <a class="btn btn-success" href="/endereco/create/{{ $user->id }}">Cadastrar Novo endereço</a>
     @else
     <h1>ENDEREÇOS CADASTRADOS</h1>
     <div class="row mb-3">
-    <a class="btn btn-success" href="/enderecos/create/{{ $user->id_user }}">Cadastrar Novo endereço</a>
+    <a class="btn btn-success" href="/endereco/create/{{ $user->id }}">Cadastrar Novo endereço</a>
         <table class="table">
             <thead>
                 <tr>

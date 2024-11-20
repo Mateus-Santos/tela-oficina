@@ -22,7 +22,7 @@ class EnderecoStoreRequest extends FormRequest
             'address' => 'required|string|max:255',
             'numero' => 'required|integer',
             'ponto_referencia' => 'required|string|max:255',
-            'id_pessoa' => 'required|integer|exists:pessoa,id_pessoa',
+            'id_user' => 'required|integer|exists:users,id',
         ];
     }
 
@@ -37,8 +37,8 @@ class EnderecoStoreRequest extends FormRequest
             'region.required' => 'O campo estado é obrigatório.',
             'address.required' => 'O campo rua é obrigatório.',
             'numero.integer' => 'O campo número deve ser um número inteiro.',
-            'id_pessoa.required' => 'O campo ID da pessoa é obrigatório.',
-            'id_pessoa.exists' => 'O ID da pessoa fornecido não existe.',
+            'id_user.required' => 'O campo ID da usuário é obrigatório.',
+            'id_user.exists' => 'O ID da usuário fornecido não existe.',
         ];
     }
 }
