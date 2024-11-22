@@ -57,3 +57,7 @@
 </form>
 </section>
 @endsection
+
+@section('scripts')
+    @vite(['resources/js/cadColaborador.js'])
+@endsection

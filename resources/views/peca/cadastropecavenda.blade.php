@@ -84,7 +84,7 @@
           </div>
 
           <div class="col-1">
-            <label class="form-label" for="valor_total">Calcular:*</label>
+            <label class="form-label" for="calcular">Calcular:*</label>
             <a class="btn btn-secondary" onclick="pegar_valor()">Calcular</a>
           </div>
 
@@ -130,5 +130,5 @@
 @endsection
 
 @section('scripts')
-    @vite(['resources/js/cadOrcamento.js'])
+    @vite(['resources/js/calcOrcamento.js'])
 @endsection
