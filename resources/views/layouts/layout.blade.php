@@ -47,23 +47,40 @@
           <li class="nav-item"><a class="nav-link" href="#team">Equipe</a></li>
 
           
-          <li class="nav-item"><a class="btn btn-success" href="/login">Entrar</a></li>
-          <li class="nav-item"><a class="btn btn-warning" href="/register">Cadastre-se</a></li>
+          <li class="nav-item"><a class="btn btn-success" href="/login"><i class="bi bi-box-arrow-in-right"></i> Entrar</a></li>
+          <li class="nav-item"><a class="btn btn-warning" href="/register"><i class="bi bi-person-plus"></i> Cadastre-se</a></li>
           @endguest
 
           @auth
+
+          @if(auth()->user() && auth()->user()->permitions === 2)
           <li class="nav-item dropdown">
-            <a type="button" class="btn btn-warning dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-            Pessoas
+            <a class="btn btn-warning" href="" aria-expanded="false">
+              <i class="bi bi-wrench-adjustable-circle"></i>
+              Manutenções
             </a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="{{ route('pessoas.create') }}">Cadastrar pessoas</a></li>
-              <li><a class="dropdown-item" href="{{ route('pessoas.index') }}">Listar Pessoas</a></li>
-            </ul>
           </li>
 
           <li class="nav-item dropdown">
+            <a class="btn btn-warning" href="" aria-expanded="false">
+              <i class="bi bi-person-square"></i>
+              Meu perfil
+            </a>
+          </li>
+          
+          @endif
+          @if(auth()->user() && auth()->user()->permitions === 1)
+          <!-- Colaborator -->
+            <li class="nav-item dropdown">
+              <a class="btn btn-warning" href="{{ route('users.index') }}" aria-expanded="false">
+                <i class="bi bi-people-fill"></i>
+                Usuários
+              </a>
+            </li>
+
+            <li class="nav-item dropdown">
               <a class="btn btn-warning dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-person-lines-fill"></i>
                 Colaboradores
               </a>
             <ul class="dropdown-menu">
@@ -77,13 +94,15 @@
           </li>
 
           <li class="nav-item dropdown">
-              <a class="btn btn-warning" href="{{ route('clientes.index') }}" aria-expanded="false">
-                Clientes
-              </a>
+            <a class="btn btn-warning" href="{{ route('clientes.index') }}" aria-expanded="false">
+              <i class="bi bi-people"></i>
+              Clientes
+            </a>
           </li>
 
-          <li class="nav-item dropdown">
+            <li class="nav-item dropdown">
               <a class="btn btn-warning dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-bag-fill"></i>
                 Peças
               </a>
             <ul class="dropdown-menu">
@@ -98,6 +117,7 @@
 
           <li class="nav-item dropdown">
             <a type="button" class="btn btn-warning dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-cart-fill"></i>
             Vendas
             </a>
             <ul class="dropdown-menu">
@@ -105,7 +125,7 @@
               <li><a class="dropdown-item" href="{{ route('pecavendas.index') }}">Listar Vendas</a></li>
             </ul>
           </li>
-
+          @endif
           <li class="nav-item">
             <form action="/logout" method="POST">
             @csrf

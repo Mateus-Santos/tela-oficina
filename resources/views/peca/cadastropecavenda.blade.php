@@ -17,7 +17,7 @@
             <select id="id_cliente" class="form-control" name="id_cliente" required>
             <option selected>Escolher...</option>
             @foreach($clientes as $cliente)
-            <option value="{{$cliente->id_cliente}}">{{ $cliente->pessoa->nome }}</option>
+            <option value="{{$cliente->id_cliente}}">{{ $cliente->user->name }}</option>
             @endforeach
             </select>
           </div>
@@ -27,7 +27,7 @@
             <select class="form-control" id="id_colaborador" name="id_colaborador"  required>
             <option selected>Escolher...</option>
             @foreach($colaboradores as $colaborador)
-            <option value="{{$colaborador->id_colaborador}}">{{ $colaborador->pessoa->nome }}</option>
+            <option value="{{$colaborador->id_colaborador}}">{{ $colaborador->user->name }}</option>
             @endforeach
             </select>
           </div>
@@ -84,7 +84,7 @@
           </div>
 
           <div class="col-1">
-            <label class="form-label" for="valor_total">Calcular:*</label>
+            <label class="form-label" for="calcular">Calcular:*</label>
             <a class="btn btn-secondary" onclick="pegar_valor()">Calcular</a>
           </div>
 
@@ -130,5 +130,5 @@
 @endsection
 
 @section('scripts')
-    @vite(['resources/js/cadOrcamento.js'])
+    @vite(['resources/js/calcOrcamento.js'])
 @endsection

@@ -12,12 +12,12 @@
 
         <div class="row mb-4">
             <div class="col-md-1">
-                <label class="form-label" for="id_pessoa">ID:</label>
-                <input class="form-control" value="{{$pessoa->id_pessoa}}" type="text" name="id_pessoa" id="id_pessoa" readonly>
+                <label class="form-label" for="id_user">ID:</label>
+                <input class="form-control" value="{{$user->id}}" type="text" name="id_user" id="id_user" readonly>
             </div>
             <div class="col-md-2">
-                <label class="form-label" for="id_pessoa">Nome pessoa:</label>
-                <input class="form-control" value="{{$pessoa->nome}}" type="text" name="id_pessoa" id="id_pessoa" disabled readonly>
+                <label class="form-label" for="id_user">Nome pessoa:</label>
+                <input class="form-control" value="{{$user->name}}" type="text" name="name" id="name" disabled readonly>
             </div>
         </div>
         

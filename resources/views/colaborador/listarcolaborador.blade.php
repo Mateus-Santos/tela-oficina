@@ -20,7 +20,7 @@
             @foreach($colaboradors as $colaborador)
             <tr>
             <td>{{ $colaborador->id_colaborador }}</td>
-            <td>{{ $colaborador->pessoa->nome }}</td>
+            <td>{{ $colaborador->user->name }}</td>
             <td>{{ $colaborador->chave_pix }}</td>
             <td>{{ $colaborador->conta_banco }}</td>
             <td>{{ $colaborador->user->email }}</td>

@@ -10,7 +10,7 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/js/cadColaborador.js',
                 'resources/js/cadError.js',
-                'resources/js/cadPessoa.js',
+                'resources/js/cadUser.js',
                 'resources/js/calcOrcamento.js',
                 'resources/js/cep.js',
                 'resources/js/main.js',

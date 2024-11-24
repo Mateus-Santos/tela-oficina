@@ -10,7 +10,6 @@ $(function(){
         var atTheEnd = index >= $sections.length - 1;
         $('.form-navigation .next').toggle(!atTheEnd);
         $('.form-navigation [Type=submit]').toggle(atTheEnd);
-
         const step = document.querySelector('.step'+index);
         step.classList.add('step_selected');
 

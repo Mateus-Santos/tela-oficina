@@ -22,22 +22,20 @@
           <input type="text" class="form-control" id="conta_banco" placeholder="Digite seu Nome Completo." value="{{$colaborador->conta_banco}}" name="conta_banco" required>
         </div>
 
-        <div class="col-md-3">
-            <label class="form-label" for="id_user">Usuário da Pessoa:*</label>
-           <select class="form-select" name="id_user" aria-label="Default select example">
-           @foreach($colaborador_pessoa_users as $colaborador_pessoa_user)
-                <option name="id_user" value="{{$colaborador_pessoa_user->user->id}}">{{$colaborador_pessoa_user->user->email}}</option>
-            @endforeach
-            </select>
+        <div class="col-md-4">
+          <label class="form-label" for="id_user">Usuário:</label>
+          <select onchange="colaborador(this.value)"  id="id_user" class="form-control" name="id_user" required>
+          <option selected>Escolher...</option>
+          @foreach($users as $user)
+          <option value="{{ $user }}">{{ $user->email }}</option>
+          @endforeach
+          </select>
         </div>
 
         <div class="col-md-3">
-            <label class="form-label" for="id_pessoa">Usuário da Pessoa:*</label>
-           <select class="form-select" name="id_pessoa" aria-label="Default select example">
-           @foreach($colaborador_pessoa_users as $colaborador_pessoa_user)
-                <option name="id_pessoa" value="{{$colaborador_pessoa_user->pessoa->id_pessoa}}">{{$colaborador_pessoa_user->pessoa->nome}}</option>
-            @endforeach
-            </select>
+          <label class="form-label" for="name">Nome:</label>
+          <input type="text" class="form-control" id="name" name="name" readonly>
+          </input>
         </div>
         
       </div>

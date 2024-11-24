@@ -6,13 +6,7 @@ use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
 {   
-     /**
-    * The application's global HTTP middleware stack.
-    *
-    * These middleware are run during every request to your application.
-    *
-    * @var array<int, class-string|string>
-    */
+
    protected $middleware = [
        // \App\Http\Middleware\TrustHosts::class,
         \App\Http\Middleware\TrustProxies::class,
@@ -36,6 +30,7 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            'check.blocked' => \App\Http\Middleware\CheckIfUserIsBlocked::class,
         ],
 
         'api' => [
@@ -45,13 +40,6 @@ class Kernel extends HttpKernel
         ],
     ];
 
-    /**
-     * The application's middleware aliases.
-     *
-     * Aliases may be used instead of class names to conveniently assign middleware to routes and groups.
-     *
-     * @var array<string, class-string|string>
-     */
     protected $middlewareAliases = [
         'auth' => \App\Http\Middleware\Authenticate::class,
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
@@ -65,5 +53,7 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'check.blocked' => \App\Http\Middleware\CheckIfUserIsBlocked::class,  // Aqui está o alias
+        'admin' => \App\Http\Middleware\AdminAccess::class,
+        'permition.colaborator' => \App\Http\Middleware\PermitionAccess::class,
     ];
 }

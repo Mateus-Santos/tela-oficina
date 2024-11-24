@@ -11,22 +11,12 @@
     <div class="campos">
         <div class="row md-3">
 
-            <div class="col-md-5">
-                <label class="form-label" for="id_user">Usuário:</label>
-                <select id="id_user" class="form-control" name="id_user" required>
+            <div class="col-md-3">
+                <label class="form-label" for="id">Pessoa:</label>
+                <select id="id" class="form-control" name="id" required>
                 <option selected>Escolher...</option>
                 @foreach($users as $user)
-                <option value="{{$user->id}}">{{ $user->email }}</option>
-                @endforeach
-                </select>
-            </div>
-
-            <div class="col-md-3">
-                <label class="form-label" for="id_pessoa">Pessoa:</label>
-                <select id="id_pessoa" class="form-control" name="id_pessoa" required>
-                <option selected>Escolher...</option>
-                @foreach($pessoas as $pessoa)
-                <option value="{{$pessoa->id_pessoa}}">{{ $pessoa->nome }}</option>
+                <option value="{{$user->id}}">{{ $user->name }}</option>
                 @endforeach
                 </select>
             </div>

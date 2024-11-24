@@ -15,20 +15,16 @@
           <label class="form-label" for="id_user">Usuário:</label>
           <select onchange="colaborador(this.value)"  id="id_user" class="form-control" name="id_user" required>
           <option selected>Escolher...</option>
-          @foreach($clientes as $cliente)
-          <option value="{{ $cliente }}">{{ $cliente->user->email }}</option>
+          @foreach($users as $user)
+          <option value="{{ $user }}">{{ $user->email }}</option>
           @endforeach
           </select>
         </div>
 
         <div class="col-md-3">
-          <label class="form-label" for="id_pessoa">Pessoa:</label>
-          <select id="id_pessoa" class="form-control" name="id_pessoa" required disabled>
-          <option selected>Escolher...</option>
-          @foreach($clientes as $cliente)
-          <option value="{{ $cliente->pessoa->id_pessoa }}">{{ $cliente->pessoa->nome }}</option>
-          @endforeach
-          </select>
+          <label class="form-label" for="name">Nome:</label>
+          <input type="text" class="form-control" id="name" name="name" readonly>
+          </input>
         </div>
  
         <div class="col-md-2">
@@ -60,4 +56,8 @@
   </div>
 </form>
 </section>
+@endsection
+
+@section('scripts')
+    @vite(['resources/js/cadColaborador.js'])
 @endsection

@@ -12,12 +12,6 @@ $larguras: 1rem;
     padding: $larguras $larguras $larguras $larguras;
     overflow-x: auto;
     overflow-y: auto;
-    .btn{
-        white-space: nowrap;
-        i{
-            padding: 0 $larguras 0 0;
-        }
-    }
 }
 
 .cadastro h1{
