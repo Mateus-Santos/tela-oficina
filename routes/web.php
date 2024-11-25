@@ -47,3 +47,18 @@ Route::get('/erro-autenticacao', function () {
 })->name('erro-autenticacao');
 
 Route::patch('/users/{id}/block', [UserController::class, 'toggleBlock'])->name('toggleBlock');
+
+
+
+// Rotas de teste para as novas views:
+Route::get('/perfil', function () {
+    return view('cliente/editarcliente');
+})->name('perfil');
+
+Route::get('/manutencao', function () {
+    return view('manutencao/manutencao');
+})->name('manutencao');
+
+Route::get('/veiculo', function () {
+    return view('veiculo/veiculo');
+})->name('veiculo');
