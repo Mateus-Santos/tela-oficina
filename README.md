@@ -1,66 +1,110 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+<img src="public/img/logo/Logo-Vertical.png" alt="logo">
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+O **Sistema de Acompanhamento para Oficina Mecânica** foi desenvolvido para otimizar a comunicação entre a oficina e seus clientes. Ele permite acompanhar em tempo real o progresso da manutenção dos veículos, proporcionando maior transparência, agilidade e qualidade no atendimento.
 
-## About Laravel
+## Funcionalidades
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Cadastro de Clientes:** Permite o registro de informações como nome, contato e endereço.
+- **Cadastro de Veículos:** Associa veículos a clientes, com informações como placa e chassi.
+- **Registro de Diagnósticos e Status:** Mecânicos podem registrar diagnósticos e atualizar o status da manutenção.
+- **Notificações Automáticas:** Notifica os clientes sobre mudanças no status de manutenção via e-mail ou SMS.
+- **Histórico de Serviços:** Os clientes podem consultar o histórico de manutenções realizadas.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Tecnologias Utilizadas
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Back-end:** [Laravel](https://laravel.com) (PHP)
+- **Front-end:** [React.js](https://reactjs.org)
+- **Prototipação:** [Figma](https://www.figma.com)
+- **Ambiente de Desenvolvimento:** Visual Studio Code
+- **Controle de Versão:** Git e GitHub
 
-## Learning Laravel
+## Requisitos Funcionais
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+1. Cadastro de clientes com dados essenciais.
+2. Cadastro de veículos associados aos clientes.
+3. Registro de diagnósticos e status da manutenção.
+4. Consulta de status de manutenção pelos clientes.
+5. Envio de notificações sobre mudanças de status.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Requisitos Não Funcionais
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- Segurança dos dados pessoais.
+- Interface intuitiva e responsiva.
+- Facilidade de manutenção e escalabilidade.
+- Suporte a acessos simultâneos.
 
-## Laravel Sponsors
+## Estrutura do Sistema
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Diagrama de Casos de Uso
+Inclui funcionalidades como cadastro de clientes, veículos, diagnósticos e envio de notificações.
 
-### Premium Partners
+### Diagrama de Classe
+Descreve a relação entre clientes, veículos e manutenções.
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+### Descrição das Telas
 
-## Contributing
+#### Tela de Cadastro de Clientes
+- Nome, telefone, e-mail e endereço.
+- Botão para confirmar o cadastro.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+#### Tela de Cadastro de Veículos
+- Placa, chassi e vínculo com cliente.
+- Botão para confirmar o cadastro.
 
-## Code of Conduct
+#### Tela de Registro de Diagnósticos
+- Exibe histórico e permite atualizar o status.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+#### Tela de Listagem e Gerenciamento
+- Listas de clientes, veículos, peças e colaboradores.
+- Opções de edição e remoção.
 
-## Security Vulnerabilities
+#### Tela Inicial (Landing Page)
+- Apresentação dos serviços.
+- Mapa com localização da oficina.
+- Links para orçamento e cadastro.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Pré-requisitos para Rodar o Projeto
 
-## License
+- XAMPP -   **v3.3.0 (Para conexão com banco de dados Se for Windows)**
+- COMPOSER -    **Version 2.6.5 2023-10-06 10:11:52**
+- LARAVEL - **Laravel Framework 10.48.17**
+- NODE.JS - **v20.10.0**
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+# Passo a passo:
+
+## Configuração do Ambiente
+
+1. **Crie uma cópia para você:** Faça um fork deste repositório
+
+2. **Baixe o projeto:** Clone o repositório forkado no seu computador:
+   ```bash
+   git clone https://github.com/seu-usuario/nome-do-repositório.git
+   cd nome-do-repositório
+   ```
+3. **Instale as dependências:** Acesse com o terminal pasta do projeto e aplique os seguintes comandos:
+   ```bash
+   composer install
+   npm install
+   ```
+
+4. **OBS:** No caso da mensagem: (4 vulnerabilities (2 moderate, 2 high) aparecer, aplique esse comando na pasta do projeto:
+    ```bash
+    npm audit fix
+    ```
+
+5. **Configure o ambiente:** Crie uma cópia do arquivo ```.env.example```, renomeie-a para ```.env``` e configure as variáveis de ambiente, incluindo as chaves de API.
+
+6. **Execute as migrações do banco de dados:**
+   ```bash
+   php artisan migrate --seed
+   ```
+
+7. **Crie as chaves de criptografia da aplicação:**
+   ```bash
+   php artisan key:generate
+   ```
+8. **Execute o projeto:** Abra 2 terminais na pasta do projeto e aplique um dos comandos abaixo em cada terminal:
+    ```bash
+    php artisan serve
+    npm run dev
+    ```
