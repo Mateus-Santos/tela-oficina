@@ -475,17 +475,65 @@ section {
 
 // Sessão erro404 e error-403:
 
-.erro403, .erro404 {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: $background-color_2;
-    height: 100vh;
-    width: 100vw;
-    flex-direction: column;
-    text-align: center;
+.erro403,
+.erro404 {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background: $background-color_2;
+	height: 100vh;
+	width: 100vw;
+	flex-direction: column;
+	text-align: center;
 
 	p {
 		color: $color_5;
+	}
+}
+
+// Sessão Perfil de Usuário:
+.campos {
+	margin-top: 15%;
+
+	h1 {
+		color: $color_2;
+	}
+
+	.edit-profile {
+		margin-top: 3%;
+		margin-bottom: 2%;
+
+		.input-info {
+			display: grid;
+			grid-template-columns: repeat(5, 1fr);
+			gap: 1rem;
+
+			div {
+				display: flex;
+				flex-direction: column;
+				justify-content: space-between;
+
+				label {
+					margin-bottom: 0.5rem;
+				}
+
+				input {
+					width: 100%;
+				}
+			}
+
+			// Responsividade
+			@media (max-width: 992px) {
+				grid-template-columns: repeat(3, 1fr);
+			}
+
+			@media (max-width: 768px) {
+				grid-template-columns: repeat(2, 1fr);
+			}
+
+			@media (max-width: 576px) {
+				grid-template-columns: 1fr;
+			}
+		}
 	}
 }
