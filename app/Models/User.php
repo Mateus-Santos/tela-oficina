@@ -23,6 +23,14 @@ class User extends Authenticatable
         'email',
         'password',
         'status',
+        'cliente',
+        'colaborador',
+        'google_id',
+        'data_nascimento',
+        'cpf',
+        'rg',
+        'telefone_1',
+        'telefone_2',
     ];
 
     protected $hidden = [
@@ -48,5 +56,10 @@ class User extends Authenticatable
     public function cliente(): belongsTo
     {
         return $this->belongsTo(Cliente::class, 'id', 'id_user');
+    }
+
+    public function endereco(): belongsTo
+    {
+        return $this->belongsTo(Endereco::class, 'id_endereco', 'id_endereco');
     }
 }

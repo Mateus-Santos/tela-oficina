@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string('ano', 4);
             $table->string('marca', 20);
             $table->string('cor', 15);
-
             $table->unsignedBigInteger('id_cliente');
             $table->foreign('id_cliente')->references('id_cliente')->on('cliente');
             $table->timestamps();

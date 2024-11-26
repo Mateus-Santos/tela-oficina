@@ -14,10 +14,8 @@ return new class extends Migration
         Schema::create('cliente', function (Blueprint $table) {
             $table->bigIncrements('id_cliente');
             $table->integer('pontos')->default(0);
-            $table->unsignedBigInteger('id_pessoa');
             $table->unsignedBigInteger('id_user');
             $table->foreign('id_user')->references('id')->on('users');
-            $table->foreign('id_pessoa')->references('id_pessoa')->on('pessoa');
             $table->timestamps();
         });
     }
