@@ -6,17 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+
     public function up(): void
     {
         Schema::create('contrato_servico', function (Blueprint $table) {
             $table->id();
-            $table->datetime('data_abertura');
-            $table->idatetimed('data_fechamento')->nullable();
+            $table->dateTime('data_abertura');
+            $table->dateTime('data_fechamento')->nullable();
             $table->string('descricao');
             $table->string('status');
+            $table->unsignedBigInteger('id_veiculo');
+            $table->foreign('id_veiculo')->references('id_veiculo')->on('veiculo');
             $table->timestamps();
         });
     }
+
 
     public function down(): void
     {

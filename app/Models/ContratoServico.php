@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\belongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class contrato_manutencao extends Model
 {
@@ -18,10 +19,16 @@ class contrato_manutencao extends Model
         'data_abertura',
         'status',
         'nivel',
+        'id_veiculo',
     ];
 
     public function manutencao(): belongsTo
     {
         return $this->belongsTo(Manutencao::class, 'id', 'id_contrato_servico');
+    }
+
+    public function veiculo(): hasOne
+    {
+        return $this->hasOne(Veiculo::class, 'id_veiculo', 'id_veiculo');
     }
 }
