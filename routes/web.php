@@ -66,3 +66,7 @@ Route::get('/veiculo/cadastrar', function () {
 Route::get('/veiculo/listar', function () {
     return view('veiculo/listarveiculo');
 })->name('veiculo.listar');
+
+Route::get('/termos-de-uso', function () {
+    return view('termos/termosdeuso');
+})->name('termos');
