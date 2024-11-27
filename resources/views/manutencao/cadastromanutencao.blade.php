@@ -3,7 +3,7 @@
 @vite(['resources/js/validateForm.js'])
 
 @section('content')
-<main id="main">
+<main class="manutencao">
   <div class="container edit-profile">
 
     @if ($errors->any())
@@ -22,8 +22,7 @@
       @csrf
 
       <div class="campos">
-        <h1>MANUTENÇÃO DE PEÇAS</h1>
-
+        <h1 class="mt-4">CADASTRAR PEÇA</h1>
         <div class="row mb-3 mt-4">
           <div class="col-md-6">
             <label class="form-label" for="peca">Peça:*</label>

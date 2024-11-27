@@ -3,7 +3,7 @@
 @vite(['resources/js/searchAddresses.js', 'resources/js/validateForm.js'])
 
 @section('content')
-<main id="main">
+<main class="profile">
   <div class="container edit-profile">
 
     @if ($errors->any())
