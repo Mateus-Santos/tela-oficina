@@ -16,22 +16,28 @@
     </div>
     @endif
 
-
-
     <form action="{{ route('manutencoes.store') }}" method="POST">
       @csrf
 
       <div class="campos">
-        <h1 class="mt-4">CADASTRAR PEÇA</h1>
+        <h1 class="mt-4">CADASTRAR MANUTENÇÃO</h1>
         <div class="row mb-3 mt-4">
           <div class="col-md-6">
             <label class="form-label" for="peca">Peça:*</label>
             <input type="text" class="form-control" id="peca" name="peca" value="" placeholder="Digite o nome da peça" maxlength="150" required disabled>
           </div>
           <div class="col-md-6">
-            <label class="form-label" for="descricao">Descrição:*</label>
+            <label class="form-label" for="descricao">Setor:*</label>
             <input type="text" class="form-control" id="descricao" name="descricao" value="" placeholder="Descrição da peça" maxlength="250" required disabled>
           </div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label" for="nivel">Nível:*</label>
+            <select class="form-control" id="nivel" name="nivel" required>
+              <option value="Em aberto" selected>Crítico</option>
+              <option value="Ativo">Atenção</option>
+            </select>
         </div>
 
         <div class="row mb-3">

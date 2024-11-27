@@ -114,10 +114,18 @@
         </li>
 
         <li class="nav-item dropdown">
-          <a class="btn btn-warning" href="{{ route('manutencoes.index') }}" aria-expanded="false">
+          <a class="btn btn-warning dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-wrench-adjustable-circle"></i>
-            Manutenções
+            Contratos de Serviços
           </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a href="{{ route('contratoservico.create') }}" type="button" class="dropdown-item">Cadastrar Contrato</a>
+            </li>
+            <li>
+              <a href="{{ route('contratoservico.index') }}" type="button" class="dropdown-item">Listar Contratos</a>
+            </li>
+          </ul>
         </li>
 
         <li class="nav-item dropdown">
@@ -166,10 +174,7 @@
   <footer id="footer">
     <div class="container footer-bottom clearfix">
       <div class="copyright">
-        &copy; Copyright <strong><span>Oficina SOS Mecânica</span></strong>. All Rights Reserved
-      </div>
-      <div class="credits">
-        Template base<a href="https://bootstrapmade.com/"> BootstrapMade</a>
+        &copy; Copyright 2024 <strong><span>Oficina SOS Mecânica</span></strong>. All Rights Reserved
       </div>
   </footer>
 

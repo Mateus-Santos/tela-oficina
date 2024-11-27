@@ -9,6 +9,7 @@ use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\PecaVendaController;
 use App\Http\Controllers\VeiculoController;
 use App\Http\Controllers\ManutencaoController;
+use App\Http\Controllers\ContratoServicoController;
 //use App\Http\Controllers\ChatController;
 
 Route::get('/', function () {
@@ -32,6 +33,7 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         Route::resource('veiculos', VeiculoController::class);
         Route::resource('manutencoes', ManutencaoController::class);
         Route::get('/endereco/create/{id}', [EnderecoController::class, 'create']);
+        Route::resource('contratoservico', ContratoServicoController::class);
     });
 });
 
@@ -56,10 +58,6 @@ Route::patch('/users/{id}/block', [UserController::class, 'toggleBlock'])->name(
 Route::get('/perfil', function () {
     return view('cliente/editarcliente');
 })->name('perfil');
-
-Route::get('/manutencao', function () {
-    return view('manutencao/manutencao');
-})->name('manutencao');
 
 Route::get('/termos-de-uso', function () {
     return view('termos/termosdeuso');

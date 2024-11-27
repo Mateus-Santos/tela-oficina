@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\belongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class contrato_manutencao extends Model
+class ContratoServico extends Model
 {
     use HasFactory;
 
@@ -18,7 +18,6 @@ class contrato_manutencao extends Model
         'descricao',
         'data_abertura',
         'status',
-        'nivel',
         'id_veiculo',
     ];
 
