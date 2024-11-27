@@ -11,11 +11,9 @@ return new class extends Migration
         Schema::create('contrato_servico', function (Blueprint $table) {
             $table->id();
             $table->datetime('data_abertura');
-            $table->idatetimed('data_fechamento');
+            $table->idatetimed('data_fechamento')->nullable();
             $table->string('descricao');
             $table->string('status');
-            $table->unsignedBigInteger('id_veiculo');
-            $table->foreign('id_veiculo')->references('id_veiculo')->on('veiculo');
             $table->timestamps();
         });
     }

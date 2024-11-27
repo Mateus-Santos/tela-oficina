@@ -13,17 +13,16 @@ class Manutencao extends Model
     protected $table = 'manutencao';
 
     protected $fillable = [
-        'id_manutencao',
-        'id_veiculo',
+        'id_contrato_servico',
         'setor',
         'descricao',
         'valor',
         'nivel',
     ];
 
-    public function veiculo(): hasOne
+    public function contratoservico(): hasOne
     {
-        return $this->hasOne(Veiculo::class, 'id_veiculo', 'id_veiculo');
+        return $this->hasOne(ContratoServico::class, 'id', 'id_contrato_servico');
     }
 
 }
