@@ -56,3 +56,11 @@ Route::patch('/users/{id}/block', [UserController::class, 'toggleBlock'])->name(
 Route::get('/perfil', function () {
     return view('cliente/editarcliente');
 })->name('perfil');
+
+Route::get('/manutencao', function () {
+    return view('manutencao/manutencao');
+})->name('manutencao');
+
+Route::get('/termos-de-uso', function () {
+    return view('termos/termosdeuso');
+})->name('termos');

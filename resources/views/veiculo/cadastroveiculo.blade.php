@@ -3,8 +3,8 @@
 @vite(['resources/js/validateForm.js'])
 
 @section('content')
-<main id="main">
-  <div class="container edit-profile">
+<main class="veiculos">
+  <div class="campos">
 
     @if ($errors->any())
     <div class="alert alert-danger">
@@ -20,7 +20,6 @@
 <section class="container cadastro">
     <form action="{{ route('veiculos.store') }}" method="POST">
       @csrf
-      <div class="campos">
         <h1 class="mb-2">CADASTRO DE VEÍCULOS</h1>
         <div class="row mb-3">
           <div class="col-md-6">
@@ -59,7 +58,6 @@
         <div class="col text-center mt-4">
           <button type="submit" class="btn btn-primary">Salvar Veículo</button>
         </div>
-      </div>
     </form>
   </section>
   </div>
