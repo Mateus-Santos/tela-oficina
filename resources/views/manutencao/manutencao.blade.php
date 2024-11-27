@@ -3,7 +3,7 @@
 @vite(['resources/js/validateForm.js'])
 
 @section('content')
-<main id="main">
+<main class="manutencao">
   <div class="container edit-profile">
 
     @if ($errors->any())
@@ -22,7 +22,7 @@
       @csrf
 
       <div class="campos">
-        <h2 class="mt-4">CADASTRAR PEÇA</h2>
+        <h1 class="mt-4">CADASTRAR PEÇA</h1>
 
         <div class="row mb-3 mt-4">
           <div class="col-md-6">
@@ -50,18 +50,19 @@
 
     <hr>
 
-    <h2>LISTA DE PEÇAS CADASTRADAS</h2>
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th scope="col">Peça</th>
-          <th scope="col">Descrição</th>
-          <th scope="col">Valor (R$)</th>
-          <th scope="col">Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{--@foreach ($pecas as $peca) --}} 
+    <div class="listParts">
+      <h1>LISTA DE PEÇAS CADASTRADAS</h1>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th scope="col">Peça</th>
+            <th scope="col">Descrição</th>
+            <th scope="col">Valor (R$)</th>
+            <th scope="col">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{--@foreach ($pecas as $peca) --}}
           <td> peca->peca </td>
           <td> peca->descricao </td>
           <td>R$ number_format($peca->valor, 2, ',', '.') </td>
@@ -73,11 +74,11 @@
               <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir esta peça?')">Excluir</button>
             </form>
           </td>
-        </tr>
-        {{-- @endforeach --}} 
-      </tbody>
-    </table>
-
+          </tr>
+          {{-- @endforeach --}}
+        </tbody>
+      </table>
+    </div>
   </div>
 </main>
 @endsection
