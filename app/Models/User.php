@@ -58,6 +58,11 @@ class User extends Authenticatable
         return $this->belongsTo(Cliente::class, 'id', 'id_user');
     }
 
+    public function veiculo(): belongsTo
+    {
+        return $this->belongsTo(Veiculo::class, 'id', 'id_user');
+    }
+
     public function endereco(): belongsTo
     {
         return $this->belongsTo(Endereco::class, 'id_endereco', 'id_endereco');

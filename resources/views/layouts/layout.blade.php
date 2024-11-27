@@ -75,20 +75,22 @@
         @if(auth()->user() && auth()->user()->permitions === 1)
         <!-- Colaborator -->
         <li class="nav-item dropdown">
-          <a class="btn btn-warning" href="{{ route('users.index') }}" aria-expanded="false">
-            <i class="bi bi-people-fill"></i>
-            Usuários
-          </a>
-        </li>
-
-        <li class="nav-item dropdown">
           <a class="btn btn-warning dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-person-lines-fill"></i>
-            Colaboradores
+            Usuários
           </a>
           <ul class="dropdown-menu">
             <li>
+              <a href="{{ route('users.index') }}" type="button" class="dropdown-item">Listar todos os Usuários</a>
+            </li>
+            <li>
               <a href="{{ route('colaboradors.create') }}" type="button" class="dropdown-item">Cadastrar Colaboradores</a>
+            </li>
+            <li>
+              <a href="{{ route('colaboradors.index') }}" type="button" class="dropdown-item">Listar Colaboradores</a>
+            </li>
+            <li>
+              <a href="{{ route('clientes.index') }}" type="button" class="dropdown-item">Listar Clientes</a>
             </li>
             <li>
               <a href="{{ route('colaboradors.index') }}" type="button" class="dropdown-item">Listar Colaboradores</a>
@@ -97,10 +99,18 @@
         </li>
 
         <li class="nav-item dropdown">
-          <a class="btn btn-warning" href="{{ route('clientes.index') }}" aria-expanded="false">
-            <i class="bi bi-people"></i>
-            Clientes
+          <a class="btn btn-warning dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-car-front"></i>
+            Veículos
           </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a href="{{ route('veiculos.index') }}" type="button" class="dropdown-item">Listar Veículos</a>
+            </li>
+            <li>
+              <a href="{{ route('veiculos.create') }}" type="button" class="dropdown-item">Cadastrar Veículo</a>
+            </li>
+          </ul>
         </li>
 
         <li class="nav-item dropdown">

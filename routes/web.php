@@ -7,6 +7,8 @@ use App\Http\Controllers\PecaController;
 use App\Http\Controllers\ColaboradorController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\PecaVendaController;
+use App\Http\Controllers\VeiculoController;
+use App\Http\Controllers\ManutencaoController;
 //use App\Http\Controllers\ChatController;
 
 Route::get('/', function () {
@@ -17,7 +19,7 @@ Route::get('/home', function () {
     return view('index');
 });
 
-// Usuários desbloqueados
+//Usuários está desbloqueados.
 Route::middleware(['auth', 'check.blocked'])->group(function () {
     //Rotas para administradores.
     Route::middleware(['admin'])->group(function () {
@@ -27,6 +29,8 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         Route::resource('pecas', PecaController::class);
         Route::resource('colaboradors', ColaboradorController::class);
         Route::resource('enderecos', EnderecoController::class);
+        Route::resource('veiculos', VeiculoController::class);
+        Route::resource('manutencoes', Manutencaoontroller::class);
         Route::get('/endereco/create/{id}', [EnderecoController::class, 'create']);
     });
 });
@@ -48,8 +52,6 @@ Route::get('/erro-autenticacao', function () {
 
 Route::patch('/users/{id}/block', [UserController::class, 'toggleBlock'])->name('toggleBlock');
 
-
-
 // Rotas de teste para as novas views:
 Route::get('/perfil', function () {
     return view('cliente/editarcliente');
@@ -58,7 +60,3 @@ Route::get('/perfil', function () {
 Route::get('/manutencao', function () {
     return view('manutencao/manutencao');
 })->name('manutencao');
-
-Route::get('/veiculo', function () {
-    return view('veiculo/veiculo');
-})->name('veiculo');
