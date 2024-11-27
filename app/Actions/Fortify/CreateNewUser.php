@@ -32,6 +32,7 @@ class CreateNewUser implements CreatesNewUsers
             'rg' => 'string|min:9',
             'telefone_1' => 'required|string',
             'telefone_2' => 'string',
+            'permitions' => 'int',
         ], [
             'name.required' => 'O campo nome é obrigatório.',
             'email.required' => 'O campo email é obrigatório.',
@@ -52,7 +53,7 @@ class CreateNewUser implements CreatesNewUsers
         $validated = $validator->validated();
 
         $user = User::create([
-            'nome' => $validated['name'],
+            'permitions' => 2,
             'data_nascimento' => $validated['data_nascimento'],
             'email' => $validated['email'],
             'cpf' => $validated['cpf'],

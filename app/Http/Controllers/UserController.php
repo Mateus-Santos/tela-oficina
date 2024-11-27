@@ -29,6 +29,7 @@ class UserController extends Controller {
         $user->telefone_2 = str_replace(['-', ' ', '(', ')'], "", $request->input("telefone_2"));
         $user->cpf = str_replace(['.', '-'], "", $request->input("cpf"));
         $user->rg = $request->input("rg");
+        $user->permitions = 2;
         $user->save();
         return redirect()->route('users.index');
     }

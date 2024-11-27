@@ -22,11 +22,11 @@
       @csrf
         <h1 class="mb-2">CADASTRO DE VEÍCULOS</h1>
         <div class="row mb-3">
-          <div class="col-md-6">
+          <div class="col-md-4">
             <label class="form-label" for="placa">Placa:*</label>
             <input type="text" class="form-control" id="placa" name="placa" placeholder="Digite a placa do veículo" maxlength="8" required>
           </div>
-          <div class="col-md-6">
+          <div class="col-md-1">
             <label class="form-label" for="ano">Ano:*</label>
             <input type="number" class="form-control" id="ano" name="ano" placeholder="Ano do veículo (ex.: 2022)" min="1900" max="{{ date('Y') }}" required>
           </div>
@@ -49,7 +49,9 @@
             <select class="form-control" id="id_user" name="id_user" required>
             <option selected>Escolher...</option>
             @foreach($users as $user)
-            <option value="{{$user->id}}">{{$user->name}}</option>
+              @if($user->permitions == 2)
+              <option value="{{$user->id}}">{{$user->name}}</option>
+              @endif
             @endforeach
             </select>
           </div>
