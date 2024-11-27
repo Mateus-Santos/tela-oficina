@@ -30,7 +30,7 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         Route::resource('colaboradors', ColaboradorController::class);
         Route::resource('enderecos', EnderecoController::class);
         Route::resource('veiculos', VeiculoController::class);
-        Route::resource('manutencoes', Manutencaoontroller::class);
+        Route::resource('manutencoes', ManutencaoController::class);
         Route::get('/endereco/create/{id}', [EnderecoController::class, 'create']);
     });
 });
@@ -56,7 +56,3 @@ Route::patch('/users/{id}/block', [UserController::class, 'toggleBlock'])->name(
 Route::get('/perfil', function () {
     return view('cliente/editarcliente');
 })->name('perfil');
-
-Route::get('/manutencao', function () {
-    return view('manutencao/manutencao');
-})->name('manutencao');

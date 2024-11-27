@@ -16,13 +16,13 @@
     </div>
     @endif
 
-    <h1>MANUTENÇÃO DE PEÇAS</h1>
 
-    <form action="" method="POST">
+
+    <form action="{{ route('manutencoes.store') }}" method="POST">
       @csrf
 
       <div class="campos">
-        <h2 class="mt-4">CADASTRAR PEÇA</h2>
+        <h1>MANUTENÇÃO DE PEÇAS</h1>
 
         <div class="row mb-3 mt-4">
           <div class="col-md-6">
@@ -47,36 +47,6 @@
         </div>
       </div>
     </form>
-
-    <hr>
-
-    <h2>LISTA DE PEÇAS CADASTRADAS</h2>
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th scope="col">Peça</th>
-          <th scope="col">Descrição</th>
-          <th scope="col">Valor (R$)</th>
-          <th scope="col">Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{--@foreach ($pecas as $peca) --}} 
-          <td> peca->peca </td>
-          <td> peca->descricao </td>
-          <td>R$ number_format($peca->valor, 2, ',', '.') </td>
-          <td>
-            <a href="" class="btn btn-warning btn-sm">Editar</a>
-            <form action="" method="POST" style="display: inline-block;">
-              @csrf
-              @method('DELETE')
-              <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir esta peça?')">Excluir</button>
-            </form>
-          </td>
-        </tr>
-        {{-- @endforeach --}} 
-      </tbody>
-    </table>
 
   </div>
 </main>

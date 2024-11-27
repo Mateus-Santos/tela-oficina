@@ -58,7 +58,7 @@
 
         @if(auth()->user() && auth()->user()->permitions === 2)
         <li class="nav-item dropdown">
-          <a class="btn btn-warning" href="" aria-expanded="false">
+          <a class="btn btn-warning" href="{{ route('manutencoes.index') }}" aria-expanded="false">
             <i class="bi bi-wrench-adjustable-circle"></i>
             Manutenções
           </a>
@@ -111,6 +111,13 @@
               <a href="{{ route('veiculos.create') }}" type="button" class="dropdown-item">Cadastrar Veículo</a>
             </li>
           </ul>
+        </li>
+
+        <li class="nav-item dropdown">
+          <a class="btn btn-warning" href="{{ route('manutencoes.index') }}" aria-expanded="false">
+            <i class="bi bi-wrench-adjustable-circle"></i>
+            Manutenções
+          </a>
         </li>
 
         <li class="nav-item dropdown">

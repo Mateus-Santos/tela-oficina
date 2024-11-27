@@ -13,21 +13,15 @@ return new class extends Migration
     {
         Schema::create('manutencao', function (Blueprint $table) {
             $table->bigIncrements('id_manutencao');
-            $table->string('peca', 30);
+            $table->string('setor');
             $table->string('descricao', 200);
             $table->float('valor');
-
-            $table->unsignedBigInteger('id_cliente');
-            $table->unsignedBigInteger('id_veiculo');
-
-            $table->foreign('id_cliente')->references('id_cliente')->on('cliente');
-            $table->foreign('id_veiculo')->references('id_veiculo')->on('veiculo');
+            $table->float('nivel');
+            $table->unsignedBigInteger('id_contrato_servico');
+            $table->foreign('id_contrato_servico')->references('id')->on('contrato_servico');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('manutencao');
