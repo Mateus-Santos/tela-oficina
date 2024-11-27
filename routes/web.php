@@ -59,6 +59,10 @@ Route::get('/manutencao', function () {
     return view('manutencao/manutencao');
 })->name('manutencao');
 
-Route::get('/veiculo', function () {
-    return view('veiculo/veiculo');
-})->name('veiculo');
+Route::get('/veiculo/cadastrar', function () {
+    return view('veiculo/cadastroveiculo');
+})->name('veiculo.cadastrar');
+
+Route::get('/veiculo/listar', function () {
+    return view('veiculo/listarveiculo');
+})->name('veiculo.listar');
