@@ -40,18 +40,19 @@ class VeiculoController extends Controller
         return redirect()->route('veiculos.index');
     }
 
-    public function edit(string $id_peca)
+    public function edit(string $id)
     {
 
     }
 
-    public function update(Request $request, string $id_peca)
+    public function update(Request $request, string $id)
     {
 
     }
 
-    public function destroy(string $id_peca)
+    public function destroy(string $id)
     {
-
+        $veiculo = Veiculo::where('id_veiculo', $id)->delete();
+        return redirect()->route('veiculos.index');
     }
 }

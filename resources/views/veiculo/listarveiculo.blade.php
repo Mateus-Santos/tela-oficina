@@ -13,7 +13,6 @@
                 <th scope="col">Marca</th>
                 <th scope="col">Cor</th>
                 <th scope="col">Usuário</th>
-                <th scope="col">Editar</th>
                 <th scope="col">Excluir</th>
             </tr>
     </thead>
@@ -26,7 +25,6 @@
                 <td>{{ $veiculo->marca }}</td>
                 <td>{{ $veiculo->cor }}</td>
                 <td>{{ $veiculo->user->name }}</td>
-                <td><a href="/veiculos/edit/{{$veiculo->id_veiculo}}" class="btn btn-info"><i class="bi bi-pencil-square"></i></a></td>
                 <td>
                     <form action="/veiculos/{{$veiculo->id_veiculo}}" method="post">
                         @csrf
