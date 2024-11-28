@@ -64,11 +64,15 @@ class UserController extends Controller {
             'telefone_1' => 'required|string',
             'telefone_2' => 'nullable|string',
         ]);
-        
+
         $user = User::findOrFail($id);
         $user->update($validated);
-        
-        return redirect()->route('users.index');
+
+        if(auth()->user()->permitions == 2){
+            return redirect()->route('perfil');
+        }else{
+            return redirect()->route('users.index');
+        }
     }
 
     public function destroy(string $id_user)

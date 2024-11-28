@@ -31,11 +31,15 @@
 
     @if($manutencoes->isEmpty())
     <h1>Contrato não possui manutenções cadastrados</h1>
-    <a class="btn btn-success" href="/manutencoes/create/">Cadastrar Nova Manutenção</a>
+        @if(auth()->user()->permitions != 2)
+            <a class="btn btn-success" href="/manutencoes/create/">Cadastrar Nova Manutenção</a
+        @endif
     @else
     <h1>MANUTENÇÕES CADASTRADOS</h1>
     <div class="row mb-3">
-    <a class="btn btn-success" href="/manutencoes/create/">Cadastrar Nova Manutenção</a>
+        @if(auth()->user()->permitions != 2)
+            <a class="btn btn-success" href="/manutencoes/create/">Cadastrar Nova Manutenção</a>
+        @endif
         <table class="table">
             <thead>
                 <tr>
@@ -44,8 +48,10 @@
                     <th scope="col">Descrição</th>
                     <th scope="col">Valor</th>
                     <th scope="col">Nível</th>
-                    <th scope="col">Editar</th>
-                    <th scope="col">Excluir</th>
+                    @if(auth()->user()->permitions != 2)
+
+                        <th scope="col">Excluir</th>
+                    @endif
                 </tr>
             </thead>
             <tbody>
@@ -56,6 +62,7 @@
                 <td>{{ $manutencao->descricao }}</td>
                     <td>R$ {{ $manutencao->valor }}</td>
                 <td>{{ $manutencao->nivel }}</td>
+                    @if(auth()->user()->permitions != 2)
                 <td><a href="/manutencoes/edit/{{$manutencao->id_manutencao}}" class="btn btn-info"><i class="bi bi-pencil-square"></i></a></td>
                 <td>
                     <form action="/manutencoes/{{$manutencao->id_manutencao}}" method="post">
@@ -64,7 +71,7 @@
                         <button href="" class="btn btn-danger delete-btn"><i class="bi bi-trash3"></i></button>
                     </form>
                 </td>
-
+                    @endif
                 </tr>
                 @endforeach
                 <td>

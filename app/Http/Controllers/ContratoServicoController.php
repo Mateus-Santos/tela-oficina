@@ -10,11 +10,20 @@ use App\Models\Manutencao;
 
 class ContratoServicoController extends Controller
 {
-
     public function index()
     {
-        $contratos = ContratoServico::all();
-        return view('contrato_servico.listarcontrato_servico', compact('contratos'));
+        if(auth()->user()->permitions == 2){
+            $user = auth()->user();
+            $contratos = ContratoServico::with('veiculo.user')
+                ->whereHas('veiculo', function ($query) use ($user) {
+                    $query->where('id_user', $user->id);
+                })->get();
+            return view('contrato_servico.listarcontrato_servico', compact('contratos'));
+        }
+        else{
+            $contratos = ContratoServico::all();
+            return view('contrato_servico.listarcontrato_servico', compact('contratos'));
+        }
     }
 
     public function create()
@@ -35,13 +44,22 @@ class ContratoServicoController extends Controller
         return redirect()->route('contratoservico.index');
     }
 
-
     public function show(string $id)
     {
-        $contrato_servico = ContratoServico::find($id);
-        $manutencoes = Manutencao::where('id_contrato_servico', $id)->get();
-        $valor_manutencao = Manutencao::where('id_contrato_servico', $id)->sum('valor');
-        return view('contrato_servico.showcontrato_servico', ['contrato_servico' => $contrato_servico, 'manutencoes' => $manutencoes, 'valor_manutencao' => $valor_manutencao]);
+        if(auth()->user()->permitions == 2){
+            $id_veiculo = Veiculo::where('id_user', auth()->user()->id)->get();
+            $contrato_servico = ContratoServico::find($id);
+            $manutencoes = Manutencao::where('id_contrato_servico', $id)->get();
+            $valor_manutencao = Manutencao::where('id_contrato_servico', $id)->sum('valor');
+            return view('contrato_servico.showcontrato_servico', ['contrato_servico' => $contrato_servico, 'manutencoes' => $manutencoes, 'valor_manutencao' => $valor_manutencao]);
+        }
+        else{
+            $contrato_servico = ContratoServico::find($id);
+            $manutencoes = Manutencao::where('id_contrato_servico', $id)->get();
+            $valor_manutencao = Manutencao::where('id_contrato_servico', $id)->sum('valor');
+            return view('contrato_servico.showcontrato_servico', ['contrato_servico' => $contrato_servico, 'manutencoes' => $manutencoes, 'valor_manutencao' => $valor_manutencao]);
+        }
+
     }
 
     public function edit(string $id)

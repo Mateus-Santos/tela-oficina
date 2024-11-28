@@ -22,6 +22,12 @@ Route::get('/home', function () {
 
 //Usuários está desbloqueados.
 Route::middleware(['auth', 'check.blocked'])->group(function () {
+    Route::get('/perfil', function () {
+        return view('cliente/editarcliente');
+    })->name('perfil');
+    Route::put('/perfil/{id_user}/update', [UserController::class, 'update']);
+    Route::resource('veiculos', VeiculoController::class);
+    Route::resource('contratoservico', ContratoServicoController::class);
     //Rotas para administradores.
     Route::middleware(['admin'])->group(function () {
         Route::resource('users', UserController::class);
@@ -30,10 +36,8 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         Route::resource('pecas', PecaController::class);
         Route::resource('colaboradors', ColaboradorController::class);
         Route::resource('enderecos', EnderecoController::class);
-        Route::resource('veiculos', VeiculoController::class);
         Route::resource('manutencoes', ManutencaoController::class);
         Route::get('/endereco/create/{id}', [EnderecoController::class, 'create']);
-        Route::resource('contratoservico', ContratoServicoController::class);
     });
 });
 
@@ -55,9 +59,7 @@ Route::get('/erro-autenticacao', function () {
 Route::patch('/users/{id}/block', [UserController::class, 'toggleBlock'])->name('toggleBlock');
 
 // Rotas de teste para as novas views:
-Route::get('/perfil', function () {
-    return view('cliente/editarcliente');
-})->name('perfil');
+
 
 Route::get('/termos-de-uso', function () {
     return view('termos/termosdeuso');

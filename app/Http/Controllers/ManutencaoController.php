@@ -9,7 +9,7 @@ use App\Models\Manutencao;
 
 class ManutencaoController extends Controller
 {
-    
+
     public function index()
     {
         $manutencaoes = Manutencao::all();
@@ -46,7 +46,7 @@ class ManutencaoController extends Controller
 
     public function destroy(string $id)
     {
-        $manutencao = Manutencao::where('id', $id)->delete();
+        $manutencao = Manutencao::where('id_manutencao', $id)->delete();
         return redirect()->route('contratoservico.index');
     }
 }

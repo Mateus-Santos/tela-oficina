@@ -9,6 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class User extends Authenticatable
 {
@@ -66,6 +67,6 @@ class User extends Authenticatable
 
     public function endereco(): belongsTo
     {
-        return $this->belongsTo(Endereco::class, 'id_endereco', 'id_endereco');
+        return $this->belongsTo(Endereco::class, 'id', 'id_endereco');
     }
 }

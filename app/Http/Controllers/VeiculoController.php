@@ -8,15 +8,16 @@ use App\Models\User;
 
 class VeiculoController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('admin:admin');
-    }
-    
     public function index()
     {
-        $veiculos = Veiculo::all();
-        return view('veiculo.listarveiculo', compact('veiculos'));
+        if(auth()->user()->permitions == 2){
+            $veiculos = Veiculo::where('id_user', auth()->user()->id)->get();
+            return view('veiculo.listarveiculo', compact('veiculos'));
+        }
+        else{
+            $veiculos = Veiculo::all();
+            return view('veiculo.listarveiculo', compact('veiculos'));
+        }
     }
 
     public function create()
@@ -29,7 +30,7 @@ class VeiculoController extends Controller
     public function store(Request $request)
     {
         $veiculo = new Veiculo();
-        
+
         $veiculo->placa = $request->input("placa");
         $veiculo->ano = $request->input("ano");
         $veiculo->marca = $request->input("marca");

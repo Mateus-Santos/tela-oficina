@@ -57,17 +57,31 @@
         @auth
 
         @if(auth()->user() && auth()->user()->permitions === 2)
+            <li class="nav-item dropdown">
+                <a class="btn btn-warning dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-car-front"></i>
+                    Veículos
+                </a>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a href="{{ route('veiculos.index') }}" type="button" class="dropdown-item">Listar Veículos</a>
+                    </li>
+                    <li>
+                        <a href="{{ route('veiculos.create') }}" type="button" class="dropdown-item">Cadastrar Veículo</a>
+                    </li>
+                </ul>
+            </li>
         <li class="nav-item dropdown">
-          <a class="btn btn-warning" href="{{ route('manutencoes.index') }}" aria-expanded="false">
+          <a class="btn btn-warning" href="{{ route('contratoservico.index') }}" aria-expanded="false">
             <i class="bi bi-wrench-adjustable-circle"></i>
-            Manutenções
+            Meus contratos
           </a>
         </li>
 
         <li class="nav-item dropdown">
-          <a class="btn btn-warning" href="" aria-expanded="false">
+          <a class="btn btn-warning" href="/perfil" aria-expanded="false">
             <i class="bi bi-person-square"></i>
-            Meu perfil
+            {{auth()->user()->name}}
           </a>
         </li>
 
