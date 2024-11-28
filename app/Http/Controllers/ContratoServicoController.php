@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\ContratoServico;
-use App\Models\Cliente;
 use App\Models\User;
 use App\Models\Veiculo;
 use App\Models\Manutencao;
@@ -33,19 +32,22 @@ class ContratoServicoController extends Controller
         $contrato_servico->id_veiculo = $request->input("id_veiculo");
         $contrato_servico->descricao = $request->input("descricao");
         $contrato_servico->save();
-        return redirect()->route('manutencoes.index');
+        return redirect()->route('contratoservico.index');
     }
 
 
     public function show(string $id)
     {
-        
+        $contrato_servico = ContratoServico::find($id);
+        $manutencoes = Manutencao::where('id_contrato_servico', $id)->get();
+        $valor_manutencao = Manutencao::where('id_contrato_servico', $id)->sum('valor');
+        return view('contrato_servico.showcontrato_servico', ['contrato_servico' => $contrato_servico, 'manutencoes' => $manutencoes, 'valor_manutencao' => $valor_manutencao]);
     }
 
     public function edit(string $id)
     {
         $veiculos = Veiculo::all();
-        return view('editacontrato_servico', ['veiculo' -> $veiculos]);
+        return view('editacontrato_servico', ['veiculo' => $veiculos]);
     }
 
 
@@ -57,6 +59,7 @@ class ContratoServicoController extends Controller
 
     public function destroy(string $id)
     {
-        //
+        $contrato = ContratoServico::where('id', $id)->delete();
+        return redirect()->route('contratoservico.index');
     }
 }

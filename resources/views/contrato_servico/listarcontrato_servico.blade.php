@@ -29,7 +29,7 @@
             <td>{{ $contrato_servico->veiculo->placa }}</td>
             <td>{{ $contrato_servico->veiculo->user->email }}</td>
             <td>{{ $contrato_servico->descricao }}</td>
-            <td><a href="/contratoservico/{{$contrato_servico->id}}/manutencoes" class="btn btn-success"><i class="bi bi-list-task"></i></a></td>
+            <td><a href="/contratoservico/{{$contrato_servico->id}}" class="btn btn-success"><i class="bi bi-list-task"></i></a></td>
             <td><a href="/contratoservico/edit/{{$contrato_servico->id}}" class="btn btn-info"><i class="bi bi-pencil-square"></i></a></td>
             <td>
                 <form action="/contratoservico/{{$contrato_servico->id}}" method="post">

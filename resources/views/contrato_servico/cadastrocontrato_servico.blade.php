@@ -23,7 +23,7 @@
         <h1 class="mt-4">Cadastro Contrato de Serviço</h1>
         <div class="row mb-2 mt-2">
 
-          <div class="col-md-1">
+          <div class="col-md-3">
             <label class="form-label" for="status">Status:*</label>
               <select class="form-control" id="status" name="status" required>
                 <option value="Em aberto" selected>Em Aberto</option>
@@ -44,8 +44,8 @@
               <label class="form-label" for="id_veiculo">Veículo:*</label>
                 <select class="form-control" id="id_veiculo" name="id_veiculo" required>
                   <option selected>Escolha o veículo...</option>
-                  @foreach($contratos as $contrato)
-                  <option value="{{$contrato->id_veiculo}}">{{$contrato->placa}} pertence à {{$veiculo->user->name}}</option>
+                  @foreach($veiculos as $veiculo)
+                  <option value="{{$veiculo->id_veiculo}}">{{$veiculo->placa}} pertence à {{$veiculo->user->name}}</option>
                   @endforeach
                 </select>
             </div>
@@ -53,7 +53,7 @@
 
             <div class="col-md-6">
               <label class="form-label" for="descricao">Descrição:*</label>
-              <input type="text" class="form-control" id="descricao" name="descricao" value="" placeholder="Descrição da peça" maxlength="250" required disabled>
+              <input type="text" class="form-control" id="descricao" name="descricao" maxlength="250" required disabled>
             </div>
           </div>
         </div>

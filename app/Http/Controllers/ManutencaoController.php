@@ -25,7 +25,6 @@ class ManutencaoController extends Controller
     public function store(Request $request)
     {
         $manutencao = new Manutencao();
-        
         $manutencao->setor = $request->input("setor");
         $manutencao->descricao = $request->input("descricao");
         $manutencao->nivel = $request->input("nivel");
@@ -35,18 +34,19 @@ class ManutencaoController extends Controller
         return redirect()->route('contratoservico.index');
     }
 
-    public function edit(string $id_peca)
+    public function edit(string $id)
     {
 
     }
 
-    public function update(Request $request, string $id_peca)
+    public function update(Request $request, string $id)
     {
 
     }
 
-    public function destroy(string $id_peca)
+    public function destroy(string $id)
     {
-
+        $manutencao = Manutencao::where('id', $id)->delete();
+        return redirect()->route('contratoservico.index');
     }
 }
