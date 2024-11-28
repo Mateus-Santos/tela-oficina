@@ -16,9 +16,10 @@ return new class extends Migration
             $table->string('setor');
             $table->string('descricao', 200);
             $table->float('valor');
-            $table->float('nivel');
+            $table->string('nivel');
             $table->unsignedBigInteger('id_contrato_servico');
             $table->foreign('id_contrato_servico')->references('id')->on('contrato_servico');
+            $table->timestamps();
         });
     }
 

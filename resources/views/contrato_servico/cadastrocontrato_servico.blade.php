@@ -21,9 +21,9 @@
 
       <div class="campos">
         <h1 class="mt-4">Cadastro Contrato de Serviço</h1>
-        <div class="row mb-3 mt-4">
+        <div class="row mb-2 mt-2">
 
-          <div class="col-md-6">
+          <div class="col-md-1">
             <label class="form-label" for="status">Status:*</label>
               <select class="form-control" id="status" name="status" required>
                 <option value="Em aberto" selected>Em Aberto</option>
@@ -44,11 +44,12 @@
               <label class="form-label" for="id_veiculo">Veículo:*</label>
                 <select class="form-control" id="id_veiculo" name="id_veiculo" required>
                   <option selected>Escolha o veículo...</option>
-                  @foreach($veiculos as $veiculo)
-                  <option value="{{$veiculo->id_veiculo}}">{{$veiculo->placa}} pertence à {{$veiculo->user->name}}</option>
+                  @foreach($contratos as $contrato)
+                  <option value="{{$contrato->id_veiculo}}">{{$contrato->placa}} pertence à {{$veiculo->user->name}}</option>
                   @endforeach
                 </select>
             </div>
+          </div>
 
             <div class="col-md-6">
               <label class="form-label" for="descricao">Descrição:*</label>

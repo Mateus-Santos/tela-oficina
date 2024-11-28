@@ -125,6 +125,9 @@
             <li>
               <a href="{{ route('contratoservico.index') }}" type="button" class="dropdown-item">Listar Contratos</a>
             </li>
+            <li>
+              <a href="{{ route('manutencoes.create') }}" type="button" class="dropdown-item">Cadastrar Manutenções</a>
+            </li>
           </ul>
         </li>
 
