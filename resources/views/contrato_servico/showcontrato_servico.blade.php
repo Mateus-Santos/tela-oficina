@@ -32,10 +32,10 @@
     @if($manutencoes->isEmpty())
     <h1>Contrato não possui manutenções cadastrados</h1>
         @if(auth()->user()->permitions != 2)
-            <a class="btn btn-success" href="/manutencoes/create/">Cadastrar Nova Manutenção</a
+            <a class="btn btn-success" href="/manutencoes/create/">Cadastrar Nova Manutenção</a>
         @endif
     @else
-    <h1>MANUTENÇÕES CADASTRADOS</h1>
+    <h1> MANUTENÇÕES CADASTRADOS</h1>
     <div class="row mb-3">
         @if(auth()->user()->permitions != 2)
             <a class="btn btn-success" href="/manutencoes/create/">Cadastrar Nova Manutenção</a>
