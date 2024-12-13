@@ -14,8 +14,13 @@
 
         <form method="POST" action="{{ route('login') }}">
             @csrf
-
+            
             <div>
+                <div class="icons_login">
+                    <a href="/login/google/redirect"><i class="bi bi-google"></i></a>
+                    <!-- <a href="/login/facebook/redirect"><i class="bi bi-facebook"></i></a> -->
+                    <!-- <a href="/login/apple/redirect"><i class="bi bi-apple"></i></a> -->
+                </div>
                 <x-label for="email" value="{{ __('Email') }}" />
                 <x-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
             </div>

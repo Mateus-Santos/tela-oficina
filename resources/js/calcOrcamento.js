@@ -19,4 +19,4 @@
         valor_uni.value = precoUni;
     }
     window.valor_unitario = valor_unitario;
-})();   
+})();

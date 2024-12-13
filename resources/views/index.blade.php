@@ -1,4 +1,4 @@
-@extends('layout')
+@extends('layouts.layout')
 
 @section('content')
 
@@ -57,7 +57,7 @@
           <h2>Team</h2>
           <p>Na OFICINA SOS MECÂNICA, contamos com uma equipe altamente qualificada e dedicada, apaixonada por carros e comprometida com a satisfação do cliente. Juntos, enfrentamos desafios mecânicos com eficiência, proporcionando serviços de excelência e um toque pessoal diferenciado.</p>
         </div>
-
+        <!--
         <div class="row">
         
           <div class="col-lg-6">
@@ -74,8 +74,8 @@
               </div>
             </div>
           </div>
-
-      </div>
+        </div>
+        -->
     </section><!-- End Team Section -->
 
   </main><!-- End #main -->

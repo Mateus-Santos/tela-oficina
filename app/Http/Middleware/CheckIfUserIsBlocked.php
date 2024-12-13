@@ -18,7 +18,7 @@ class CheckIfUserIsBlocked
     {
         if (auth()->check() && (auth()->user()->status == 0)) {
             Auth::logout();
-            return redirect()->route('login')->with('status', 'Your account has been blocked.');
+            return redirect()->route('login')->with('status', 'Sua conta está bloqueada. Entre em contato com Administrador para solucionar seu problema.');
         }
         return $next($request);
     }

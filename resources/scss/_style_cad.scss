@@ -1,4 +1,4 @@
-@import '_colors.scss';
+@import './colors.scss';
 
 $larguras: 1rem;
 
@@ -12,12 +12,6 @@ $larguras: 1rem;
     padding: $larguras $larguras $larguras $larguras;
     overflow-x: auto;
     overflow-y: auto;
-    .btn{
-        white-space: nowrap;
-        i{
-            padding: 0 $larguras 0 0;
-        }
-    }
 }
 
 .cadastro h1{
@@ -32,4 +26,14 @@ $larguras: 1rem;
     text-align: left;
     position: relative;
     padding: 0rem $larguras $larguras $larguras;
+}
+
+.mensseger_error_container{
+    z-index: 9999;
+    position: fixed;
+    top: 35%;
+    left: 30%;
+    background-color: $color_5;
+    border-radius: 10px;
+    padding: $larguras $larguras $larguras $larguras;
 }

@@ -9,6 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class User extends Authenticatable
 {
@@ -23,6 +24,15 @@ class User extends Authenticatable
         'email',
         'password',
         'status',
+        'cliente',
+        'colaborador',
+        'google_id',
+        'data_nascimento',
+        'cpf',
+        'rg',
+        'telefone_1',
+        'telefone_2',
+        'permitions',
     ];
 
     protected $hidden = [
@@ -48,5 +58,15 @@ class User extends Authenticatable
     public function cliente(): belongsTo
     {
         return $this->belongsTo(Cliente::class, 'id', 'id_user');
+    }
+
+    public function veiculo(): belongsTo
+    {
+        return $this->belongsTo(Veiculo::class, 'id', 'id_user');
+    }
+
+    public function endereco(): belongsTo
+    {
+        return $this->belongsTo(Endereco::class, 'id', 'id_endereco');
     }
 }

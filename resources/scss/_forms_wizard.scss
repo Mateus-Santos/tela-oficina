@@ -1,0 +1,29 @@
+@import '_colors.scss';
+
+
+.form-section{
+    display: none;
+}
+
+.form-section.current{
+    display: inline;
+}
+
+.parsley-errors-list{
+    color: $color_3;
+}
+
+.step{
+    padding: 0.5rem 0.5rem 0.5rem 0.5rem;
+    border-radius: 2rem;
+}
+
+.step_selected{
+    background-color: $color_2;
+    color: $color_5;
+}
+
+.next{
+    background-color: $color_2;
+    padding: 0.5rem 0.5rem 0.5rem 0.5rem;
+}
