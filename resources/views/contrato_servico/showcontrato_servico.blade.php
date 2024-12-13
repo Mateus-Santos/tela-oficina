@@ -63,7 +63,6 @@
                     <td>R$ {{ $manutencao->valor }}</td>
                 <td>{{ $manutencao->nivel }}</td>
                     @if(auth()->user()->permitions != 2)
-                <td><a href="/manutencoes/edit/{{$manutencao->id_manutencao}}" class="btn btn-info"><i class="bi bi-pencil-square"></i></a></td>
                 <td>
                     <form action="/manutencoes/{{$manutencao->id_manutencao}}" method="post">
                         @csrf
