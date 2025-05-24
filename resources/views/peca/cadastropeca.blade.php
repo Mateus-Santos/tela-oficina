@@ -57,7 +57,7 @@
                   <input type="text" class="form-control" id="descricao_peca" name="descricao_peca" required>
                 </div>
                 <div class="col-md-2">
-                  <label class="form-label" for="codigo_fabricante">Código Fabricante:*</label>
+                  <label class="form-label" for="codigo_fabricante">Código Peça:*</label>
                   <input type="text" class="form-control" id="codigo_fabricante" name="codigo_fabricante" required>
                 </div>
                 <div class="col-md-2">

@@ -107,13 +107,6 @@
           </div>
 
           <div class="col-lg-3 col-md-6 footer-links">
-            <h4>Outros Serviços</h4>
-            <ul>
-              <li><img src="svg/chevron-double-right.svg" alt="Logo" /> <a href="https://www.youtube.com/watch?v=zFOWSusSr_Q&ab_channel=MateusSantos">Loja virtual</a></li>
-            </ul>
-          </div>
-
-          <div class="col-lg-3 col-md-6 footer-links">
             <h4>Redes sociais</h4>
             <p class="redes"><img src="svg/chevron-double-right.svg" alt="Logo" /> Outras redes sociais do desenvolvedor.</p>
             <div class="social-links mt-3">

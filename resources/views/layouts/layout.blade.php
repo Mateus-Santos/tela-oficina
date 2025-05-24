@@ -74,7 +74,7 @@
         <li class="nav-item dropdown">
           <a class="btn btn-warning" href="{{ route('contratoservico.index') }}" aria-expanded="false">
             <i class="bi bi-wrench-adjustable-circle"></i>
-            Meus contratos
+            Históricos
           </a>
         </li>
 
@@ -130,14 +130,14 @@
         <li class="nav-item dropdown">
           <a class="btn btn-warning dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-wrench-adjustable-circle"></i>
-            Contratos de Serviços
+            Históricos de Serviços
           </a>
           <ul class="dropdown-menu">
             <li>
-              <a href="{{ route('contratoservico.create') }}" type="button" class="dropdown-item">Cadastrar Contrato</a>
+              <a href="{{ route('contratoservico.create') }}" type="button" class="dropdown-item">Cadastrar Histórico</a>
             </li>
             <li>
-              <a href="{{ route('contratoservico.index') }}" type="button" class="dropdown-item">Listar Contratos</a>
+              <a href="{{ route('contratoservico.index') }}" type="button" class="dropdown-item">Listar Históricos</a>
             </li>
             <li>
               <a href="{{ route('manutencoes.create') }}" type="button" class="dropdown-item">Cadastrar Manutenções</a>
@@ -148,14 +148,14 @@
         <li class="nav-item dropdown">
           <a class="btn btn-warning dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-bag-fill"></i>
-            Peças
+            Loja
           </a>
           <ul class="dropdown-menu">
             <li>
-              <a href="{{ route('pecas.create') }}" type="button" class="dropdown-item">Cadastrar Peças</a>
+              <a href="{{ route('pecas.create') }}" type="button" class="dropdown-item">Cadastrar Produto</a>
             </li>
             <li>
-              <a href="{{ route('pecas.index') }}" type="button" class="dropdown-item">Listar Peças</a>
+              <a href="{{ route('pecas.index') }}" type="button" class="dropdown-item">Listar Produtos</a>
             </li>
           </ul>
         </li>
