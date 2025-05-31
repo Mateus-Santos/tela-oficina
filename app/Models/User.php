@@ -26,13 +26,13 @@ class User extends Authenticatable
         'status',
         'cliente',
         'colaborador',
+        'permitions',
         'google_id',
         'data_nascimento',
         'cpf',
         'rg',
         'telefone_1',
         'telefone_2',
-        'permitions',
     ];
 
     protected $hidden = [

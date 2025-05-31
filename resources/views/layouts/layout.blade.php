@@ -152,10 +152,10 @@
           </a>
           <ul class="dropdown-menu">
             <li>
-              <a href="{{ route('pecas.create') }}" type="button" class="dropdown-item">Cadastrar Produto</a>
+              <a href="{{ route('produtos.create') }}" type="button" class="dropdown-item">Cadastrar Produto</a>
             </li>
             <li>
-              <a href="{{ route('pecas.index') }}" type="button" class="dropdown-item">Listar Produtos</a>
+              <a href="{{ route('produtos.index') }}" type="button" class="dropdown-item">Listar Produtos</a>
             </li>
           </ul>
         </li>
@@ -166,8 +166,8 @@
             Vendas
           </a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="{{ route('pecavendas.create') }}">Cadastrar Vendas</a></li>
-            <li><a class="dropdown-item" href="{{ route('pecavendas.index') }}">Listar Vendas</a></li>
+            <li><a class="dropdown-item" href="{{ route('produtovendas.create') }}">Cadastrar Vendas</a></li>
+            <li><a class="dropdown-item" href="{{ route('produtovendas.index') }}">Listar Vendas</a></li>
           </ul>
         </li>
         @endif
