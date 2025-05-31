@@ -11,25 +11,18 @@ class Colaborador extends Model
 {
     use HasFactory;
 
-    protected $table = 'colaborador';
-
-    protected $primaryKey = 'id_colaborador';
-
     protected $fillable = [
-        'id_colaborador',
-        'id_pessoa',
-        'id_user',
         'chave_pix',
         'conta_banco',
     ];
 
     public function user(): hasOne
     {
-        return $this->hasOne(User::class, 'id', 'id_user');
+        return $this->hasOne(User::class);
     } 
 
-    public function pecavenda(): hasMany
+    public function produtovenda(): hasMany
     {
-        return $this->hasMany(PecaVenda::class, 'id', 'id_user');
+        return $this->hasMany(ProdutoVenda::class);
     }
 }

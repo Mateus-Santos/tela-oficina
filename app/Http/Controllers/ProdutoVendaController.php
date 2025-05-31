@@ -4,15 +4,15 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\DB;
 
 use Illuminate\Http\Request;
-use App\Models\PecaVenda;
-use App\Models\Peca;
+use App\Models\produtoVenda;
+use App\Models\produto;
 use App\Models\Cliente;
 use App\Models\Colaborador;
 use App\Models\Venda;
-use App\Events\VendaPeca;
+use App\Events\Vendaproduto;
 
 
-class PecaVendaController extends Controller
+class produtoVendaController extends Controller
 {
     public function __construct()
     {
@@ -21,16 +21,16 @@ class PecaVendaController extends Controller
     
     public function index()
     {
-        $pecavendas = PecaVenda::all();
-        return view('peca.listarpecavenda', compact('pecavendas'));
+        $produtovendas = produtoVenda::all();
+        return view('produto.listarprodutovenda', compact('produtovendas'));
     }
 
     public function create()
     {
         $clientes = Cliente::all();
         $colaboradores = Colaborador::all();
-        $pecas = Peca::all();
-        return view('peca.cadastropecavenda', compact('clientes', 'colaboradores', 'pecas'));
+        $produtos = produto::all();
+        return view('produto.cadastroprodutovenda', compact('clientes', 'colaboradores', 'produtos'));
     }
 
     public function store(Request $request)
@@ -42,40 +42,40 @@ class PecaVendaController extends Controller
             'data_venc' => $request->input('data_venc'),
         ]);
 
-        $peca_request = $request->input('id_peca');
-        $peca = json_decode($peca_request, true);
-        $id_peca = $peca['id_peca'];
-        $valor_uni = $peca['preco_uni'];
+        $produto_request = $request->input('id_produto');
+        $produto = json_decode($produto_request, true);
+        $id_produto = $produto['id_produto'];
+        $valor_uni = $produto['preco_uni'];
 
         $quantidade = $request->input('quantidade');
         
-        $pecavenda = PecaVenda::create([
+        $produtovenda = produtoVenda::create([
             'id_venda' => $venda->id,
             'id_cliente' => $request->input('id_cliente'),
             'id_colaborador' => $request->input('id_colaborador'),
-            'id_peca' => $id_peca,
+            'id_produto' => $id_produto,
             'valor_uni' => $valor_uni,
             'quantidade' => $quantidade,
             'valor_pagto' => $request->input('valor_pagto'),
             'data_pagto' => $request->input('data_pagto'),
         ]);
 
-        event(new VendaPeca($pecavenda));
+        event(new Vendaproduto($produtovenda));
 
-        return redirect()->route('pecavendas.index');
+        return redirect()->route('produtovendas.index');
     }
 
-    public function edit(string $id_peca)
+    public function edit(string $id_produto)
     {
 
     }
 
-    public function update(Request $request, string $id_peca)
+    public function update(Request $request, string $id_produto)
     {
 
     }
 
-    public function destroy(string $id_peca)
+    public function destroy(string $id_produto)
     {
 
     }

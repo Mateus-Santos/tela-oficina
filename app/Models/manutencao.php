@@ -22,7 +22,7 @@ class Manutencao extends Model
 
     public function contratoservico(): hasOne
     {
-        return $this->hasOne(ContratoServico::class, 'id', 'id_contrato_servico');
+        return $this->hasOne(ContratoServico::class);
     }
 
 }

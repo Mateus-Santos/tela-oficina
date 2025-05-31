@@ -5,7 +5,7 @@
   
     <h1>CADASTRO DE PEÇAS</h1>
 
-    <form action="{{ route('pecas.store') }}" enctype="multipart/form-data" method="post" class="row g-3">
+    <form action="{{ route('produtos.store') }}" enctype="multipart/form-data" method="post" class="row g-3">
     @csrf
         <div class="campos">
             <div class="row md-3">
@@ -53,8 +53,8 @@
                   <input type="text" class="form-control" id="motor" name="motor" required>
                 </div>
                 <div class="col-md-2">
-                  <label class="form-label" for="descricao_peca">Descrição da peça:*</label>
-                  <input type="text" class="form-control" id="descricao_peca" name="descricao_peca" required>
+                  <label class="form-label" for="descricao">Descrição do produto:*</label>
+                  <input type="text" class="form-control" id="descricao" name="descricao_produto" required>
                 </div>
                 <div class="col-md-2">
                   <label class="form-label" for="codigo_fabricante">Código Peça:*</label>

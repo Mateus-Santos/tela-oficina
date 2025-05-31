@@ -52,21 +52,21 @@ class User extends Authenticatable
 
     public function colaborador(): belongsTo
     {
-        return $this->belongsTo(Colaborador::class, 'id', 'id_user');
+        return $this->belongsTo(Colaborador::class);
     }
 
     public function cliente(): belongsTo
     {
-        return $this->belongsTo(Cliente::class, 'id', 'id_user');
+        return $this->belongsTo(Cliente::class);
     }
 
     public function veiculo(): belongsTo
     {
-        return $this->belongsTo(Veiculo::class, 'id', 'id_user');
+        return $this->belongsTo(Veiculo::class);
     }
 
     public function endereco(): belongsTo
     {
-        return $this->belongsTo(Endereco::class, 'id', 'id_endereco');
+        return $this->belongsTo(Endereco::class);
     }
 }

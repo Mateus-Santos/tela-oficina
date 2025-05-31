@@ -8,8 +8,8 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('endereco', function (Blueprint $table) {
-            $table->bigIncrements('id_endereco');
+        Schema::create('enderecos', function (Blueprint $table) {
+            $table->id();
             $table->string('cep', 11);
             $table->string('cidade', 50);
             $table->string('bairro', 50);

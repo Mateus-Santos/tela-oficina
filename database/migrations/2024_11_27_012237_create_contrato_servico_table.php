@@ -9,14 +9,14 @@ return new class extends Migration
 
     public function up(): void
     {
-        Schema::create('contrato_servico', function (Blueprint $table) {
+        Schema::create('contrato_servicos', function (Blueprint $table) {
             $table->id();
             $table->dateTime('data_abertura');
             $table->dateTime('data_fechamento')->nullable();
             $table->string('descricao');
             $table->string('status');
             $table->unsignedBigInteger('id_veiculo');
-            $table->foreign('id_veiculo')->references('id_veiculo')->on('veiculo');
+            $table->foreign('id_veiculo')->references('id')->on('veiculos');
             $table->timestamps();
         });
     }

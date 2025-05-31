@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('manutencao', function (Blueprint $table) {
-            $table->bigIncrements('id_manutencao');
+        Schema::create('manutencaos', function (Blueprint $table) {
+            $table->id();
             $table->string('setor');
-            $table->string('descricao', 200);
+            $table->text('descricao');
             $table->float('valor');
             $table->string('nivel');
             $table->unsignedBigInteger('id_contrato_servico');
-            $table->foreign('id_contrato_servico')->references('id')->on('contrato_servico');
+            $table->foreign('id_contrato_servico')->references('id')->on('contrato_servicos');
             $table->timestamps();
         });
     }

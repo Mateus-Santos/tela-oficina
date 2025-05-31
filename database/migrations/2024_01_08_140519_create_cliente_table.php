@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('cliente', function (Blueprint $table) {
-            $table->bigIncrements('id_cliente');
+        Schema::create('clientes', function (Blueprint $table) {
+            $table->id();
             $table->integer('pontos')->default(0);
             $table->unsignedBigInteger('id_user');
             $table->foreign('id_user')->references('id')->on('users');

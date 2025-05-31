@@ -11,8 +11,6 @@ class ContratoServico extends Model
 {
     use HasFactory;
 
-    protected $table = 'contrato_servico';
-
     protected $fillable = [
         'data_fechamento',
         'descricao',
@@ -23,11 +21,11 @@ class ContratoServico extends Model
 
     public function manutencao(): belongsTo
     {
-        return $this->belongsTo(Manutencao::class, 'id', 'id_contrato_servico');
+        return $this->belongsTo(Manutencao::class);
     }
 
     public function veiculo(): hasOne
     {
-        return $this->hasOne(Veiculo::class, 'id_veiculo', 'id_veiculo');
+        return $this->hasOne(Veiculo::class);
     }
 }

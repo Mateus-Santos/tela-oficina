@@ -27,6 +27,6 @@ class Endereco extends Model
 
     public function user(): hasOne
     {
-        return $this->hasOne(User::class, 'id_user', 'id');
+        return $this->hasOne(User::class);
     }
 }
