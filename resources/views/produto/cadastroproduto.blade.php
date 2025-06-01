@@ -3,7 +3,7 @@
 @section('content')
   <section class="container cadastro">
   
-    <h1>CADASTRO DE PEÇAS</h1>
+    <h1>CADASTRO DE PRODUTOS</h1>
 
     <form action="{{ route('produtos.store') }}" enctype="multipart/form-data" method="post" class="row g-3">
     @csrf
@@ -41,12 +41,8 @@
                   <input type="text" class="form-control" id="departamento" name="departamento" required>
                 </div>
                 <div class="col-md-2">
-                  <label class="form-label" for="produto">Produtos:*</label>
-                  <input type="text" class="form-control" id="produto" name="produto" required>
-                </div>
-                <div class="col-md-2">
-                  <label class="form-label" for="vulvula">Vulvula:*</label>
-                  <input type="text" class="form-control" id="vulvula" name="vulvula" required>
+                  <label class="form-label" for="valvula">Válvula:*</label>
+                  <input type="text" class="form-control" id="valvula" name="valvula" required>
                 </div>
                 <div class="col-md-2">
                   <label class="form-label" for="motor">Motor:*</label>
@@ -54,28 +50,20 @@
                 </div>
                 <div class="col-md-2">
                   <label class="form-label" for="descricao">Descrição do produto:*</label>
-                  <input type="text" class="form-control" id="descricao" name="descricao_produto" required>
+                  <input type="text" class="form-control" id="descricao" name="descricao" required>
                 </div>
                 <div class="col-md-2">
                   <label class="form-label" for="codigo_fabricante">Código Peça:*</label>
                   <input type="text" class="form-control" id="codigo_fabricante" name="codigo_fabricante" required>
                 </div>
                 <div class="col-md-2">
-                  <label class="form-label" for="valor_uni">Valor Unitario:*</label>
-                  <input type="text" class="form-control" id="valor_uni" name="valor_uni" required>
+                  <label class="form-label" for="preco_uni">Preço Unitario:*</label>
+                  <input type="text" class="form-control" id="preco_uni" name="preco_uni" required>
                 </div>
                 <div>
                   <label class="form-label" for="img">Imagem:*</label>
                   <input type="file" class="form-control" id="img" name="img">
                 </div>
-            </div>
-            <div class="row mb-3">
-              <div class="col">
-                <input class="form-check-input" type="checkbox" id="confirmacao">
-                <label for="confirmacao" name="cidade" required>
-                  Confirmo que toda as informações adicionadas são verdadeiras.
-                </label>
-              </div>
             </div>
 
           <div class="col text-center">

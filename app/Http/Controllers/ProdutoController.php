@@ -30,14 +30,13 @@ class ProdutoController extends Controller
         $produto->nome = $request->input("nome");
         $produto->veiculos = $request->input("veiculo");
         $produto->motor = $request->input("motor");
-        $produto->descricao_produto = $request->input("descricao_produto");
+        $produto->descricao = $request->input("descricao");
         $produto->marcas = $request->input("marcas");
         $produto->departamentos = $request->input("departamento");
-        $produto->produtos = $request->input("produto");
-        $produto->vulvula = $request->input("vulvula");
+        $produto->valvula = $request->input("valvula");
         $produto->quantidade = $request->input("quantidade");
         $produto->ano = $request->input("ano");
-        $produto->preco_uni = $request->input("valor_uni");
+        $produto->preco_uni = $request->input("preco_uni");
         $produto->codigo_fabricante = $request->input("codigo_fabricante");
         if($request->hasFile("img") && $request->file("img")->isValid()){
             // Armazenar a imagem na pasta public/produtos
