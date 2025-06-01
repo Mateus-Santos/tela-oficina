@@ -19,19 +19,26 @@ class Produto extends Model
 
 
     protected $fillable = [
+        'montadora',
         'nome',
         'ano',
+        'veiculos',
         'motor',
         'descricao',
+        'marcas',
+        'departamentos',
+        'valvula',
         'quantidade',
         'preco_uni',
         'img',
         'codigo_fabricante',
     ];
 
-    public function ProdutoVenda(): hasMany
+
+    public function produtoVendas()
     {
         return $this->hasMany(ProdutoVenda::class);
     }
+
     
 }

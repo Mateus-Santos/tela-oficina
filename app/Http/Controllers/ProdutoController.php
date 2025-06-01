@@ -39,9 +39,7 @@ class ProdutoController extends Controller
         $produto->preco_uni = $request->input("preco_uni");
         $produto->codigo_fabricante = $request->input("codigo_fabricante");
         if($request->hasFile("img") && $request->file("img")->isValid()){
-            // Armazenar a imagem na pasta public/produtos
             $imgPath = $request->file('img')->store('public/produtos');
-            // Remover o 'public/' para armazenar o caminho.
             $imgPath = str_replace('public/', '', $imgPath);
             $produto->img = $imgPath;
         }
@@ -54,15 +52,15 @@ class ProdutoController extends Controller
         //
     }
 
-    public function edit(string $id_produto)
+    public function edit(string $id)
     {
-        $produto = produto::where('id_produto', $id_produto)->first();
+        $produto = Produto::findOrFail($id);
         return view('produto.editarproduto', array('produto' => $produto));
     }
 
-    public function update(Request $request, string $id_produto)
+    public function update(Request $request, string $id)
     {
-        $produto = produto::where('id_produto', $id_produto)->first();
+        $produto = Produto::findOrFail($id);
 
         $produto->update([
             'id_produto' => $id_produto,
@@ -70,11 +68,10 @@ class ProdutoController extends Controller
             'nome' => $request->nome,
             'veiculos' => $request->veiculos,
             'motor' => $request->motor,
-            'descricao_produto' => $request->descricao_produto,
+            'descricao' => $request->descricao,
             'marcas' => $request->marcas,
             'departamentos' => $request->departamentos,
-            'produtos' => $request->produtos,
-            'vulvula' => $request->vulvula,
+            'valvula' => $request->valvula,
             'quantidade' => $request->quantidade,
             'ano' => $request->ano,
         ]);
@@ -84,7 +81,7 @@ class ProdutoController extends Controller
 
     public function destroy(string $id_produto)
     {
-        $produto = produto::where('id_produto', $id_produto)->delete();
+        $produto = Produto::findOrFail($id);
         return redirect()->route('produtos.index');
     }
 }
