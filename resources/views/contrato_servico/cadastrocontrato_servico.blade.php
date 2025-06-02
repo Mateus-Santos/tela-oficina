@@ -19,8 +19,8 @@
     <form action="{{ route('contratoservico.store') }}" method="POST">
       @csrf
 
-      <div class="campos">
-        <h1 class="mt-4">Cadastro Contrato de Serviço</h1>
+      <div class="container cadastro">
+        <h1 class="mt-4">Cadastro Histórico de Serviço</h1>
         <div class="row mb-2 mt-2">
 
           <div class="col-md-3">

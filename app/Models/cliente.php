@@ -10,22 +10,14 @@ class Cliente extends Model
 {
     use HasFactory;
 
-    protected $table = 'cliente';
-
     protected $fillable = [
-        'id_cliente',
-        'id_user',
         'pontos',
     ];
 
 
     public function user(): hasOne
     {
-        return $this->hasOne(User::class, 'id', 'id_user');
+        return $this->hasOne(User::class);
     }
 
-    public function pecavenda(): hasMany
-    {
-        return $this->hasMany(PecaVenda::class, 'id', 'id_user');
-    }
 }

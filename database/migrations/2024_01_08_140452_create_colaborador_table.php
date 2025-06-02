@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('colaborador', function (Blueprint $table) {
-            $table->bigIncrements('id_colaborador');
+        Schema::create('colaboradors', function (Blueprint $table) {
+            $table->id();
             $table->unsignedBigInteger('id_user');
             $table->string('chave_pix', 100)->unique();
             $table->string('conta_banco', 30);

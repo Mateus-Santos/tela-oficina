@@ -5,36 +5,40 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Peca extends Model
+class Produto extends Model
 {
     use HasFactory;
 
-    protected $table = 'peca';
-
-    protected $primaryKey = 'id_peca';
-
-    protected $fillable = [
-        'id_peca',
-        'id_venda',
-        'montadora',
-        'nome',
-        'veiculos',
-        'motor',
-        'descricao_peca',
-        'marcas',
-        'departamentos',
-        'produtos',
-        'vulvula',
-        'quantidade',
-        'ano',
-        'img',
-        'codigo_fabricante',
-        'valor_uni'
+    protected $casts = [
+        'montadora' => 'array',
+        'veiculos' => 'array',
+        'marcas' => 'array',
+        'departamentos' => 'array',
+        'valvula' => 'array',
     ];
 
-    public function PecaVenda(): hasMany
+
+    protected $fillable = [
+        'montadora',
+        'nome',
+        'ano',
+        'veiculos',
+        'motor',
+        'descricao',
+        'marcas',
+        'departamentos',
+        'valvula',
+        'quantidade',
+        'preco_uni',
+        'img',
+        'codigo_fabricante',
+    ];
+
+
+    public function produtoVendas()
     {
-        return $this->hasMany(PecaVenda::class, 'id', 'id_peca');
+        return $this->hasMany(ProdutoVenda::class);
     }
+
     
 }

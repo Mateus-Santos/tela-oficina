@@ -8,12 +8,10 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 
 
-class PecaVenda extends Model
+class produtoVenda extends Model
 {
 
     use HasFactory;
-
-    protected $table = 'peca_venda';
 
     protected $fillable = [
         'quantidade',
@@ -22,27 +20,27 @@ class PecaVenda extends Model
         'data_pagto',
         'id_cliente',
         'id_colaborador',
-        'id_peca',
+        'id_produto',
         'id_venda'
     ];
 
     public function cliente(): hasOne
     {
-        return $this->hasOne(Cliente::class, 'id_cliente', 'id_cliente');
+        return $this->hasOne(Cliente::class);
     }
 
     public function colaborador(): hasOne
     {
-        return $this->hasOne(Colaborador::class, 'id_colaborador', 'id_colaborador');
+        return $this->hasOne(Colaborador::class);
     }
     
-    public function peca(): hasOne
+    public function produto(): hasOne
     {
-        return $this->hasOne(Peca::class, 'id_peca', 'id_peca');
+        return $this->hasOne(produto::class);
     }
 
     public function venda(): hasOne
     {
-        return $this->hasOne(Venda::class, 'id', 'id_venda');
+        return $this->hasOne(Venda::class);
     }
 }

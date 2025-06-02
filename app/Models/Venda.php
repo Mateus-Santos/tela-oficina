@@ -9,8 +9,6 @@ class Venda extends Model
 {
     use HasFactory;
 
-    protected $table = 'venda';
-
     protected $fillable = [
         'data_venda',
         'desconto',
@@ -18,9 +16,9 @@ class Venda extends Model
         'data_venc',
     ];
 
-    public function PecaVenda(): hasMany
+    public function produtovenda(): hasMany
     {
-        return $this->hasMany(PecaVenda::class, 'id', 'id_venda');
+        return $this->hasMany(ProdutoVenda::class);
     }
 
 }

@@ -3,10 +3,10 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\EnderecoController;
-use App\Http\Controllers\PecaController;
+use App\Http\Controllers\ProdutoController;
 use App\Http\Controllers\ColaboradorController;
 use App\Http\Controllers\ClienteController;
-use App\Http\Controllers\PecaVendaController;
+use App\Http\Controllers\produtoVendaController;
 use App\Http\Controllers\VeiculoController;
 use App\Http\Controllers\ManutencaoController;
 use App\Http\Controllers\ContratoServicoController;
@@ -32,8 +32,8 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
     Route::middleware(['admin'])->group(function () {
         Route::resource('users', UserController::class);
         Route::get('/cliente', [ClienteController::class, 'index'])->name('clientes.index');
-        Route::resource('pecavendas', PecaVendaController::class);
-        Route::resource('pecas', PecaController::class);
+        Route::resource('produtovendas', produtoVendaController::class);
+        Route::resource('produtos', ProdutoController::class);
         Route::resource('colaboradors', ColaboradorController::class);
         Route::resource('enderecos', EnderecoController::class);
         Route::resource('manutencoes', ManutencaoController::class);

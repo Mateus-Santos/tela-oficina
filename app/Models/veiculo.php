@@ -11,11 +11,7 @@ class Veiculo extends Model
 {
     use HasFactory;
 
-    protected $table = 'veiculo';
-
     protected $fillable = [
-        'id_veiculo',
-        'id_user',
         'placa',
         'ano',
         'marca',
@@ -24,12 +20,12 @@ class Veiculo extends Model
 
     public function user(): hasOne
     {
-        return $this->hasOne(User::class, 'id', 'id_user');
+        return $this->hasOne(User::class);
     }
 
     public function Contratoservico(): belongsTo
     {
-        return $this->belongsTo(ContratoServico::class, 'id_veiculo', 'id_veiculo');
+        return $this->belongsTo(ContratoServico::class);
     }
 
 }
