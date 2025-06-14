@@ -4,20 +4,10 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateProdutosSchema extends Migration
+return new class extends Migration
 {
-    public function up()
+    public function up(): void
     {
-        
-        Schema::create('fornecedores', function (Blueprint $table) {
-            $table->id();
-            $table->string('nome');
-            $table->string('cnpj')->nullable();
-            $table->string('telefone')->nullable();
-            $table->string('email')->nullable();
-            $table->timestamps();
-        });
-
         Schema::create('produtos', function (Blueprint $table) {
             $table->id();
             $table->json('montadora');
@@ -57,4 +47,4 @@ class CreateProdutosSchema extends Migration
         Schema::dropIfExists('fornecedores');
         Schema::dropIfExists('produtos');
     }
-}
+};

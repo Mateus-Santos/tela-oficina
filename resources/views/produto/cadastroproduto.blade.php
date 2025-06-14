@@ -14,7 +14,7 @@
           <div class="col-md-3">
             <label class="form-label">Montadora(s):*</label>
             <div class="tags-input" data-name="montadora[]">
-              <input type="text" placeholder="Digite e use vírgula ou Enter" autocomplete="off" required>
+              <input type="text" placeholder="Digite e use vírgula ou Enter" autocomplete="off">
               <div class="tags-container"></div>
             </div>
           </div>
@@ -35,7 +35,7 @@
           <div class="col-md-3">
             <label class="form-label">Veículo(s):*</label>
             <div class="tags-input" data-name="veiculos[]">
-              <input type="text" placeholder="Digite e use vírgula ou Enter" autocomplete="off" required>
+              <input type="text" placeholder="Digite e use vírgula ou Enter" autocomplete="off">
               <div class="tags-container"></div>
             </div>
           </div>
@@ -53,7 +53,7 @@
           <div class="col-md-2">
             <label class="form-label">Marca(s):*</label>
             <div class="tags-input" data-name="marcas[]">
-              <input type="text" placeholder="Digite e use vírgula ou Enter" autocomplete="off" required>
+              <input type="text" placeholder="Digite e use vírgula ou Enter" autocomplete="off">
               <div class="tags-container"></div>
             </div>
           </div>
@@ -62,7 +62,7 @@
           <div class="col-md-2">
             <label class="form-label">Departamento(s):*</label>
             <div class="tags-input" data-name="departamentos[]">
-              <input type="text" placeholder="Digite e use vírgula ou Enter" autocomplete="off" required>
+              <input type="text" placeholder="Digite e use vírgula ou Enter" autocomplete="off">
               <div class="tags-container"></div>
             </div>
           </div>
