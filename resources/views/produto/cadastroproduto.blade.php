@@ -31,7 +31,7 @@
       @csrf
       <div class="campos">
         <div class="row mb-3">
-          <div class="col-md-2">
+          <div class="col-md-4">
             <label class="form-label" for="codigo_barras">Código de Barras:</label>
             <input type="text"
                     class="form-control"

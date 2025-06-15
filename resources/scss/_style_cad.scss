@@ -3,29 +3,60 @@
 $larguras: 1rem;
 
 .cadastro {
-  background-color: $color_5_1;
+  position: relative;
+  z-index: 1;
   text-align: center;
   border-radius: 15px;
   margin-top: 9rem;
   margin-bottom: 5rem;
-  position: relative;
   padding: $larguras;
   overflow-x: auto;
   overflow-y: auto;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: url('https://images.pexels.com/photos/3930091/pexels-photo-3930091.jpeg?cs=srgb&dl=pexels-padrinan-3930091.jpg&fm=jpg');
+    background-size: cover;
+    background-position: center;
+    filter: blur(4px);
+    -webkit-filter: blur(4px);
+    border-radius: 15px;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-color: rgba(0, 0, 0, 0.041); // ajuste a opacidade conforme necessário
+    border-radius: 15px;
+  }
 }
 
 .cadastro h1 {
   padding: $larguras;
   font-family: $font-family_2;
   color: $color_1;
+  background-image: $background-color_3;
+  border-radius: 5rem;
 }
 
 .campos {
-  font-family: $font-family_8;
-  font-size: large;
-  text-align: left;
-  position: relative;
-  padding: 0 $larguras $larguras $larguras;
+    color: $color_1;
+    font-family: $font-family_8;
+    font-size:larger;
+    text-align: left;
+    position: relative;
+    padding: $larguras $larguras $larguras $larguras;
+    label{
+        color: $color_1;
+        background-image: $background-color_3;
+        border-radius: 0.5rem;
+        padding: 0.1rem 0.5rem 0.1rem 0.5rem;
+    }
 }
 
 /* Container para erros em overlay */

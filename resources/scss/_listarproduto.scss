@@ -4,7 +4,7 @@
     position: relative;
     padding: 1rem 1rem 1rem 1rem;
     margin: 2rem 2rem 2rem 2rem;
-    background-color: $color_5_1;
+    background-image: $background-color_4;
     border-radius: 0.5rem;
     a, h4{
         color: $color_1;
@@ -25,26 +25,30 @@
         height: 8rem;
     }
     .produto-atributos {
-        background-color: $color_5_1;
+        background-image: $background-color_3;
         color: $color_1;
         display: flex;
         flex-direction: column;
         align-items: center;
+        min-width: 15rem;
         max-width: 15rem;
+        padding: 0.3rem;
         a {
             margin: 0.5rem 2rem 0rem 1rem;
         }
     }
     .produto-description {
-        background-color: $color_5_1;
+        background-image: $background-color_3;
         color: $color_1;
         display: inline-block;
         text-overflow: ellipsis;
         overflow: hidden;
         width: 30rem;
+        padding: 0.3rem;
         a {
             margin: 0.5rem 2rem 0rem 1rem;
             display: inline-block;
         }
+        margin: 0.5rem;
     }
 }
