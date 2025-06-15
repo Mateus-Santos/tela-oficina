@@ -1,44 +1,12 @@
-// resources/js/cadProduto.js
-
 document.addEventListener('DOMContentLoaded', () => {
-  const form = document.getElementById('form-produto');
-  const errorContainer = document.createElement('div');
-  errorContainer.className = 'alert alert-danger mensseger_error_container';
-  errorContainer.style.display = 'none';
-  form.prepend(errorContainer);
-
-  // campos de número que só aceitam dígitos (e ponto para preço)
-  const onlyDigits = el => {
-    el.addEventListener('input', () => {
-      let v = el.value;
-      // para quantidade e ano, só números
-      if (el.matches('#quantidade, #ano_modelo')) {
-        el.value = v.replace(/\D+/g, '');
-      }
-      // para preço, números e no máximo um ponto
-      if (el.matches('#preco_uni')) {
-        // remove tudo que não for dígito ou ponto
-        v = v.replace(/[^\d.]/g, '');
-        // deixa só o primeiro ponto
-        const parts = v.split('.');
-        el.value = parts.shift() + (parts.length ? '.' + parts.join('') : '');
-      }
-    });
-  };
-
-  document.querySelectorAll('#quantidade, #ano_modelo, #preco_uni').forEach(onlyDigits);
-
-  // inicializa todas as tags-input como antes, mas registra quais são obrigatórias
-  const tagsWidgets = [];
+  // ----------------------------
+  // Tags-input (sem alterar)
+  // ----------------------------
   document.querySelectorAll('.tags-input').forEach(container => {
     const input = container.querySelector('input[type="text"]');
     const tagsContainer = container.querySelector('.tags-container');
-    const fieldName = container.dataset.name; // ex: 'veiculos[]'
-    const isRequired = ['veiculos[]','marcas[]','departamentos[]','montadora[]']
-      .includes(fieldName);
-
+    const fieldName = container.dataset.name;
     container.tags = [];
-    tagsWidgets.push({ container, isRequired, fieldName });
 
     container.updateTags = () => {
       tagsContainer.innerHTML = '';
@@ -85,49 +53,67 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // debounce helper
-  const debounce = (fn, ms = 300) => {
-    let timeout;
-    return (...args) => {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => fn(...args), ms);
-    };
-  };
-
-  // busca de barcode ao digitar (debounced) e ao sair do campo
-  const barcodeInput = document.getElementById('codigo_barras');
-  const preencheBarcode = async () => {
-    const code = barcodeInput.value.trim();
+  // ----------------------------
+  // Busca por código de barras
+  // ----------------------------
+  document.getElementById('codigo_barras')?.addEventListener('blur', async function () {
+    const code = this.value.trim();
     if (!code) return;
     try {
       const res = await fetch(`/produtos/barcode/${code}`);
-      if (!res.ok) throw new Error('Não encontrado');
+      if (!res.ok) throw new Error;
       const data = await res.json();
-      // campos simples
-      ['nome','ano_modelo','motor','descricao','preco_uni'].forEach(f => {
-        const el = document.getElementById(f);
-        if (el) el.value = data[f] ?? '';
-      });
-      // preenche tags
-      tagsWidgets.forEach(w => {
-        const key = w.fieldName.replace('[]','');
-        if (Array.isArray(data[key])) {
-          w.container.tags = data[key];
-          w.container.updateTags();
-        }
-      });
-    } catch (err) {
-      console.warn(err);
-    }
-  };
-  barcodeInput.addEventListener('blur', debounce(preencheBarcode));
-  barcodeInput.addEventListener('input', debounce(preencheBarcode, 800));
 
-  // validação antes de submit
-  form.addEventListener('submit', e => {
+      ['nome', 'ano_modelo', 'motor', 'descricao', 'preco_uni'].forEach(f => {
+        const el = document.getElementById(f);
+        if (el) el.value = data[f] || '';
+      });
+
+      ['montadora[]','veiculos[]','marcas[]','departamentos[]','valvula[]'].forEach(field => {
+        const cont = document.querySelector(`.tags-input[data-name="${field}"]`);
+        cont.tags = Array.isArray(data[field.replace('[]','')]) ? data[field.replace('[]','')] : [];
+        cont.updateTags();
+      });
+    } catch {
+      console.warn('Produto não encontrado pelo EAN.');
+    }
+  });
+
+  // ----------------------------
+  // Máscara de moeda no preco_uni
+  // ----------------------------
+  const precoEl = document.getElementById('preco_uni');
+  if (precoEl) {
+    precoEl.setAttribute('type', 'text');
+    precoEl.setAttribute('inputmode', 'numeric');
+    precoEl.setAttribute('placeholder', '0,00');
+
+    precoEl.addEventListener('input', () => {
+      let v = precoEl.value.replace(/\D/g, '');
+      if (!v) {
+        precoEl.value = '';
+        return;
+      }
+
+      // Garante pelo menos 3 dígitos (centavos) e remove zeros à esquerda
+      v = v.padStart(3, '0');
+
+      const cents = v.slice(-2);
+      let integerPart = v.slice(0, -2).replace(/^0+/, '') || '0';
+      integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
+      precoEl.value = `${integerPart},${cents}`;
+    });
+  }
+
+  // ----------------------------
+  // Validação e submit
+  // ----------------------------
+  const form = document.getElementById('form-produto');
+  form?.addEventListener('submit', e => {
     const errors = [];
 
-    // verifica campos obrigatórios nativos
+    // Campos obrigatórios
     form.querySelectorAll('[required]').forEach(el => {
       if (!el.value.trim()) {
         const label = document.querySelector(`label[for="${el.id}"]`)?.innerText || el.name;
@@ -135,26 +121,29 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // verifica tags obrigatórias
-    tagsWidgets.forEach(w => {
-      if (w.isRequired && w.container.tags.length === 0) {
-        errors.push(`Preencha ao menos uma opção para "${w.fieldName.replace('[]','')}".`);
+    // Converte preco_uni para ponto antes de enviar
+    if (precoEl && precoEl.value) {
+      const raw = precoEl.value.replace(/\./g, '').replace(',', '.');
+      const num = parseFloat(raw);
+      if (!isNaN(num)) {
+        precoEl.value = num.toFixed(2);
+      } else {
+        errors.push('Preço inválido.');
+      }
+    }
+
+    // Campos numéricos puros
+    ['ano_modelo','quantidade'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el.value && !/^\d+$/.test(el.value.trim())) {
+        const label = document.querySelector(`label[for="${id}"]`)?.innerText || id;
+        errors.push(`O campo "${label}" deve conter apenas números.`);
       }
     });
 
-    // verifica ano_modelo entre 1900 e ano atual+1
-    const ano = parseInt(document.getElementById('ano_modelo').value, 10);
-    const anoAtual = new Date().getFullYear();
-    if (ano && (ano < 1900 || ano > anoAtual + 1)) {
-      errors.push(`O "Ano Modelo" deve estar entre 1900 e ${anoAtual + 1}.`);
-    }
-
-    // se houver erros, bloqueia submit e mostra
     if (errors.length) {
       e.preventDefault();
-      errorContainer.innerHTML = '<ul>' + errors.map(msg => `<li>${msg}</li>`).join('') + '</ul>';
-      errorContainer.style.display = 'block';
-      window.scrollTo({ top: errorContainer.offsetTop - 20, behavior: 'smooth' });
+      alert(errors.join('\n'));
     }
   });
 });
