@@ -3,37 +3,92 @@
 $larguras: 1rem;
 
 .cadastro {
-    background-color: $color_5_1;
-    text-align: center;
-    border-radius: 15px;
-    margin-top: 9rem;
-    margin-bottom: 5rem;
-    position: relative;
-    padding: $larguras $larguras $larguras $larguras;
-    overflow-x: auto;
-    overflow-y: auto;
+  background-color: $color_5_1;
+  text-align: center;
+  border-radius: 15px;
+  margin-top: 9rem;
+  margin-bottom: 5rem;
+  position: relative;
+  padding: $larguras;
+  overflow-x: auto;
+  overflow-y: auto;
 }
 
-.cadastro h1{
-    padding: $larguras $larguras $larguras $larguras;
-    font-family: $font-family_2;
-    color: $color_1;
+.cadastro h1 {
+  padding: $larguras;
+  font-family: $font-family_2;
+  color: $color_1;
 }
 
 .campos {
-    font-family: $font-family_8;
-    font-size: large;
-    text-align: left;
-    position: relative;
-    padding: 0rem $larguras $larguras $larguras;
+  font-family: $font-family_8;
+  font-size: large;
+  text-align: left;
+  position: relative;
+  padding: 0 $larguras $larguras $larguras;
 }
 
-.mensseger_error_container{
-    z-index: 9999;
-    position: fixed;
-    top: 35%;
-    left: 30%;
-    background-color: $color_5;
-    border-radius: 10px;
-    padding: $larguras $larguras $larguras $larguras;
+/* Container para erros em overlay */
+.mensseger_error_container {
+  z-index: 9999;
+  position: fixed;
+  top: 35%;
+  left: 30%;
+  background-color: $color_5;
+  border-radius: 10px;
+  padding: $larguras;
+}
+
+.tags-input { 
+    padding: 5px 8px;
+    border-radius: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-height: 40px;
+    max-height: 160px;
+    overflow: hidden;
+}
+.tags-input input[type=text] {
+    border: none;
+    outline: none;
+    flex: 1;
+    min-width: 120px;
+}
+.tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    max-height: 100px;
+    overflow-y: auto;
+    padding-right: 5px;
+    scrollbar-width: thin;
+    scrollbar-color: $color_5_1 transparent;
+}
+
+.tags-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.tags-container::-webkit-scrollbar-thumb {
+    background-color: $color_5_1;
+    border-radius: 4px;
+}
+
+.tags-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+.tag {
+    background-color: $color_6;
+    color: $color_5;
+    padding: 4px 10px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+}
+.tag .remove-tag {
+    cursor: pointer;
+    font-weight: bold;
 }
