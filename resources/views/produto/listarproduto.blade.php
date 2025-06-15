@@ -10,13 +10,13 @@
             <div class="produto-item">
                 <img class="produto-item-img" src="storage/{{$produto->img}}">
                 <div class="produto-atributos">
-                    <a>ID produto:{{$produto->id_produto}}</a>
+                    <a>ID produto:{{$produto->id}}</a>
                     <a>Nome: {{$produto->nome}}</a>
                     <a>Estoque: {{$produto->quantidade}}</a>
                     <a>Valor: R$ {{$produto->preco_uni}}</a>
                 </div>
                 <div class="produto-description">
-                    <a>{{$produto->descricao_produto}}</a>
+                    <a>{{$produto->descricao}}</a>
                 </div>
             </div>
         </div>

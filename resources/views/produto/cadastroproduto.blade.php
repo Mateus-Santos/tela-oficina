@@ -4,6 +4,21 @@
   <section class="container cadastro">
 
     <h1>CADASTRO DE PRODUTOS</h1>
+    @if ($errors->any())
+      <div class="alert alert-danger">
+        <ul>
+          @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+          @endforeach
+        </ul>
+      </div>
+    @endif
+    @if (session('success'))
+      <div class="alert alert-success">
+        {{ session('success') }}
+      </div>
+    @endif
+
 
     <form id="form-produto" action="{{ route('produtos.store') }}" enctype="multipart/form-data" method="post" class="row g-3">
       @csrf
@@ -27,8 +42,8 @@
 
           <!-- Ano Modelo -->
           <div class="col-md-1">
-            <label class="form-label" for="ano">Ano Modelo:*</label>
-            <input type="text" class="form-control" id="ano" name="ano" required>
+            <label class="form-label" for="ano_modelo">Ano Modelo:*</label>
+            <input type="text" class="form-control" id="ano_modelo" name="ano_modelo" required>
           </div>
 
           <!-- Veículo(s) -->
