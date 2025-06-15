@@ -67,10 +67,6 @@
         {{-- Linha 2 --}}
         <div class="row mb-3">
           <div class="col-md-2">
-            <label class="form-label" for="descricao">Descrição:</label>
-            <input type="text" class="form-control" id="descricao" name="descricao">
-          </div>
-          <div class="col-md-2">
             <label class="form-label" for="motor">Motor:</label>
             <input type="text" class="form-control" id="motor" name="motor">
           </div>
@@ -126,7 +122,15 @@
           </div>
             
           </div>
+          <div class="row mb-3">
+            <div>
+              <label class="form-label" for="descricao">Descrição:</label>
+              <textarea type="text" class="form-control" id="descricao" name="descricao"></textarea>
+            </div>
+          </div>
         </div>
+
+        
 
         {{-- Botão --}}
         <div class="col text-center">

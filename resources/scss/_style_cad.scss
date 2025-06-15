@@ -59,6 +59,9 @@ $larguras: 1rem;
         border-radius: 0.5rem;
         padding: 0.1rem 0.5rem 0.1rem 0.5rem;
     }
+  #descricao{
+    height: 8rem;
+  }
 }
 
 /* Container para erros em overlay */
@@ -78,8 +81,7 @@ $larguras: 1rem;
     display: flex;
     flex-direction: column;
     gap: 5px;
-    min-height: 40px;
-    max-height: 160px;
+    max-height: 8rem;
     overflow: hidden;
 }
 .tags-input input[type=text] {
@@ -111,6 +113,7 @@ $larguras: 1rem;
 .tags-container::-webkit-scrollbar-track {
     background: transparent;
 }
+
 .tag {
     background-color: $color_6;
     color: $color_5;

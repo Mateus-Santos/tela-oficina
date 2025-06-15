@@ -6,7 +6,7 @@
     <h1>LISTAR PRODUTOS</h1>
         @foreach($produtos as $produto)
         <div class="produto-container">
-            <h4>Código da produto: {{$produto->codigo_fabricante}}</h4>
+            <h4>Cod. Fabricante: {{$produto->codigo_fabricante}}</h4>
             <div class="produto-item">
                 <img class="produto-item-img" src="storage/{{$produto->img}}">
                 <div class="produto-atributos">
