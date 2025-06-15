@@ -3,6 +3,10 @@
 $espacamento: 1rem;
 
 #header {
+	img{
+		width: 5rem;
+		height: 5rem;
+	}
 	transition: all 1s;
 	z-index: 9997;
 	padding: 1rem;

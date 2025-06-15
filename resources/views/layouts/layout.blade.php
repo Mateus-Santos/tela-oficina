@@ -34,7 +34,7 @@
   <nav id="header" class="navbar navbar-expand-lg fixed-top">
     <!-- Example single danger button -->
     <div class="container-fluid">
-      <h1><a href="/">Oficina SOS Mecânica {{ env('APP_VERSION') }}</a></h1>
+      <h1><a href="/"><img src="/img/mecanico.png" alt="">V. {{ env('APP_VERSION') }}</a></h1>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
