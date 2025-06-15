@@ -16,6 +16,7 @@
                     <a>Valor: R$ {{$produto->preco_uni}}</a>
                 </div>
                 <div class="produto-description">
+                    <a><span>Descrição</span></a>
                     <a>{{$produto->descricao}}</a>
                 </div>
             </div>
