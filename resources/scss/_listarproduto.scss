@@ -6,6 +6,7 @@
     margin: 2rem 2rem 2rem 2rem;
     background-image: $background-color_4;
     border-radius: 0.5rem;
+    box-shadow: $background-color_2 1rem 1rem 2rem;
     a, h4{
         color: $color_1;
     }
@@ -16,15 +17,18 @@
 }
 
 .produto-item {
+    box-shadow: $background-color_2 1rem 1rem 2rem;
     padding: 0.5rem;
     display: flex;
     align-items: center;
     .produto-item-img {
+        box-shadow: $background-color_2 1rem 1rem 2rem;
         margin: 1rem;
         width: 8rem;
         height: 8rem;
     }
     .produto-atributos {
+        box-shadow: $background-color_2 1rem 1rem 2rem;
         background-image: $background-color_3;
         color: $color_1;
         display: flex;
@@ -38,6 +42,7 @@
         }
     }
     .produto-description {
+        box-shadow: $background-color_2 1rem 1rem 2rem;
         background-image: $background-color_3;
         color: $color_1;
         display: inline-block;

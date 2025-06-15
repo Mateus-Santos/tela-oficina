@@ -12,6 +12,7 @@ $larguras: 1rem;
   padding: $larguras;
   overflow-x: auto;
   overflow-y: auto;
+  box-shadow: $background-color_2 1rem 1rem 3rem;
 
   &::before {
     content: '';
@@ -31,7 +32,7 @@ $larguras: 1rem;
     position: absolute;
     inset: 0;
     z-index: -1;
-    background-color: rgba(0, 0, 0, 0.041); // ajuste a opacidade conforme necessário
+    background-color: rgba(0, 0, 0, 0.041);
     border-radius: 15px;
   }
 }
@@ -42,6 +43,7 @@ $larguras: 1rem;
   color: $color_1;
   background-image: $background-color_3;
   border-radius: 5rem;
+  box-shadow: $background-color_2 1rem 1rem 3rem;
 }
 
 .campos {
@@ -70,7 +72,7 @@ $larguras: 1rem;
   padding: $larguras;
 }
 
-.tags-input { 
+.tags-input {
     padding: 5px 8px;
     border-radius: 1rem;
     display: flex;

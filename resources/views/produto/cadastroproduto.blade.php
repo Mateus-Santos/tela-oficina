@@ -3,7 +3,7 @@
 @section('content')
   <section class="container cadastro">
 
-    <h1>⚙️CADASTRO DE PRODUTOS</h1>
+    <h1><i class="bi bi-gear"></i> CADASTRO DE PRODUTOS</h1>
 
     {{-- Exibe erros de validação --}}
     @if ($errors->any())
@@ -36,8 +36,7 @@
             <input type="text"
                     class="form-control"
                     id="codigo_barras"
-                    name="codigo_barras"
-                    placeholder="Digite e saia do campo para buscar">
+                    name="codigo_barras">
           </div>
         </div>
         
@@ -90,7 +89,7 @@
           <div class="col-md-3">
             <label class="form-label">Veículo(s):*</label>
             <div class="tags-input" data-name="veiculos[]">
-              <input class="form-control" type="text" placeholder="Digite e use vírgula ou Enter" autocomplete="off">
+              <input class="form-control" type="text" autocomplete="off">
               <div class="tags-container"></div>
             </div>
           </div>
@@ -98,7 +97,7 @@
           <div class="col-md-2">
             <label class="form-label">Marca(s):*</label>
             <div class="tags-input" data-name="marcas[]">
-              <input class="form-control" type="text" placeholder="Digite e use vírgula ou Enter" autocomplete="off">
+              <input class="form-control" type="text" autocomplete="off">
               <div class="tags-container"></div>
             </div>
           </div>
@@ -106,7 +105,7 @@
           <div class="col-md-2">
             <label class="form-label">Departamento(s):*</label>
             <div class="tags-input" data-name="departamentos[]">
-              <input class="form-control" type="text" placeholder="Digite e use vírgula ou Enter" autocomplete="off">
+              <input class="form-control" type="text" autocomplete="off">
               <div class="tags-container"></div>
             </div>
           </div>
@@ -114,14 +113,14 @@
           <div class="col-md-2">
             <label class="form-label">Válvula(s):</label>
             <div class="tags-input" data-name="valvula[]">
-              <input class="form-control" type="text" placeholder="Digite e use vírgula ou Enter" autocomplete="off">
+              <input class="form-control" type="text" autocomplete="off">
               <div class="tags-container"></div>
             </div>
           </div>
           <div class="col-md-2">
             <label class="form-label">Montadora(s):*</label>
             <div class="tags-input" data-name="montadora[]">
-              <input class="form-control" type="text" placeholder="Digite e use vírgula ou Enter" autocomplete="off">
+              <input class="form-control" type="text" autocomplete="off">
               <div class="tags-container"></div>
             </div>
           </div>
