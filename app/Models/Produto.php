@@ -45,28 +45,6 @@ class Produto extends Model
         'ano_modelo'    => 'integer',
     ];
 
-    protected static function booted()
-    {
-        static::creating(function ($produto) {
-            // Gera código de barras apenas se não fornecido
-            if (empty($produto->codigo_barras)) {
-                // Gera base com prefixo 200 + timestamp (garante unicidade)
-                $base = '200' . substr(time(), -9); // 12 dígitos
-                $produto->codigo_barras = $base . self::calcularChecksumEAN13($base);
-            }
-        });
-    }
-
-    public static function calcularChecksumEAN13(string $codigo): string
-    {
-        $sum = 0;
-        foreach (str_split($codigo) as $i => $digit) {
-            $sum += intval($digit) * ($i % 2 === 0 ? 1 : 3);
-        }
-        $mod = $sum % 10;
-        return (string) ($mod === 0 ? 0 : 10 - $mod);
-    }
-
     public function fornecedor()
     {
         return $this->belongsTo(Fornecedor::class);

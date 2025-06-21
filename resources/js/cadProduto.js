@@ -54,32 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ----------------------------
-  // Busca por código de barras
-  // ----------------------------
-  document.getElementById('codigo_barras')?.addEventListener('blur', async function () {
-    const code = this.value.trim();
-    if (!code) return;
-    try {
-      const res = await fetch(`/produtos/barcode/${code}`);
-      if (!res.ok) throw new Error;
-      const data = await res.json();
-
-      ['nome', 'ano_modelo', 'motor', 'descricao', 'preco_uni'].forEach(f => {
-        const el = document.getElementById(f);
-        if (el) el.value = data[f] || '';
-      });
-
-      ['montadora[]','veiculos[]','marcas[]','departamentos[]','valvula[]'].forEach(field => {
-        const cont = document.querySelector(`.tags-input[data-name="${field}"]`);
-        cont.tags = Array.isArray(data[field.replace('[]','')]) ? data[field.replace('[]','')] : [];
-        cont.updateTags();
-      });
-    } catch {
-      console.warn('Produto não encontrado pelo EAN.');
-    }
-  });
-
-  // ----------------------------
   // Máscara de moeda no preco_uni
   // ----------------------------
   const precoEl = document.getElementById('preco_uni');
