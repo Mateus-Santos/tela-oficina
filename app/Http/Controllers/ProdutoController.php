@@ -13,12 +13,35 @@ class ProdutoController extends Controller
         $this->middleware('admin:admin');
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        // Lista produtos ativos e ordena por nome
-        $produtos = Produto::orderBy('status', 'desc')->orderBy('nome')->paginate(20);
-        return view('produto.listarproduto', compact('produtos'));
+        // Busca única para filtros
+        $anosDisponiveis = Produto::select('ano_modelo')->distinct()->orderBy('ano_modelo')->pluck('ano_modelo');
+        $codigosFabricanteDisponiveis = Produto::select('codigo_fabricante')->distinct()->orderBy('codigo_fabricante')->pluck('codigo_fabricante');
+
+        $query = Produto::query();
+
+        if ($request->filled('nome')) {
+            $query->where('nome', 'like', '%'.$request->nome.'%');
+        }
+
+        if ($request->filled('codigo_barras')) {
+            $query->where('codigo_barras', 'like', '%'.$request->codigo_barras.'%');
+        }
+
+        if ($request->filled('ano_modelo')) {
+            $query->where('ano_modelo', $request->ano_modelo);
+        }
+
+        if ($request->filled('codigo_fabricante')) {
+            $query->where('codigo_fabricante', $request->codigo_fabricante);
+        }
+
+        $produtos = $query->orderBy('nome')->paginate(20);
+
+        return view('produto.listarproduto', compact('produtos', 'anosDisponiveis', 'codigosFabricanteDisponiveis'));
     }
+
 
     public function create()
     {
