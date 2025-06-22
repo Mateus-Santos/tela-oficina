@@ -42,13 +42,12 @@
                     @endforeach
                     </datalist>
 
-                <button class="filtros-container__button filtros-container__button--primary" type="submit">
-                    Filtrar
+                <button class="btn btn-primary" type="submit">
+                    <i class="bi bi-funnel"></i> Filtrar
                 </button>
-                <a href="{{ route('produtos.index') }}" class="filtros-container__button filtros-container__button--secondary">
-                    Limpar Filtros
+                <a href="{{ route('produtos.index') }}" class="btn btn-secondary">
+                    <i class="bi bi-filter"></i> Limpar Filtros
                 </a>
-
         </form>
     </div>
     @foreach($produtos as $produto)

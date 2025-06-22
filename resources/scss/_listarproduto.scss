@@ -87,26 +87,13 @@
 }
 
 // ====================
-// 🎨 Variáveis
-// ====================
-$primary-color: #007bff;
-$secondary-color: #6c757d;
-$border-color: #ced4da;
-$text-dark: #343a40;
-$text-light: #ffffff;
-$spacing-unit: 1rem;
-
-$shadow-color: rgba(0, 0, 0, 0.15);
-$bg-overlay: rgba(255, 255, 255, 0.9);
-
-// ====================
 // 🧩 Mixins
 // ====================
 @mixin transition($props: all, $time: 0.3s, $easing: ease-in-out) {
   transition: $props $time $easing;
 }
 
-@mixin input-style($bg: #fff, $color: #000, $border: $border-color) {
+@mixin input-style($bg: $color_5, $color: $color_1, $border: $color_5_1) {
   padding: $spacing-unit * 0.75 $spacing-unit;
   border: 1px solid $border;
   border-radius: 4px;
@@ -117,17 +104,17 @@ $bg-overlay: rgba(255, 255, 255, 0.9);
 
   &:focus {
     outline: none;
-    border-color: $primary-color;
-    box-shadow: 0 0 0 0.2rem rgba($primary-color, 0.25);
+    border-color: $color_1;
+    box-shadow: 0 0 0 0.2rem rgba($color_1, 0.25);
   }
 
   &::placeholder {
-    color: $secondary-color;
+    color: $color_5_1;
     opacity: 1;
   }
 }
 
-@mixin button-style($bg, $text, $hover-bg: darken($bg, 10%), $hover-text: $text-light) {
+@mixin button-style($bg, $text, $hover-bg: darken($bg, 10%), $hover-text: $color_5) {
   padding: $spacing-unit * 0.75 $spacing-unit * 1.25;
   border: none;
   border-radius: 4px;
@@ -145,7 +132,7 @@ $bg-overlay: rgba(255, 255, 255, 0.9);
 }
 
 // ====================
-// 🧱 Estilos principais
+// Estilos de Filtros
 // ====================
 .filtros-container {
   display: flex;
@@ -153,11 +140,11 @@ $bg-overlay: rgba(255, 255, 255, 0.9);
   gap: $spacing-unit;
   padding: $spacing-unit;
   margin: $spacing-unit * 2;
-  background: $bg-overlay;
+  background: $color_5_1;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  box-shadow: $shadow-color 1rem 1rem 2rem;
+  box-shadow: $background-color_2 1rem 1rem 2rem;
   border-radius: $spacing-unit;
 
   @media (max-width: 768px) {
@@ -173,16 +160,16 @@ $bg-overlay: rgba(255, 255, 255, 0.9);
   &__input {
     @extend .filtros-container__field;
     max-width: 20rem;
-    background-color: #fdd;
-    color: #000;
+    background-color: $color_5;
+    color: $color_1;
 
     &:focus {
-      border-color: darken(red, 15%);
-      box-shadow: 0 0 0 0.2rem rgba(red, 0.25);
+      border-color: darken($color_3, 15%);
+      box-shadow: 0 0 0 0.2rem rgba($color_3, 0.25);
     }
 
     &::placeholder {
-      color: darken(#000, 20%);
+      color: darken($color_1, 20%);
     }
   }
 
@@ -191,57 +178,26 @@ $bg-overlay: rgba(255, 255, 255, 0.9);
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    background-color: #fff;
-    background-image: url("data:image/svg+xml;utf8,<svg fill='%23343a40' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 10l5 5 5-5z'/></svg>");
+    background-color: $color_5;
     background-repeat: no-repeat;
-    background-position: right $spacing-unit / 2 center;
+    background-position: right calc($spacing-unit / 2 center);
     background-size: 1.2rem;
     padding-right: $spacing-unit * 2;
-    color: $text-dark;
-  }
-
-  &__button {
-    display: inline-block;
-    flex: 0 0 auto;
-    align-self: flex-start;
-    @include transition();
-
-    &--primary {
-      @include button-style($primary-color, $text-light);
-    }
-
-    &--secondary {
-      @include button-style($secondary-color, $text-light);
-    }
-
-    &--outline {
-      background-color: transparent;
-      border: 1px solid $primary-color;
-      color: $primary-color;
-
-      &:hover {
-        background-color: $primary-color;
-        color: $text-light;
-      }
-    }
+    color: $color_1;
   }
 
   @media (max-width: 480px) {
     padding: $spacing-unit;
     margin: $spacing-unit;
 
-    .filtros-container__button {
-      width: 100%;
-      align-self: stretch;
-    }
   }
 
 .filtros-container__select[multiple] {
-    max-height: 12rem;         // segurança caso o navegador ignore `size`
+    max-height: 12rem;
     overflow-y: auto;
     overflow-x: hidden;
-    background-image: none;    // remove seta
+    background-image: none;
     padding-right: $spacing-unit;
-    resize: vertical;          // opcional, para o usuário poder redimensionar
+    resize: vertical;
     }
 }
