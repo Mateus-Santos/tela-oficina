@@ -15,12 +15,12 @@ return new class extends Migration
             $table->double('valor_pagto')->nullable();
             $table->date('data_pagto')->nullable();
             $table->unsignedBigInteger('id_venda');
-            $table->unsignedBigInteger('id_produto');
+            $table->unsignedBigInteger('produto_id');
             $table->unsignedBigInteger('id_colaborador');
             $table->unsignedBigInteger('id_cliente');
-            $table->foreign('id_produto')->references('id')->on('produtos');
+            $table->foreign('produto_id')->references('id')->on('produtos');
             $table->foreign('id_venda')->references('id')->on('vendas');
-            $table->foreign('id_colaborador')->references('id')->on('colaboradors');
+            $table->foreign('id_colaborador')->references('id')->on('colaboradores');
             $table->foreign('id_cliente')->references('id')->on('clientes');
             $table->timestamps();
         });

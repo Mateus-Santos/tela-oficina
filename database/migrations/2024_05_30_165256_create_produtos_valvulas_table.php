@@ -10,13 +10,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('produtos_valvulas', function (Blueprint $table) {
-            $table->id();
+            $table->string('nome');
+            
             $table->unsignedBigInteger('produto_id');
             $table->unsignedBigInteger('valvula_id');
-            $table->foreign('produto_id')->references('id')->on('produtos')->onDelete('cascade');
-            $table->foreign('valvula_id')->references('id')->on('valvulas')->onDelete('cascade');
-            $table->primary(['produto_id', 'valvula_id']);
+
             $table->timestamps();
+
+            $table->primary(['produto_id', 'valvula_id']);
+
+            $table->foreign('produto_id')->references('id')->on('produtos')->onDelete('cascade');
+            $table->foreign('valvula_id')->references('id')->on('departamentos')->onDelete('cascade');
         });
     }
 
