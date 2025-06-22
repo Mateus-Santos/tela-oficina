@@ -42,7 +42,7 @@
                     @endforeach
                     </datalist>
 
-                <button class="btn btn-primary" type="submit">
+                <button class="btn btn-warning" type="submit">
                     <i class="bi bi-funnel"></i> Filtrar
                 </button>
                 <a href="{{ route('produtos.index') }}" class="btn btn-secondary">

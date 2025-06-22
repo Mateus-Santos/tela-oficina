@@ -38,6 +38,10 @@
                     id="codigo_barras"
                     name="codigo_barras">
           </div>
+          <div class="col-md-3">
+            <label class="form-label" for="codigo_fabricante">Cod. do Fabricante:*</label>
+            <input type="text" class="form-control" id="codigo_fabricante" name="codigo_fabricante" required>
+          </div>
         </div>
         
         {{-- Linha 1 --}}
@@ -70,10 +74,7 @@
             <label class="form-label" for="motor">Motor:</label>
             <input type="text" class="form-control" id="motor" name="motor">
           </div>
-          <div class="col-md-3">
-            <label class="form-label" for="codigo_fabricante">Cod. do Fabricante:*</label>
-            <input type="text" class="form-control" id="codigo_fabricante" name="codigo_fabricante" required>
-          </div>
+          
           <div class="col-md-4">
             <label class="form-label" for="img">Imagem:</label>
             <input type="file" class="form-control" id="img" name="img">
@@ -83,17 +84,17 @@
         {{-- Linha 3 --}}
         <div class="row mb-3">
           <div class="col-md-3">
-            <label class="form-label">Veículo(s):*</label>
+            <label class="form-label" for="veiculo">Veículo(s):*</label>
             <div class="tags-input" data-name="veiculos[]">
-              <input class="form-control" type="text" autocomplete="off">
+              <input class="form-control" type="text" id="veiculo" autocomplete="off">
               <div class="tags-container"></div>
             </div>
           </div>
 
           <div class="col-md-2">
-            <label class="form-label">Marca(s):*</label>
+            <label class="form-label" for="marcas">Marca(s):*</label>
             <div class="tags-input" data-name="marcas[]">
-              <input class="form-control" type="text" autocomplete="off">
+              <input class="form-control" id="marcas" type="text" autocomplete="off">
               <div class="tags-container"></div>
             </div>
           </div>
