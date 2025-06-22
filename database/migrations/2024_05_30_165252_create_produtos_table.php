@@ -10,24 +10,16 @@ return new class extends Migration
     {
         Schema::create('produtos', function (Blueprint $table) {
             $table->id();
-            $table->json('montadora');
-            $table->string('nome', 150);
             $table->year('ano_modelo');
-            $table->json('veiculos');
-            $table->string('motor', 50);
+            $table->string('nome', 150);
             $table->text('descricao');
-            $table->json('marcas');
-            $table->json('departamentos');
-            $table->json('valvula');
-            $table->integer('quantidade');
+            $table->integer('quantidade')->default(0);
+            $table->integer('estoque_minimo')->default(0);
             $table->decimal('preco_uni', 10, 2);
             $table->string('img')->nullable();
             $table->string('codigo_fabricante')->unique();
             $table->string('codigo_barras')->nullable()->unique();
-            $table->string('localizacao')->nullable();
-            $table->string('unidade_medida', 10)->default('UN');
             $table->boolean('status')->default(true);
-            $table->integer('estoque_minimo')->default(0);
             $table->unsignedBigInteger('fornecedor_id')->nullable();
             $table->timestamps();
 

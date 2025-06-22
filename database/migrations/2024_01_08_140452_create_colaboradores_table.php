@@ -6,25 +6,26 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
-        Schema::create('enderecos', function (Blueprint $table) {
+        Schema::create('colaboradores', function (Blueprint $table) {
             $table->id();
-            $table->string('cep', 11);
-            $table->string('cidade', 50);
-            $table->string('bairro', 50);
-            $table->string('estado', 50);
-            $table->string('rua', 50);
-            $table->integer('numero');
-            $table->string('ponto_referencia', 200);
             $table->unsignedBigInteger('id_user');
+            $table->string('chave_pix', 100)->unique();
+            $table->string('conta_banco', 30);
             $table->foreign('id_user')->references('id')->on('users');
             $table->timestamps();
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        Schema::dropIfExists('endereco');
+        Schema::dropIfExists('colaboradores');
     }
 };
