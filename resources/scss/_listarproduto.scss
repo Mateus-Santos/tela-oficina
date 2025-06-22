@@ -161,7 +161,6 @@
     @extend .filtros-container__field;
     max-width: 20rem;
     background-color: $color_5;
-    color: $color_1;
 
     &:focus {
       border-color: darken($color_3, 15%);
@@ -169,7 +168,7 @@
     }
 
     &::placeholder {
-      color: darken($color_1, 20%);
+      color: $background-color_2;
     }
   }
 
