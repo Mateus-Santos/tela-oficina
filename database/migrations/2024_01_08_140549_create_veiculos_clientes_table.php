@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('veiculos_clientes', function (Blueprint $table) {
             $table->id();
             $table->string('placa')->unique();
-            $table->string('ano', 4);
+            $table->year('ano');
             $table->string('cor', 4);
             $table->string('marca', 20);
             $table->string('modelo', 20);
