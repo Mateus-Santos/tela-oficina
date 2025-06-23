@@ -12,9 +12,10 @@ return new class extends Migration
         Schema::create('veiculos', function (Blueprint $table) {
             $table->id();
             $table->year('ano');
-            $table->string('marca', 20);
             $table->string('modelo', 20);
             $table->timestamps();
+            $table->unsignedBigInteger('montadora_id');
+            $table->foreign('montadora_id')->references('id')->on('montadoras')->onDelete('cascade');
         });
     }
 

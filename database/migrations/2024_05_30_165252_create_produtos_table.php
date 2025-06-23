@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('produtos', function (Blueprint $table) {
             $table->id();
-            $table->year('ano_modelo');
             $table->string('nome', 150);
             $table->text('descricao');
             $table->integer('quantidade')->default(0);
