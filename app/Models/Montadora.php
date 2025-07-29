@@ -18,4 +18,9 @@ class Montadora extends Model
     {
         return $this->belongsToMany(Produto::class);
     }
+
+    public function veiculos(): HasMany
+    {
+        return $this->HasMany(Veiculos::class);
+    }
 }
