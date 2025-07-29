@@ -12,16 +12,9 @@ class Veiculo extends Model
     use HasFactory;
 
     protected $fillable = [
-        'placa',
         'ano',
-        'marca',
-        'cor',
+        'nome',
     ];
-
-    public function user(): hasOne
-    {
-        return $this->hasOne(User::class);
-    }
 
     public function montadora(): BelongsTo
     {

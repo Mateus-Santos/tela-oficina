@@ -21,7 +21,6 @@ return new class extends Migration
             $table->string('codigo_barras')->nullable()->unique();
             $table->boolean('status')->default(true);
             $table->unsignedBigInteger('fornecedor_id')->nullable();
-            $table->timestamps();
 
             $table->index('nome');
             $table->index('ano_modelo');
@@ -31,6 +30,8 @@ return new class extends Migration
                 ->references('id')
                 ->on('fornecedores')
                 ->onDelete('set null');
+                
+            $table->timestamps();
         });
     }
 

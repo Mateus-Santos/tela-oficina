@@ -39,7 +39,7 @@ class ProdutoController extends Controller
     {
         return view('produto.cadastroproduto', [
             'montadoras'    => Montadora::orderBy('nome')->get(),
-            'veiculos'      => Veiculo::orderBy('placa')->get(),
+            'veiculos'      => Veiculo::orderBy('nome')->get(),
             'departamentos' => Departamento::orderBy('nome')->get(),
             'valvulas'      => Valvula::orderBy('nome')->get(),
         ]);
