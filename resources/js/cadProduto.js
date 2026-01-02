@@ -1,9 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
   // ----------------------------
-  // Tags-input (sem alterar)
+  // Tags-input (suporta input e select)
   // ----------------------------
   document.querySelectorAll('.tags-input').forEach(container => {
     const input = container.querySelector('input[type="text"]');
+    const select = container.querySelector('select');
     const tagsContainer = container.querySelector('.tags-container');
     const fieldName = container.dataset.name;
     container.tags = [];
@@ -14,8 +15,17 @@ document.addEventListener('DOMContentLoaded', () => {
       container.tags.forEach((tag, i) => {
         const el = document.createElement('div');
         el.className = 'tag';
-        el.innerHTML = `${tag} <span class="remove-tag" data-i="${i}">&times;</span>`;
+
+        let tagLabel = tag;
+        // Se for select, mostrar o texto da opção
+        if (select) {
+          const opt = select.querySelector(`option[value="${tag}"]`);
+          if (opt) tagLabel = opt.text;
+        }
+
+        el.innerHTML = `${tagLabel} <span class="remove-tag" data-i="${i}">&times;</span>`;
         tagsContainer.append(el);
+
         const hidden = document.createElement('input');
         hidden.type = 'hidden';
         hidden.name = fieldName;
@@ -24,27 +34,38 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     };
 
-    input.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ',') {
-        e.preventDefault();
-        const val = input.value.trim();
-        if (val && !container.tags.includes(val)) {
-          container.tags.push(val);
-          container.updateTags();
-        }
-        input.value = '';
-      }
-    });
-
-    input.addEventListener('blur', () => {
-      const val = input.value.trim();
+    const addTag = (val) => {
       if (val && !container.tags.includes(val)) {
         container.tags.push(val);
         container.updateTags();
       }
-      input.value = '';
-    });
+    };
 
+    // Evento para input de texto
+    if (input) {
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ',') {
+          e.preventDefault();
+          addTag(input.value.trim());
+          input.value = '';
+        }
+      });
+
+      input.addEventListener('blur', () => {
+        addTag(input.value.trim());
+        input.value = '';
+      });
+    }
+
+    // Evento para select
+    if (select) {
+      select.addEventListener('change', () => {
+        addTag(select.value);
+        select.value = '';
+      });
+    }
+
+    // Remover tag
     tagsContainer.addEventListener('click', e => {
       if (e.target.matches('.remove-tag')) {
         container.tags.splice(e.target.dataset.i, 1);
@@ -69,7 +90,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // Garante pelo menos 3 dígitos (centavos) e remove zeros à esquerda
       v = v.padStart(3, '0');
 
       const cents = v.slice(-2);

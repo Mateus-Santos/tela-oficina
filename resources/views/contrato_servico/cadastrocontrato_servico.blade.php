@@ -45,7 +45,7 @@
                 <select class="form-control" id="id_veiculo" name="id_veiculo" required>
                   <option selected>Escolha o veículo...</option>
                   @foreach($veiculos as $veiculo)
-                  <option value="{{$veiculo->id_veiculo}}">{{$veiculo->placa}} pertence à {{$veiculo->user->name}}</option>
+                  <option value="{{$veiculo->id_veiculo}}">{{$veiculo->nome}}</option>
                   @endforeach
                 </select>
             </div>

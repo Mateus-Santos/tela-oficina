@@ -83,12 +83,18 @@
         {{-- Linha 3 --}}
         <div class="row mb-3">
           <div class="col-md-3">
-            <label class="form-label">Veículo(s):*</label>
-            <div class="tags-input" data-name="veiculos[]">
-              <input class="form-control" type="text" autocomplete="off">
-              <div class="tags-container"></div>
-            </div>
+              <label class="form-label">Veículo(s):*</label>
+              <div class="tags-input" data-name="veiculos[]">
+                  <div class="tags-container"></div>
+                  <select class="form-control select-veiculo">
+                      <option value="">Escolha um Veículo</option>
+                      @foreach($veiculos as $veiculo)
+                          <option value="{{ $veiculo->id }}">{{ $veiculo->nome }}</option>
+                      @endforeach
+                  </select>
+              </div>
           </div>
+
 
           <div class="col-md-2">
             <label class="form-label">Marca(s):*</label>
@@ -98,24 +104,19 @@
             </div>
           </div>
 
-          <div class="col-md-2">
-            <label class="form-label">Departamento(s):*</label>
-            <div class="tags-input" data-name="departamentos[]">
-              <input class="form-control" type="text" autocomplete="off">
-              <div class="tags-container"></div>
-            </div>
+          <div class="col-md-3">
+            <label class="form-label">Montadoras(s):*</label>
+              <select name="veiculos[]" class="form-control">
+                <option>Escolha uma Montadora</option>
+                @foreach($montadoras as $montadora)
+                    <option value="{{ $montadora->id }}">{{ $montadora->nome }}</option>
+                @endforeach
+              </select>
           </div>
 
           <div class="col-md-2">
             <label class="form-label">Válvula(s):</label>
             <div class="tags-input" data-name="valvula[]">
-              <input class="form-control" type="text" autocomplete="off">
-              <div class="tags-container"></div>
-            </div>
-          </div>
-          <div class="col-md-2">
-            <label class="form-label">Montadora(s):*</label>
-            <div class="tags-input" data-name="montadora[]">
               <input class="form-control" type="text" autocomplete="off">
               <div class="tags-container"></div>
             </div>

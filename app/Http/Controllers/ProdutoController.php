@@ -38,10 +38,10 @@ class ProdutoController extends Controller
     public function create()
     {
         return view('produto.cadastroproduto', [
-            'montadoras'    => Montadora::orderBy('nome')->get(),
-            'veiculos'      => Veiculo::orderBy('nome')->get(),
-            'departamentos' => Departamento::orderBy('nome')->get(),
-            'valvulas'      => Valvula::orderBy('nome')->get(),
+            'montadoras' => Montadora::orderBy('nome')->paginate(50),
+            'veiculos' => Veiculo::orderBy('nome')->paginate(50),
+            //'departamentos' => Departamento::orderBy('nome')->get(),
+            //'valvulas'      => Valvula::orderBy('nome')->get(),
         ]);
     }
 
