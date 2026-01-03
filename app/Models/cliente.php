@@ -12,6 +12,7 @@ class Cliente extends Model
 
     protected $fillable = [
         'pontos',
+        'id_user',
     ];
 
 

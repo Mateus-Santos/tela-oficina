@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\ContratoServico;
 use App\Models\User;
-use App\Models\Veiculo;
+use App\Models\VeiculosClientes;
+use App\Models\Cliente;
 use App\Models\Manutencao;
 
 class ContratoServicoController extends Controller
@@ -28,10 +29,10 @@ class ContratoServicoController extends Controller
 
     public function create()
     {
-        $veiculos = Veiculo::all();
-        return view('contrato_servico.cadastrocontrato_servico', compact('veiculos'));
+        $clientes = Cliente::all();
+        $veiculos_clientes = VeiculosClientes::all();
+        return view('contrato_servico.cadastrocontrato_servico', compact('veiculos_clientes', 'clientes'));
     }
-
 
     public function store(Request $request)
     {

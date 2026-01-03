@@ -15,11 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('placa')->unique();
             $table->year('ano');
-            $table->string('cor', 4);
-            $table->string('marca', 20);
-            $table->string('modelo', 20);
+            $table->string('cor', 4)->nullable();
             $table->unsignedBigInteger('id_cliente');
             $table->foreign('id_cliente')->references('id')->on('users');
+            $table->unsignedBigInteger('id_veiculo');
+            $table->foreign('id_veiculo')->references('id')->on('veiculos');
             $table->timestamps();
         });
     }

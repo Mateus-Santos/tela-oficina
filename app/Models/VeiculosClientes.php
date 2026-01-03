@@ -4,20 +4,20 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Veiculo extends Model
+class VeiculosClientes extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'nome',
+        'ano',
+        'placa',
+        'cor',
     ];
 
-    public function montadora(): BelongsTo
+    public function veiculo(): BelongsTo
     {
-        return $this->belongsTo(Montadora::class);
+        return $this->BelongsTo(Veiculo::class);
     }
-
 }

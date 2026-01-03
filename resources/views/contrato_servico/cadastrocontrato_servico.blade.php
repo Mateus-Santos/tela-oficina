@@ -41,11 +41,20 @@
 
           <div class="row">
             <div class="col-md-4">
-              <label class="form-label" for="id_veiculo">Veículo:*</label>
+              <label class="form-label" for="id_veiculo">Cliente:*</label>
                 <select class="form-control" id="id_veiculo" name="id_veiculo" required>
-                  <option selected>Escolha o veículo...</option>
-                  @foreach($veiculos as $veiculo)
-                  <option value="{{$veiculo->id_veiculo}}">{{$veiculo->nome}}</option>
+                  <option selected>Selecionar Cliente..</option>
+                  @foreach($clientes as $cliente)
+                    <option value="{{$cliente->id}}">{{$cliente->nome}}</option>
+                  @endforeach
+                </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="id_veiculo">Veículo do cliente:*</label>
+                <select class="form-control" id="id_veiculo" name="id_veiculo" required>
+                  <option selected>Veículo...</option>
+                  @foreach($veiculos_clientes as $veiculos_cliente)
+                  <option value="{{$veiculos_cliente->id}}">{{$veiculos_cliente->nome}}</option>
                   @endforeach
                 </select>
             </div>
