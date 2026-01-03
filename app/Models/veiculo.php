@@ -20,4 +20,9 @@ class Veiculo extends Model
         return $this->belongsTo(Montadora::class);
     }
 
+    public function VeiculosClientes(): HasMany
+    {
+        return $this->hasMany(VeiculosClientes::class);
+    }
+
 }

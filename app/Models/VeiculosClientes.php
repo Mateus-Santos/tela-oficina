@@ -20,4 +20,9 @@ class VeiculosClientes extends Model
     {
         return $this->BelongsTo(Veiculo::class);
     }
+
+    public function cliente(): BelongsTo
+    {
+        return $this->BelongsTo(Cliente::class);
+    }
 }

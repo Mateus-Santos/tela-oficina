@@ -2,64 +2,59 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\VeiculosClientes;
 use Illuminate\Http\Request;
+use App\Models\VeiculosClientes;
+use App\Models\Veiculo;
+use App\Models\User;
 
 class VeiculosClientesController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        if(auth()->user()->permitions == 2){
+            $veiculosclientes = VeiculosClientes::where('cliente_id', auth()->user()->cliente->id)->get();
+            return view('veiculosclientes.listarveiculosclientes', compact('veiculosclientes'));
+        }
+        else{
+            $veiculosclientes = VeiculosClientes::all();
+            return view('veiculosclientes.listarveiculosclientes', compact('veiculosclientes'));
+        }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        $veiculosclientes = VeiculosClientes::all();
+        $veiculos = Veiculo::all();
+        $users = User::all();
+        return view('veiculosclientes.cadastroveiculosclientes', compact('veiculosclientes', 'users', 'veiculos'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $veiculosclientes = new VeiculosClientes();
+
+        $veiculosclientes->placa = $request->input("placa");
+        $veiculosclientes->ano = $request->input("ano");
+        $veiculosclientes->cor = $request->input("cor");
+        $veiculosclientes->cliente_id = auth()->user()->cliente->id;
+        $veiculosclientes->veiculo_id = $request->input("id_veiculo");
+        $veiculosclientes->save();
+        return redirect()->route('veiculosclientes.index');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(VeiculosClientes $veiculosClientes)
+    public function edit(string $id)
     {
-        //
+
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(VeiculosClientes $veiculosClientes)
+    public function update(Request $request, string $id)
     {
-        //
+
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, VeiculosClientes $veiculosClientes)
+    public function destroy(string $id)
     {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(VeiculosClientes $veiculosClientes)
-    {
-        //
+        $veiculo = VeiculosClientes::where('id', $id)->delete();
+        return redirect()->route('veiculosclientes.index');
     }
 }

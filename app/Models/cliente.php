@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\belongsTo;
 
 class Cliente extends Model
 {
@@ -12,13 +12,13 @@ class Cliente extends Model
 
     protected $fillable = [
         'pontos',
-        'id_user',
+        'user_id',
     ];
 
 
-    public function user(): hasOne
+    public function user(): belongsTo
     {
-        return $this->hasOne(User::class);
+        return $this->belongsTo(User::class);
     }
 
 }

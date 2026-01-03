@@ -65,7 +65,7 @@ class CreateNewUser implements CreatesNewUsers
         ]);
 
         Cliente::create([
-            'id_user' => $user->id,
+            'user_id' => $user->id,
             'pontos' => 0,
         ]);
 

@@ -10,23 +10,24 @@
                 <th scope="col">ID</th>
                 <th scope="col">Placa</th>
                 <th scope="col">Ano</th>
-                <th scope="col">Marca</th>
+                <th scope="col">Montadora</th>
                 <th scope="col">Cor</th>
                 <th scope="col">Usuário</th>
                 <th scope="col">Excluir</th>
             </tr>
     </thead>
         <tbody>
-            @foreach($veiculos as $veiculo)
+            @foreach($veiculosclientes as $veiculoscliente)
             <tr>
-                <th scope="row">{{$veiculo->id_veiculo}}</th>
-                <td>{{ $veiculo->placa }}</td>
-                <td>{{ $veiculo->ano }}</td>
-                <td>{{ $veiculo->marca }}</td>
-                <td>{{ $veiculo->cor }}</td>
-                <td>{{ $veiculo->user->name }}</td>
+                <th scope="row">{{$veiculoscliente->id}}</th>
+                <td>{{ $veiculoscliente->placa }}</td>
+                <td>{{ $veiculoscliente->ano }}</td>
+                <td>{{ $veiculoscliente->veiculo->montadora->nome}}</td>
+                <td>{{ $veiculoscliente->cor }}</td>
+                <td>{{ $veiculoscliente->cliente->user->name }}</td>
+
                 <td>
-                    <form action="/veiculos/{{$veiculo->id_veiculo}}" method="post">
+                    <form action="/veiculosclientes/{{$veiculoscliente->id}}" method="post">
                         @csrf
                         @method('DELETE')
                         <button href="" class="btn btn-danger delete-btn"><i class="bi bi-trash3"></i></button>

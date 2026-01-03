@@ -8,6 +8,7 @@ use App\Http\Controllers\ColaboradorController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\produtoVendaController;
 use App\Http\Controllers\VeiculoController;
+use App\Http\Controllers\VeiculosClientesController;
 use App\Http\Controllers\ManutencaoController;
 use App\Http\Controllers\ContratoServicoController;
 //use App\Http\Controllers\ChatController;
@@ -26,7 +27,7 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         return view('cliente/editarcliente');
     })->name('perfil');
     Route::put('/perfil/{id_user}/update', [UserController::class, 'update']);
-    Route::resource('veiculos', VeiculoController::class);
+    Route::resource('veiculosclientes', VeiculosClientesController::class);
     //Rotas para administradores.
     Route::middleware(['admin'])->group(function () {
         Route::resource('contratoservico', ContratoServicoController::class);

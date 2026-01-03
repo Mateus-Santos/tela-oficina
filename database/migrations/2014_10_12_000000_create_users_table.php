@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('profile_photo_path', 2048)->nullable();
             $table->timestamps();
             $table->boolean('status')->default(true); //1: Ativado, 0: Bloqueado;
-            $table->boolean('cliente')->default(true); //1: É cliente, 0: Não é cliente;
+            # $table->boolean('cliente')->default(true); //1: É cliente, 0: Não é cliente;
             $table->boolean('colaborador')->default(false); //1: É colaborador, 0: Não é Colaborador;
             $table->integer('permitions'); //1: É colaborador, 0: Não é Colaborador;
             $table->boolean('google_id')->nullable();

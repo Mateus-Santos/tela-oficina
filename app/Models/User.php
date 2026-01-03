@@ -10,6 +10,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
@@ -55,9 +56,9 @@ class User extends Authenticatable
         return $this->belongsTo(Colaborador::class);
     }
 
-    public function cliente(): belongsTo
+    public function cliente(): hasOne
     {
-        return $this->belongsTo(Cliente::class);
+        return $this->hasOne(Cliente::class);
     }
 
     public function veiculo(): belongsTo

@@ -64,10 +64,10 @@
                 </a>
                 <ul class="dropdown-menu">
                     <li>
-                        <a href="{{ route('veiculos.index') }}" type="button" class="dropdown-item">Listar Veículos</a>
+                        <a href="{{ route('veiculosclientes.index') }}" type="button" class="dropdown-item">Listar Veículos</a>
                     </li>
                     <li>
-                        <a href="{{ route('veiculos.create') }}" type="button" class="dropdown-item">Cadastrar Veículo</a>
+                        <a href="{{ route('veiculosclientes.create') }}" type="button" class="dropdown-item">Cadastrar Veículo</a>
                     </li>
                 </ul>
             </li>
@@ -119,10 +119,10 @@
           </a>
           <ul class="dropdown-menu">
             <li>
-              <a href="{{ route('veiculos.index') }}" type="button" class="dropdown-item">Listar Veículos</a>
+              <a href="{{ route('veiculosclientes.index') }}" type="button" class="dropdown-item">Listar Veículos</a>
             </li>
             <li>
-              <a href="{{ route('veiculos.create') }}" type="button" class="dropdown-item">Cadastrar Veículo</a>
+              <a href="{{ route('veiculosclientes.create') }}" type="button" class="dropdown-item">Cadastrar Veículo</a>
             </li>
           </ul>
         </li>
