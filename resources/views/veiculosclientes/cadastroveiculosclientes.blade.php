@@ -28,7 +28,7 @@
                 <option selected>Escolher...</option>
                   @foreach($users as $user)
                     @if($user->permitions == 2)
-                    <option value="{{$user->id}}">{{$user->name}}</option>
+                    <option value="{{$user->cliente->id}}">{{$user->name}}</option>
                     @endif
                   @endforeach
                 </select>

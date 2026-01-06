@@ -32,14 +32,17 @@ class VeiculosClientesController extends Controller
     public function store(Request $request)
     {
         $veiculosclientes = new VeiculosClientes();
-
         $veiculosclientes->placa = $request->input("placa");
         $veiculosclientes->ano = $request->input("ano");
         $veiculosclientes->cor = $request->input("cor");
-        $veiculosclientes->cliente_id = auth()->user()->cliente->id;
         $veiculosclientes->veiculo_id = $request->input("id_veiculo");
+        if(auth()->user()->permitions == 1){
+            $veiculosclientes->cliente_id = $request->input("id_cliente");
+        } else{
+            $veiculosclientes->cliente_id = auth()->user()->cliente->id;
+        }
         $veiculosclientes->save();
-        return redirect()->route('veiculosclientes.index');
+        return redirect()->route('veiculosclientes.index');        
     }
 
     public function edit(string $id)
@@ -54,7 +57,7 @@ class VeiculosClientesController extends Controller
 
     public function destroy(string $id)
     {
-        $veiculo = VeiculosClientes::where('id', $id)->delete();
+        $veiculosclientes = VeiculosClientes::where('id', $id)->delete();
         return redirect()->route('veiculosclientes.index');
     }
 }
