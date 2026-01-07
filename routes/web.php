@@ -28,6 +28,7 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
     })->name('perfil');
     Route::put('/perfil/{id_user}/update', [UserController::class, 'update']);
     Route::resource('veiculosclientes', VeiculosClientesController::class);
+    Route::get('/veiculos/montadora/{id}', [VeiculoController::class, 'porMontadora']);
     //Rotas para administradores.
     Route::middleware(['admin'])->group(function () {
         Route::resource('contratoservico', ContratoServicoController::class);

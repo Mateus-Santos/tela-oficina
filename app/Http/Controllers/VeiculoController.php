@@ -20,6 +20,16 @@ class VeiculoController extends Controller
         }
     }
 
+    public function porMontadora($id)
+    {
+        $veiculos = Veiculo::where('montadora_id', $id)
+            ->select('id', 'nome')
+            ->orderBy('nome')
+            ->get();
+        return response()->json($veiculos);
+    }
+
+
     public function create()
     {
         $veiculos = Veiculo::all();

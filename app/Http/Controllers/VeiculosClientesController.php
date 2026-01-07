@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\VeiculosClientes;
 use App\Models\Veiculo;
+use App\Models\Montadora;
 use App\Models\User;
 
 class VeiculosClientesController extends Controller
@@ -24,9 +25,9 @@ class VeiculosClientesController extends Controller
     public function create()
     {
         $veiculosclientes = VeiculosClientes::all();
-        $veiculos = Veiculo::all();
+        $montadoras = Montadora::select('id', 'nome')->get();
         $users = User::all();
-        return view('veiculosclientes.cadastroveiculosclientes', compact('veiculosclientes', 'users', 'veiculos'));
+        return view('veiculosclientes.cadastroveiculosclientes', compact('veiculosclientes', 'users', 'montadoras'));
     }
 
     public function store(Request $request)
@@ -35,7 +36,7 @@ class VeiculosClientesController extends Controller
         $veiculosclientes->placa = $request->input("placa");
         $veiculosclientes->ano = $request->input("ano");
         $veiculosclientes->cor = $request->input("cor");
-        $veiculosclientes->veiculo_id = $request->input("id_veiculo");
+        $veiculosclientes->veiculo_id = $request->input("veiculo_id");
         if(auth()->user()->permitions == 1){
             $veiculosclientes->cliente_id = $request->input("id_cliente");
         } else{

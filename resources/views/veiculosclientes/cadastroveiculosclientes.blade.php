@@ -43,11 +43,17 @@
             </div>
           @endif
           <div class="col-md-4">
-            <label class="form-label" for="id_veiculo">Veículos:*</label>
-            <select class="form-control" id="id_veiculo" name="id_veiculo" required>
-              @foreach($veiculos as $veiculo)
-                <option value="{{$veiculo->id}}">{{$veiculo->nome}} ({{$veiculo->montadora->nome}})</option>
+            <label class="form-label" for="montadora">Montadora:*</label>
+            <select class="form-control" id="montadora" name="montadora" required>
+              @foreach($montadoras as $montadora)
+                <option value="{{$montadora->id}}">{{$montadora->nome}}</option>
               @endforeach
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="veiculo_id">Veiculo:*</label>
+            <select id="veiculo_id" name="veiculo_id" class="form-control">
+                <option value="">Selecione a montadora primeiro</option>
             </select>
           </div>
           <div class="col-md-4">
@@ -74,4 +80,8 @@
   </section>
   </div>
 </section>
+@endsection
+
+@section('scripts')
+    @vite(['resources/js/cadVeiculo.js'])    
 @endsection
