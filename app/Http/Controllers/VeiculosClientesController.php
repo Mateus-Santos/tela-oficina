@@ -48,13 +48,32 @@ class VeiculosClientesController extends Controller
 
     public function edit(string $id)
     {
-
+        $veiculoscliente = VeiculosClientes::findOrFail($id);
+        $montadoras = Montadora::all();
+        if(auth()->user()->permitions == 1){
+            $users = User::all();
+            return view('veiculosclientes.editarveiculosclientes', compact('veiculoscliente', 'montadoras', 'users'));
+        }
+        return view('veiculosclientes.editarveiculosclientes', compact('veiculoscliente', 'montadoras'));
     }
 
     public function update(Request $request, string $id)
     {
+        $veiculoscliente = VeiculosClientes::findOrFail($id);
+        $veiculoscliente->placa = $request->input("placa");
+        $veiculoscliente->ano = $request->input("ano");
+        $veiculoscliente->cor = $request->input("cor");
+        $veiculoscliente->veiculo_id = $request->input("veiculo_id");
 
+        if (auth()->user()->permitions == 1) {
+            $veiculoscliente->cliente_id = $request->input("id_cliente");
+        } else {
+            $veiculoscliente->cliente_id = auth()->user()->cliente->id;
+        }
+        $veiculoscliente->save();
+        return redirect()->route('veiculosclientes.index');
     }
+
 
     public function destroy(string $id)
     {

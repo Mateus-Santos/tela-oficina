@@ -4,6 +4,7 @@
 
 @section('content')
 <section class="container cadastro">
+  <h1><i class="bi bi-gear"></i> CADASTRO DE VEÍCULOS</h1>
   <div class="campos">
 
     @if ($errors->any())
@@ -15,10 +16,9 @@
       </ul>
     </div>
     @endif
-
+    
     <form action="{{ route('veiculosclientes.store') }}" method="POST">
       @csrf
-        <h1>CADASTRO DE VEÍCULOS</h1>
         <div class="row mb-3">
           @if(auth()->user() && auth()->user()->permitions != 2)
             <div class="row mb-3">
@@ -56,25 +56,24 @@
                 <option value="">Selecione a montadora primeiro</option>
             </select>
           </div>
-          <div class="col-md-4">
+        </div>
+
+        <div class="row mb">
+        <div class="col-md-4">
             <label class="form-label" for="placa">Placa:*</label>
             <input type="text" class="form-control" id="placa" name="placa" placeholder="Digite a placa do veículo" maxlength="8" required>
           </div>
-          <div class="col-md">
+          <div class="col-md-2">
             <label class="form-label" for="ano">Ano:*</label>
-            <input type="number" class="form-control" id="ano" name="ano" placeholder="Ano do veículo (ex.: 2022)" min="1900" max="{{ date('Y') }}" required>
+            <input type="number" class="form-control" id="ano" name="ano" placeholder="ex.: 2022" min="1900" max="{{ date('Y') }}" required>
           </div>
-        </div>
-
-        <div class="row mb-3">
-          <div class="col-md-6">
+          <div class="col-md-3">
             <label class="form-label" for="cor">Cor:*</label>
             <input type="text" class="form-control" id="cor" name="cor" placeholder="Digite a cor do veículo" maxlength="30" required>
           </div>
         </div>
-
         <div class="col text-center mt-4">
-          <button type="submit" class="btn btn-primary">SALVAR VEÍCULO</button>
+          <button type="submit" class="btn btn-success">Cadastrar Veículo</button>
         </div>
     </form>
   </section>

@@ -13,6 +13,7 @@
                 <th scope="col">Montadora</th>
                 <th scope="col">Cor</th>
                 <th scope="col">Usuário</th>
+                <th scope="col">Editar</th>
                 <th scope="col">Excluir</th>
             </tr>
     </thead>
@@ -25,7 +26,7 @@
                 <td>{{ $veiculoscliente->veiculo->montadora->nome}}</td>
                 <td>{{ $veiculoscliente->cor }}</td>
                 <td>{{ $veiculoscliente->cliente->user->name }}</td>
-
+                <td><a href="/veiculosclientes/{{$veiculoscliente->id}}/edit/" class="btn btn-info"><i class="bi bi-pencil-square"></i></a></td>
                 <td>
                     <form action="/veiculosclientes/{{$veiculoscliente->id}}" method="post">
                         @csrf
