@@ -11,7 +11,6 @@ $('#montadora').on('change', function () {
 
             data.forEach(function (v) {
 
-                // Aqui marcamos o veículo atual
                 var selected = v.id == veiculoSelecionado ? 'selected' : '';
 
                 $('#veiculo_id').append(

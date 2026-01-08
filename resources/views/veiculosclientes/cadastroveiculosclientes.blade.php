@@ -82,5 +82,8 @@
 @endsection
 
 @section('scripts')
+    <script>
+        var veiculoSelecionado = "{{ $montadoras[0] }}";
+    </script>
     @vite(['resources/js/cadVeiculo.js'])    
 @endsection
