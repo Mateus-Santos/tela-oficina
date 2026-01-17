@@ -37,12 +37,8 @@ class ProdutoController extends Controller
 
     public function create()
     {
-        return view('produto.cadastroproduto', [
-            'montadoras' => Montadora::orderBy('nome')->paginate(50),
-            'veiculos' => Veiculo::orderBy('nome')->paginate(50),
-            //'departamentos' => Departamento::orderBy('nome')->get(),
-            //'valvulas'      => Valvula::orderBy('nome')->get(),
-        ]);
+        $montadoras = Montadora::select('id', 'nome')->get();
+        return view('produto.cadastroproduto', compact('montadoras'));
     }
 
     public function store(Request $request)

@@ -6,24 +6,28 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
-        Schema::create('contrato_servicos', function (Blueprint $table) {
+        Schema::create('ordem_servicos', function (Blueprint $table) {
             $table->id();
             $table->dateTime('data_abertura');
             $table->dateTime('data_fechamento')->nullable();
             $table->string('descricao');
             $table->string('status');
-            $table->unsignedBigInteger('id_veiculo');
-            $table->foreign('id_veiculo')->references('id')->on('veiculos');
+            $table->unsignedBigInteger('veiculo_cliente_id');
+            $table->foreign('veiculo_cliente_id')->references('id')->on('veiculos_clientes');
             $table->timestamps();
         });
     }
 
-
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        Schema::dropIfExists('contrato_servico');
+        Schema::dropIfExists('ordem_servicos');
     }
 };

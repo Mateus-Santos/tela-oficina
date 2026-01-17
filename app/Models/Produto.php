@@ -47,24 +47,9 @@ class Produto extends Model
         return $this->belongsToMany(Montadora::class);
     }
 
-    public function departamentos(): BelongsToMany
+    public function veiculos()
     {
-        return $this->belongsToMany(Departamento::class);
-    }
-
-    public function valvulas(): BelongsToMany
-    {
-        return $this->belongsToMany(Valvula::class);
-    }
-
-    public function motores(): BelongsToMany
-    {
-        return $this->belongsToMany(Motor::class);
-    }
-
-    public function veiculos(): BelongsToMany
-    {
-        return $this->belongsToMany(Veiculo::class);
+        return $this->belongsToMany(Veiculo::class, 'produtos_veiculos');
     }
 
     public function produtoVendas(): HasMany

@@ -1,26 +1,24 @@
 @extends('layouts.layout')
 
 @section('content')
-  <section class="container cadastro">
+<section class="container cadastro">
 
     <h1><i class="bi bi-gear"></i> CADASTRO DE PRODUTOS</h1>
 
-    {{-- Exibe erros de validação --}}
+    {{-- Erros --}}
     @if ($errors->any())
-      <div class="alert alert-danger mensseger_error_container">
-        <ul class="mb-0">
-          @foreach ($errors->all() as $error)
-            <li>{{ $error }}</li>
-          @endforeach
-        </ul>
-      </div>
+        <div class="alert alert-danger mensseger_error_container">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
     @endif
 
-    {{-- Exibe mensagem de sucesso --}}
+    {{-- Sucesso --}}
     @if (session('success'))
-      <div class="alert alert-success">
-        {{ session('success') }}
-      </div>
+        <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
     <form id="form-produto"
@@ -28,117 +26,130 @@
           enctype="multipart/form-data"
           method="POST"
           class="row g-3">
-      @csrf
-      <div class="campos">
-        <div class="row mb-3">
-          <div class="col-md-4">
-            <label class="form-label" for="codigo_barras">Código de Barras:</label>
-            <input type="text"
-                    class="form-control"
-                    id="codigo_barras"
-                    name="codigo_barras">
-          </div>
-        </div>
-        
-        {{-- Linha 1 --}}
-        <div class="row mb-3">
-          <div class="col-md-3">
-            <label class="form-label" for="nome">Nome:*</label>
-            <input type="text" class="form-control" id="nome" name="nome" required>
-          </div>
 
-          <div class="col-md-2">
-            <label class="form-label" for="ano_modelo">Ano Modelo:*</label>
-            <input type="number" class="form-control" id="ano_modelo" name="ano_modelo" required>
-          </div>
+        @csrf
 
-          <div class="col-md-3">
-            <label class="form-label" for="preco_uni">Preço Unitário (R$):*</label>
-            <input type="number" step="0.01" class="form-control" id="preco_uni" name="preco_uni" required>
-          </div>
+        <div class="campos">
 
-          <div class="col-md-2">
-            <label class="form-label" for="quantidade">Quantidade:*</label>
-            <input type="number" class="form-control" id="quantidade" name="quantidade" required>
-          </div>
-
-        </div>
-
-        {{-- Linha 2 --}}
-        <div class="row mb-3">
-          <div class="col-md-2">
-            <label class="form-label" for="motor">Motor:</label>
-            <input type="text" class="form-control" id="motor" name="motor">
-          </div>
-          <div class="col-md-3">
-            <label class="form-label" for="codigo_fabricante">Cod. do Fabricante:*</label>
-            <input type="text" class="form-control" id="codigo_fabricante" name="codigo_fabricante" required>
-          </div>
-          <div class="col-md-4">
-            <label class="form-label" for="img">Imagem:</label>
-            <input type="file" class="form-control" id="img" name="img">
-          </div>
-        </div>
-        
-        {{-- Linha 3 --}}
-        <div class="row mb-3">
-          <div class="col-md-3">
-              <label class="form-label">Veículo(s):*</label>
-              <div class="tags-input" data-name="veiculos[]">
-                  <div class="tags-container"></div>
-                  <select class="form-control select-veiculo">
-                      <option value="">Escolha um Veículo</option>
-                      @foreach($veiculos as $veiculo)
-                          <option value="{{ $veiculo->id }}">{{ $veiculo->nome }}</option>
-                      @endforeach
-                  </select>
-              </div>
-          </div>
-
-
-          <div class="col-md-2">
-            <label class="form-label">Marca(s):*</label>
-            <div class="tags-input" data-name="marcas[]">
-              <input class="form-control" type="text" autocomplete="off">
-              <div class="tags-container"></div>
+            {{-- Código de Barras --}}
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="form-label" for="codigo_barras">Código de Barras:</label>
+                    <input type="text" class="form-control" id="codigo_barras" name="codigo_barras">
+                </div>
             </div>
-          </div>
 
-          <div class="col-md-3">
-            <label class="form-label">Montadoras(s):*</label>
-              <select name="veiculos[]" class="form-control">
-                <option>Escolha uma Montadora</option>
-                @foreach($montadoras as $montadora)
-                    <option value="{{ $montadora->id }}">{{ $montadora->nome }}</option>
-                @endforeach
-              </select>
-          </div>
+            {{-- Linha 1 --}}
+            <div class="row mb-3">
 
-          <div class="col-md-2">
-            <label class="form-label">Válvula(s):</label>
-            <div class="tags-input" data-name="valvula[]">
-              <input class="form-control" type="text" autocomplete="off">
-              <div class="tags-container"></div>
+                <div class="col-md-3">
+                    <label class="form-label" for="nome">Nome:*</label>
+                    <input type="text" class="form-control" id="nome" name="nome" required>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label" for="ano_modelo">Ano Modelo:*</label>
+                    <input type="number" class="form-control" id="ano_modelo" name="ano_modelo" required>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label" for="preco_uni">Preço Unitário (R$):*</label>
+                    <input type="text" inputmode="numeric" class="form-control" id="preco_uni" name="preco_uni" required>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label" for="quantidade">Quantidade:*</label>
+                    <input type="number" class="form-control" id="quantidade" name="quantidade" required>
+                </div>
+
             </div>
-          </div>
-            
-          </div>
-          <div class="row mb-3">
-            <div>
-              <label class="form-label" for="descricao">Descrição:</label>
-              <textarea type="text" class="form-control" id="descricao" name="descricao"></textarea>
+
+            {{-- Linha 2 --}}
+            <div class="row mb-3">
+
+                <div class="col-md-2">
+                    <label class="form-label" for="motor">Motor:</label>
+                    <input type="text" class="form-control" id="motor" name="motor">
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label" for="codigo_fabricante">Cod. Fabricante:*</label>
+                    <input type="text" class="form-control" id="codigo_fabricante" name="codigo_fabricante" required>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label" for="img">Imagem:</label>
+                    <input type="file" class="form-control" id="img" name="img">
+                </div>
+
             </div>
-          </div>
+
+            {{-- Linha 3 (Montadora → Veículos → Tags) --}}
+            <div class="row mb-3">
+
+                {{-- Montadora --}}
+                <div class="col-md-4">
+                    <label class="form-label">Montadora:*</label>
+                    <select id="montadora_select" class="form-control">
+                        <option value="">Escolha uma Montadora</option>
+                        @foreach($montadoras as $montadora)
+                            <option value="{{ $montadora->id }}">{{ $montadora->nome }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Veículos dependentes --}}
+                <div class="col-md-4">
+                    <label class="form-label">Veículo(s):*</label>
+                    <select id="veiculo_select" class="form-control">
+                        <option value="">Selecione uma montadora primeiro</option>
+                    </select>
+
+                    <div class="tags-input mt-2" data-name="veiculos[]">
+                        <div class="tags-container"></div>
+                    </div>
+                </div>
+
+                {{-- Marca(s) --}}
+                <div class="col-md-2">
+                    <label class="form-label">Marca(s):*</label>
+                    <div class="tags-input" data-name="marcas[]">
+                        <input class="form-control" type="text" autocomplete="off">
+                        <div class="tags-container"></div>
+                    </div>
+                </div>
+
+                {{-- Válvula(s) --}}
+                <div class="col-md-2">
+                    <label class="form-label">Válvula(s):</label>
+                    <div class="tags-input" data-name="valvula[]">
+                        <input class="form-control" type="text" autocomplete="off">
+                        <div class="tags-container"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            {{-- Descrição --}}
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label class="form-label" for="descricao">Descrição:</label>
+                    <textarea class="form-control" id="descricao" name="descricao"></textarea>
+                </div>
+            </div>
+
         </div>
+
         {{-- Botão --}}
         <div class="col text-center">
-          <button type="submit" class="btn btn-success">Cadastrar</button>
+            <button type="submit" class="btn btn-success">Cadastrar</button>
         </div>
-      </div>
+
     </form>
-  </section>
+
+</section>
 @endsection
 
 @section('scripts')
-    @vite(['resources/js/cadProduto.js'])
+@vite(['resources/js/cadProduto.js'])
 @endsection

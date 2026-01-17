@@ -11,9 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('valvulas', function (Blueprint $table) {
+        Schema::create('servicos', function (Blueprint $table) {
             $table->id();
-            $table->string('nome')->unique();
+            $table->string('setor');
+            $table->text('descricao');
+            $table->float('valor');
+            $table->string('nivel');
+            $table->unsignedBigInteger('id_ordem_servico');
+            $table->foreign('id_ordem_servico')->references('id')->on('ordem_servicos');
             $table->timestamps();
         });
     }
@@ -23,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('valvulas');
+        Schema::dropIfExists('servicos');
     }
 };

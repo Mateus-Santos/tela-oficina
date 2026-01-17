@@ -1,143 +1,121 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // ----------------------------
-  // Tags-input (suporta input e select)
-  // ----------------------------
-  document.querySelectorAll('.tags-input').forEach(container => {
-    const input = container.querySelector('input[type="text"]');
-    const select = container.querySelector('select');
-    const tagsContainer = container.querySelector('.tags-container');
-    const fieldName = container.dataset.name;
-    container.tags = [];
 
-    container.updateTags = () => {
-      tagsContainer.innerHTML = '';
-      container.querySelectorAll('input[type=hidden]').forEach(e => e.remove());
-      container.tags.forEach((tag, i) => {
-        const el = document.createElement('div');
-        el.className = 'tag';
+    // ============================================================
+    // TAGS-INPUT (GENÉRICO)
+    // ============================================================
+    document.querySelectorAll('.tags-input').forEach(container => {
+        const input = container.querySelector('input[type="text"]');
+        const tagsContainer = container.querySelector('.tags-container');
+        const fieldName = container.dataset.name;
+        container.tags = [];
 
-        let tagLabel = tag;
-        // Se for select, mostrar o texto da opção
-        if (select) {
-          const opt = select.querySelector(`option[value="${tag}"]`);
-          if (opt) tagLabel = opt.text;
+        const updateTags = () => {
+            tagsContainer.innerHTML = '';
+            container.querySelectorAll('input[type=hidden]').forEach(e => e.remove());
+
+            container.tags.forEach((tag, index) => {
+                const el = document.createElement('div');
+                el.className = 'tag';
+                el.innerHTML = `${tag.label} <span class="remove-tag" data-i="${index}">&times;</span>`;
+                tagsContainer.appendChild(el);
+
+                const hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = fieldName;
+                hidden.value = tag.id;
+                container.appendChild(hidden);
+            });
+        };
+
+        const addTag = tag => {
+            if (!container.tags.some(t => t.id === tag.id)) {
+                container.tags.push(tag);
+                updateTags();
+            }
+        };
+
+        // Inputs de texto (marcas e válvulas)
+        if (input) {
+            input.addEventListener('keydown', e => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const val = input.value.trim();
+                    if (val) addTag({ id: val, label: val });
+                    input.value = '';
+                }
+            });
         }
 
-        el.innerHTML = `${tagLabel} <span class="remove-tag" data-i="${i}">&times;</span>`;
-        tagsContainer.append(el);
+        tagsContainer.addEventListener('click', e => {
+            if (e.target.classList.contains('remove-tag')) {
+                container.tags.splice(e.target.dataset.i, 1);
+                updateTags();
+            }
+        });
 
-        const hidden = document.createElement('input');
-        hidden.type = 'hidden';
-        hidden.name = fieldName;
-        hidden.value = tag;
-        container.appendChild(hidden);
-      });
-    };
+        container.addTag = addTag;
+    });
 
-    const addTag = (val) => {
-      if (val && !container.tags.includes(val)) {
-        container.tags.push(val);
-        container.updateTags();
-      }
-    };
 
-    // Evento para input de texto
-    if (input) {
-      input.addEventListener('keydown', e => {
-        if (e.key === 'Enter' || e.key === ',') {
-          e.preventDefault();
-          addTag(input.value.trim());
-          input.value = '';
+    // ============================================================
+    // SELECTS DA MONTADORA E VEÍCULO
+    // ============================================================
+    const montadoraSelect = document.getElementById('montadora_select');
+    const veiculoSelect = document.getElementById('veiculo_select');
+    const veiculoTags = document.querySelector('[data-name="veiculos[]"]');
+
+    montadoraSelect.addEventListener('change', async () => {
+        const id = montadoraSelect.value;
+
+        veiculoSelect.innerHTML = `<option>Carregando...</option>`;
+
+        if (!id) {
+            veiculoSelect.innerHTML = `<option>Selecione uma montadora</option>`;
+            return;
         }
-      });
 
-      input.addEventListener('blur', () => {
-        addTag(input.value.trim());
-        input.value = '';
-      });
-    }
+        const res = await fetch(`/api/montadora/${id}/veiculos`);
+        const lista = await res.json();
 
-    // Evento para select
-    if (select) {
-      select.addEventListener('change', () => {
-        addTag(select.value);
-        select.value = '';
-      });
-    }
+        veiculoSelect.innerHTML = `<option value="">Selecione um veículo</option>`;
 
-    // Remover tag
-    tagsContainer.addEventListener('click', e => {
-      if (e.target.matches('.remove-tag')) {
-        container.tags.splice(e.target.dataset.i, 1);
-        container.updateTags();
-      }
-    });
-  });
-
-  // ----------------------------
-  // Máscara de moeda no preco_uni
-  // ----------------------------
-  const precoEl = document.getElementById('preco_uni');
-  if (precoEl) {
-    precoEl.setAttribute('type', 'text');
-    precoEl.setAttribute('inputmode', 'numeric');
-    precoEl.setAttribute('placeholder', '0,00');
-
-    precoEl.addEventListener('input', () => {
-      let v = precoEl.value.replace(/\D/g, '');
-      if (!v) {
-        precoEl.value = '';
-        return;
-      }
-
-      v = v.padStart(3, '0');
-
-      const cents = v.slice(-2);
-      let integerPart = v.slice(0, -2).replace(/^0+/, '') || '0';
-      integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-
-      precoEl.value = `${integerPart},${cents}`;
-    });
-  }
-
-  // ----------------------------
-  // Validação e submit
-  // ----------------------------
-  const form = document.getElementById('form-produto');
-  form?.addEventListener('submit', e => {
-    const errors = [];
-
-    // Campos obrigatórios
-    form.querySelectorAll('[required]').forEach(el => {
-      if (!el.value.trim()) {
-        const label = document.querySelector(`label[for="${el.id}"]`)?.innerText || el.name;
-        errors.push(`O campo "${label}" é obrigatório.`);
-      }
+        lista.forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = v.id;
+            opt.textContent = `${v.nome} (${v.montadora.nome})`;
+            opt.dataset.label = opt.textContent;
+            veiculoSelect.appendChild(opt);
+        });
     });
 
-    // Converte preco_uni para ponto antes de enviar
-    if (precoEl && precoEl.value) {
-      const raw = precoEl.value.replace(/\./g, '').replace(',', '.');
-      const num = parseFloat(raw);
-      if (!isNaN(num)) {
-        precoEl.value = num.toFixed(2);
-      } else {
-        errors.push('Preço inválido.');
-      }
-    }
+    veiculoSelect.addEventListener('change', () => {
+        const o = veiculoSelect.selectedOptions[0];
+        if (!o || !o.value) return;
 
-    // Campos numéricos puros
-    ['ano_modelo','quantidade'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el && el.value && !/^\d+$/.test(el.value.trim())) {
-        const label = document.querySelector(`label[for="${id}"]`)?.innerText || id;
-        errors.push(`O campo "${label}" deve conter apenas números.`);
-      }
+        veiculoTags.addTag({
+            id: o.value,
+            label: o.dataset.label
+        });
+
+        veiculoSelect.value = "";
     });
 
-    if (errors.length) {
-      e.preventDefault();
-      alert(errors.join('\n'));
-    }
-  });
+
+    // ============================================================
+    // MÁSCARA DE PREÇO
+    // ============================================================
+    const precoEl = document.getElementById('preco_uni');
+
+    precoEl?.addEventListener('input', () => {
+        let v = precoEl.value.replace(/\D/g, '');
+        if (!v) return precoEl.value = '';
+
+        v = v.padStart(3, '0');
+        const cents = v.slice(-2);
+        let int = v.slice(0, -2).replace(/^0+/, '') || '0';
+        int = int.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
+        precoEl.value = `${int},${cents}`;
+    });
+
 });

@@ -24,10 +24,9 @@ class VeiculosClientesController extends Controller
 
     public function create()
     {
-        $veiculosclientes = VeiculosClientes::all();
         $montadoras = Montadora::select('id', 'nome')->get();
         $users = User::all();
-        return view('veiculosclientes.cadastroveiculosclientes', compact('veiculosclientes', 'users', 'montadoras'));
+        return view('veiculosclientes.cadastroveiculosclientes', compact('users', 'montadoras'));
     }
 
     public function store(Request $request)

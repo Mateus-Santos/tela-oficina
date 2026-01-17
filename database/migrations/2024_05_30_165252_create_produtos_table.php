@@ -11,7 +11,6 @@ return new class extends Migration
         Schema::create('produtos', function (Blueprint $table) {
             $table->id();
             $table->string('nome', 150);
-            $table->year('ano_modelo');
             $table->text('descricao');
             $table->integer('quantidade')->default(0);
             $table->integer('estoque_minimo')->default(0);
@@ -21,16 +20,13 @@ return new class extends Migration
             $table->string('codigo_barras')->nullable()->unique();
             $table->boolean('status')->default(true);
             $table->unsignedBigInteger('fornecedor_id')->nullable();
-
             $table->index('nome');
-            $table->index('ano_modelo');
             $table->index('codigo_barras');
-
             $table->foreign('fornecedor_id')
                 ->references('id')
                 ->on('fornecedores')
                 ->onDelete('set null');
-                
+
             $table->timestamps();
         });
     }

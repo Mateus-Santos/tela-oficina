@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Montadora extends Model
 {
@@ -21,6 +22,6 @@ class Montadora extends Model
 
     public function veiculos(): HasMany
     {
-        return $this->HasMany(Veiculos::class);
+        return $this->HasMany(Veiculo::class);
     }
 }
