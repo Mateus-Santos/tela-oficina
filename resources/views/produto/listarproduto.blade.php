@@ -66,6 +66,25 @@
                 <a>{{$produto->descricao}}</a>
             </div>
         </div>
+        
+        @if(auth()->user() && auth()->user()->permitions === 1)
+        <div class="produto-acoes">
+            <a href="{{ route('produtos.edit', $produto->id) }}" class="btn btn-primary btn-edit">
+                <i class="bi bi-pencil"> </i>Editar
+            </a>
+
+            <form action="{{ route('produtos.destroy', $produto->id) }}"
+                    method="POST"
+                    onsubmit="return confirm('Deseja excluir este produto?');">
+                @csrf
+                @method('DELETE')
+                
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-trash"> </i> Excluir
+                </button>
+            </form>
+        </div>
+        @endif
     </div>
     @endforeach
 </div>

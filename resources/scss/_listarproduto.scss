@@ -19,6 +19,29 @@
         border-radius: 0.5rem;
         color: $color_5;
     }
+    .produto-acoes {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        a, button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            height: 2.2rem;
+            padding: 0 0.75rem;
+
+            font-size: 0.85rem;
+            line-height: 1;
+            border-radius: 0.5rem;
+            font-weight: 600;
+
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+        }
+    }
 }
 
 .produto-item {

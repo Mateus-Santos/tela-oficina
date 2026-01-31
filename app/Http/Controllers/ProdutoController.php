@@ -117,8 +117,6 @@ class ProdutoController extends Controller
 
         // Atualiza relacionamentos n:n
         $produto->veiculos()->sync($request->veiculos);
-        $produto->departamentos()->sync($request->departamentos);
-        $produto->valvulas()->sync($request->valvula ?? []);
 
         return redirect()->route('produtos.index')
                          ->with('success', 'Produto atualizado com sucesso!');
@@ -134,10 +132,7 @@ class ProdutoController extends Controller
         }
 
         // Remove relacionamentos n:n
-        $produto->montadoras()->detach();
         $produto->veiculos()->detach();
-        $produto->departamentos()->detach();
-        $produto->valvulas()->detach();
 
         $produto->delete();
 
