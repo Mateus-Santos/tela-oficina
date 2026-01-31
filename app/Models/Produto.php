@@ -12,25 +12,17 @@ class Produto extends Model
     use HasFactory;
 
     protected $fillable = [
-        'codigo_barras',
         'nome',
-        'ano_modelo',
         'descricao',
         'quantidade',
         'estoque_minimo',
         'preco_uni',
         'img',
         'codigo_fabricante',
+        'codigo_barras',
         'status',
         'fornecedor_id',
-    ];
-
-    protected $casts = [
-        'status'         => 'boolean',
-        'quantidade'     => 'integer',
-        'estoque_minimo' => 'integer',
-        'preco_uni'      => 'float',
-        'ano_modelo'     => 'integer',
+        'marca',
     ];
 
     public function scopeFiltro($query, $filtros)
@@ -40,11 +32,6 @@ class Produto extends Model
         }
 
         return $query;
-    }
-
-    public function montadoras(): BelongsToMany
-    {
-        return $this->belongsToMany(Montadora::class);
     }
 
     public function veiculos()

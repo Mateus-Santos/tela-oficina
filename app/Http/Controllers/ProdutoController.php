@@ -17,23 +17,24 @@ class ProdutoController extends Controller
         $this->middleware('admin:admin');
     }
 
-    public function index(Request $request)
+   public function index(Request $request)
     {
-        // Para filtros de select (valores únicos)
-        $anosDisponiveis = Produto::select('ano_modelo')->distinct()->orderBy('ano_modelo')->pluck('ano_modelo');
-        $codigosFabricanteDisponiveis = Produto::select('codigo_fabricante')->distinct()->orderBy('codigo_fabricante')->pluck('codigo_fabricante');
+        $codigosFabricanteDisponiveis = Produto::select('codigo_fabricante')
+            ->distinct()    
+            ->orderBy('codigo_fabricante')
+            ->pluck('codigo_fabricante');
 
-        $produtos = Produto::with(['montadoras', 'departamentos', 'valvulas', 'veiculos'])
+        $produtos = Produto::with(['veiculos'])
             ->filtro($request->all())
             ->orderBy('nome')
-            ->paginate(20);
+            ->get();
 
         return view('produto.listarproduto', compact(
             'produtos',
-            'anosDisponiveis',
             'codigosFabricanteDisponiveis'
         ));
     }
+
 
     public function create()
     {
@@ -43,78 +44,65 @@ class ProdutoController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'codigo_barras'     => 'nullable|string|unique:produtos,codigo_barras',
-            'nome'              => 'required|string|max:150',
-            'ano_modelo'        => 'required|digits:4|integer',
-            'descricao'         => 'nullable|string',
-            'quantidade'        => 'required|integer|min:0',
-            'preco_uni'         => 'required|numeric|min:0',
-            'img'               => 'nullable|image|max:2048',
+        if ($request->filled('preco_uni')) {
+            $preco = str_replace(['.', ','], ['', '.'], $request->preco_uni);
+            $request->merge(['preco_uni' => $preco]);
+        }
+        
+        $request->validate([
+            'nome' => 'required|string|max:150',
+            'descricao' => 'required|string',
+            'preco_uni' => 'required|numeric|min:0',
             'codigo_fabricante' => 'required|string|unique:produtos,codigo_fabricante',
-            'estoque_minimo'    => 'nullable|integer|min:0',
-            'fornecedor_id'     => 'nullable|exists:fornecedores,id',
-            'status'            => 'sometimes|boolean',
+            'codigo_barras' => 'nullable|string|unique:produtos,codigo_barras',
+            'quantidade' => 'nullable|integer|min:0',
+            'estoque_minimo' => 'nullable|integer|min:0',
+            'status' => 'nullable|boolean',
+            'fornecedor_id' => 'nullable|exists:fornecedores,id',
+            'img' => 'nullable|image|max:2048',
 
-            // Relacionamentos N:N
-            'montadora'     => 'required|array',
-            'veiculos'      => 'required|array',
-            'departamentos' => 'required|array',
-            'valvula'       => 'nullable|array',
+            // relacionamento N:N
+            'veiculos' => 'required|array',
+            'veiculos.*' => 'exists:veiculos,id',
         ]);
 
+        $data = [
+            'nome' => $request->nome,
+            'descricao' => $request->descricao,
+            'preco_uni' => $request->preco_uni,
+            'codigo_fabricante' => $request->codigo_fabricante,
+            'codigo_barras' => $request->codigo_barras,
+            'quantidade' => $request->quantidade ?? 0,
+            'estoque_minimo' => $request->estoque_minimo ?? 0,
+            'status' => $request->status ?? true,
+            'fornecedor_id' => $request->fornecedor_id,
+        ];
+
         if ($request->hasFile('img')) {
-            $data['img'] = $request->file('img')->store('produtos', 'public');
+            $data['img'] = $request->file('img')
+                ->store('produtos', 'public');
         }
 
         $produto = Produto::create($data);
 
-        // Relacionamentos n:n
-        $produto->montadoras()->sync($request->montadora);
+        // relacionamento N:N
         $produto->veiculos()->sync($request->veiculos);
-        $produto->departamentos()->sync($request->departamentos);
-        $produto->valvulas()->sync($request->valvula ?? []);
 
-        return redirect()->route('produtos.index')
-                         ->with('success', 'Produto cadastrado com sucesso!');
+        return redirect()
+            ->route('produtos.index')
+            ->with('success', 'Produto cadastrado com sucesso!');
     }
+
+
 
     public function edit($id)
     {
-        $produto = Produto::with(['montadoras', 'veiculos', 'departamentos', 'valvulas'])->findOrFail($id);
 
-        return view('produto.editarproduto', [
-            'produto'       => $produto,
-            'montadoras'    => Montadora::orderBy('nome')->get(),
-            'veiculos'      => Veiculo::orderBy('placa')->get(),
-            'departamentos' => Departamento::orderBy('nome')->get(),
-            'valvulas'      => Valvula::orderBy('nome')->get(),
-        ]);
     }
 
     public function update(Request $request, $id)
     {
         $produto = Produto::findOrFail($id);
-
-        $data = $request->validate([
-            'codigo_barras'     => "nullable|string|unique:produtos,codigo_barras,{$id}",
-            'nome'              => 'required|string|max:150',
-            'ano_modelo'        => 'required|digits:4|integer',
-            'descricao'         => 'nullable|string',
-            'quantidade'        => 'required|integer|min:0',
-            'preco_uni'         => 'required|numeric|min:0',
-            'img'               => 'nullable|image|max:2048',
-            'codigo_fabricante' => "required|string|unique:produtos,codigo_fabricante,{$id}",
-            'estoque_minimo'    => 'nullable|integer|min:0',
-            'fornecedor_id'     => 'nullable|exists:fornecedores,id',
-            'status'            => 'sometimes|boolean',
-
-            // Relacionamentos
-            'montadora'     => 'required|array',
-            'veiculos'      => 'required|array',
-            'departamentos' => 'required|array',
-            'valvula'       => 'nullable|array',
-        ]);
 
         if ($request->hasFile('img')) {
             // Remove imagem antiga
@@ -128,7 +116,6 @@ class ProdutoController extends Controller
         $produto->update($data);
 
         // Atualiza relacionamentos n:n
-        $produto->montadoras()->sync($request->montadora);
         $produto->veiculos()->sync($request->veiculos);
         $produto->departamentos()->sync($request->departamentos);
         $produto->valvulas()->sync($request->valvula ?? []);

@@ -22,11 +22,11 @@ return new class extends Migration
             $table->unsignedBigInteger('fornecedor_id')->nullable();
             $table->index('nome');
             $table->index('codigo_barras');
+            $table->index('marca');
             $table->foreign('fornecedor_id')
                 ->references('id')
                 ->on('fornecedores')
                 ->onDelete('set null');
-
             $table->timestamps();
         });
     }
