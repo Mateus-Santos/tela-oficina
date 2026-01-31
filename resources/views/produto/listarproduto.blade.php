@@ -21,14 +21,14 @@
                     placeholder="Código de barras"
                     value="{{ request('codigo_barras') }}"
                 >
-
+            <!--
                 <select class="filtros-container__select" name="ano_modelo">
                     <option value="">Ano</option>
                     @foreach($produtos as $produto)
-                        <option value="{{$produto->ano_modelo}}">{{$produto->ano_modelo}}</option>
+                        <option value="{{$produto->veiculo}}">{{$produto->veiculo}}</option>
                     @endforeach
                 </select>
-
+            -->
                 <input 
                     class="filtros-container__input" 
                     list="codigo_fabricante" 

@@ -25,13 +25,21 @@ class Produto extends Model
         'marca',
     ];
 
-    public function scopeFiltro($query, $filtros)
+    public function scopeFiltro($query, array $filtros)
     {
-        if (!empty($filtros['fornecedor_id'])) {
-            $query->where('fornecedor_id', $filtros['fornecedor_id']);
-        }
-
-        return $query;
+        return $query
+            ->when($filtros['nome'] ?? null, fn ($q, $v) =>
+                $q->where('nome', 'like', "%{$v}%")
+            )
+            ->when($filtros['codigo_barras'] ?? null, fn ($q, $v) =>
+                $q->where('codigo_barras', $v)
+            )
+            ->when($filtros['codigo_fabricante'] ?? null, fn ($q, $v) =>
+                $q->where('codigo_fabricante', 'like', "%{$v}%")
+            )
+            ->when($filtros['fornecedor_id'] ?? null, fn ($q, $v) =>
+                $q->where('fornecedor_id', $v)
+            );
     }
 
     public function veiculos()
