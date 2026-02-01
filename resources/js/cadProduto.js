@@ -9,8 +9,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const tagsContainer = container.querySelector('.tags-container');
         const fieldName = container.dataset.name;
 
+        if (!tagsContainer) return; // evita null
+
         container.tags = [];
 
+        // --------------------------------------------------------
+        // Renderiza tags + inputs hidden
+        // --------------------------------------------------------
         const updateTags = () => {
             tagsContainer.innerHTML = '';
             container.querySelectorAll('input[type=hidden]').forEach(e => e.remove());
@@ -32,6 +37,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         };
 
+        // --------------------------------------------------------
+        // Adiciona tag evitando duplicação
+        // --------------------------------------------------------
         const addTag = tag => {
             if (!container.tags.some(t => t.id == tag.id)) {
                 container.tags.push(tag);
@@ -39,6 +47,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
+        // --------------------------------------------------------
+        // TAGS INICIAIS (MODO EDIÇÃO)
+        // --------------------------------------------------------
         if (container.dataset.tags) {
             try {
                 JSON.parse(container.dataset.tags).forEach(tag => container.tags.push(tag));
@@ -49,6 +60,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updateTags();
 
+        // --------------------------------------------------------
+        // INPUT TEXTO (ex: marcas)
+        // --------------------------------------------------------
         if (input) {
             input.addEventListener('keydown', e => {
                 if (e.key === 'Enter') {
@@ -61,8 +75,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        // --------------------------------------------------------
+        // REMOVER TAG
+        // --------------------------------------------------------
         tagsContainer.addEventListener('click', e => {
-            if (e.target.classList.contains('remove-tag')) {
+            if (e.target && e.target.classList && e.target.classList.contains('remove-tag')) {
                 container.tags.splice(e.target.dataset.i, 1);
                 updateTags();
             }
@@ -70,7 +87,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         container.addTag = addTag;
     });
-
 
     // ============================================================
     // SELECTS MONTADORA → VEÍCULOS
@@ -80,7 +96,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const veiculoTags = document.querySelector('[data-name="veiculos[]"]');
 
     if (montadoraSelect && veiculoSelect && veiculoTags) {
-
         montadoraSelect.addEventListener('change', async () => {
             const id = montadoraSelect.value;
             veiculoSelect.innerHTML = `<option>Carregando...</option>`;
@@ -123,7 +138,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-
     // ============================================================
     // MÁSCARA DE PREÇO
     // ============================================================
@@ -143,23 +157,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-
-    /// ============================================================
+    // ============================================================
     // PREVIEW DE IMAGEM
     // ============================================================
     const imgInput = document.getElementById('img');
     const imgPreview = document.getElementById('img-preview');
     const imgCurrent = document.getElementById('img-current');
 
-    if (imgInput && imgPreview) {
+    if (imgInput) {
         imgInput.addEventListener('change', () => {
             const file = imgInput.files[0];
 
             // Nenhum arquivo → restaura imagem atual
             if (!file) {
-                imgPreview.style.display = 'none';
-                imgPreview.src = '';
-
+                if (imgPreview) {
+                    imgPreview.src = '';
+                    imgPreview.style.display = 'none';
+                }
                 if (imgCurrent) {
                     imgCurrent.style.display = 'block';
                 }
@@ -172,18 +186,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Esconde imagem atual
-            if (imgCurrent) {
-                imgCurrent.style.display = 'none';
+            if (imgCurrent) imgCurrent.style.display = 'none';
+
+            if (imgPreview) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    imgPreview.src = e.target.result;
+                    imgPreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
             }
-
-            const reader = new FileReader();
-            reader.onload = e => {
-                imgPreview.src = e.target.result;
-                imgPreview.style.display = 'block';
-            };
-
-            reader.readAsDataURL(file);
         });
     }
 
