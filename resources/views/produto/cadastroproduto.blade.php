@@ -68,9 +68,25 @@
                 </div>
 
                 <div class="col-md-4">
-                    <label class="form-label" for="img">Imagem:</label>
-                    <input type="file" class="form-control" id="img" name="img">
+                <label class="form-label" for="img">Imagem:</label>
+                {{-- Preview da imagem selecionada --}}
+                <div class="mb-2">
+                    <img 
+                        id="img-preview"
+                        style="display:none; max-width: 120px; border-radius: 10px;"
+                        alt="Preview da imagem"
+                    >
                 </div>
+
+                <input 
+                    type="file" 
+                    class="form-control" 
+                    id="img" 
+                    name="img"
+                    accept="image/*"
+                >
+            </div>
+
 
             </div>
 
