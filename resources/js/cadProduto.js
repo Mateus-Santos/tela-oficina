@@ -1,12 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // ============================================================
-    // TAGS-INPUT (GENÉRICO)
+    // TAGS-INPUT (GENÉRICO COM SUPORTE A EDIÇÃO)
     // ============================================================
     document.querySelectorAll('.tags-input').forEach(container => {
+
         const input = container.querySelector('input[type="text"]');
         const tagsContainer = container.querySelector('.tags-container');
         const fieldName = container.dataset.name;
+
         container.tags = [];
 
         const updateTags = () => {
@@ -16,7 +18,10 @@ document.addEventListener('DOMContentLoaded', () => {
             container.tags.forEach((tag, index) => {
                 const el = document.createElement('div');
                 el.className = 'tag';
-                el.innerHTML = `${tag.label} <span class="remove-tag" data-i="${index}">&times;</span>`;
+                el.innerHTML = `
+                    ${tag.label}
+                    <span class="remove-tag" data-i="${index}">&times;</span>
+                `;
                 tagsContainer.appendChild(el);
 
                 const hidden = document.createElement('input');
@@ -28,19 +33,29 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         const addTag = tag => {
-            if (!container.tags.some(t => t.id === tag.id)) {
+            if (!container.tags.some(t => t.id == tag.id)) {
                 container.tags.push(tag);
                 updateTags();
             }
         };
 
-        // Inputs de texto (marcas e válvulas)
+        if (container.dataset.tags) {
+            try {
+                JSON.parse(container.dataset.tags).forEach(tag => container.tags.push(tag));
+            } catch (e) {
+                console.error('Erro ao carregar tags iniciais', e);
+            }
+        }
+
+        updateTags();
+
         if (input) {
             input.addEventListener('keydown', e => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     const val = input.value.trim();
-                    if (val) addTag({ id: val, label: val });
+                    if (!val) return;
+                    addTag({ id: val, label: val });
                     input.value = '';
                 }
             });
@@ -58,47 +73,55 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // ============================================================
-    // SELECTS DA MONTADORA E VEÍCULO
+    // SELECTS MONTADORA → VEÍCULOS
     // ============================================================
     const montadoraSelect = document.getElementById('montadora_select');
     const veiculoSelect = document.getElementById('veiculo_select');
     const veiculoTags = document.querySelector('[data-name="veiculos[]"]');
 
-    montadoraSelect.addEventListener('change', async () => {
-        const id = montadoraSelect.value;
+    if (montadoraSelect && veiculoSelect && veiculoTags) {
 
-        veiculoSelect.innerHTML = `<option>Carregando...</option>`;
+        montadoraSelect.addEventListener('change', async () => {
+            const id = montadoraSelect.value;
+            veiculoSelect.innerHTML = `<option>Carregando...</option>`;
 
-        if (!id) {
-            veiculoSelect.innerHTML = `<option>Selecione uma montadora</option>`;
-            return;
-        }
+            if (!id) {
+                veiculoSelect.innerHTML = `<option value="">Selecione uma montadora</option>`;
+                return;
+            }
 
-        const res = await fetch(`/api/montadora/${id}/veiculos`);
-        const lista = await res.json();
+            try {
+                const res = await fetch(`/api/montadora/${id}/veiculos`);
+                const lista = await res.json();
 
-        veiculoSelect.innerHTML = `<option value="">Selecione um veículo</option>`;
+                veiculoSelect.innerHTML = `<option value="">Selecione um veículo</option>`;
 
-        lista.forEach(v => {
-            const opt = document.createElement('option');
-            opt.value = v.id;
-            opt.textContent = `${v.nome} (${v.montadora.nome})`;
-            opt.dataset.label = opt.textContent;
-            veiculoSelect.appendChild(opt);
-        });
-    });
+                lista.forEach(v => {
+                    const opt = document.createElement('option');
+                    opt.value = v.id;
+                    opt.textContent = `${v.nome} (${v.montadora.nome})`;
+                    opt.dataset.label = opt.textContent;
+                    veiculoSelect.appendChild(opt);
+                });
 
-    veiculoSelect.addEventListener('change', () => {
-        const o = veiculoSelect.selectedOptions[0];
-        if (!o || !o.value) return;
-
-        veiculoTags.addTag({
-            id: o.value,
-            label: o.dataset.label
+            } catch (e) {
+                console.error('Erro ao carregar veículos', e);
+                veiculoSelect.innerHTML = `<option value="">Erro ao carregar</option>`;
+            }
         });
 
-        veiculoSelect.value = "";
-    });
+        veiculoSelect.addEventListener('change', () => {
+            const o = veiculoSelect.selectedOptions[0];
+            if (!o || !o.value) return;
+
+            veiculoTags.addTag({
+                id: o.value,
+                label: o.dataset.label
+            });
+
+            veiculoSelect.value = "";
+        });
+    }
 
 
     // ============================================================
@@ -106,16 +129,62 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================================
     const precoEl = document.getElementById('preco_uni');
 
-    precoEl?.addEventListener('input', () => {
-        let v = precoEl.value.replace(/\D/g, '');
-        if (!v) return precoEl.value = '';
+    if (precoEl) {
+        precoEl.addEventListener('input', () => {
+            let v = precoEl.value.replace(/\D/g, '');
+            if (!v) return precoEl.value = '';
 
-        v = v.padStart(3, '0');
-        const cents = v.slice(-2);
-        let int = v.slice(0, -2).replace(/^0+/, '') || '0';
-        int = int.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            v = v.padStart(3, '0');
+            const cents = v.slice(-2);
+            let int = v.slice(0, -2).replace(/^0+/, '') || '0';
+            int = int.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
-        precoEl.value = `${int},${cents}`;
-    });
+            precoEl.value = `${int},${cents}`;
+        });
+    }
+
+
+    /// ============================================================
+    // PREVIEW DE IMAGEM
+    // ============================================================
+    const imgInput = document.getElementById('img');
+    const imgPreview = document.getElementById('img-preview');
+    const imgCurrent = document.getElementById('img-current');
+
+    if (imgInput && imgPreview) {
+        imgInput.addEventListener('change', () => {
+            const file = imgInput.files[0];
+
+            // Nenhum arquivo → restaura imagem atual
+            if (!file) {
+                imgPreview.style.display = 'none';
+                imgPreview.src = '';
+
+                if (imgCurrent) {
+                    imgCurrent.style.display = 'block';
+                }
+                return;
+            }
+
+            if (!file.type.startsWith('image/')) {
+                alert('Selecione apenas imagens');
+                imgInput.value = '';
+                return;
+            }
+
+            // Esconde imagem atual
+            if (imgCurrent) {
+                imgCurrent.style.display = 'none';
+            }
+
+            const reader = new FileReader();
+            reader.onload = e => {
+                imgPreview.src = e.target.result;
+                imgPreview.style.display = 'block';
+            };
+
+            reader.readAsDataURL(file);
+        });
+    }
 
 });

@@ -47,11 +47,6 @@
                     <input type="text" class="form-control" id="nome" name="nome" required>
                 </div>
 
-                <div class="col-md-2">
-                    <label class="form-label" for="ano_modelo">Ano Modelo:*</label>
-                    <input type="number" class="form-control" id="ano_modelo" name="ano_modelo" required>
-                </div>
-
                 <div class="col-md-3">
                     <label class="form-label" for="preco_uni">Preço Unitário (R$):*</label>
                     <input type="text" inputmode="numeric" class="form-control" id="preco_uni" name="preco_uni" required>
@@ -66,11 +61,6 @@
 
             {{-- Linha 2 --}}
             <div class="row mb-3">
-
-                <div class="col-md-2">
-                    <label class="form-label" for="motor">Motor:</label>
-                    <input type="text" class="form-control" id="motor" name="motor">
-                </div>
 
                 <div class="col-md-3">
                     <label class="form-label" for="codigo_fabricante">Cod. Fabricante:*</label>
@@ -110,23 +100,12 @@
                     </div>
                 </div>
 
-                {{-- Marca(s) --}}
+            <!-- {{-- Marca --}}
                 <div class="col-md-2">
-                    <label class="form-label">Marca(s):*</label>
-                    <div class="tags-input" data-name="marcas[]">
-                        <input class="form-control" type="text" autocomplete="off">
-                        <div class="tags-container"></div>
-                    </div>
+                    <label class="form-label">Marca:*</label>
+                    <input class="form-control" type="text">
                 </div>
-
-                {{-- Válvula(s) --}}
-                <div class="col-md-2">
-                    <label class="form-label">Válvula(s):</label>
-                    <div class="tags-input" data-name="valvula[]">
-                        <input class="form-control" type="text" autocomplete="off">
-                        <div class="tags-container"></div>
-                    </div>
-                </div>
+            -->
 
             </div>
 

@@ -5,8 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Produto;
 use App\Models\Montadora;
 use App\Models\Veiculo;
-use App\Models\Departamento;
-use App\Models\Valvula;
+use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -97,15 +96,43 @@ class ProdutoController extends Controller
 
     public function edit($id)
     {
-
+        $produto = Produto::findOrFail($id);
+        $montadoras = Montadora::select('id', 'nome')->get();
+        return view('produto.editarproduto', compact('produto', 'montadoras'));
     }
 
     public function update(Request $request, $id)
     {
         $produto = Produto::findOrFail($id);
 
+        $request->validate([
+            'nome' => 'required|string|max:255',
+            'codigo_fabricante' => [
+                'required',
+                Rule::unique('produtos', 'codigo_fabricante')->ignore($id),
+            ],
+            'codigo_barras' => [
+                'nullable',
+                Rule::unique('produtos', 'codigo_barras')->ignore($id),
+            ],
+            'preco_uni' => 'required',
+            'quantidade' => 'required|integer',
+            'veiculos' => 'required|array',
+            'veiculos.*' => 'exists:veiculos,id',
+        ]);
+
+        $data = $request->only([
+            'nome',
+            'codigo_fabricante',
+            'codigo_barras',
+            'preco_uni',
+            'quantidade',
+            'descricao',
+        ]);
+
+        // Upload de imagem
         if ($request->hasFile('img')) {
-            // Remove imagem antiga
+
             if ($produto->img && Storage::disk('public')->exists($produto->img)) {
                 Storage::disk('public')->delete($produto->img);
             }
@@ -113,13 +140,15 @@ class ProdutoController extends Controller
             $data['img'] = $request->file('img')->store('produtos', 'public');
         }
 
+        // Atualiza produto
         $produto->update($data);
 
-        // Atualiza relacionamentos n:n
+        // Atualiza relação N:N
         $produto->veiculos()->sync($request->veiculos);
 
-        return redirect()->route('produtos.index')
-                         ->with('success', 'Produto atualizado com sucesso!');
+        return redirect()
+            ->route('produtos.index')
+            ->with('success', 'Produto atualizado com sucesso!');
     }
 
     public function destroy($id)
