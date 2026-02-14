@@ -13,7 +13,7 @@
                 <th scope="col">Cliente</th>
                 <th scope="col">Veículo</th>
                 <th scope="col">Descrição</th>
-                <th scope="col">Listar Manutencoes</th>
+                <th scope="col">Listar Serviços</th>
                 <th scope="col">Excluir</th>
             </tr>
     </thead>

@@ -11,6 +11,7 @@ use App\Http\Controllers\VeiculoController;
 use App\Http\Controllers\VeiculosClientesController;
 use App\Http\Controllers\ManutencaoController;
 use App\Http\Controllers\OrdemServicoController;
+use App\Http\Controllers\ServicoController;
 //use App\Http\Controllers\ChatController;
 
 Route::get('/', function () {
@@ -38,7 +39,7 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         Route::resource('produtos', ProdutoController::class);
         Route::resource('colaboradors', ColaboradorController::class);
         Route::resource('enderecos', EnderecoController::class);
-        Route::resource('manutencoes', ManutencaoController::class);
+        Route::resource('servicos', ServicoController::class);
         Route::get('/endereco/create/{id}', [EnderecoController::class, 'create']);
     });
 });
@@ -61,7 +62,6 @@ Route::get('/erro-autenticacao', function () {
 Route::patch('/users/{id}/block', [UserController::class, 'toggleBlock'])->name('toggleBlock');
 
 // Rotas de teste para as novas views:
-
 
 Route::get('/termos-de-uso', function () {
     return view('termos/termosdeuso');

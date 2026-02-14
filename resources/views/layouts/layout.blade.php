@@ -140,7 +140,7 @@
               <a href="{{ route('ordemservicos.index') }}" type="button" class="dropdown-item">Listar Ordem Seviços</a>
             </li>
             <li>
-              <a href="{{ route('manutencoes.create') }}" type="button" class="dropdown-item">Cadastrar Serviço</a>
+              <a href="{{ route('servicos.create') }}" type="button" class="dropdown-item">Cadastrar Serviço</a>
             </li>
           </ul>
         </li>

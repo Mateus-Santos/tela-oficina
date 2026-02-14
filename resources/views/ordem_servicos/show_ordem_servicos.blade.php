@@ -3,7 +3,7 @@
 @section('content')
 
 <div class="container cadastro">
-    <h1>Detalhes do Histórico</h1>
+    <h1>Ordem de Serviço</h1>
     <table class="table">
         <thead>
             <tr>
@@ -28,15 +28,15 @@
     </table>
 
     @if($servicos->isEmpty())
-    <h1>Contrato não possui manutenções cadastrados</h1>
+    <h1>Contrato não possui serviços cadastrados</h1>
         @if(auth()->user()->permitions != 2)
-            <a class="btn btn-success" href="/manutencoes/create/">Cadastrar Nova Manutenção</a>
+            <a class="btn btn-success" href="/servicos/create/">Cadastrar Nova Serviço</a>
         @endif
     @else
-    <h1> MANUTENÇÕES CADASTRADOS</h1>
+    <h1> SERVIÇOS CADASTRADOS</h1>
     <div class="row mb-3">
         @if(auth()->user()->permitions != 2)
-            <a class="btn btn-success" href="/manutencoes/create/">Cadastrar Nova Manutenção</a>
+            <a class="btn btn-success" href="/servicos/create/">Cadastrar Nova Serviço</a>
         @endif
         <table class="table">
             <thead>
@@ -53,16 +53,16 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($manutencoes as $manutencao)
+                @foreach($servicos as $servico)
                 <tr>
-                <th scope="row">{{ $manutencao->id_manutencao }}</th>
-                <td>{{ $manutencao->setor }}</td>
-                <td>{{ $manutencao->descricao }}</td>
-                    <td>R$ {{ $manutencao->valor }}</td>
-                <td>{{ $manutencao->nivel }}</td>
+                <th scope="row">{{ $servico->id }}</th>
+                <td>{{ $servico->setor }}</td>
+                <td>{{ $servico->descricao }}</td>
+                    <td>R$ {{ $servico->valor }}</td>
+                <td>{{ $servico->nivel }}</td>
                     @if(auth()->user()->permitions != 2)
                 <td>
-                    <form action="/manutencoes/{{$manutencao->id_manutencao}}" method="post">
+                    <form action="/servicos/{{$servico->id_servico}}" method="post">
                         @csrf
                         @method('DELETE')
                         <button href="" class="btn btn-danger delete-btn"><i class="bi bi-trash3"></i></button>
@@ -73,7 +73,7 @@
                 @endforeach
                 <td>
                     <a>Valor total fica por: </a>
-                    <input type="text" value="R$ {{$valor_manutencao}}" readonly disabled>
+                    <input type="text" value="R$ {{ $valor_servico }}" readonly disabled>
                 </td>
             </tbody>
         </table>

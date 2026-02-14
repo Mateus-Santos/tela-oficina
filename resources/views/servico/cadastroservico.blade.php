@@ -16,11 +16,11 @@
     </div>
     @endif
 
-    <form action="{{ route('manutencoes.store') }}" method="POST">
+    <form action="{{ route('servicos.store') }}" method="POST">
       @csrf
 
       <div class="campos">
-        <h1 class="mt-4">CADASTRAR MANUTENÇÃO</h1>
+        <h1 class="mt-4">CADASTRAR SERVIÇOS</h1>
         <div class="row mb-3 mt-4">
           <div class="col-md-6">
             <label class="form-label" for="setor">Setor Defeituoso:*</label>
@@ -51,11 +51,11 @@
 
         <div class="row">
           <div class="col-md-4">
-            <label class="form-label" for="id_contrato_servico">Contrato:*</label>
-              <select class="form-control" id="id_contrato_servico" name="id_contrato_servico" required>
+            <label class="form-label" for="id_ordem_servico">servico:*</label>
+              <select class="form-control" id="id_ordem_servico" name="id_ordem_servico" required>
                 <option selected>Escolha o veículo...</option>
-                @foreach($contratos as $contrato)
-                <option value="{{$contrato->id}}">{{$contrato->descricao}}</option>
+                @foreach($ordem_servicos as $ordem_servico)
+                <option value="{{$ordem_servico->id}}">{{$ordem_servico->descricao}}</option>
                 @endforeach
               </select>
           </div>

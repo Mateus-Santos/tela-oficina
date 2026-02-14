@@ -47,14 +47,14 @@ class OrdemServicoController extends Controller
             $id_veiculo = Veiculo::where('id_user', auth()->user()->id)->get();
             $ordem_servicos = OrdemServico::find($id);
             $servicos = Servico::where('id_ordem_servico', $id)->get();
-            $valor_Servico = Servico::where('id_ordem_servico', $id)->sum('valor');
-            return view('ordem_servicos.showordem_servicos', ['ordem_servicos' => $ordem_servicos, 'servicos' => $servicos, 'valor_Servico' => $valor_Servico]);
+            $valor_servico = Servico::where('id_ordem_servico', $id)->sum('valor');
+            return view('ordem_servicos.showordem_servicos', ['ordem_servicos' => $ordem_servicos, 'servicos' => $servicos, 'valor_servico' => $valor_servico]);
         }
         else{
             $ordem_servicos = OrdemServico::find($id);
             $servicos = Servico::where('id_ordem_servico', $id)->get();
-            $valor_Servico = Servico::where('id_ordem_servico', $id)->sum('valor');
-            return view('ordem_servicos.show_ordem_servicos', ['ordem_servicos' => $ordem_servicos, 'servicos' => $servicos, 'valor_Servico' => $valor_Servico]);
+            $valor_servico = Servico::where('id_ordem_servico', $id)->sum('valor');
+            return view('ordem_servicos.show_ordem_servicos', ['ordem_servicos' => $ordem_servicos, 'servicos' => $servicos, 'valor_servico' => $valor_servico]);
         }
 
     }
