@@ -2,64 +2,51 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Servico;
 use Illuminate\Http\Request;
+use App\Models\ordemservico;
+use App\Models\User;
+use App\Models\Servico;
 
 class ServicoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
     public function index()
     {
-        //
+        $servico = Servico::all();
+        return view('Servico.listarServico', compact('servico'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        $ordemservico = OrdemServico::all();
+        return view('Servico.cadastroServico', compact('ordemservico'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $servico = new Servico();
+        $servico->setor = $request->input("setor");
+        $servico->descricao = $request->input("descricao");
+        $servico->nivel = $request->input("nivel");
+        $servico->valor = $request->input("valor");
+        $servico->id_contrato_servico = $request->input("id_contrato_servico");
+        $servico->save();
+        return redirect()->route('ordemservico.index');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Servico $servico)
+    public function edit(string $id)
     {
-        //
+
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Servico $servico)
+    public function update(Request $request, string $id)
     {
-        //
+
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Servico $servico)
+    public function destroy(string $id)
     {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Servico $servico)
-    {
-        //
+        $servico = Servico::where('id_Servico', $id)->delete();
+        return redirect()->route('ordemservico.index');
     }
 }

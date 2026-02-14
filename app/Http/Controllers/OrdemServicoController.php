@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\OrdemServico;
 use Illuminate\Http\Request;
+use App\Models\OrdemServico;
 use App\Models\User;
 use App\Models\VeiculosClientes;
 use App\Models\Cliente;
+use App\Models\Servico;
 
 class OrdemServicoController extends Controller
 {
@@ -45,15 +46,15 @@ class OrdemServicoController extends Controller
         if(auth()->user()->permitions == 2){
             $id_veiculo = Veiculo::where('id_user', auth()->user()->id)->get();
             $ordem_servicos = OrdemServico::find($id);
-            $manutencoes = Manutencao::where('id_ordem_servicos', $id)->get();
-            $valor_manutencao = Manutencao::where('id_ordem_servicos', $id)->sum('valor');
-            return view('ordem_servicos.showordem_servicos', ['ordem_servicos' => $ordem_servicos, 'manutencoes' => $manutencoes, 'valor_manutencao' => $valor_manutencao]);
+            $servicos = Servico::where('id_ordem_servico', $id)->get();
+            $valor_Servico = Servico::where('id_ordem_servico', $id)->sum('valor');
+            return view('ordem_servicos.showordem_servicos', ['ordem_servicos' => $ordem_servicos, 'servicos' => $servicos, 'valor_Servico' => $valor_Servico]);
         }
         else{
             $ordem_servicos = OrdemServico::find($id);
-            $manutencoes = Manutencao::where('id_ordem_servicos', $id)->get();
-            $valor_manutencao = Manutencao::where('id_ordem_servicos', $id)->sum('valor');
-            return view('ordem_servicos.showordem_servicos', ['ordem_servicos' => $ordem_servicos, 'manutencoes' => $manutencoes, 'valor_manutencao' => $valor_manutencao]);
+            $servicos = Servico::where('id_ordem_servico', $id)->get();
+            $valor_Servico = Servico::where('id_ordem_servico', $id)->sum('valor');
+            return view('ordem_servicos.show_ordem_servicos', ['ordem_servicos' => $ordem_servicos, 'servicos' => $servicos, 'valor_Servico' => $valor_Servico]);
         }
 
     }

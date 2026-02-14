@@ -12,7 +12,6 @@
                 <th scope="col">Data Abertura</th>
                 <th scope="col">Cliente</th>
                 <th scope="col">Veículo</th>
-                <th scope="col">E-mail</th>
                 <th scope="col">Descrição</th>
             </tr>
     </thead>
@@ -21,15 +20,14 @@
             <td>{{ $ordem_servicos->id }}</td>
             <td>{{ $ordem_servicos->status }}</td>
             <td>{{ $ordem_servicos->data_abertura }}</td>
-            <td>{{ $ordem_servicos->veiculo->user->name }}</td>
-            <td>{{ $ordem_servicos->veiculo->placa }}</td>
-            <td>{{ $ordem_servicos->veiculo->user->email }}</td>
+            <td>{{ $ordem_servicos->veiculocliente->cliente->user->name }}</td>
+            <td>{{ $ordem_servicos->veiculocliente->placa }}</td>
             <td>{{ $ordem_servicos->descricao }}</td>
             </tr>
         </tbody>
     </table>
 
-    @if($manutencoes->isEmpty())
+    @if($servicos->isEmpty())
     <h1>Contrato não possui manutenções cadastrados</h1>
         @if(auth()->user()->permitions != 2)
             <a class="btn btn-success" href="/manutencoes/create/">Cadastrar Nova Manutenção</a>

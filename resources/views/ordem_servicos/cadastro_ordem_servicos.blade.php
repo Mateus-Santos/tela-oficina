@@ -26,9 +26,8 @@
           <div class="col-md-3">
             <label class="form-label" for="status">Status:*</label>
               <select class="form-control" id="status" name="status" required>
-                <option value="Em aberto" selected>Orçamento</option>
-                <option value="Ativo">Ativo</option>
-                <option value="Aguardando resposta">Aguardando Resposta</option>
+                <option value="Orçamento" selected>Orçamento</option>
+                <option value="Em Andamento">Em Andamento</option>
                 <option value="Concluido">Concluído</option>
                 <option value="Cancelado">Cancelado</option>
               </select>
