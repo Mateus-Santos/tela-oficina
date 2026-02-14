@@ -6,57 +6,54 @@ use App\Models\OrdemServico;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\VeiculosClientes;
+use App\Models\Cliente;
 
 class OrdemServicoController extends Controller
 {
     public function index()
     {
-        if(auth()->user()->permitions == 2){
-            $user = auth()->user();
-            $contratos = ContratoServico::with('VeiculoCliente.user')
-                ->whereHas('veiculo', function ($query) use ($user) {
-                    $query->where('id_user', $user->id);
-                })->get();
-            return view('contrato_servico.listarcontrato_servico', compact('contratos'));
-        }
-        else{
-            $contratos = ContratoServico::all();
-            return view('contrato_servico.listarcontrato_servico', compact('contratos'));
-        }
+        $ordem_servicos = OrdemServico::all();
+        return view('ordem_servicos.listar_ordem_servicos', compact('ordem_servicos'));
     }
 
     public function create()
     {
         $clientes = Cliente::all();
-        $veiculos_clientes = VeiculosClientes::all();
-        return view('contrato_servico.cadastrocontrato_servico', compact('veiculos_clientes', 'clientes'));
+        return view('ordem_servicos.cadastro_ordem_servicos', compact('clientes'));
     }
 
     public function store(Request $request)
     {
-        $contrato_servico = new ContratoServico();
-        $contrato_servico->data_abertura = $request->input("data_abertura");
-        $contrato_servico->status = $request->input("status");
-        $contrato_servico->id_veiculo = $request->input("id_veiculo");
-        $contrato_servico->descricao = $request->input("descricao");
-        $contrato_servico->save();
-        return redirect()->route('contratoservico.index');
+        $request->validate([
+            'veiculo_cliente_id' => 'required|exists:veiculos_clientes,id',
+            'status' => 'required',
+            'data_abertura' => 'required|date',
+            'descricao' => 'required|string',
+        ]);
+
+        $ordem_servicos = new OrdemServico();
+        $ordem_servicos->data_abertura = $request->input("data_abertura");
+        $ordem_servicos->status = $request->input("status");
+        $ordem_servicos->veiculo_cliente_id = $request->input("veiculo_cliente_id");
+        $ordem_servicos->descricao = $request->input("descricao");
+        $ordem_servicos->save();
+        return redirect()->route('ordemservicos.index');
     }
 
     public function show(string $id)
     {
         if(auth()->user()->permitions == 2){
             $id_veiculo = Veiculo::where('id_user', auth()->user()->id)->get();
-            $contrato_servico = ContratoServico::find($id);
-            $manutencoes = Manutencao::where('id_contrato_servico', $id)->get();
-            $valor_manutencao = Manutencao::where('id_contrato_servico', $id)->sum('valor');
-            return view('contrato_servico.showcontrato_servico', ['contrato_servico' => $contrato_servico, 'manutencoes' => $manutencoes, 'valor_manutencao' => $valor_manutencao]);
+            $ordem_servicos = OrdemServico::find($id);
+            $manutencoes = Manutencao::where('id_ordem_servicos', $id)->get();
+            $valor_manutencao = Manutencao::where('id_ordem_servicos', $id)->sum('valor');
+            return view('ordem_servicos.showordem_servicos', ['ordem_servicos' => $ordem_servicos, 'manutencoes' => $manutencoes, 'valor_manutencao' => $valor_manutencao]);
         }
         else{
-            $contrato_servico = ContratoServico::find($id);
-            $manutencoes = Manutencao::where('id_contrato_servico', $id)->get();
-            $valor_manutencao = Manutencao::where('id_contrato_servico', $id)->sum('valor');
-            return view('contrato_servico.showcontrato_servico', ['contrato_servico' => $contrato_servico, 'manutencoes' => $manutencoes, 'valor_manutencao' => $valor_manutencao]);
+            $ordem_servicos = OrdemServico::find($id);
+            $manutencoes = Manutencao::where('id_ordem_servicos', $id)->get();
+            $valor_manutencao = Manutencao::where('id_ordem_servicos', $id)->sum('valor');
+            return view('ordem_servicos.showordem_servicos', ['ordem_servicos' => $ordem_servicos, 'manutencoes' => $manutencoes, 'valor_manutencao' => $valor_manutencao]);
         }
 
     }
@@ -64,7 +61,7 @@ class OrdemServicoController extends Controller
     public function edit(string $id)
     {
         $veiculos = Veiculo::all();
-        return view('editacontrato_servico', ['veiculo' => $veiculos]);
+        return view('editaordem_servicos', ['veiculo' => $veiculos]);
     }
 
 
@@ -76,7 +73,7 @@ class OrdemServicoController extends Controller
 
     public function destroy(string $id)
     {
-        $contrato = ContratoServico::where('id', $id)->delete();
-        return redirect()->route('contratoservico.index');
+        $contrato = OrdemServico::where('id', $id)->delete();
+        return redirect()->route('OrdemServico.index');
     }
 }

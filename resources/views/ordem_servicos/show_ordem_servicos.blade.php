@@ -18,13 +18,13 @@
     </thead>
         <tbody>
             <tr>
-            <td>{{ $contrato_servico->id }}</td>
-            <td>{{ $contrato_servico->status }}</td>
-            <td>{{ $contrato_servico->data_abertura }}</td>
-            <td>{{ $contrato_servico->veiculo->user->name }}</td>
-            <td>{{ $contrato_servico->veiculo->placa }}</td>
-            <td>{{ $contrato_servico->veiculo->user->email }}</td>
-            <td>{{ $contrato_servico->descricao }}</td>
+            <td>{{ $ordem_servicos->id }}</td>
+            <td>{{ $ordem_servicos->status }}</td>
+            <td>{{ $ordem_servicos->data_abertura }}</td>
+            <td>{{ $ordem_servicos->veiculo->user->name }}</td>
+            <td>{{ $ordem_servicos->veiculo->placa }}</td>
+            <td>{{ $ordem_servicos->veiculo->user->email }}</td>
+            <td>{{ $ordem_servicos->descricao }}</td>
             </tr>
         </tbody>
     </table>

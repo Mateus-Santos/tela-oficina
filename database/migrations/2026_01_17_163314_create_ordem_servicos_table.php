@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('descricao');
             $table->string('status');
             $table->unsignedBigInteger('veiculo_cliente_id');
-            $table->foreign('veiculo_cliente_id')->references('id')->on('veiculos_clientes');
+            $table->foreign('veiculo_cliente_id')->references('id')->on('veiculo_clientes');
             $table->timestamps();
         });
     }

@@ -72,7 +72,7 @@
                 </ul>
             </li>
         <li class="nav-item dropdown">
-          <a class="btn btn-warning" href="{{ route('contratoservico.index') }}" aria-expanded="false">
+          <a class="btn btn-warning" href="{{ route('ordemservicos.index') }}" aria-expanded="false">
             <i class="bi bi-wrench-adjustable-circle"></i>
             Históricos
           </a>
@@ -130,17 +130,17 @@
         <li class="nav-item dropdown">
           <a class="btn btn-warning dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-wrench-adjustable-circle"></i>
-            Históricos de Serviços
+            Ordem de Serviços
           </a>
           <ul class="dropdown-menu">
             <li>
-              <a href="{{ route('contratoservico.create') }}" type="button" class="dropdown-item">Cadastrar Histórico</a>
+              <a href="{{ route('ordemservicos.create') }}" type="button" class="dropdown-item">Cadastrar Ordem Serviço</a>
             </li>
             <li>
-              <a href="{{ route('contratoservico.index') }}" type="button" class="dropdown-item">Listar Históricos</a>
+              <a href="{{ route('ordemservicos.index') }}" type="button" class="dropdown-item">Listar Ordem Seviços</a>
             </li>
             <li>
-              <a href="{{ route('manutencoes.create') }}" type="button" class="dropdown-item">Cadastrar Manutenções</a>
+              <a href="{{ route('manutencoes.create') }}" type="button" class="dropdown-item">Cadastrar Serviço</a>
             </li>
           </ul>
         </li>

@@ -16,7 +16,7 @@
     </div>
     @endif
 
-    <form action="{{ route('contratoservico.store') }}" method="POST">
+    <form action="{{ route('ordemservicos.store') }}" method="POST">
       @csrf
 
       <div class="container cadastro">
@@ -26,7 +26,7 @@
           <div class="col-md-3">
             <label class="form-label" for="status">Status:*</label>
               <select class="form-control" id="status" name="status" required>
-                <option value="Em aberto" selected>Em Aberto</option>
+                <option value="Em aberto" selected>Orçamento</option>
                 <option value="Ativo">Ativo</option>
                 <option value="Aguardando resposta">Aguardando Resposta</option>
                 <option value="Concluido">Concluído</option>
@@ -41,22 +41,15 @@
 
           <div class="row">
             <div class="col-md-4">
-              <label class="form-label" for="id_veiculo">Cliente:*</label>
-                <select class="form-control" id="id_veiculo" name="id_veiculo" required>
-                  <option selected>Selecionar Cliente..</option>
-                  @foreach($clientes as $cliente)
-                    <option value="{{$cliente->id}}">{{$cliente->nome}}</option>
-                  @endforeach
-                </select>
+                <label class="form-label">Cliente:</label>
+                <input type="text" class="form-control" id="cliente_nome" readonly>
             </div>
             <div class="col-md-4">
-              <label class="form-label" for="id_veiculo">Veículo do cliente:*</label>
-                <select class="form-control" id="id_veiculo" name="id_veiculo" required>
-                  <option selected>Veículo...</option>
-                  @foreach($veiculos_clientes as $veiculos_cliente)
-                  <option value="{{$veiculos_cliente->id}}">{{$veiculos_cliente->nome}}</option>
-                  @endforeach
-                </select>
+              <div class="col-md-4">
+                  <label class="form-label">Placa do Veículo:*</label>
+                  <input type="text" class="form-control" id="placa_input" required>
+                  <input type="hidden" name="veiculo_cliente_id" id="veiculo_cliente_id">
+              </div>
             </div>
           </div>
 
@@ -68,11 +61,15 @@
         </div>
 
         <div class="col text-center">
-          <button type="submit" class="btn btn-primary">Salvar Peça</button>
+          <button type="submit" class="btn btn-primary">Salvar!</button>
         </div>
       </div>
     </form>
 
   </div>
 </main>
+@endsection
+
+@section('scripts')
+    @vite(['resources/js/cadOrdemservico.js'])    
 @endsection

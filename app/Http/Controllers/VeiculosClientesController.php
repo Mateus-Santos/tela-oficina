@@ -10,6 +10,15 @@ use App\Models\User;
 
 class VeiculosClientesController extends Controller
 {
+    public function veiculosPorCliente($id)
+    {
+        $veiculos = VeiculosClientes::where('cliente_id', $id)
+            ->with('veiculosClientes')
+            ->get();
+
+        return response()->json($veiculos);
+    }
+
     public function index()
     {
         if(auth()->user()->permitions == 2){
