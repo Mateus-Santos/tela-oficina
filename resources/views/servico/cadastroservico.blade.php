@@ -62,11 +62,15 @@
         </div>
 
         <div class="col text-center">
-          <button type="submit" class="btn btn-primary">Salvar Peça</button>
+          <button type="submit" class="btn btn-primary">Salvar Serviço!</button>
         </div>
       </div>
     </form>
 
   </div>
 </main>
+@endsection
+
+@section('scripts')
+@vite(['resources/js/cadServico.js'])
 @endsection

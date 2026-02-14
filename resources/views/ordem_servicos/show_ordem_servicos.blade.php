@@ -62,7 +62,7 @@
                 <td>{{ $servico->nivel }}</td>
                     @if(auth()->user()->permitions != 2)
                 <td>
-                    <form action="/servicos/{{$servico->id_servico}}" method="post">
+                    <form action="/servicos/{{$servico->id}}" method="post">
                         @csrf
                         @method('DELETE')
                         <button href="" class="btn btn-danger delete-btn"><i class="bi bi-trash3"></i></button>

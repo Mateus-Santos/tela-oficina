@@ -48,7 +48,7 @@ class ServicoController extends Controller
 
     public function destroy(string $id)
     {
-        $servico = Servico::where('id_Servico', $id)->delete();
-        return redirect()->route('ordemservico.index');
+        $servico = Servico::where('id', $id)->delete();
+        return redirect()->route('ordemservicos.index');
     }
 }
