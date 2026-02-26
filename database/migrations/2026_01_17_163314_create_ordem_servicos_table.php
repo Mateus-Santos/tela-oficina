@@ -17,6 +17,10 @@ return new class extends Migration
             $table->dateTime('data_fechamento')->nullable();
             $table->string('descricao');
             $table->string('status');
+            $table->float('valor');
+            $table->string('nivel');
+            $table->unsignedBigInteger('setor_servico_id');
+            $table->foreign('setor_servico_id')->references('id')->on('setor_servicos');
             $table->unsignedBigInteger('veiculo_cliente_id');
             $table->foreign('veiculo_cliente_id')->references('id')->on('veiculo_clientes');
             $table->timestamps();
