@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('produtos', function (Blueprint $table) {
             $table->id();
             $table->string('nome', 150);
+            $table->string('marca')->index();
             $table->text('descricao');
             $table->integer('quantidade')->default(0);
             $table->integer('estoque_minimo')->default(0);
@@ -22,7 +23,6 @@ return new class extends Migration
             $table->unsignedBigInteger('fornecedor_id')->nullable();
             $table->index('nome');
             $table->index('codigo_barras');
-            $table->index('marca');
             $table->foreign('fornecedor_id')
                 ->references('id')
                 ->on('fornecedores')

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\VeiculosClientes;
+use App\Models\VeiculosCliente;
 use App\Models\Veiculo;
 use App\Models\Montadora;
 use App\Models\User;
@@ -12,7 +12,7 @@ class VeiculosClientesController extends Controller
 {
     public function veiculosPorCliente($id)
     {
-        $veiculos = VeiculosClientes::where('cliente_id', $id)
+        $veiculos = VeiculosCliente::where('cliente_id', $id)
             ->with('veiculosClientes')
             ->get();
 
@@ -22,11 +22,11 @@ class VeiculosClientesController extends Controller
     public function index()
     {
         if(auth()->user()->permitions == 2){
-            $veiculosclientes = VeiculosClientes::where('cliente_id', auth()->user()->cliente->id)->get();
+            $veiculosclientes = VeiculosCliente::where('cliente_id', auth()->user()->cliente->id)->get();
             return view('veiculosclientes.listarveiculosclientes', compact('veiculosclientes'));
         }
         else{
-            $veiculosclientes = VeiculosClientes::all();
+            $veiculosclientes = VeiculosCliente::all();
             return view('veiculosclientes.listarveiculosclientes', compact('veiculosclientes'));
         }
     }
@@ -40,7 +40,7 @@ class VeiculosClientesController extends Controller
 
     public function store(Request $request)
     {
-        $veiculosclientes = new VeiculosClientes();
+        $veiculosclientes = new VeiculosCliente();
         $veiculosclientes->placa = $request->input("placa");
         $veiculosclientes->ano = $request->input("ano");
         $veiculosclientes->cor = $request->input("cor");
@@ -56,7 +56,7 @@ class VeiculosClientesController extends Controller
 
     public function edit(string $id)
     {
-        $veiculoscliente = VeiculosClientes::findOrFail($id);
+        $veiculoscliente = VeiculosCliente::findOrFail($id);
         $montadoras = Montadora::all();
         if(auth()->user()->permitions == 1){
             $users = User::all();
@@ -67,7 +67,7 @@ class VeiculosClientesController extends Controller
 
     public function update(Request $request, string $id)
     {
-        $veiculoscliente = VeiculosClientes::findOrFail($id);
+        $veiculoscliente = VeiculosCliente::findOrFail($id);
         $veiculoscliente->placa = $request->input("placa");
         $veiculoscliente->ano = $request->input("ano");
         $veiculoscliente->cor = $request->input("cor");
@@ -85,7 +85,7 @@ class VeiculosClientesController extends Controller
 
     public function destroy(string $id)
     {
-        $veiculosclientes = VeiculosClientes::where('id', $id)->delete();
+        $veiculosclientes = VeiculosCliente::where('id', $id)->delete();
         return redirect()->route('veiculosclientes.index');
     }
 }

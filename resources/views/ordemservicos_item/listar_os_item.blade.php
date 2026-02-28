@@ -18,7 +18,7 @@
             </tr>
     </thead>
         <tbody>
-            @foreach($ordem_servicos as $ordem_servico)
+            @foreach($ordemservicos as $ordemservico)
             <tr>
             <td>{{ $ordem_servico->id }}</td>
             <td>{{ $ordem_servico->status }}</td>

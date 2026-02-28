@@ -130,17 +130,14 @@
         <li class="nav-item dropdown">
           <a class="btn btn-warning dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-wrench-adjustable-circle"></i>
-            Ordem de Serviços
+            Ordem Serviço
           </a>
           <ul class="dropdown-menu">
             <li>
               <a href="{{ route('ordemservicos.create') }}" type="button" class="dropdown-item">Cadastrar Ordem Serviço</a>
             </li>
             <li>
-              <a href="{{ route('ordemservicos.index') }}" type="button" class="dropdown-item">Listar Ordem Seviços</a>
-            </li>
-            <li>
-              <a href="{{ route('servicos.create') }}" type="button" class="dropdown-item">Cadastrar Serviço</a>
+              <a href="{{ route('ordemservicos.index') }}" type="button" class="dropdown-item">Listar OS</a>
             </li>
           </ul>
         </li>

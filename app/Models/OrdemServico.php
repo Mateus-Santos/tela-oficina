@@ -4,19 +4,19 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OrdemServico extends Model
 {
     use HasFactory;
 
-    public function veiculoCliente()
+    public function veiculosCliente()
     {
-        return $this->belongsTo(VeiculosClientes::class, 'veiculo_cliente_id');
+        return $this->belongsTo(VeiculosCliente::class, 'veiculo_cliente_id');
     }
 
-    public function OrdemServicoItem()
+    public function setorServico()
     {
-        return $this->hasMany(OrdemServicoItem::class);
+        return $this->belongsTo(SetorServico::class, 'setor_servico_id');
     }
-
 }
