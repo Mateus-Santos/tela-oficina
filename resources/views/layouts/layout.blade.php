@@ -143,6 +143,21 @@
         </li>
 
         <li class="nav-item dropdown">
+          <a class="btn btn-warning dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-wrench-adjustable-circle"></i>
+            Notas
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a href="{{ route('ordemservicoitem.create') }}" type="button" class="dropdown-item">Cadastrar O.S item</a>
+            </li>
+            <li>
+              <a href="{{ route('ordemservicoitem.index') }}" type="button" class="dropdown-item">Listar O.S item</a>
+            </li>
+          </ul>
+        </li>
+
+        <li class="nav-item dropdown">
           <a class="btn btn-warning dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-bag-fill"></i>
             Loja

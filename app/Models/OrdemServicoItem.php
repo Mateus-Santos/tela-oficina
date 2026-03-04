@@ -9,8 +9,11 @@ class OrdemServicoItem extends Model
 {
     use HasFactory;
 
-    public function OrdemServico()
+    protected $table = 'ordem_servico_itens';
+
+    public function ordemServico()
     {
-        return $this->hasMany(OrdemServico::class);
+        return $this->belongsTo(OrdemServico::class);
     }
+
 }

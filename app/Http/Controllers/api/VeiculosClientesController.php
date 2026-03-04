@@ -13,9 +13,14 @@ class VeiculosClientesController extends Controller
 {
     public function buscarPorPlaca($placa)
     {
-        $veiculo = VeiculosCliente::with('cliente.user')
-            ->where('placa', $placa)
-            ->first();
+        $placa = strtoupper(str_replace(['-', ' '], '', $placa));
+
+        $veiculo = VeiculosCliente::with([
+            'cliente.user',
+            'ordensServico'
+        ])
+        ->where('placa', $placa)
+        ->first();
 
         if (!$veiculo) {
             return response()->json(['error' => 'Veículo não encontrado'], 404);
@@ -25,7 +30,13 @@ class VeiculosClientesController extends Controller
             'veiculo_id' => $veiculo->id,
             'placa' => $veiculo->placa,
             'cliente_nome' => $veiculo->cliente->user->name,
+            'ordens_servico' => $veiculo->ordensServico->map(function ($os) {
+                return [
+                    'id' => $os->id,
+                    'descricao' => $os->descricao,
+                ];
+            }),
         ]);
-
     }
+
 }

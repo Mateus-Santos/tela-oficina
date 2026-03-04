@@ -115,14 +115,6 @@
                         <div class="tags-container"></div>
                     </div>
                 </div>
-
-            <!-- {{-- Marca --}}
-                <div class="col-md-2">
-                    <label class="form-label">Marca:*</label>
-                    <input class="form-control" type="text">
-                </div>
-            -->
-
             </div>
 
             {{-- Descrição --}}

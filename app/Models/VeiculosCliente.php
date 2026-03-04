@@ -25,4 +25,10 @@ class VeiculosCliente extends Model
     {
         return $this->BelongsTo(Cliente::class);
     }
+
+    public function ordensServico()
+    {
+        return $this->hasMany(OrdemServico::class, 'veiculo_cliente_id');
+    }
+
 }
