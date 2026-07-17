@@ -37,6 +37,10 @@
                     <label class="form-label" for="codigo_barras">Código de Barras:</label>
                     <input type="text" class="form-control" id="codigo_barras" name="codigo_barras">
                 </div>
+                <div class="col-md-3">
+                    <label class="form-label" for="marca">Marca:</label>
+                    <input type="text" class="form-control" id="marca" name="marca">
+                </div>
             </div>
 
             {{-- Linha 1 --}}

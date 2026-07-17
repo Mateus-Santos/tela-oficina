@@ -59,6 +59,7 @@ class ProdutoController extends Controller
             'status' => 'nullable|boolean',
             'fornecedor_id' => 'nullable|exists:fornecedores,id',
             'img' => 'nullable|image|max:2048',
+            'marca' => 'required|string',
 
             // relacionamento N:N
             'veiculos' => 'required|array',
@@ -75,6 +76,7 @@ class ProdutoController extends Controller
             'estoque_minimo' => $request->estoque_minimo ?? 0,
             'status' => $request->status ?? true,
             'fornecedor_id' => $request->fornecedor_id,
+            'marca' => $request->marca,
         ];
 
         if ($request->hasFile('img')) {
