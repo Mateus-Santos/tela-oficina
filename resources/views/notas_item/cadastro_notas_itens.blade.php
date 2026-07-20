@@ -13,46 +13,47 @@
 @endif
 
 <div class="container cadastro">
-    <h1 class="mb-4">GERENCIAR ITENS DA O.S</h1>
+    <h1 class="mb-4">GERENCIAR ITENS DA NOTA / O.S</h1>
 
-    <form action="{{ route('ordemservicoitem.store') }}" method="POST" id="form-os-itens">
+    <form action="{{ route('notasitem.store') }}" method="POST" id="form-os-itens">
         @csrf
 
-        {{-- 1. Identificação da Ordem de Serviço --}}
-        <div class="card mb-4 shadow-sm">
-            <div class="card-header bg-dark text-white">1. Identificação da Ordem de Serviço</div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-4">
-                        <label class="form-label">Placa veículo:*</label>
-                        <input type="text" class="form-control" id="placa_input" placeholder="Digite a placa" required>
-                        <input type="hidden" name="veiculo_cliente_id" id="veiculo_cliente_id">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Cliente</label>
-                        <input type="text" id="cliente_nome" class="form-control" readonly>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Selecione a O.S Principal*</label>
-                        <select name="ordem_servico_id" id="ordem_servico_select" class="form-control" required>
-                            <option value="">Digite a placa primeiro</option>
-                        </select>
-                    </div>
+    {{-- 1. Identificação da Ordem de Serviço Base --}}
+    <div class="card mb-4 shadow-sm">
+    <div class="card-header bg-dark text-white">1. Identificação do Cliente / Veículo</div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <label class="form-label">Placa veículo (Opcional para balcão):</label>
+                    <input type="text" class="form-control" id="placa_input" placeholder="Digite a placa">
+                    
+                    <!-- ID do Veículo enviado ao Controller -->
+                    <input type="hidden" name="veiculo_cliente_id" id="veiculo_cliente_id">
+                </div>
+                
+                <div class="col-md-6">
+                    <label class="form-label">Cliente:*</label>
+                    <!-- Nome visível para o usuário -->
+                    <input type="text" id="cliente_nome" class="form-control" placeholder="Nome do cliente" readonly required>
+                    
+                    <!-- ID do Cliente enviado ao Controller -->
+                    <input type="hidden" name="cliente_id" id="cliente_id">
                 </div>
             </div>
         </div>
+    </div>
 
-        {{-- 2. Adicionar Produto ou Serviço --}}
+        {{-- 2. Adicionar Produto ou Mão de Obra/Serviço (Polimórfico) --}}
         <div class="card mb-4 shadow-sm border-primary">
-            <div class="card-header bg-primary text-white">2. Adicionar Produto ou Serviço</div>
+            <div class="card-header bg-primary text-white">2. Adicionar Produto ou Serviço (O.S)</div>
             <div class="card-body">
                 <div class="row mb-3">
                     <div class="col-md-3">
                         <label class="form-label">Tipo de Item</label>
                         <select id="builder_type" class="form-control">
                             <option value="">Selecione...</option>
-                            <option value="App\Models\Produto">Produto</option>
-                            <option value="App\Models\Servico">Serviço</option>
+                            <option value="App\Models\Produto">Produto (Autopeça)</option>
+                            <option value="App\Models\OrdemServico">Serviço (Ordem de Serviço)</option>
                         </select>
                     </div>
                     <div class="col-md-4">
@@ -62,8 +63,8 @@
                         </select>
                     </div>
                     <div class="col-md-5">
-                        <label class="form-label">Descrição Exibida na OS*</label>
-                        <input type="text" id="builder_descricao" class="form-control" placeholder="Ex: Troca de Óleo ou Marca do Produto">
+                        <label class="form-label">Descrição Exibida na Nota*</label>
+                        <input type="text" id="builder_descricao" class="form-control" placeholder="Ex: Mão de Obra Mecânica Geral ou Nome do Produto">
                     </div>
                 </div>
 
@@ -93,9 +94,10 @@
             </div>
         </div>
 
+        {{-- Select oculto para carga estática de produtos --}}
         <select id="produtos_estatiticos_local" style="display: none;">
             @foreach($produtos as $prod)
-                <option value="{{ $prod->id }}" data-preco="{{ $prod->preco ?? $prod->valor ?? 0 }}">
+                <option value="{{ $prod->id }}" data-preco="{{ $prod->preco_uni ?? $prod->preco ?? $prod->valor ?? 0 }}">
                     {{ $prod->nome ?? $prod->descricao }}
                 </option>
             @endforeach
@@ -120,12 +122,12 @@
                     </thead>
                     <tbody id="container-itens-dinamicos">
                         <tr id="linha-vazia">
-                            <td colspan="8" class="text-center text-muted py-4">Nenhum item adicionado a esta Ordem de Serviço ainda.</td>
+                            <td colspan="8" class="text-center text-muted py-4">Nenhum item adicionado a esta lista ainda.</td>
                         </tr>
                     </tbody>
                     <tfoot>
                         <tr class="table-light fw-bold">
-                            <td colspan="5" class="text-end">Valor Geral da OS:</td>
+                            <td colspan="5" class="text-end">Valor Geral Acumulado:</td>
                             <td id="valor-geral-os" class="text-success">R$ 0,00</td>
                             <td colspan="2"></td>
                         </tr>
@@ -136,7 +138,7 @@
 
         <div class="text-center mb-5">
             <button type="submit" class="btn btn-success btn-lg px-5">
-                Gravar Todos os Itens na O.S
+                Gravar Todos os Itens
             </button>
         </div>
     </form>
@@ -144,5 +146,5 @@
 @endsection
 
 @section('scripts')
-@vite(['resources/js/gerenciadorItensOs.js', 'resources/js/cadOsItem.js'])
+@vite(['resources/js/gerenciadorItensOs.js'])
 @endsection

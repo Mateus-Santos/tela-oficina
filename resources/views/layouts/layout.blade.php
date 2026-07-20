@@ -149,10 +149,10 @@
           </a>
           <ul class="dropdown-menu">
             <li>
-              <a href="{{ route('ordemservicoitem.create') }}" type="button" class="dropdown-item">Cadastrar O.S item</a>
+              <a href="{{ route('notasitem.create') }}" type="button" class="dropdown-item">Cadastrar O.S item</a>
             </li>
             <li>
-              <a href="{{ route('ordemservicoitem.index') }}" type="button" class="dropdown-item">Listar O.S item</a>
+              <a href="{{ route('notasitem.index') }}" type="button" class="dropdown-item">Listar O.S item</a>
             </li>
           </ul>
         </li>
