@@ -8,11 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('ordem_servico_itens', function (Blueprint $table) {
+        Schema::create('notas_itens', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('ordem_servico_id')
-                ->constrained()
-                ->cascadeOnDelete();
+            $table->unsignedBigInteger('nota_id');
+            // Foreign Keys
+            $table->foreign('nota_id')
+                  ->references('id')
+                  ->on('notas')
+                  ->onDelete('cascade');
             $table->morphs('itemable');
             $table->string('descricao');
             $table->integer('quantidade')->default(1);
@@ -29,6 +32,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('ordem_servico_itens');
+        Schema::dropIfExists('notas_itens');
     }
 };
