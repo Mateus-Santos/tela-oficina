@@ -1,10 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- ELEMENTOS DE IDENTIFICAÇÃO DA O.S E PLACA ---
+    // --- ELEMENTOS DE IDENTIFICAÇÃO DO VEÍCULO E PLACA ---
     const placaInput = document.getElementById('placa_input');
     const clienteNome = document.getElementById('cliente_nome');
     const idVeiculo = document.getElementById('veiculo_cliente_id');
-    const osSelect = document.getElementById('ordem_servico_select');
+    // CORREÇÃO: Removido o osSelect que não existe mais no HTML
 
     // --- ELEMENTOS DO CONSTRUTOR DE ITENS ---
     const typeSelect = document.getElementById('builder_type');
@@ -29,12 +29,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!placaInput) return;
 
-    // 1. BUSCA POR PLACA (Mantida idêntica à sua lógica original)
+    // 1. BUSCA POR PLACA (CORRIGIDA SEM REFERÊNCIAS AO SELECT REMOVIDO)
     placaInput.addEventListener('blur', async () => {
         let placa = placaInput.value.toUpperCase().replace(/[-\s]/g, '');
         if (!placa) return;
 
-        osSelect.innerHTML = `<option>Carregando...</option>`;
         ordensServicoDoVeiculo = [];
 
         try {
@@ -43,7 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) {
                 clienteNome.value = '';
                 idVeiculo.value = '';
-                osSelect.innerHTML = `<option value="">Veículo não encontrado</option>`;
                 resetBuilder();
                 return;
             }
@@ -54,31 +52,19 @@ document.addEventListener('DOMContentLoaded', () => {
             idVeiculo.value = data.veiculo_id;
             ordensServicoDoVeiculo = data.ordens_servico || [];
 
-            osSelect.innerHTML = `<option value="">Selecione uma O.S</option>`;
-
-            if (ordensServicoDoVeiculo.length === 0) {
-                osSelect.innerHTML = `<option value="">Nenhuma O.S encontrada</option>`;
-                return;
-            }
-
-            ordensServicoDoVeiculo.forEach(os => {
-                const option = document.createElement('option');
-                option.value = os.id;
-                option.textContent = os.descricao;
-                osSelect.appendChild(option);
-            });
-
-            if (typeSelect.value === 'App\\Models\\Servico') {
+            // Se o usuário já tiver selecionado "Ordem de Serviço" antes de digitar a placa,
+            // atualiza o seletor de itens para exibir as OSs encontradas.
+            if (typeSelect.value === 'App\\Models\\OrdemServico') {
                 atualizarOpcoesItemRelacionado();
             }
 
         } catch (error) {
-            console.error(error);
-            osSelect.innerHTML = `<option value="">Erro ao carregar O.S</option>`;
+            console.error("Erro na busca por placa:", error);
+            alert('Erro ao buscar dados do veículo. Verifique o console.');
         }
     });
 
-    // 2. ALTERNÂNCIA DE TIPOS (Totalmente local, sem chamadas API adicionais)
+    // 2. ALTERNÂNCIA DE TIPOS POLIMÓRFICOS
     typeSelect.addEventListener('change', () => {
         atualizarOpcoesItemRelacionado();
     });
@@ -95,25 +81,25 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Caso A: Serviços vinculados às O.S do Veículo coletado na Placa
-        if (tipo === 'App\\Models\\Servico') {
+        // Caso A: Vinculando a própria Ordem de Serviço como item
+        if (tipo === 'App\\Models\\OrdemServico') {
             if (ordensServicoDoVeiculo.length === 0) {
-                itemIdSelect.innerHTML = '<option value="">Nenhum serviço disponível para este veículo</option>';
+                itemIdSelect.innerHTML = '<option value="">Nenhuma O.S disponível para esta placa</option>';
                 return;
             }
 
-            itemIdSelect.innerHTML = '<option value="">Selecione o serviço do veículo...</option>';
+            itemIdSelect.innerHTML = '<option value="">Selecione qual O.S inserir...</option>';
             itemIdSelect.disabled = false;
 
             ordensServicoDoVeiculo.forEach(os => {
                 const option = document.createElement('option');
                 option.value = os.id;
-                option.textContent = os.descricao;
+                option.textContent = `OS #${os.id} - ${os.descricao}`;
                 option.setAttribute('data-preco', os.valor || 0); 
                 itemIdSelect.appendChild(option);
             });
         } 
-        // Caso B: Produtos coletados de forma estática do select injetado pelo Blade
+        // Caso B: Adicionando um Produto Físico (Autopeça)
         else if (tipo === 'App\\Models\\Produto') {
             if (!produtosEstaticosLocal || produtosEstaticosLocal.options.length === 0) {
                 itemIdSelect.innerHTML = '<option value="">Nenhum produto cadastrado no sistema</option>';
@@ -123,7 +109,6 @@ document.addEventListener('DOMContentLoaded', () => {
             itemIdSelect.innerHTML = '<option value="">Selecione um produto...</option>';
             itemIdSelect.disabled = false;
 
-            // Clona os elementos gerados pelo Blade para dentro do select visível
             Array.from(produtosEstaticosLocal.options).forEach(opt => {
                 const option = document.createElement('option');
                 option.value = opt.value;
@@ -134,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Auto-preenchimento ao selecionar o item
+    // Auto-preenchimento ao selecionar o item (Produto ou OS)
     itemIdSelect.addEventListener('change', () => {
         const selectedOption = itemIdSelect.options[itemIdSelect.selectedIndex];
         if (selectedOption && selectedOption.value) {
@@ -152,7 +137,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const itemableType = typeSelect.value;
         const itemableId = itemIdSelect.value;
-        const tipoText = itemableType.includes('Produto') ? 'Produto' : 'Serviço';
+        const tipoText = itemableType.includes('Produto') ? 'Produto' : 'Serviço (OS)';
+        const badgeColor = itemableType.includes('Produto') ? 'bg-info' : 'bg-warning';
+        
         const descricao = descInput.value.trim();
         const quantidade = parseInt(qtdInput.value) || 1;
         const valorUnitario = parseFloat(valorUnitInput.value) || 0;
@@ -172,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
         novaLinha.setAttribute('data-item-total', valorTotal);
 
         novaLinha.innerHTML = `
-            <td><span class="badge ${itemableType.includes('Produto') ? 'bg-info' : 'bg-warning'} text-dark">${tipoText}</span></td>
+            <td><span class="badge ${badgeColor} text-dark">${tipoText}</span></td>
             <td>${descricao}</td>
             <td>${quantidade}</td>
             <td>R$ ${valorUnitario.toFixed(2).replace('.', ',')}</td>
