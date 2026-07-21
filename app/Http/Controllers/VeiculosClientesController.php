@@ -7,6 +7,7 @@ use App\Models\VeiculosCliente;
 use App\Models\Veiculo;
 use App\Models\Montadora;
 use App\Models\User;
+use App\Models\Pessoa;
 
 class VeiculosClientesController extends Controller
 {
@@ -22,7 +23,7 @@ class VeiculosClientesController extends Controller
     public function index()
     {
         if(auth()->user()->permitions == 2){
-            $veiculosclientes = VeiculosCliente::where('cliente_id', auth()->user()->cliente->id)->get();
+            $veiculosclientes = VeiculosCliente::where('cliente_id', auth()->user()->pessoa->cliente->id)->get();
             return view('veiculosclientes.listarveiculosclientes', compact('veiculosclientes'));
         }
         else{

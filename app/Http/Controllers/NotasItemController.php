@@ -13,7 +13,7 @@ class NotasItemController extends Controller
 {
     public function index()
     {
-        $notas = Nota::with(['cliente.user', 'itens', 'veiculo'])->get();
+        $notas = Nota::with(['cliente.pessoa', 'itens', 'veiculoscliente'])->get();
         return view('notas_item.listar_notas_itens', compact('notas'));
     }
 

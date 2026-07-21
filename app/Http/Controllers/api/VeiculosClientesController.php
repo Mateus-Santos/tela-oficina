@@ -16,7 +16,7 @@ class VeiculosClientesController extends Controller
         $placa = strtoupper(str_replace(['-', ' '], '', $placa));
 
         $veiculo = VeiculosCliente::with([
-            'cliente.user',
+            'cliente.pessoa',
             'ordensServico'
         ])
         ->where('placa', $placa)
@@ -29,7 +29,7 @@ class VeiculosClientesController extends Controller
         return response()->json([
             'veiculo_id' => $veiculo->id,
             'placa' => $veiculo->placa,
-            'cliente_nome' => $veiculo->cliente->user->name,
+            'cliente_nome' => $veiculo->cliente->pessoa->nome,
             'cliente_id' => $veiculo->cliente->id,
             'ordens_servico' => $veiculo->ordensServico->map(function ($os) {
                 return [
