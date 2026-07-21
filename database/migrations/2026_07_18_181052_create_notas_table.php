@@ -11,7 +11,10 @@ return new class extends Migration
         Schema::create('notas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('cliente_id')->nullable()->constrained()->cascadeOnDelete();
-            $table->foreignId('veiculo_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('veiculo_cliente_id')
+                  ->nullable()
+                  ->constrained('veiculos_clientes') 
+                  ->nullOnDelete();
             $table->string('tipo');
             $table->string('status');
             $table->decimal('subtotal', 10, 2)->default(0);
