@@ -25,7 +25,7 @@
                 <td>{{ $veiculoscliente->ano }}</td>
                 <td>{{ $veiculoscliente->veiculo->montadora->nome}}</td>
                 <td>{{ $veiculoscliente->cor }}</td>
-                <td>{{ $veiculoscliente->cliente->user->name }}</td>
+                <td>{{ $veiculoscliente->cliente->pessoa->nome }}</td>
                 <td><a href="/veiculosclientes/{{$veiculoscliente->id}}/edit/" class="btn btn-info"><i class="bi bi-pencil-square"></i></a></td>
                 <td>
                     <form action="/veiculosclientes/{{$veiculoscliente->id}}" method="post">

@@ -9,7 +9,8 @@
             <tr>
                 <th scope="col">ID</th>
                 <th scope="col">STATUS</th>
-                <th scope="col">Descrição</th>
+                <th scope="col">Cliente</th>
+                <th scope="col">Placa Veículo</th>
                 <th scope="col">Detalhes</th>
                 <th scope="col">Excluir</th>
             </tr>
@@ -19,7 +20,8 @@
             <tr>
             <td>{{ $nota->id }}</td>
             <td>{{ $nota->status }}</td>
-            <td>{{ $nota->cliente?->user?->name ?? 'Cliente Geral / Balcão' }}</td>
+            <td>{{ $nota->cliente?->pessoa?->nome ?? 'Cliente Geral / Balcão' }}</td>
+            <td>{{ $nota }}</td>
             <td><a href="/notasitens/{{$nota->id}}" class="btn btn-success"><i class="bi bi-list-task"></i></a></td>
             <td>
                 <form action="/notasitens/{{$nota->id}}" method="post">

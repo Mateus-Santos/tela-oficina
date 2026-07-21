@@ -26,10 +26,10 @@
               <div class="col-md-6">
                 <label class="form-label" for="id_cliente">Usuário:*</label>
                 <select class="form-control" id="id_cliente" name="id_cliente" required>
-                <option value="{{$veiculoscliente->cliente->id}}">{{$veiculoscliente->cliente->user->name}}</option>
+                <option value="{{$veiculoscliente->cliente->id}}">{{$veiculoscliente->cliente->pessoa->nome}}</option>
                     @foreach($users as $user)
-                        @if($user->cliente)
-                            <option value="{{$user->cliente->id}}">{{$user->name}}</option>
+                        @if($user->pessoa->cliente)
+                            <option value="{{$user->pessoa->cliente->id}}">{{$user->pessoa->nome}}</option>
                         @endif
                     @endforeach
                 </select>
@@ -38,8 +38,8 @@
           @else
             <div class="row mb">
                 <div class="col-md-2">
-                    <label class="form-label" for="id_cliente">{{auth()->user()->name}}</label>
-                    <input class="form-control" type="text" name="id_cliente" id="id_cliente" value="{{auth()->user()->cliente->id}}" readonly>
+                    <label class="form-label" for="id_cliente">{{auth()->user()->pessoa->nome}}</label>
+                    <input class="form-control" type="text" name="id_cliente" id="id_cliente" value="{{auth()->user()->pessoa->cliente->id}}" readonly>
                 </div>
             </div>
           @endif

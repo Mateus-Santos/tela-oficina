@@ -23,12 +23,12 @@
           @if(auth()->user() && auth()->user()->permitions != 2)
             <div class="row mb-3">
               <div class="col-md-6">
-                <label class="form-label" for="id_cliente">Usuário:*</label>
+                <label class="form-label" for="id_cliente">Pessoa:*</label>
                 <select class="form-control" id="id_cliente" name="id_cliente" required>
                 <option selected>Escolher...</option>
                   @foreach($users as $user)
                     @if($user->permitions == 2)
-                    <option value="{{$user->cliente->id}}">{{$user->name}}</option>
+                      <option value="{{$user->pessoa->cliente->id}}">{{ $user->pessoa->nome }}</option>
                     @endif
                   @endforeach
                 </select>
@@ -37,7 +37,7 @@
           @else
             <div class="row mb">
                 <div class="col-md-2">
-                    <label class="form-label" for="id_cliente">{{auth()->user()->name}}</label>
+                    <label class="form-label" for="id_cliente">{{auth()->user()->pessoa()->name}}</label>
                     <input class="form-control" type="text" name="id_cliente" id="id_cliente" value="{{auth()->user()->id}}" readonly>
                 </div>
             </div>

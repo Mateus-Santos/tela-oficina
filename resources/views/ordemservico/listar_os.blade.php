@@ -23,7 +23,7 @@
             <td>{{ $ordemservico->id }}</td>
             <td>{{ $ordemservico->status }}</td>
             <td>{{ $ordemservico->data_abertura }}</td>
-            <td>{{ $ordemservico->veiculoscliente->cliente->user->name }}</td>
+            <td>{{ $ordemservico->veiculoscliente->cliente->pessoa->nome }}</td>
             <td>{{ $ordemservico->veiculoscliente->placa }}</td>
             <td>{{ $ordemservico->descricao }}</td>
             <td>{{ $ordemservico->setorservico->setor }}</td>

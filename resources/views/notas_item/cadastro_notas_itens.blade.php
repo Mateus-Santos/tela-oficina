@@ -27,7 +27,6 @@
                     <label class="form-label">Placa veículo (Opcional para balcão):</label>
                     <input type="text" class="form-control" id="placa_input" placeholder="Digite a placa">
                     
-                    <!-- ID do Veículo enviado ao Controller -->
                     <input type="hidden" name="veiculo_cliente_id" id="veiculo_cliente_id">
                 </div>
                 
