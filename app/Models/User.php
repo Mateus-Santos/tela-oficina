@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -14,26 +13,16 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
-    use HasApiTokens;
-    use HasFactory;
-    use HasProfilePhoto;
-    use Notifiable;
-    use TwoFactorAuthenticatable;
+    use HasApiTokens, HasFactory, HasProfilePhoto, Notifiable, TwoFactorAuthenticatable;
 
     protected $fillable = [
-        'name',
+        'pessoa_id',
         'email',
         'password',
         'status',
-        'cliente',
         'colaborador',
         'permitions',
         'google_id',
-        'data_nascimento',
-        'cpf',
-        'rg',
-        'telefone_1',
-        'telefone_2',
     ];
 
     protected $hidden = [
@@ -47,27 +36,20 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    protected $appends = [
-        'profile_photo_url',
-    ];
-
-    public function colaborador(): belongsTo
+    // Relação com a Pessoa
+    public function pessoa(): BelongsTo
     {
-        return $this->belongsTo(Colaborador::class);
+        return $this->belongsTo(Pessoa::class);
     }
 
-    public function cliente(): hasOne
+    public function cliente(): HasOne
     {
         return $this->hasOne(Cliente::class);
     }
 
-    public function veiculo(): belongsTo
+    // Atalho conveniente para pegar o nome da pessoa sem quebrar chamadas antigas ($user->name)
+    public function getNameAttribute()
     {
-        return $this->belongsTo(Veiculo::class);
-    }
-
-    public function endereco(): belongsTo
-    {
-        return $this->belongsTo(Endereco::class);
+        return $this->pessoa?->nome;
     }
 }

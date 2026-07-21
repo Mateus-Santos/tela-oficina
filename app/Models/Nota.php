@@ -11,10 +11,9 @@ class Nota extends Model
 
     protected $table = 'notas';
 
-    // Mapeia exatamente as colunas da sua Migration
     protected $fillable = [
         'cliente_id',
-        'veiculo_id',
+        'veiculo_cliente_id',
         'tipo',
         'status',
         'subtotal',
@@ -34,9 +33,9 @@ class Nota extends Model
         return $this->hasMany(NotasItem::class, 'nota_id');
     }
 
-    public function veiculo()
+    public function veiculoscliente()
     {
-        return $this->belongsTo(Veiculo::class, 'veiculo_id');
+        return $this->belongsTo(veiculoscliente::class, 'veiculo_cliente_id');
     }
 
     public function cliente()
