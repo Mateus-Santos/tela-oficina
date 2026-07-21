@@ -13,9 +13,8 @@ class NotasItemController extends Controller
 {
     public function index()
     {
-        $os_itens = NotasItem::with(['itemable', 'nota'])->get();
-
-        return view('notas_item.listar_notas_itens', compact('os_itens'));
+        $notas = Nota::with(['cliente.user', 'itens', 'veiculo'])->get();
+        return view('notas_item.listar_notas_itens', compact('notas'));
     }
 
     public function create()
