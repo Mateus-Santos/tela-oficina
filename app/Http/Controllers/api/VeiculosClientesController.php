@@ -30,6 +30,7 @@ class VeiculosClientesController extends Controller
             'veiculo_id' => $veiculo->id,
             'placa' => $veiculo->placa,
             'cliente_nome' => $veiculo->cliente->user->name,
+            'cliente_id' => $veiculo->cliente->id,
             'ordens_servico' => $veiculo->ordensServico->map(function ($os) {
                 return [
                     'id' => $os->id,

@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const placaInput = document.getElementById('placa_input');
     const clienteNome = document.getElementById('cliente_nome');
     const idVeiculo = document.getElementById('veiculo_cliente_id');
+    const clienteIdInput = document.getElementById('cliente_id');
     // CORREÇÃO: Removido o osSelect que não existe mais no HTML
 
     // --- ELEMENTOS DO CONSTRUTOR DE ITENS ---
@@ -29,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!placaInput) return;
 
-    // 1. BUSCA POR PLACA (CORRIGIDA SEM REFERÊNCIAS AO SELECT REMOVIDO)
+    // 1. BUSCA POR PLACA
     placaInput.addEventListener('blur', async () => {
         let placa = placaInput.value.toUpperCase().replace(/[-\s]/g, '');
         if (!placa) return;
@@ -41,6 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!response.ok) {
                 clienteNome.value = '';
+                if (clienteIdInput) clienteIdInput.value = '';
                 idVeiculo.value = '';
                 resetBuilder();
                 return;
@@ -49,11 +51,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             clienteNome.value = data.cliente_nome;
+            
+            // --- ADICIONE ESTA LINHA ---
+            if (clienteIdInput) clienteIdInput.value = data.cliente_id;
+            
             idVeiculo.value = data.veiculo_id;
             ordensServicoDoVeiculo = data.ordens_servico || [];
 
-            // Se o usuário já tiver selecionado "Ordem de Serviço" antes de digitar a placa,
-            // atualiza o seletor de itens para exibir as OSs encontradas.
             if (typeSelect.value === 'App\\Models\\OrdemServico') {
                 atualizarOpcoesItemRelacionado();
             }
