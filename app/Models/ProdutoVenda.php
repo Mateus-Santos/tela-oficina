@@ -6,9 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-
-
-class produtoVenda extends Model
+class ProdutoVenda extends Model
 {
 
     use HasFactory;

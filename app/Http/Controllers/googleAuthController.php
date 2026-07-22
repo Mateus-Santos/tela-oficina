@@ -8,15 +8,17 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use App\Models\User;
 
-
-class googleAuthController extends Controller
+class GoogleAuthController extends Controller
 {
-    public function redirect(){
-        return Socialite::driver("google")->redirect();
+    public function redirect()
+    {
+        return Socialite::driver('google')->redirect();
     }
 
-    public function callback(){
-        $googleUser = Socialite::driver("google")->user();
+    public function callback()
+    {
+        $googleUser = Socialite::driver('google')->user();
+
         $user = User::updateOrCreate(
             ['google_id' => $googleUser->id],
             [
@@ -29,6 +31,6 @@ class googleAuthController extends Controller
 
         Auth::login($user);
 
-        return redirect(config("app.frontend_url") . "/");
+        return redirect(config('app.frontend_url') . '/');
     }
 }

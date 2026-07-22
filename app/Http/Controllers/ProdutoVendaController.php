@@ -11,8 +11,7 @@ use App\Models\Colaborador;
 use App\Models\Venda;
 use App\Events\Vendaproduto;
 
-
-class produtoVendaController extends Controller
+class ProdutoVendaController extends Controller
 {
     public function __construct()
     {
