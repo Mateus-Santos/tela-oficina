@@ -21,7 +21,9 @@
             @foreach($ordemservicos as $ordemservico)
             <tr>
             <td>{{ $ordemservico->id }}</td>
-            <td>{{ $ordemservico->status }}</td>
+            <td>
+                @livewire('status-ordem-servico-selector', ['ordemServico' => $ordemservico], key($ordemservico->id))
+            </td>
             <td>{{ $ordemservico->data_abertura }}</td>
             <td>{{ $ordemservico->veiculoscliente->cliente->pessoa->nome }}</td>
             <td>{{ $ordemservico->veiculoscliente->placa }}</td>

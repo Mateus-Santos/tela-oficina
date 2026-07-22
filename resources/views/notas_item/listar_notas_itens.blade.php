@@ -5,8 +5,8 @@
 <div class="container cadastro">
     <h1>LISTAR NOTAS</h1>
 
-    <div class="filtros-container mb-4">
-        <form method="GET" action="{{ route('notas.index') }}" class="d-flex gap-2 align-items-center">
+    <div class="filtros-container">
+        <form method="GET" action="{{ route('notas.index') }}" class="d-flex gap-2 align-items-center filtros-container__form">
             <input 
                 type="text" 
                 name="cliente" 

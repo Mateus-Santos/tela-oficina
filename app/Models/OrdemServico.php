@@ -10,6 +10,17 @@ class OrdemServico extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'setor_servico_id',
+        'veiculo_cliente_id',
+        'status',
+        'descricao',
+        'valor_total',
+        'data_abertura',
+        'data_fechamento',
+        ''
+    ];
+
     public function veiculosCliente()
     {
         return $this->belongsTo(VeiculosCliente::class, 'veiculo_cliente_id');
