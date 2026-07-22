@@ -28,7 +28,7 @@ class NotasItemController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'veiculo_cliente_id'        => 'nullable|integer', // Opcional para balcão
+            'veiculo_cliente_id'        => 'nullable|integer',
             'itens'                     => 'required|array|min:1',
             'itens.*.itemable_type'     => ['required', 'string', \Illuminate\Validation\Rule::in(['App\Models\Produto', 'App\Models\OrdemServico'])],
             'itens.*.itemable_id'       => 'required|integer', 
@@ -45,7 +45,7 @@ class NotasItemController extends Controller
             $nota = new Nota();
 
             $nota->cliente_id = $request->input('cliente_id') ?: null;
-            $nota->veiculo_id = $request->input('veiculo_cliente_id') ?: null;
+            $nota->veiculo_cliente_id = $request->input('veiculo_cliente_id') ?: null;
             $nota->tipo       = 'Venda';
             $nota->status     = 'Aberto';
 
