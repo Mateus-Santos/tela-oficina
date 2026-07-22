@@ -21,7 +21,7 @@
             <td>{{ $nota->id }}</td>
             <td>{{ $nota->status }}</td>
             <td>{{ $nota->cliente?->pessoa?->nome ?? 'Cliente Geral / Balcão' }}</td>
-            <td>{{ $nota }}</td>
+            <td>{{ $nota->veiculoscliente->placa }}</td>
             <td><a href="/notasitens/{{$nota->id}}" class="btn btn-success"><i class="bi bi-list-task"></i></a></td>
             <td>
                 <form action="/notasitens/{{$nota->id}}" method="post">
