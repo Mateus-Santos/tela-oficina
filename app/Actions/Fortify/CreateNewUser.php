@@ -3,12 +3,12 @@
 namespace App\Actions\Fortify;
 
 use App\Models\User;
-use App\Models\Cliente;
 use App\Models\Pessoa;
+use App\Models\Cliente;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
-use Laravel\Jetstream\Jetstream;
 
 class CreateNewUser implements CreatesNewUsers
 {
@@ -16,59 +16,47 @@ class CreateNewUser implements CreatesNewUsers
 
     public function create(array $input): User
     {
-        //Tratando os dados importantes.
-        $input['cpf'] = str_replace(['.', '-'], "", $input['cpf']);
-        $input['rg'] = str_replace(['.', '-', ' ', '(', ')'], "", $input['rg']);
-        $input['telefone_1'] = str_replace(['-', ' ', '(', ')'], "", $input['telefone_1']);
-        $input['telefone_2'] = str_replace(['-', ' ', '(', ')'], "", $input['telefone_2']);
+        // Tratamento dos campos
+        $input['cpf'] = preg_replace('/\D/', '', $input['cpf'] ?? '');
+        $input['rg'] = preg_replace('/\D/', '', $input['rg'] ?? '');
+        $input['telefone_1'] = preg_replace('/\D/', '', $input['telefone_1'] ?? '');
+        $input['telefone_2'] = preg_replace('/\D/', '', $input['telefone_2'] ?? '');
 
-        //Realizando validações de dados
-        $validator = Validator::make($input, [
-            'cpf' => 'string|unique:pessoa,cpf|min:11',
+        Validator::make($input, [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8',
+            'password' => $this->passwordRules(),
+            'cpf' => 'nullable|string|size:11|unique:pessoas,cpf',
+            'rg' => 'nullable|string',
             'data_nascimento' => 'required|date',
-            'rg' => 'string|min:9',
             'telefone_1' => 'required|string',
-            'telefone_2' => 'string',
-            'permitions' => 'int',
-        ], [
-            'name.required' => 'O campo nome é obrigatório.',
-            'email.required' => 'O campo email é obrigatório.',
-            'email.email' => 'Por favor, insira um endereço de email válido.',
-            'email.unique' => 'Este endereço de email já está registrado.',
-            'cpf.unique' => 'Este CPF já está registrado.',
-            'password.required' => 'O campo senha é obrigatório.',
-            'password.min' => 'A senha deve ter pelo menos 8 caracteres.',
-            'password.confirmed' => 'A confirmação da senha não corresponde.',
-        ]);
+            'telefone_2' => 'nullable|string',
+        ])->validate();
 
-        // Verificar se a validação passou
-        if ($validator->fails()) {
-            throw new \Illuminate\Validation\ValidationException($validator);
-        }
+        // Usamos Transaction para garantir integridade (se falhar em um, cancela tudo)
+        return DB::transaction(function () use ($input) {
+            $pessoa = Pessoa::create([
+                'nome' => $input['name'],
+                'cpf' => $input['cpf'] ?: null,
+                'rg' => $input['rg'] ?: null,
+                'data_nascimento' => $input['data_nascimento'],
+                'telefone_1' => $input['telefone_1'],
+                'telefone_2' => $input['telefone_2'],
+            ]);
 
-        //Realizando cadastro
-        $validated = $validator->validated();
+            $user = User::create([
+                'pessoa_id' => $pessoa->id,
+                'email' => $input['email'],
+                'password' => Hash::make($input['password']),
+                'permitions' => 2,
+            ]);
 
-        $user = User::create([
-            'permitions' => 2,
-            'data_nascimento' => $validated['data_nascimento'],
-            'email' => $validated['email'],
-            'cpf' => $validated['cpf'],
-            'rg' => $validated['rg'],
-            'telefone_1' => $validated['telefone_1'],
-            'telefone_2' => $validated['telefone_2'],
-            'name' => $validated['name'],
-            'password' => Hash::make($validated['password']),
-        ]);
+            Cliente::create([
+                'pessoa_id' => $pessoa->id,
+                'pontos' => 0,
+            ]);
 
-        Cliente::create([
-            'id_user' => $user->id,
-            'pontos' => 0,
-        ]);
-
-        return $user;
+            return $user;
+        });
     }
 }

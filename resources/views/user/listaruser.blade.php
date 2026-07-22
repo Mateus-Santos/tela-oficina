@@ -24,10 +24,10 @@
             <tr>
                 <th scope="row">{{$user->id}}</th>
                 <td>{{ $user->name }}</td>
-                <td>{{ $user->data_nascimento }}</td>
+                <td>{{ $user->pessoa->data_nascimento }}</td>
                 <td>{{ $user->email }}</td>
-                <td>{{ $user->cpf }}</td>
-                <td>{{ $user->telefone_1 }}</td>
+                <td>{{ $user->pessoa->cpf }}</td>
+                <td>{{ $user->pessoa->telefone_1 }}</td>
                 <td>
                     @livewire('toggle-switch', [
                     'model' => $user,

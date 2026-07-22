@@ -6,34 +6,32 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-
     public function up(): void
     {
         Schema::create('produtos', function (Blueprint $table) {
             $table->id();
-            $table->json('montadora');
             $table->string('nome', 150);
-            $table->integer('ano');
-            $table->json('veiculos');
-            $table->string('motor', 50);
+            $table->string('marca')->index();
             $table->text('descricao');
-            $table->json('marcas');
-            $table->json('departamentos');
-            $table->json('valvula');
-            $table->integer('quantidade');
+            $table->integer('quantidade')->default(0);
+            $table->integer('estoque_minimo')->default(0);
             $table->decimal('preco_uni', 10, 2);
             $table->string('img')->nullable();
             $table->string('codigo_fabricante')->unique();
-            $table->timestamps();
-
+            $table->string('codigo_barras')->nullable()->unique();
+            $table->boolean('status')->default(true);
+            $table->unsignedBigInteger('fornecedor_id')->nullable();
             $table->index('nome');
-            $table->index('ano');
+            $table->index('codigo_barras');
+            $table->foreign('fornecedor_id')
+                ->references('id')
+                ->on('fornecedores')
+                ->onDelete('set null');
+            $table->timestamps();
         });
     }
 
-    
-
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('produtos');
     }

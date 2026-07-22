@@ -8,8 +8,8 @@
   <meta name="csrf-token" content="{{ csrf_token() }}">
 
   <!-- IMPORTANDO BOOTSTRAP -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
   <!-- Favicons -->
   <link href="{{ asset('img/favicon.png') }}" rel="icon">
   <link href="{{ asset('img/apple-touch-icon.png') }}" rel="apple-touch-icon">
@@ -32,9 +32,8 @@
   <!-- ======= Header ======= -->
 
   <nav id="header" class="navbar navbar-expand-lg fixed-top">
-    <!-- Example single danger button -->
     <div class="container-fluid">
-      <h1><a href="/">Oficina SOS Mecânica {{ env('APP_VERSION') }}</a></h1>
+      <h1><a href="/"><img src="/img/New Logo.png" alt=""></a></h1>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -48,7 +47,6 @@
         <li class="nav-item"><a class="nav-link active" href="#">Home</a></li>
         <li class="nav-item"><a class="nav-link" href="#about">Sobre</a></li>
         <li class="nav-item"><a class="nav-link" href="#team">Equipe</a></li>
-
 
         <li class="nav-item"><a class="btn btn-success" href="/login"><i class="bi bi-box-arrow-in-right"></i> Entrar</a></li>
         <li class="nav-item"><a class="btn btn-warning" href="/register"><i class="bi bi-person-plus"></i> Cadastre-se</a></li>
@@ -64,15 +62,15 @@
                 </a>
                 <ul class="dropdown-menu">
                     <li>
-                        <a href="{{ route('veiculos.index') }}" type="button" class="dropdown-item">Listar Veículos</a>
+                        <a href="{{ route('veiculosclientes.index') }}" class="dropdown-item">Listar Veículos</a>
                     </li>
                     <li>
-                        <a href="{{ route('veiculos.create') }}" type="button" class="dropdown-item">Cadastrar Veículo</a>
+                        <a href="{{ route('veiculosclientes.create') }}" class="dropdown-item">Cadastrar Veículo</a>
                     </li>
                 </ul>
             </li>
         <li class="nav-item dropdown">
-          <a class="btn btn-warning" href="{{ route('contratoservico.index') }}" aria-expanded="false">
+          <a class="btn btn-warning" href="{{ route('ordemservicos.index') }}" aria-expanded="false">
             <i class="bi bi-wrench-adjustable-circle"></i>
             Históricos
           </a>
@@ -95,19 +93,39 @@
           </a>
           <ul class="dropdown-menu">
             <li>
-              <a href="{{ route('users.index') }}" type="button" class="dropdown-item">Listar todos os Usuários</a>
+              <a href="{{ route('users.index') }}" class="dropdown-item">Listar todos os Usuários</a>
             </li>
-            <li>
-              <a href="{{ route('colaboradors.create') }}" type="button" class="dropdown-item">Cadastrar Colaboradores</a>
+
+            <li><hr class="dropdown-divider"></li>
+
+            <!-- Subgrupo Colaboradores -->
+            <li class="dropdown-hover-submenu">
+              <a class="dropdown-item dropdown-toggle d-flex align-items-center justify-content-between" href="#">
+                <span><i class="bi bi-person-badge me-1"></i> Colaboradores</span>
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a href="{{ route('colaboradors.create') }}" class="dropdown-item">Cadastrar Colaborador</a>
+                </li>
+                <li>
+                  <a href="{{ route('colaboradors.index') }}" class="dropdown-item">Listar Colaboradores</a>
+                </li>
+              </ul>
             </li>
-            <li>
-              <a href="{{ route('colaboradors.index') }}" type="button" class="dropdown-item">Listar Colaboradores</a>
-            </li>
-            <li>
-              <a href="{{ route('clientes.index') }}" type="button" class="dropdown-item">Listar Clientes</a>
-            </li>
-            <li>
-              <a href="{{ route('colaboradors.index') }}" type="button" class="dropdown-item">Listar Colaboradores</a>
+
+            <!-- Subgrupo Clientes -->
+            <li class="dropdown-hover-submenu">
+              <a class="dropdown-item dropdown-toggle d-flex align-items-center justify-content-between" href="#">
+                <span><i class="bi bi-people me-1"></i> Clientes</span>
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a href="{{ route('clientes.index') }}" class="dropdown-item">Listar Clientes</a>
+                </li>
+                <li>
+                  <a href="{{ route('clientes.create') }}" class="dropdown-item">Cadastrar Clientes</a>
+                </li>
+              </ul>
             </li>
           </ul>
         </li>
@@ -119,10 +137,10 @@
           </a>
           <ul class="dropdown-menu">
             <li>
-              <a href="{{ route('veiculos.index') }}" type="button" class="dropdown-item">Listar Veículos</a>
+              <a href="{{ route('veiculosclientes.index') }}" class="dropdown-item">Listar Veículos</a>
             </li>
             <li>
-              <a href="{{ route('veiculos.create') }}" type="button" class="dropdown-item">Cadastrar Veículo</a>
+              <a href="{{ route('veiculosclientes.create') }}" class="dropdown-item">Cadastrar Veículo</a>
             </li>
           </ul>
         </li>
@@ -130,17 +148,29 @@
         <li class="nav-item dropdown">
           <a class="btn btn-warning dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-wrench-adjustable-circle"></i>
-            Históricos de Serviços
+            Ordem Serviço
           </a>
           <ul class="dropdown-menu">
             <li>
-              <a href="{{ route('contratoservico.create') }}" type="button" class="dropdown-item">Cadastrar Histórico</a>
+              <a href="{{ route('ordemservicos.create') }}" class="dropdown-item">Cadastrar Ordem Serviço</a>
             </li>
             <li>
-              <a href="{{ route('contratoservico.index') }}" type="button" class="dropdown-item">Listar Históricos</a>
+              <a href="{{ route('ordemservicos.index') }}" class="dropdown-item">Listar OS</a>
+            </li>
+          </ul>
+        </li>
+
+        <li class="nav-item dropdown">
+          <a class="btn btn-warning dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-wrench-adjustable-circle"></i>
+            Notas
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a href="{{ route('notasitem.create') }}" class="dropdown-item">Cadastrar Nota</a>
             </li>
             <li>
-              <a href="{{ route('manutencoes.create') }}" type="button" class="dropdown-item">Cadastrar Manutenções</a>
+              <a href="{{ route('notasitem.index') }}" class="dropdown-item">Listar Notas</a>
             </li>
           </ul>
         </li>
@@ -152,16 +182,16 @@
           </a>
           <ul class="dropdown-menu">
             <li>
-              <a href="{{ route('produtos.create') }}" type="button" class="dropdown-item">Cadastrar Produto</a>
+              <a href="{{ route('produtos.create') }}" class="dropdown-item">Cadastrar Produto</a>
             </li>
             <li>
-              <a href="{{ route('produtos.index') }}" type="button" class="dropdown-item">Listar Produtos</a>
+              <a href="{{ route('produtos.index') }}" class="dropdown-item">Listar Produtos</a>
             </li>
           </ul>
         </li>
 
         <li class="nav-item dropdown">
-          <a type="button" class="btn btn-warning dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+          <a class="btn btn-warning dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-cart-fill"></i>
             Vendas
           </a>
@@ -174,7 +204,7 @@
         <li class="nav-item">
           <form action="/logout" method="POST">
             @csrf
-            <a action="/logout" method="POST" class="btn btn-light" href="/logout"
+            <a class="btn btn-light" href="/logout"
               onclick="event.preventDefault();
               this.closest('form').submit();">
               Sair
@@ -191,11 +221,11 @@
   <footer id="footer">
     <div class="container footer-bottom clearfix">
       <div class="copyright">
-        &copy; Copyright 2024 <strong><span>Oficina SOS Mecânica</span></strong>. All Rights Reserved
+        &copy; Copyright 2026 <strong><span>Oficina SOS Mecânica</span></strong>. All Rights Reserved
       </div>
+    </div>
   </footer>
 
-  </div>
   <div id="preloader"></div>
   <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><img src="{{ asset('svg/arrow-up.svg') }}" alt="Logo" /></a>
   <script src="{{ asset('/vendor/aos/aos.js') }}"></script>

@@ -10,7 +10,7 @@ class Endereco extends Model
 {
     use HasFactory;
 
-    protected $table = 'endereco';
+    protected $table = 'enderecos';
 
     protected $foreignKey = 'id_user';
 
@@ -28,5 +28,10 @@ class Endereco extends Model
     public function user(): hasOne
     {
         return $this->hasOne(User::class);
+    }
+
+    public function pessoa()
+    {
+        return $this->belongsTo(Pessoa::class, 'pessoa_id');
     }
 }

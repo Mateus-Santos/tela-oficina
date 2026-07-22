@@ -5,27 +5,29 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\belongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Veiculo extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'placa',
-        'ano',
-        'marca',
-        'cor',
+        'nome',
     ];
 
-    public function user(): hasOne
+    public function montadora(): BelongsTo
     {
-        return $this->hasOne(User::class);
+        return $this->belongsTo(Montadora::class);
     }
 
-    public function Contratoservico(): belongsTo
+    public function VeiculosClientes(): HasMany
     {
-        return $this->belongsTo(ContratoServico::class);
+        return $this->hasMany(VeiculosClientes::class);
+    }
+
+    public function produtos()
+    {
+        return $this->belongsToMany(Produto::class, 'produtos_veiculos');
     }
 
 }

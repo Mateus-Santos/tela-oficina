@@ -10,7 +10,7 @@ class EnderecoController extends Controller
 {
     public function index()
     {
-        $enderecos = Endereco::with(['user:id_user,nome'])->get();
+        $enderecos = Endereco::with(['pessoa'])->get();
         return view('endereco.listarendereco', compact('enderecos'));
     }
 
@@ -30,7 +30,7 @@ class EnderecoController extends Controller
         $endereco->rua = $request->input("address");
         $endereco->numero = $request->input("numero");
         $endereco->ponto_referencia = $request->input("ponto_referencia");
-        $endereco->id_user = $request->input("id_user");
+        $endereco->pessoa_id = $request->input("pessoa_id");
         $endereco->save();
         return redirect()->route('users.index');
     }

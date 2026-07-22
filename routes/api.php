@@ -2,17 +2,19 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\MontadoraController;
+use App\Http\Controllers\Api\VeiculosClientesController;
+use App\Models\Veiculo;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
+Route::get('/montadora/{id}/veiculos', function($id) {
+    return Veiculo::with('montadora')
+        ->where('montadora_id', $id)
+        ->orderBy('nome')
+        ->get();
+});
+
+Route::get('/api/clientes/{id}/veiculos', [VeiculosClientesController::class, 'veiculosPorCliente']);
+Route::get('/veiculo/placa/{placa}', [VeiculosClientesController::class, 'buscarPorPlaca']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
