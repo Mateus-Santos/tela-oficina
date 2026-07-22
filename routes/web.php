@@ -36,7 +36,7 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         Route::resource('ordemservicos', OrdemServicoController::class);
         Route::resource('notasitem', NotasItemController::class);
         Route::resource('users', UserController::class);
-        Route::get('/cliente', [ClienteController::class, 'index'])->name('clientes.index');
+        Route::resource('clientes', ClienteController::class);
         Route::resource('produtovendas', produtoVendaController::class);
         Route::resource('produtos', ProdutoController::class);
         Route::resource('colaboradors', ColaboradorController::class);
