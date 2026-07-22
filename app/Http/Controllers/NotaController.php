@@ -21,4 +21,14 @@ class NotaController extends Controller
 
         return $pdf->stream("nota-{$nota->id}.pdf");
     }
+
+    public function index(Request $request)
+    {
+        $notas = Nota::with(['cliente', 'veiculosCliente'])
+            ->filtro($request->all())
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('notas_item.listar_notas_itens', compact('notas'));
+    }
 }
