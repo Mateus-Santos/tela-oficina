@@ -19,7 +19,9 @@
             @foreach($notas as $nota)
             <tr>
             <td>{{ $nota->id }}</td>
-            <td>{{ $nota->status }}</td>
+            <td>
+                @livewire('status-nota-selector', ['nota' => $nota], key($nota->id))
+            </td>
             <td>{{ $nota->cliente?->pessoa?->nome ?? 'Cliente Geral / Balcão' }}</td>
             <td>{{ $nota->veiculoscliente->placa }}</td>
             <td><a href="/notasitens/{{$nota->id}}" class="btn btn-success"><i class="bi bi-list-task"></i></a></td>
