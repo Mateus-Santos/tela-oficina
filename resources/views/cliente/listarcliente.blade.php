@@ -8,7 +8,7 @@
         <thead>
             <tr>
                 <th scope="col">ID</th>
-                <th scope="col">Usuario</th>
+                <th scope="col">Nome</th>
                 <th scope="col">Pontos</th>
                 <th scope="col">Editar</th>
                 <th scope="col">Excluir</th>
@@ -18,7 +18,7 @@
             @foreach($clientes as $cliente)
             <tr>
                 <td>{{ $cliente->id }}</td>
-                <td>{{ $cliente->pessoa?->user?->email ?? 'Sem e-mail cadastrado' }}</td>
+                <td>{{ $cliente->pessoa?->nome ?? 'Sem e-mail cadastrado' }}</td>
                 <td>{{ $cliente->pontos }}</td>
                 <td><a href="/users/{{ $cliente->pessoa->user->id }}/edit" class="btn btn-info"><i class="bi bi-pencil-square"></i>Editar</a></td>
                 <td>

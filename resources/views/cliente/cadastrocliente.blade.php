@@ -19,10 +19,9 @@
     <form action="{{ route('clientes.store') }}" method="POST">
         @csrf
 
-        {{-- Selecionar pessoa existente (opcional) --}}
         @if(isset($pessoasSemCliente) && $pessoasSemCliente->count() > 0)
             <div class="card mb-4 border-info">
-                <div class="card-header bg-info text-white fw-bold">
+                <div class="card-header bg-info text-black fw-bold">
                     Opção A: Transformar uma Pessoa já cadastrada em Cliente
                 </div>
                 <div class="card-body">
@@ -62,12 +61,12 @@
 
                     <div class="col-md-3">
                         <label for="cpf" class="form-label">CPF</label>
-                        <input type="text" class="form-control" id="cpf" name="cpf" value="{{ old('cpf') }}" placeholder="000.000.000-00">
+                        <input type="text" class="form-control" id="cpf" name="cpf" value="{{ old('cpf') }}" placeholder="000.000.000-00" maxlength="14" autocomplete="off">
                     </div>
 
                     <div class="col-md-3">
                         <label for="rg" class="form-label">RG</label>
-                        <input type="text" class="form-control" id="rg" name="rg" value="{{ old('rg') }}" placeholder="00.000.000-0">
+                        <input type="text" class="form-control" id="rg" name="rg" value="{{ old('rg') }}" placeholder="00.000.000-0" maxlength="12" autocomplete="off">
                     </div>
 
                     <div class="col-md-3">
@@ -77,12 +76,12 @@
 
                     <div class="col-md-3">
                         <label for="telefone_1" class="form-label">Telefone Principal</label>
-                        <input type="text" class="form-control" id="telefone_1" name="telefone_1" value="{{ old('telefone_1') }}" placeholder="(00) 00000-0000">
+                        <input type="text" class="form-control" id="telefone_1" name="telefone_1" value="{{ old('telefone_1') }}" placeholder="(00) 00000-0000" maxlength="15" autocomplete="off">
                     </div>
 
                     <div class="col-md-4">
                         <label for="telefone_2" class="form-label">Telefone Secundário</label>
-                        <input type="text" class="form-control" id="telefone_2" name="telefone_2" value="{{ old('telefone_2') }}" placeholder="(00) 00000-0000">
+                        <input type="text" class="form-control" id="telefone_2" name="telefone_2" value="{{ old('telefone_2') }}" placeholder="(00) 00000-0000" maxlength="15" autocomplete="off">
                     </div>
 
                     {{-- Switch para geração de usuário e senha --}}
@@ -138,4 +137,8 @@
     </form>
 </section>
 
+@endsection
+
+@section('scripts')
+    @vite(['resources/js/cadUser.js'])
 @endsection
