@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class NotasItem extends Model
 {
@@ -34,5 +35,14 @@ class NotasItem extends Model
     public function nota()
     {
         return $this->belongsTo(Nota::class, 'nota_id');
+    }
+
+    public function getTipoFormatadoAttribute(): string
+    {
+        return match ($this->itemable_type) {
+            \App\Models\OrdemServico::class, 'App\Models\OrdemServico' => 'Serviço',
+            \App\Models\Produto::class, 'App\Models\Produto'           => 'Produto',
+            default                                                     => 'Outro',
+        };
     }
 }

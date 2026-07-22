@@ -33,9 +33,9 @@ class Nota extends Model
         return $this->hasMany(NotasItem::class, 'nota_id');
     }
 
-    public function veiculoscliente()
+    public function veiculosCliente()
     {
-        return $this->belongsTo(veiculoscliente::class, 'veiculo_cliente_id');
+        return $this->belongsTo(VeiculosCliente::class, 'veiculo_cliente_id');
     }
 
     public function cliente()
