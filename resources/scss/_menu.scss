@@ -1,6 +1,26 @@
 @import '_colors.scss';
 
 $espacamento: 1rem;
+.dropdown-hover-submenu {
+  position: relative;
+}
+
+.dropdown-hover-submenu .dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -1px;
+  opacity: 0;
+  visibility: hidden;
+  display: block;
+  transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+  transition-delay: 0.2s;
+}
+
+.dropdown-hover-submenu:hover > .dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
 
 #header {
 	img{
