@@ -36,10 +36,9 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    // Relação com a Pessoa
-    public function pessoa(): BelongsTo
+    public function pessoa()
     {
-        return $this->belongsTo(Pessoa::class);
+        return $this->belongsTo(Pessoa::class, 'pessoa_id');
     }
 
     public function cliente(): HasOne
@@ -47,7 +46,6 @@ class User extends Authenticatable
         return $this->hasOne(Cliente::class);
     }
 
-    // Atalho conveniente para pegar o nome da pessoa sem quebrar chamadas antigas ($user->name)
     public function getNameAttribute()
     {
         return $this->pessoa?->nome;

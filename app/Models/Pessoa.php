@@ -21,14 +21,14 @@ class Pessoa extends Model
         'endereco_id'
     ];
 
-    public function user(): HasOne
+    public function enderecos()
     {
-        return $this->hasOne(User::class);
+        return $this->hasMany(Endereco::class, 'pessoa_id');
     }
 
-    public function endereco(): BelongsTo
+    public function user()
     {
-        return $this->belongsTo(Endereco::class);
+        return $this->hasOne(User::class, 'pessoa_id');
     }
 
     public function cliente(): HasOne
