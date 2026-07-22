@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Pessoa;
+use App\Models\Endereco;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -47,8 +48,9 @@ class UserController extends Controller
 
     public function show(string $id)
     {
-        $user = User::with(['pessoa.endereco'])->findOrFail($id);
-        return view('user.showuser', compact('user'));
+        $user = User::with(['pessoa.enderecos'])->findOrFail($id);
+        $enderecos = $user->pessoa?->enderecos ?? collect();
+        return view('user.showuser', compact('user', 'enderecos'));
     }
 
     public function update(Request $request, string $id)
