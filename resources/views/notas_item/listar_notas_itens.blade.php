@@ -11,6 +11,7 @@
                 <th scope="col">STATUS</th>
                 <th scope="col">Cliente</th>
                 <th scope="col">Placa Veículo</th>
+                <th scope="col">Imprimir</th>
                 <th scope="col">Detalhes</th>
                 <th scope="col">Excluir</th>
             </tr>
@@ -24,6 +25,11 @@
             </td>
             <td>{{ $nota->cliente?->pessoa?->nome ?? 'Cliente Geral / Balcão' }}</td>
             <td>{{ $nota->veiculoscliente->placa }}</td>
+            <td>
+                <a href="{{ route('notas.pdf', $nota->id) }}" target="_blank" class="btn btn-danger">
+                <i class="bi bi-printer"></i> PDF
+            </a>
+            </td>
             <td><a href="/notasitens/{{$nota->id}}" class="btn btn-success"><i class="bi bi-list-task"></i></a></td>
             <td>
                 <form action="/notasitens/{{$nota->id}}" method="post">
