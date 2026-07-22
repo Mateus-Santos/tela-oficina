@@ -12,6 +12,7 @@ use App\Http\Controllers\VeiculosClientesController;
 use App\Http\Controllers\ManutencaoController;
 use App\Http\Controllers\OrdemServicoController;
 use App\Http\Controllers\NotasItemController;
+use App\Http\Controllers\NotaController;
 //use App\Http\Controllers\ChatController;
 
 Route::get('/', function () {
@@ -41,6 +42,7 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         Route::resource('colaboradors', ColaboradorController::class);
         Route::resource('enderecos', EnderecoController::class);
         Route::get('/endereco/create/{id}', [EnderecoController::class, 'create']);
+        Route::get('/notas/{id}/pdf', [NotaController::class, 'gerarpdf'])->name('notas.pdf');
     });
 });
 
