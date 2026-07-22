@@ -20,16 +20,22 @@
         .total-box { margin-top: 15px; float: right; width: 260px; }
         .total-box td { padding: 6px 10px; }
         .bg-highlight { background-color: #f9f9f9; }
+
+        /* Estilo para a Logo */
+        .logo-img { max-height: 65px; width: auto; }
     </style>
 </head>
 <body>
 
     <table class="header">
         <tr>
-            <td>
+            <td style="vertical-align: middle;">
                 <span class="title">COMPROVANTE DE NOTA #{{ $nota->id }}</span><br>
                 Data: {{ $nota->created_at->format('d/m/Y H:i') }}<br>
                 Status: <strong>{{ strtoupper($nota->status) }}</strong>
+            </td>
+            <td class="text-right" style="vertical-align: middle;">
+                <img src="{{ public_path('img/New Logo.png') }}" class="logo-img" alt="Logo Oficina">
             </td>
         </tr>
     </table>
