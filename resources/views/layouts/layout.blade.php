@@ -122,6 +122,9 @@
                 <li>
                   <a href="{{ route('clientes.index') }}" class="dropdown-item">Listar Clientes</a>
                 </li>
+                <li>
+                  <a href="{{ route('clientes.create') }}" class="dropdown-item">Cadastrar Clientes</a>
+                </li>
               </ul>
             </li>
           </ul>
