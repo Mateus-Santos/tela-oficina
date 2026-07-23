@@ -51,7 +51,6 @@ class EnderecoController extends Controller
     {
         $endereco = Endereco::findOrFail($id);
 
-        // Atualiza o registro com os novos dados vindos da view
         $endereco->update([
             'cep'              => $request->input('cep'),
             'cidade'           => $request->input('city'),

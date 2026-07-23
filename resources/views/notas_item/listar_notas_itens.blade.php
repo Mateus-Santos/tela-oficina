@@ -6,16 +6,16 @@
     <h1>LISTAR NOTAS</h1>
 
     <div class="filtros-container">
-        <form method="GET" action="{{ route('notas.index') }}" class="d-flex gap-2 align-items-center filtros-container__form">
+        <form method="GET" action="{{ route('notas.index') }}" class="filtros-container__form">
             <input 
                 type="text" 
                 name="cliente" 
-                class="form-control" 
+                class="filtros-container__input" 
                 placeholder="Nome do cliente..." 
                 value="{{ request('cliente') }}"
             >
 
-            <select name="status" class="form-select">
+            <select name="status" class="filtros-container__select">
                 <option value="">Status (Ativos por padrão)</option>
                 <option value="Aberto" {{ request('status') == 'Aberto' ? 'selected' : '' }}>Aberto</option>
                 <option value="Andamento" {{ request('status') == 'Andamento' ? 'selected' : '' }}>Em Andamento</option>
@@ -69,7 +69,7 @@
                     <form action="/notasitens/{{$nota->id}}" method="post" onsubmit="return confirm('Deseja realmente excluir esta nota?');">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn btn-danger delete-btn">
+                        <button type="submit" class="btn btn-danger">
                             <i class="bi bi-trash3"></i>
                         </button>
                     </form>
