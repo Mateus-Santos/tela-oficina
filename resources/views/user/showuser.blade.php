@@ -58,7 +58,7 @@
     @else
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h3>ENDEREÇOS CADASTRADOS</h3>
-            <a class="btn btn-success" href="/endereco/create/{{ $user->id }}">
+            <a class="btn btn-success" href="/endereco/create/{{ $user->pessoa->id }}">
                 <i class="bi bi-plus-circle"></i> Cadastrar Novo Endereço
             </a>
         </div>
@@ -91,7 +91,7 @@
                         <td>{{ $endereco->numero }}</td>
                         <td>{{ $endereco->ponto_referencia ?? '-' }}</td>
                         <td>
-                            <a href="/enderecos/edit/{{ $endereco->id ?? $endereco->id_endereco }}" class="btn btn-info btn-sm">
+                            <a href="/enderecos/{{ $endereco->id ?? $endereco->id_endereco }}/edit" class="btn btn-info btn-sm">
                                 <i class="bi bi-pencil-square"></i> Editar
                             </a>
                         </td>
