@@ -40,7 +40,7 @@
         <div class="alert alert-info d-flex justify-content-between align-items-center">
             <span>Esta nota ainda não possui itens cadastrados.</span>
             @if(auth()->user() && auth()->user()->permitions != 2)
-                <a class="btn btn-success" href="/notasitens/create?nota_id={{ $nota->id }}">
+                <a class="btn btn-success" href="/notasitem/{{ $nota->id }}/edit">
                     <i class="bi bi-plus-circle"></i> Adicionar Item
                 </a>
             @endif
@@ -49,7 +49,7 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2>ITENS DA NOTA</h2>
             @if(auth()->user() && auth()->user()->permitions != 2)
-                <a class="btn btn-success" href="/notasitens/create?nota_id={{ $nota->id }}">
+                <a class="btn btn-success" href="/notasitem/{{ $nota->id }}/edit">
                     <i class="bi bi-plus-circle"></i> Adicionar Item
                 </a>
             @endif
@@ -63,6 +63,7 @@
                     <th scope="col">Descrição / Nome</th>
                     <th scope="col">Qtd.</th>
                     <th scope="col">Preço Unit.</th>
+                    <th scope="col">Desconto</th>
                     <th scope="col">Subtotal</th>
                     @if(auth()->user() && auth()->user()->permitions != 2)
                         <th scope="col">Ações</th>
@@ -90,7 +91,8 @@
 
                     <td>{{ $item->quantidade }}</td>
                     <td>R$ {{ number_format($item->valor_unitario, 2, ',', '.') }}</td>
-                    <td>R$ {{ number_format($item->quantidade * $item->valor_unitario, 2, ',', '.') }}</td>
+                    <td>R$ {{ number_format($item->desconto, 2, ',', '.') }}</td>
+                    <td>R$ {{ number_format(($item->quantidade * $item->valor_unitario) - $item->desconto, 2, ',', '.') }}</td>
 
                     @if(auth()->user() && auth()->user()->permitions != 2)
                     <td>
