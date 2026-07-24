@@ -7,11 +7,11 @@
 
     <div class="filtros-container">
         <form method="GET" action="{{ route('notas.index') }}" class="filtros-container__form">
-            <input 
-                type="text" 
-                name="cliente" 
-                class="filtros-container__input" 
-                placeholder="Nome do cliente..." 
+            <input
+                type="text"
+                name="cliente"
+                class="filtros-container__input"
+                placeholder="Nome do cliente..."
                 value="{{ request('cliente') }}"
             >
 
@@ -26,7 +26,7 @@
             <button class="btn btn-warning" type="submit">
                 <i class="bi bi-funnel"></i> Filtrar
             </button>
-            
+
             <a href="{{ route('notasitem.index') }}" class="btn btn-secondary">
                 <i class="bi bi-filter"></i> Limpar Filtros
             </a>
@@ -42,7 +42,7 @@
                 <th scope="col">Cliente</th>
                 <th scope="col">Placa Veículo</th>
                 <th scope="col">Imprimir</th>
-                <th scope="col">Detalhes</th>
+                <th scope="col">Ver</th>
                 <th scope="col">Excluir</th>
             </tr>
         </thead>
@@ -61,7 +61,7 @@
                     </a>
                 </td>
                 <td>
-                    <a href="/notasitens/{{$nota->id}}" class="btn btn-success">
+                    <a href="{{ route('notas.show', $nota->id) }}" class="btn btn-success">
                         <i class="bi bi-list-task"></i>
                     </a>
                 </td>
