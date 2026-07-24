@@ -64,4 +64,9 @@ class Nota extends Model
 
         return $query;
     }
+
+    public function notasItem()
+    {
+        return $this->hasMany(NotasItem::class, 'nota_id');
+    }
 }

@@ -7,7 +7,6 @@ use App\Models\NotasItem;
 use App\Models\Nota;
 use App\Models\OrdemServico;
 use App\Models\Produto;
-use Illuminate\Validation\Rule;
 
 class NotasItemController extends Controller
 {
@@ -33,7 +32,7 @@ class NotasItemController extends Controller
             'veiculo_cliente_id'        => 'nullable|integer',
             'itens'                     => 'required|array|min:1',
             'itens.*.itemable_type'     => ['required', 'string', \Illuminate\Validation\Rule::in(['App\Models\Produto', 'App\Models\OrdemServico'])],
-            'itens.*.itemable_id'       => 'required|integer', 
+            'itens.*.itemable_id'       => 'required|integer',
             'itens.*.descricao'         => 'required|string|max:250',
             'itens.*.quantidade'        => 'required|integer|min:1',
             'itens.*.valor_unitario'    => 'required|numeric|min:0',
@@ -81,18 +80,18 @@ class NotasItemController extends Controller
                 }
 
                 $item = new NotasItem();
-                
-                $item->nota_id = $nota->id; 
-                
+
+                $item->nota_id = $nota->id;
+
                 $item->itemable_type = $dadosItem['itemable_type'];
                 $item->itemable_id   = $dadosItem['itemable_id'];
-                
+
                 $item->descricao = $dadosItem['descricao'];
                 $item->quantidade = (int) $dadosItem['quantidade'];
-                
+
                 $valorUnitario = (float) $dadosItem['valor_unitario'];
                 $desconto = (float) ($dadosItem['desconto'] ?? 0);
-                
+
                 $item->valor_unitario = $valorUnitario;
                 $item->desconto = $desconto;
                 $item->valor_total = ($valorUnitario * $item->quantidade) - $desconto;
@@ -121,7 +120,7 @@ class NotasItemController extends Controller
         $item = NotasItem::findOrFail($id);
         $ordemservicos = OrdemServico::all();
         $produtos = Produto::all();
-        
+
         // CORREÇÃO: Removido o antigo $servicos que não existe mais e mantido a coerência com as OSs
         return view('notas_item.editar_notas_item', compact('item', 'ordemservicos', 'produtos'));
     }
@@ -143,9 +142,9 @@ class NotasItemController extends Controller
         $item->valor_unitario = $request->input('valor_unitario');
         $item->desconto = $request->input('desconto', 0);
         $item->valor_total = ($item->valor_unitario * $item->quantidade) - $item->desconto;
-        
+
         $item->garantia_dias = $request->input('garantia_dias');
-        
+
         if ($item->garantia_dias) {
             $item->garantia_inicio = now()->format('Y-m-d');
             $item->garantia_fim = now()->addDays((int)$item->garantia_dias)->format('Y-m-d');
@@ -161,7 +160,10 @@ class NotasItemController extends Controller
 
     public function destroy(string $id)
     {
-        NotasItem::findOrFail($id)->delete();
-        return redirect()->route('notasitem.index')->with('success', 'Item removido!');
+        $item = NotasItem::findOrFail($id);
+        $notaId = $item->nota_id;
+        $item->delete();
+        return redirect()->route('notas.show', $notaId)
+            ->with('success', 'Item removido da nota com sucesso!');
     }
 }
