@@ -31,4 +31,10 @@ class NotaController extends Controller
 
         return view('notas_item.listar_notas_itens', compact('notas'));
     }
+
+    public function destroy(string $id)
+    {
+        Nota::findOrFail($id)->delete();
+        return redirect()->route('notasitem.index')->with('success', 'Nota removida!');
+    }
 }

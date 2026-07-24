@@ -13,7 +13,9 @@ class NotasItemController extends Controller
 {
     public function index()
     {
-        $notas = Nota::with(['cliente.pessoa', 'itens', 'veiculoscliente'])->get();
+        $notas = Nota::with(['cliente.pessoa', 'itens', 'veiculoscliente'])
+        ->where('status', '!=', 'Cancelado')
+        ->get();
         return view('notas_item.listar_notas_itens', compact('notas'));
     }
 
@@ -144,7 +146,6 @@ class NotasItemController extends Controller
         
         $item->garantia_dias = $request->input('garantia_dias');
         
-        // Recalcula as datas de garantia caso os dias tenham mudado no update
         if ($item->garantia_dias) {
             $item->garantia_inicio = now()->format('Y-m-d');
             $item->garantia_fim = now()->addDays((int)$item->garantia_dias)->format('Y-m-d');

@@ -66,7 +66,7 @@
                     </a>
                 </td>
                 <td>
-                    <form action="/notasitens/{{$nota->id}}" method="post" onsubmit="return confirm('Deseja realmente excluir esta nota?');">
+                    <form action="/notas/{{$nota->id}}" method="post" onsubmit="return confirm('Deseja realmente excluir esta nota?');">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-danger">
