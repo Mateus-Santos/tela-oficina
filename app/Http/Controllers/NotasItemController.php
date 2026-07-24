@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\NotasItem;
+use App\Http\Controllers\Controller;
 use App\Models\Nota;
+use App\Models\NotasItem;
 use App\Models\OrdemServico;
 use App\Models\Produto;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class NotasItemController extends Controller
 {
@@ -117,45 +120,111 @@ class NotasItemController extends Controller
 
     public function edit(string $id)
     {
-        $item = NotasItem::findOrFail($id);
+        // Carrega a nota com cliente, veículo e os itens com seus polimórficos
+        $nota = Nota::with([
+            'cliente.pessoa',
+            'veiculoscliente',
+            'notasitem.itemable'
+        ])->findOrFail($id);
+
         $ordemservicos = OrdemServico::all();
         $produtos = Produto::all();
 
-        // CORREÇÃO: Removido o antigo $servicos que não existe mais e mantido a coerência com as OSs
-        return view('notas_item.editar_notas_item', compact('item', 'ordemservicos', 'produtos'));
+        return view('notas_item.editar_notas_itens', compact('nota', 'ordemservicos', 'produtos'));
     }
 
     public function update(Request $request, string $id)
     {
         $request->validate([
-            'ordem_servico_id' => 'required|exists:ordem_servicos,id',
-            'descricao'        => 'required|string|max:250',
-            'quantidade'       => 'required|integer|min:1',
-            'valor_unitario'   => 'required|numeric|min:0',
-            'desconto'         => 'nullable|numeric|min:0',
+            'cliente_id'          => 'nullable|integer',
+            'veiculo_cliente_id'  => 'nullable|integer',
+            'itens'               => 'required|array|min:1',
+            'itens.*.id'          => 'nullable|integer', // ID do item existente
+            'itens.*.itemable_type' => ['required', 'string', Rule::in(['App\Models\Produto', 'App\Models\OrdemServico'])],
+            'itens.*.itemable_id'   => 'required|integer',
+            'itens.*.descricao'     => 'required|string|max:250',
+            'itens.*.quantidade'    => 'required|integer|min:1',
+            'itens.*.valor_unitario'=> 'required|numeric|min:0',
+            'itens.*.desconto'      => 'nullable|numeric|min:0',
+            'itens.*.garantia_dias' => 'nullable|integer|min:0',
         ]);
 
-        $item = NotasItem::findOrFail($id);
-        $item->ordem_servico_id = $request->input('ordem_servico_id');
-        $item->descricao = $request->input('descricao');
-        $item->quantidade = $request->input('quantidade');
-        $item->valor_unitario = $request->input('valor_unitario');
-        $item->desconto = $request->input('desconto', 0);
-        $item->valor_total = ($item->valor_unitario * $item->quantidade) - $item->desconto;
+        $nota = Nota::findOrFail($id);
+        $itensEnviados = $request->input('itens', []);
 
-        $item->garantia_dias = $request->input('garantia_dias');
+        DB::beginTransaction();
+        try {
+            // 1. Atualiza dados principais da Nota
+            $nota->cliente_id = $request->input('cliente_id') ?: null;
+            $nota->veiculo_cliente_id = $request->input('veiculo_cliente_id') ?: null;
 
-        if ($item->garantia_dias) {
-            $item->garantia_inicio = now()->format('Y-m-d');
-            $item->garantia_fim = now()->addDays((int)$item->garantia_dias)->format('Y-m-d');
-        } else {
-            $item->garantia_inicio = null;
-            $item->garantia_fim = null;
+            $subtotalGeral = 0;
+            $descontoGeral = 0;
+
+            foreach ($itensEnviados as $itemData) {
+                $qtd = (int) $itemData['quantidade'];
+                $vUnit = (float) $itemData['valor_unitario'];
+                $desc = (float) ($itemData['desconto'] ?? 0);
+
+                $subtotalGeral += ($qtd * $vUnit);
+                $descontoGeral += $desc;
+            }
+
+            $nota->subtotal = $subtotalGeral;
+            $nota->desconto = $descontoGeral;
+            $nota->total = $subtotalGeral - $descontoGeral;
+            $nota->save();
+
+            // 2. Coleta IDs enviados para manter (sincronização)
+            $idsEnviados = array_filter(array_column($itensEnviados, 'id'));
+
+            // Exclui do banco os itens da nota que NÃO foram enviados na requisição
+            $nota->notasitem()->whereNotIn('id', $idsEnviados)->delete();
+
+            // 3. Atualiza ou Cria os itens
+            foreach ($itensEnviados as $dadosItem) {
+                $itemId = $dadosItem['id'] ?? null;
+
+                $qtd = (int) $dadosItem['quantidade'];
+                $vUnit = (float) $dadosItem['valor_unitario'];
+                $desc = (float) ($dadosItem['desconto'] ?? 0);
+                $vTotal = ($qtd * $vUnit) - $desc;
+
+                $dataToSave = [
+                    'nota_id'       => $nota->id,
+                    'itemable_type' => $dadosItem['itemable_type'],
+                    'itemable_id'   => $dadosItem['itemable_id'],
+                    'descricao'     => $dadosItem['descricao'],
+                    'quantidade'    => $qtd,
+                    'valor_unitario'=> $vUnit,
+                    'desconto'      => $desc,
+                    'valor_total'   => $vTotal,
+                    'garantia_dias' => !empty($dadosItem['garantia_dias']) ? (int) $dadosItem['garantia_dias'] : null,
+                ];
+
+                if (!empty($dadosItem['garantia_dias'])) {
+                    $dataToSave['garantia_inicio'] = now()->format('Y-m-d');
+                    $dataToSave['garantia_fim'] = now()->addDays((int) $dadosItem['garantia_dias'])->format('Y-m-d');
+                }
+
+                if ($itemId) {
+                    NotasItem::where('id', $itemId)->where('nota_id', $nota->id)->update($dataToSave);
+                } else {
+                    NotasItem::create($dataToSave);
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->route('notasitem.index')
+                ->with('success', 'Nota Fiscal #' . $nota->id . ' atualizada com sucesso!');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->withErrors(['erro_banco' => 'Falha ao atualizar a Nota: ' . $e->getMessage()])
+                ->withInput();
         }
-
-        $item->update();
-
-        return redirect()->route('notasitem.index')->with('success', 'Item atualizado!');
     }
 
     public function destroy(string $id)

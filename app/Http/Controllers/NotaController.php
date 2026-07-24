@@ -8,7 +8,7 @@ use App\Models\Nota;
 
 class NotaController extends Controller
 {
-    public function gerarpdf($id)
+    public function gerarpdf(string $id)
     {
         $nota = Nota::with([
             'cliente.pessoa',
