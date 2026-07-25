@@ -3,10 +3,10 @@
 @section('content')
 
   <section class="container cadastro">
-  
+
   <h1>CADASTRO DE COLABORADOR</h1>
 
-  <form action="/colaboradors/update/{{$colaborador->id_colaborador}}" method="post" class="row g-3">
+  <form action="/colaboradores/update/{{$colaborador->id_colaborador}}" method="post" class="row g-3">
   @csrf
   @method('PUT')
       <div class="campos">
@@ -37,10 +37,10 @@
           <input type="text" class="form-control" id="name" name="name" readonly>
           </input>
         </div>
-        
+
       </div>
 
-      
+
     <div class="row mb-3">
       <div class="col">
         <input class="form-check-input" type="checkbox" id="confirmacao">

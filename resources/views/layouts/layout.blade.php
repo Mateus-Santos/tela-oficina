@@ -105,10 +105,10 @@
               </a>
               <ul class="dropdown-menu">
                 <li>
-                  <a href="{{ route('colaboradors.create') }}" class="dropdown-item">Cadastrar Colaborador</a>
+                  <a href="{{ route('colaboradores.create') }}" class="dropdown-item">Cadastrar Colaborador</a>
                 </li>
                 <li>
-                  <a href="{{ route('colaboradors.index') }}" class="dropdown-item">Listar Colaboradores</a>
+                  <a href="{{ route('colaboradores.index') }}" class="dropdown-item">Listar Colaboradores</a>
                 </li>
               </ul>
             </li>
