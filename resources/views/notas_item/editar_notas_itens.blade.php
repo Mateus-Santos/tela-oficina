@@ -24,13 +24,18 @@
             <div class="card-header bg-dark text-white">1. Identificação do Cliente / Veículo</div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label class="form-label">Placa veículo (Opcional para balcão):</label>
                         <input type="text" class="form-control" id="placa_input" placeholder="Digite a placa" value="{{ $nota->veiculoscliente?->placa }}">
-                        <input type="hidden" name="veiculo_cliente_id" id="placa_input" value="{{ $nota->veiculo_cliente_id }}">
+                        <input type="hidden" name="veiculo_cliente_id" id="veiculo_cliente_id" value="{{ $nota->veiculo_cliente_id }}">
                     </div>
 
-                    <div class="col-md-6">
+                    <div class="col-md-4">
+                        <label class="form-label">KM Atual:</label>
+                        <input type="number" name="km" id="km" class="form-control" placeholder="Ex: 85000" min="0" value="{{ old('km', $nota->km) }}">
+                    </div>
+
+                    <div class="col-md-4">
                         <label class="form-label">Cliente:*</label>
                         <input type="text" id="cliente_nome" class="form-control" placeholder="Nome do cliente" readonly required value="{{ $nota->cliente?->pessoa?->nome ?? 'Cliente Balcão' }}">
                         <input type="hidden" name="cliente_id" id="cliente_id" value="{{ $nota->cliente_id }}">

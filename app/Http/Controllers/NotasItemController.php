@@ -41,6 +41,7 @@ class NotasItemController extends Controller
             'itens.*.valor_unitario'    => 'required|numeric|min:0',
             'itens.*.desconto'          => 'nullable|numeric|min:0',
             'itens.*.garantia_dias'     => 'nullable|integer|min:0',
+            'km'                        => 'nullable|integer|min:0',
         ]);
 
         $itensEnviados = $request->input('itens');
@@ -52,7 +53,7 @@ class NotasItemController extends Controller
             $nota->veiculo_cliente_id = $request->input('veiculo_cliente_id') ?: null;
             $nota->tipo       = 'Venda';
             $nota->status     = 'Aberto';
-
+            $nota->km = $request->input('km') ?: null;
             $subtotalGeral = 0;
             $descontoGeral = 0;
 
@@ -157,6 +158,7 @@ class NotasItemController extends Controller
             // 1. Atualiza dados principais da Nota
             $nota->cliente_id = $request->input('cliente_id') ?: null;
             $nota->veiculo_cliente_id = $request->input('veiculo_cliente_id') ?: null;
+            $nota->km = $request->input('km') ?: null;
 
             $subtotalGeral = 0;
             $descontoGeral = 0;

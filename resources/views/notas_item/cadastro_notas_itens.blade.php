@@ -18,24 +18,25 @@
     <form action="{{ route('notasitem.store') }}" method="POST" id="form-os-itens">
         @csrf
 
-    {{-- 1. Identificação da Ordem de Serviço Base --}}
+    {{-- 1. Identificação do Cliente / Veículo --}}
     <div class="card mb-4 shadow-sm">
-    <div class="card-header bg-dark text-white">1. Identificação do Cliente / Veículo</div>
+        <div class="card-header bg-dark text-white">1. Identificação do Cliente / Veículo</div>
         <div class="card-body">
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <label class="form-label">Placa veículo (Opcional para balcão):</label>
                     <input type="text" class="form-control" id="placa_input" placeholder="Digite a placa">
-
                     <input type="hidden" name="veiculo_cliente_id" id="veiculo_cliente_id">
                 </div>
 
-                <div class="col-md-6">
-                    <label class="form-label">Cliente:*</label>
-                    <!-- Nome visível para o usuário -->
-                    <input type="text" id="cliente_nome" class="form-control" placeholder="Nome do cliente" readonly required>
+                <div class="col-md-4">
+                    <label class="form-label">KM Atual:</label>
+                    <input type="number" name="km" id="km" class="form-control" placeholder="Ex: 85000" min="0" value="{{ old('km') }}">
+                </div>
 
-                    <!-- ID do Cliente enviado ao Controller -->
+                <div class="col-md-4">
+                    <label class="form-label">Cliente:*</label>
+                    <input type="text" id="cliente_nome" class="form-control" placeholder="Nome do cliente" readonly required>
                     <input type="hidden" name="cliente_id" id="cliente_id">
                 </div>
             </div>

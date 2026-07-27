@@ -21,9 +21,11 @@ class Nota extends Model
         'desconto',
         'total',
         'observacoes',
+        'km',
     ];
 
     protected $casts = [
+        'km' => 'int',
         'subtotal' => 'decimal:2',
         'desconto' => 'decimal:2',
         'total'    => 'decimal:2',

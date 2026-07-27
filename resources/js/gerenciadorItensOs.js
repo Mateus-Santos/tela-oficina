@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const clienteNome = document.getElementById('cliente_nome');
     const idVeiculo = document.getElementById('veiculo_cliente_id');
     const clienteIdInput = document.getElementById('cliente_id');
+    const kmInput = document.getElementById('km'); // <-- Adicionado referência ao KM
 
     // --- ELEMENTOS DO CONSTRUTOR DE ITENS ---
     const typeSelect = document.getElementById('builder_type');
@@ -23,13 +24,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const containerItens = document.getElementById('container-itens-dinamicos');
     const linhaVazia = document.getElementById('linha-vazia');
 
-    // --- ELEMENTOS DE DESCONTO E RESUMO GERAI ---
+    // --- ELEMENTOS DE DESCONTO E RESUMO GERAL ---
     const elDescontoGeral = document.getElementById('input-desconto-geral');
     const elTipoDesconto = document.getElementById('tipo-desconto-geral');
 
     let ordensServicoDoVeiculo = [];
 
-    // Inicia o contador com base no número de itens já existentes na tabela (para edição)
+    // Contador de índice com base nos itens já existentes (Edição)
     let itemIndex = containerItens ? containerItens.querySelectorAll('tr.item-row').length : 0;
 
     // --- 1. BUSCA POR PLACA ---
@@ -47,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     clienteNome.value = '';
                     if (clienteIdInput) clienteIdInput.value = '';
                     if (idVeiculo) idVeiculo.value = '';
+                    if (kmInput) kmInput.value = '';
                     resetBuilder();
                     return;
                 }
@@ -56,6 +58,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (clienteNome) clienteNome.value = data.cliente_nome || '';
                 if (clienteIdInput) clienteIdInput.value = data.cliente_id || '';
                 if (idVeiculo) idVeiculo.value = data.veiculo_id || '';
+                if (kmInput && data.km) kmInput.value = data.km; // <-- Preenche o KM vindo da API
+
                 ordensServicoDoVeiculo = data.ordens_servico || [];
 
                 if (typeSelect && typeSelect.value === 'App\\Models\\OrdemServico') {
@@ -90,7 +94,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Caso A: Vinculando Ordem de Serviço
         if (tipo === 'App\\Models\\OrdemServico') {
             if (ordensServicoDoVeiculo.length === 0) {
                 itemIdSelect.innerHTML = '<option value="">Nenhuma O.S disponível para esta placa</option>';
@@ -108,7 +111,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 itemIdSelect.appendChild(option);
             });
         }
-        // Caso B: Adicionando Produto Físico (Autopeça)
         else if (tipo === 'App\\Models\\Produto') {
             if (!produtosEstaticosLocal || produtosEstaticosLocal.options.length === 0) {
                 itemIdSelect.innerHTML = '<option value="">Nenhum produto cadastrado no sistema</option>';
@@ -128,7 +130,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Auto-preenchimento ao selecionar o item (Produto ou OS)
     if (itemIdSelect) {
         itemIdSelect.addEventListener('change', () => {
             const selectedOption = itemIdSelect.options[itemIdSelect.selectedIndex];
@@ -158,12 +159,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const desconto = parseFloat(descontoInput.value) || 0;
             const garantiaDias = garantiaInput.value ? parseInt(garantiaInput.value) : '';
 
-            const valorTotalItem = Math.max(0, (quantidade * valorUnitario) - desconto);
-
             if ((quantidade * valorUnitario) < desconto) {
                 alert('O desconto não pode ser maior do que o valor total do item!');
                 return;
             }
+
+            const valorTotalItem = Math.max(0, (quantidade * valorUnitario) - desconto);
 
             if (linhaVazia) linhaVazia.style.display = 'none';
 
@@ -209,20 +210,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- 4. REMOÇÃO DE ITEM E ESCUTA DE ALTERAÇÕES DENTRO DA TABELA ---
+    // --- 4. REMOÇÃO E EDIÇÃO NA TABELA ---
     if (containerItens) {
         containerItens.addEventListener('click', (e) => {
             const btnRemove = e.target.closest('.btn-remover-item');
             if (btnRemove) {
                 btnRemove.closest('tr').remove();
                 if (containerItens.querySelectorAll('tr.item-row').length === 0 && linhaVazia) {
-                    linhaVazia.style.display = 'table-row';
+                    linhaVazia.style.display = '';
                 }
                 recalcularTotalGeral();
             }
         });
 
-        // Recalcular quando os valores dentro da tabela forem editados diretamente
         containerItens.addEventListener('input', (e) => {
             if (e.target.classList.contains('input-qtd') ||
                 e.target.classList.contains('input-vunit') ||
@@ -249,13 +249,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- 5. ESCUTADORES DO DESCONTO GERAL DA NOTA ---
-    if (elDescontoGeral) {
-        elDescontoGeral.addEventListener('input', recalcularTotalGeral);
-    }
-    if (elTipoDesconto) {
-        elTipoDesconto.addEventListener('change', recalcularTotalGeral);
-    }
+    // --- 5. ESCUTADORES DO DESCONTO GERAL ---
+    if (elDescontoGeral) elDescontoGeral.addEventListener('input', recalcularTotalGeral);
+    if (elTipoDesconto) elTipoDesconto.addEventListener('change', recalcularTotalGeral);
 
     function resetBuilder() {
         if (typeSelect) typeSelect.value = '';
@@ -270,15 +266,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (garantiaInput) garantiaInput.value = '';
     }
 
-    // Executa o cálculo inicial para preencher os resumos das notas já salvas
     recalcularTotalGeral();
 });
 
-// --- FUNÇÃO GLOBAL DE CÁLCULO FINANCEIRO DA NOTA ---
+// --- CÁLCULO FINANCEIRO GERENCIADO ---
 function recalcularTotalGeral() {
     let subtotal = 0;
 
-    // Soma os totais das linhas (já com descontos individuais de item)
     document.querySelectorAll('.item-row').forEach(linha => {
         const elQtd = linha.querySelector('.input-qtd');
         const elVunit = linha.querySelector('.input-vunit');
@@ -291,7 +285,6 @@ function recalcularTotalGeral() {
         subtotal += Math.max(0, (qtd * vunit) - descItem);
     });
 
-    // Desconto Geral
     const elDescontoGeral = document.getElementById('input-desconto-geral');
     const elTipoDesconto = document.getElementById('tipo-desconto-geral');
 
@@ -299,12 +292,15 @@ function recalcularTotalGeral() {
     let valorDescontoCalculado = valDescontoGeral;
 
     if (elTipoDesconto && elTipoDesconto.value === 'porcentagem') {
+        if (valDescontoGeral > 100) {
+            valDescontoGeral = 100;
+            if (elDescontoGeral) elDescontoGeral.value = 100;
+        }
         valorDescontoCalculado = (subtotal * valDescontoGeral) / 100;
     }
 
     const totalFinal = Math.max(0, subtotal - valorDescontoCalculado);
 
-    // Atualiza a tela
     const elResumoSubtotal = document.getElementById('resumo-subtotal');
     if (elResumoSubtotal) {
         elResumoSubtotal.innerText = 'R$ ' + subtotal.toFixed(2).replace('.', ',');
