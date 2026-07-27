@@ -3,9 +3,9 @@
 @section('content')
 
 <div class="container cadastro">
-  
+
   <h1>DETALHES DA PESSOA FÍSICA</h1>
-  
+
     <div class="campos">
       <div class="row mb-3">
         <div class="col-md-6">
@@ -19,16 +19,16 @@
       </div>
 
       <div class="row mb-3">
-        <div class="col-md-3"> 
+        <div class="col-md-3">
             <label class="form-label" for="rg">RG:</label>
             <input type="text" class="form-control" id="rg" value="{{ $user->pessoa?->rg }}" disabled>
         </div>
 
-        <div class="col-md-3">          
+        <div class="col-md-3">
             <label class="form-label" for="cpf">CPF:*</label>
             <input type="text" class="form-control" id="cpf" value="{{ $user->pessoa?->cpf }}" disabled>
         </div>
-        
+
         <div class="col-md-3">
           <label class="form-label" for="telefone_1">Telefone Principal:*</label>
           <input type="text" class="form-control" id="telefone_1" value="{{ $user->pessoa?->telefone_1 }}" disabled>
@@ -58,7 +58,7 @@
     @else
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h3>ENDEREÇOS CADASTRADOS</h3>
-            <a class="btn btn-success" href="/endereco/create/{{ $user->pessoa->id }}">
+            <a class="btn btn-success" href="/endereco/create/{{ $user->id }}">
                 <i class="bi bi-plus-circle"></i> Cadastrar Novo Endereço
             </a>
         </div>
