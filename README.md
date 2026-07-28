@@ -265,3 +265,314 @@ Alguns princípios adotados durante o desenvolvimento:
 - Redução de retrabalho através de automações.
 - Código preparado para futuras integrações.
 - Facilidade de onboarding para novos desenvolvedores.
+
+# 📋 Pré-requisitos
+
+Antes de iniciar o projeto, certifique-se de possuir os seguintes softwares instalados.
+
+| Software | Versão Recomendada |
+|----------|--------------------|
+| Git | Última versão |
+| Docker Desktop | Última versão |
+| WSL 2 (Windows) | Atualizado |
+| Ubuntu (WSL) | 22.04+ |
+| Visual Studio Code | Última versão |
+
+> **Observação**
+>
+> O projeto utiliza **Laravel Sail**, portanto **não é necessário instalar PHP, Composer, Apache ou MySQL diretamente no sistema operacional**, pois todas essas dependências são executadas dentro dos containers Docker.
+
+---
+
+# 🚀 Instalação
+
+## 1. Clone o repositório
+
+```bash
+git clone https://github.com/seu-usuario/sos-mecanica.git
+
+cd sos-mecanica
+```
+
+---
+
+## 2. Crie o arquivo de configuração
+
+Copie o arquivo de exemplo para criar seu ambiente local.
+
+```bash
+cp .env.example .env
+```
+
+Caso esteja utilizando Windows com PowerShell:
+
+```powershell
+copy .env.example .env
+```
+
+---
+
+## 3. Instale as dependências do Composer
+
+Caso seja o primeiro clone do projeto:
+
+```bash
+composer install
+```
+
+---
+
+## 4. Inicie os containers Docker
+
+O projeto utiliza o **Laravel Sail** para gerenciar todo o ambiente de desenvolvimento.
+
+Suba os containers executando:
+
+```bash
+./vendor/bin/sail up -d
+```
+
+Caso já tenha configurado o alias do Sail:
+
+```bash
+sail up -d
+```
+
+Na primeira execução o Docker irá:
+
+- baixar as imagens necessárias;
+- construir o ambiente da aplicação;
+- iniciar o container do Laravel;
+- iniciar o container do MySQL.
+
+Esse processo pode levar alguns minutos.
+
+---
+
+# 🔑 Configuração Inicial
+
+Após iniciar os containers, execute os comandos abaixo.
+
+## Gerar a chave da aplicação
+
+```bash
+sail artisan key:generate
+```
+
+---
+
+## Executar as migrations
+
+```bash
+sail artisan migrate
+```
+
+Caso deseje popular o banco com dados de teste:
+
+```bash
+sail artisan migrate:fresh --seed
+```
+
+---
+
+## Instalar as dependências do Front-end
+
+```bash
+sail npm install
+```
+
+---
+
+## Iniciar o Vite
+
+Durante o desenvolvimento utilize:
+
+```bash
+sail npm run dev
+```
+
+Para gerar os arquivos otimizados para produção:
+
+```bash
+sail npm run build
+```
+
+---
+
+# 🌐 Executando a Aplicação
+
+Com os containers iniciados, acesse:
+
+```
+http://localhost
+```
+
+Caso a porta HTTP tenha sido alterada, utilize a porta configurada no arquivo `.env`.
+
+---
+
+# 🐳 Laravel Sail
+
+O Laravel Sail fornece uma camada de abstração sobre o Docker, simplificando a execução de comandos do ecossistema Laravel.
+
+Ao invés de executar comandos diretamente no sistema operacional, todos os processos acontecem dentro do container da aplicação, garantindo que toda a equipe utilize exatamente o mesmo ambiente de desenvolvimento.
+
+---
+
+# ⚡ Fluxo Diário de Desenvolvimento
+
+Na maioria dos dias de trabalho, basta seguir o fluxo abaixo.
+
+## 1. Iniciar os containers
+
+```bash
+sail up -d
+```
+
+---
+
+## 2. Verificar se existe alguma atualização
+
+```bash
+git pull
+```
+
+---
+
+## 3. Caso existam novas dependências
+
+PHP
+
+```bash
+sail composer install
+```
+
+JavaScript
+
+```bash
+sail npm install
+```
+
+Banco de dados
+
+```bash
+sail artisan migrate
+```
+
+---
+
+## 4. Iniciar o Vite
+
+```bash
+sail npm run dev
+```
+
+---
+
+## 5. Desenvolver normalmente
+
+Toda alteração realizada nos arquivos é sincronizada automaticamente com o container através do Bind Mount do Docker.
+
+Não é necessário copiar arquivos nem reiniciar a aplicação após cada alteração.
+
+---
+
+## 6. Encerrar o ambiente
+
+Ao finalizar o desenvolvimento:
+
+```bash
+sail stop
+```
+
+Ou, caso queira remover completamente os containers em execução:
+
+```bash
+sail down
+```
+
+---
+
+# 📌 Comandos Úteis
+
+| Ação | Comando |
+|------|----------|
+| Iniciar containers | `sail up -d` |
+| Parar containers | `sail stop` |
+| Remover containers | `sail down` |
+| Reiniciar containers | `sail restart` |
+| Acessar shell do container | `sail shell` |
+| Instalar dependências PHP | `sail composer install` |
+| Adicionar pacote Composer | `sail composer require vendor/pacote` |
+| Atualizar dependências | `sail composer update` |
+| Instalar dependências Node | `sail npm install` |
+| Executar Vite | `sail npm run dev` |
+| Gerar build de produção | `sail npm run build` |
+| Executar migrations | `sail artisan migrate` |
+| Recriar banco com seed | `sail artisan migrate:fresh --seed` |
+| Executar seeders | `sail artisan db:seed` |
+| Limpar cache | `sail artisan optimize:clear` |
+| Executar testes | `sail artisan test` |
+| Abrir Tinker | `sail artisan tinker` |
+| Ver rotas | `sail artisan route:list` |
+| Ver logs | `sail logs` |
+
+---
+
+# ⚠️ Resolução de Problemas
+
+## A porta 80 já está em uso
+
+Verifique se outro servidor web (como Apache/XAMPP) está utilizando a porta HTTP.
+
+Pare o serviço ou altere a porta configurada no Docker.
+
+---
+
+## A porta 3306 está ocupada
+
+Caso exista uma instalação local do MySQL, altere a variável:
+
+```env
+FORWARD_DB_PORT=33061
+```
+
+Depois reinicie os containers:
+
+```bash
+sail down
+
+sail up -d
+```
+
+---
+
+## Alterações não aparecem no navegador
+
+Limpe os caches da aplicação:
+
+```bash
+sail artisan optimize:clear
+```
+
+Caso necessário, reinicie o Vite:
+
+```bash
+sail npm run dev
+```
+
+---
+
+## Reconstruir completamente o ambiente
+
+Se ocorrer algum problema durante a configuração:
+
+```bash
+sail down -v
+
+sail build --no-cache
+
+sail up -d
+```
+
+Isso recriará os containers utilizando uma nova imagem, preservando a configuração do projeto.
