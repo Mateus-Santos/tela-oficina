@@ -3,9 +3,9 @@
 @section('content')
 
 <div class="container cadastro">
-  
+
   <h1>DETALHES DA PESSOA FÍSICA</h1>
-  
+
     <div class="campos">
       <div class="row mb-3">
         <div class="col-md-6">
@@ -19,16 +19,16 @@
       </div>
 
       <div class="row mb-3">
-        <div class="col-md-3"> 
+        <div class="col-md-3">
             <label class="form-label" for="rg">RG:</label>
             <input type="text" class="form-control" id="rg" value="{{ $user->pessoa?->rg }}" disabled>
         </div>
 
-        <div class="col-md-3">          
+        <div class="col-md-3">
             <label class="form-label" for="cpf">CPF:*</label>
             <input type="text" class="form-control" id="cpf" value="{{ $user->pessoa?->cpf }}" disabled>
         </div>
-        
+
         <div class="col-md-3">
           <label class="form-label" for="telefone_1">Telefone Principal:*</label>
           <input type="text" class="form-control" id="telefone_1" value="{{ $user->pessoa?->telefone_1 }}" disabled>
@@ -91,7 +91,7 @@
                         <td>{{ $endereco->numero }}</td>
                         <td>{{ $endereco->ponto_referencia ?? '-' }}</td>
                         <td>
-                            <a href="/enderecos/edit/{{ $endereco->id ?? $endereco->id_endereco }}" class="btn btn-info btn-sm">
+                            <a href="/enderecos/{{ $endereco->id ?? $endereco->id_endereco }}/edit" class="btn btn-info btn-sm">
                                 <i class="bi bi-pencil-square"></i> Editar
                             </a>
                         </td>

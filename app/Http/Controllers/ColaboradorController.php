@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Colaborador;
-use App\Models\Cliente;
 use App\Models\User;
 
 class ColaboradorController extends Controller
@@ -13,11 +12,11 @@ class ColaboradorController extends Controller
     {
         $this->middleware('admin:admin');
     }
-    
+
     public function index()
     {
-        $colaboradors = Colaborador::with('user')->get();
-        return view('colaborador.listarcolaborador', compact('colaboradors'));
+        $colaboradores = Colaborador::with('user')->get();
+        return view('colaborador.listarcolaborador', compact('colaboradores'));
     }
 
     public function create()
@@ -36,7 +35,7 @@ class ColaboradorController extends Controller
         $colaborador->chave_pix = $request->input("chave_pix");
         $colaborador->id_user = $id_user;
         $colaborador->save();
-        return redirect()->route('colaboradors.index');
+        return redirect()->route('colaboradores.index');
     }
 
 
@@ -63,14 +62,14 @@ class ColaboradorController extends Controller
             'chave_pix' => $request->chave_pix,
             'conta_banco' => $request->conta_banco
         ]);
-        
-        return redirect()->route('colaboradors.index');
+
+        return redirect()->route('colaboradores.index');
     }
 
 
     public function destroy(string $id_colaborador)
     {
         $colaborador = Colaborador::where('id_colaborador', $id_colaborador)->delete();
-        return redirect()->route('colaboradors.index');
+        return redirect()->route('colaboradores.index');
     }
 }

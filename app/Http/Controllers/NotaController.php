@@ -8,11 +8,11 @@ use App\Models\Nota;
 
 class NotaController extends Controller
 {
-    public function gerarpdf($id)
+    public function gerarpdf(string $id)
     {
         $nota = Nota::with([
-            'cliente.pessoa', 
-            'veiculosCliente', 
+            'cliente.pessoa',
+            'veiculosCliente',
             'itens.itemable'
         ])->findOrFail($id);
 
@@ -30,5 +30,28 @@ class NotaController extends Controller
             ->get();
 
         return view('notas_item.listar_notas_itens', compact('notas'));
+    }
+
+    public function destroy(string $id)
+    {
+        Nota::findOrFail($id)->delete();
+        return redirect()->route('notasitem.index')->with('success', 'Nota removida!');
+    }
+
+    public function show(string $id)
+    {
+        $nota = Nota::with([
+            'cliente.pessoa',
+            'veiculoscliente',
+            'notasitem.itemable'
+        ])->findOrFail($id);
+
+        $itens = $nota->notasitem;
+
+        $valorTotal = $itens->sum(function ($item) {
+            return $item->quantidade * $item->valor_unitario;
+        });
+
+        return view('notas_item.show_notas_itens', compact('nota', 'itens', 'valorTotal'));
     }
 }

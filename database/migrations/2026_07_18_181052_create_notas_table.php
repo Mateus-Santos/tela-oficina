@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('cliente_id')->nullable()->constrained()->cascadeOnDelete();
             $table->foreignId('veiculo_cliente_id')
                   ->nullable()
-                  ->constrained('veiculos_clientes') 
+                  ->constrained('veiculos_clientes')
                   ->nullOnDelete();
             $table->string('tipo');
             $table->string('status');
@@ -21,6 +21,7 @@ return new class extends Migration
             $table->decimal('desconto', 10, 2)->default(0);
             $table->decimal('total', 10, 2)->default(0);
             $table->text('observacoes')->nullable();
+            $table->unsignedInteger('km')->nullable();
             $table->timestamps();
         });
     }

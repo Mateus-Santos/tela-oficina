@@ -17,16 +17,15 @@ class OrdemServico extends Model
         'descricao',
         'valor_total',
         'data_abertura',
-        'data_fechamento',
-        ''
+        'data_fechamento'
     ];
 
-    public function veiculosCliente()
+    public function veiculosCliente(): belongsTo
     {
         return $this->belongsTo(VeiculosCliente::class, 'veiculo_cliente_id');
     }
 
-    public function setorServico()
+    public function setorServico(): belongsTo
     {
         return $this->belongsTo(SetorServico::class, 'setor_servico_id');
     }

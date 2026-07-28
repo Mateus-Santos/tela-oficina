@@ -3,10 +3,10 @@
 @section('content')
 
   <section class="container cadastro">
-  
+
   <h1>CADASTRO DE COLABORADOR</h1>
 
-  <form action="{{ route('colaboradors.store') }}" method="post" class="row g-3">
+  <form action="{{ route('colaboradores.store') }}" method="post" class="row g-3">
   @csrf
       <div class="campos">
       <div class="row">
@@ -26,7 +26,7 @@
           <input type="text" class="form-control" id="name" name="name" readonly>
           </input>
         </div>
- 
+
         <div class="col-md-2">
           <label class="form-label" for="chave_pix">Chave Pix:*</label>
           <input type="text" class="form-control" id="chave_pix" placeholder="Digite seu Nome Completo." name="chave_pix" required>
@@ -39,7 +39,7 @@
 
       </div>
 
-      
+
     <div class="row mb-3">
       <div class="col">
         <input class="form-check-input" type="checkbox" id="confirmacao">

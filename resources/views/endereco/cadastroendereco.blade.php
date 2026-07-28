@@ -3,7 +3,7 @@
 @section('content')
 
   <div class="container cadastro">
-  
+
   <h1>CADASTRO DE ENDEREÇO</h1>
 
   <form action="{{ route('enderecos.store') }}" method="post" class="row g-3">
@@ -13,14 +13,14 @@
         <div class="row mb-4">
             <div class="col-md-1">
                 <label class="form-label" for="pessoa_id">ID:</label>
-                <input class="form-control" value="{{$user->pessoa->id}}" type="text" name="pessoa_id" id="pessoa_id" readonly>
+                <input class="form-control" value="{{$user?->pessoa?->id}}" type="text" name="pessoa_id" id="pessoa_id" readonly>
             </div>
             <div class="col-md-2">
                 <label class="form-label" for="id_user">Nome pessoa:</label>
-                <input class="form-control" value="{{$user->pessoa->nome}}" type="text" name="nome" id="nome" disabled readonly>
+                <input class="form-control" value="{{$user?->pessoa?->nome}}" type="text" name="nome" id="nome" disabled readonly>
             </div>
         </div>
-        
+
         <div class="row mb-2">
             <div class="col-md-2">
             <label class="form-label" for="cep">CEP:*</label>
@@ -79,7 +79,7 @@
         </div>
 
         <div class="row mb-3">
-            
+
             <div class="col-md-1">
             <label class="form-label" for="numero">Número:*</label>
             <input type="text" class="form-control" id="numero" name="numero" required>
@@ -90,7 +90,7 @@
             <input type="text" class="form-control" id="ponto_referencia" placeholder="Exemplo: Próximo ao restaurante, loja, igreja..." name="ponto_referencia" required>
             </div>
         </div>
-        
+
         <div class="row mb-3">
         <div class="col">
             <input class="form-check-input" type="checkbox" id="confirmacao">
@@ -124,5 +124,5 @@
 @endsection
 
 @section('scripts')
-    @vite(['resources/js/cep.js'])    
+    @vite(['resources/js/cep.js'])
 @endsection

@@ -1,94 +1,63 @@
-const campoCPF =  document.querySelector("#cpf");
-const campoRG =  document.querySelector("#rg");
-const telefone1 =  document.querySelector("#telefone_1");
-const telefone2 =  document.querySelector("#telefone_2");
-const password =  document.querySelector("#password");
+document.addEventListener('DOMContentLoaded', () => {
+    const campoCPF = document.querySelector("#cpf");
+    const campoRG = document.querySelector("#rg");
+    const telefone1 = document.querySelector("#telefone_1");
+    const telefone2 = document.querySelector("#telefone_2");
 
-// Validate CPF
-campoCPF.addEventListener("keypress", (e) => {
-    let tamanhoCampo = campoCPF.value.length;
-    const onlyNumbers = /[0-9]|\./;
-    const key = String.fromCharCode(e.keyCode);
-    // allow only numbers
-    if (!onlyNumbers.test(key)) {
-      e.preventDefault();
-      return;
+    // Máscara e Limite de CPF (000.000.000-00)
+    if (campoCPF) {
+        campoCPF.addEventListener("input", (e) => {
+            let value = e.target.value.replace(/\D/g, ""); // Apenas números
+            if (value.length > 11) value = value.slice(0, 11);
+
+            value = value.replace(/(\d{3})(\d)/, "$1.$2");
+            value = value.replace(/(\d{3})(\d)/, "$1.$2");
+            value = value.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+
+            e.target.value = value;
+        });
     }
-    //Formatação visual do CPF
-    if(tamanhoCampo == 3 || tamanhoCampo == 7){
-        campoCPF.value += ".";
+
+    // Máscara e Limite de RG (00.000.000-0)
+    if (campoRG) {
+        campoRG.addEventListener("input", (e) => {
+            let value = e.target.value.replace(/\D/g, ""); // Apenas números
+            if (value.length > 9) value = value.slice(0, 9);
+
+            value = value.replace(/(\d{2})(\d)/, "$1.$2");
+            value = value.replace(/(\d{3})(\d)/, "$1.$2");
+            value = value.replace(/(\d{3})(\d{1})$/, "$1-$2");
+
+            e.target.value = value;
+        });
     }
-    if(tamanhoCampo == 11){
-        campoCPF.value += "-";
+
+    // Função de máscara dinâmica para telefones (8 ou 9 dígitos + DDD)
+    function aplicarMascaraTelefone(inputElement) {
+        if (!inputElement) return;
+
+        inputElement.addEventListener("input", function (e) {
+            let value = e.target.value.replace(/\D/g, ""); // Apenas números
+            if (value.length > 11) value = value.slice(0, 11);
+
+            if (value.length > 0) {
+                value = "(" + value;
+            }
+            if (value.length > 3) {
+                value = value.slice(0, 3) + ") " + value.slice(3);
+            }
+            if (value.length > 9) {
+                if (value.length === 14) { // Fixos: (00) 0000-0000
+                    value = value.slice(0, 9) + "-" + value.slice(9);
+                } else { // Celulares: (00) 00000-0000
+                    value = value.slice(0, 10) + "-" + value.slice(10);
+                }
+            }
+
+            e.target.value = value;
+        });
     }
+
+    aplicarMascaraTelefone(telefone1);
+    aplicarMascaraTelefone(telefone2);
 });
-
-// Validate RG
-campoRG.addEventListener("keypress", (e) => {
-    const onlyNumbers = /[0-9]|\./;
-    const key = String.fromCharCode(e.keyCode);
-    let tamanhoCampo = campoRG.value.length;
-    // allow only numbers
-    if (!onlyNumbers.test(key)) {
-      e.preventDefault();
-      return;
-    }
-    //Formatação visual do CPF
-    if(tamanhoCampo == 2 || tamanhoCampo == 6){
-        campoRG.value += ".";
-    }
-    if(tamanhoCampo == 10){
-        campoRG.value += "-";
-    }
-});
-
-// Validate Tell 1
-telefone1.addEventListener("input", function(e) {
-    let value = telefone1.value.replace(/\D/g, ''); // Remove todos os caracteres não numéricos
-
-    if (value.length > 0) {
-        value = "(" + value;
-    }
-    if (value.length > 3) {
-        value = value.slice(0, 3) + ") " + value.slice(3);
-    }
-
-    if (value.length > 9) {
-        if (value[5] == '9') {
-            value = value.slice(0, 10) + "-" + value.slice(10, 15);
-        } else {
-            value = value.slice(0, 9) + "-" + value.slice(9, 13);
-        }
-    }
-
-    telefone1.value = value;
-});
-
-// Validate Tell 2
-telefone2.addEventListener("input", function(e) {
-    let value = telefone2.value.replace(/\D/g, ''); // Remove todos os caracteres não numéricos
-
-    if (value.length > 0) {
-        value = "(" + value;
-    }
-    if (value.length > 3) {
-        value = value.slice(0, 3) + ") " + value.slice(3);
-    }
-
-    if (value.length > 9) {
-        if (value[5] == '9') {
-            value = value.slice(0, 10) + "-" + value.slice(10, 15);
-        } else {
-            value = value.slice(0, 9) + "-" + value.slice(9, 13);
-        }
-    }
-});
-
-password.addEventListener("input", function(e) {
-    const senha = senhaInput.value;
-    if (senha.length < 8) {
-      alert('A senha deve ter pelo menos 8 caracteres.');
-      return false; // Impede o envio do formulário
-    }
-    return true; // Permite o envio do formulário
-  });

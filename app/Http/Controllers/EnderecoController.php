@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\User;
 use App\Models\Endereco;
 use Illuminate\Http\Request;
@@ -42,16 +43,32 @@ class EnderecoController extends Controller
 
     public function edit(string $id)
     {
-        return view('editarendereco', ['endereco' -> $endereco]);
+        $enderecos = Endereco::with('pessoa')->findOrFail($id);
+        return view('endereco.editarendereco', compact('enderecos'));
     }
 
     public function update(Request $request, string $id)
     {
-        //
+        $endereco = Endereco::findOrFail($id);
+
+        $endereco->update([
+            'cep'              => $request->input('cep'),
+            'cidade'           => $request->input('city'),
+            'bairro'           => $request->input('neighborhood'),
+            'estado'           => $request->input('region'),
+            'rua'              => $request->input('address'),
+            'numero'           => $request->input('numero'),
+            'ponto_referencia' => $request->input('ponto_referencia'),
+        ]);
+
+        return redirect()->route('users.index')->with('success', 'Endereço atualizado com sucesso!');
     }
 
     public function destroy(string $id)
     {
-        //
+        $endereco = Endereco::findOrFail($id);
+        $endereco->delete();
+
+        return redirect()->route('users.index')->with('success', 'Endereço excluído com sucesso!');
     }
 }

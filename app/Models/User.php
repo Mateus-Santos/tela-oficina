@@ -50,4 +50,9 @@ class User extends Authenticatable
     {
         return $this->pessoa?->nome;
     }
+
+    public function colaborador(): belongsTo
+    {
+        return $this->belongsTo(Colaborador::class, 'id_user');
+    }
 }

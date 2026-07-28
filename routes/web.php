@@ -39,7 +39,7 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         Route::resource('clientes', ClienteController::class);
         Route::resource('produtovendas', produtoVendaController::class);
         Route::resource('produtos', ProdutoController::class);
-        Route::resource('colaboradors', ColaboradorController::class);
+        Route::resource('colaboradores', ColaboradorController::class);
         Route::resource('enderecos', EnderecoController::class);
         Route::get('/endereco/create/{id}', [EnderecoController::class, 'create']);
         Route::get('/notas/{id}/pdf', [NotaController::class, 'gerarpdf'])->name('notas.pdf');
