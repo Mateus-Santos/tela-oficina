@@ -1,110 +1,267 @@
-<img src="public/img/logo/Logo-Vertical.png" alt="logo">
+<div align="center">
 
-O **Sistema de Acompanhamento para Oficina Mecânica** foi desenvolvido para otimizar a comunicação entre a oficina e seus clientes. Ele permite acompanhar em tempo real o progresso da manutenção dos veículos, proporcionando maior transparência, agilidade e qualidade no atendimento.
+<img src="public/img/logo/Logo-Vertical.png" width="220">
 
-## Funcionalidades
+# 🚗 SOS Mecânica
 
-- **Cadastro de Clientes:** Permite o registro de informações como nome, contato e endereço.
-- **Cadastro de Veículos:** Associa veículos a clientes, com informações como placa e chassi.
-- **Registro de Diagnósticos e Status:** Mecânicos podem registrar diagnósticos e atualizar o status da manutenção.
-- **Notificações Automáticas:** Notifica os clientes sobre mudanças no status de manutenção via e-mail ou SMS.
-- **Histórico de Serviços:** Os clientes podem consultar o histórico de manutenções realizadas.
+### Sistema Inteligente para Gerenciamento de Oficinas Mecânicas
 
-## Tecnologias Utilizadas
+<p>
+Uma plataforma desenvolvida para otimizar o gerenciamento de oficinas mecânicas, centralizando clientes, veículos, ordens de serviço, produtos, vendas e acompanhamento de manutenções em uma única aplicação.
+</p>
 
-- **Back-end:** [Laravel](https://laravel.com) (PHP)
-- **Front-end:** [React.js](https://reactjs.org)
-- **Prototipação:** [Figma](https://www.figma.com)
-- **Ambiente de Desenvolvimento:** Visual Studio Code
-- **Controle de Versão:** Git e GitHub
+<br>
 
-## Requisitos Funcionais
+![Laravel](https://img.shields.io/badge/Laravel-13.x-FF2D20?style=for-the-badge&logo=laravel)
+![PHP](https://img.shields.io/badge/PHP-8.5-777BB4?style=for-the-badge&logo=php)
+![Docker](https://img.shields.io/badge/Docker-Laravel%20Sail-2496ED?style=for-the-badge&logo=docker)
+![MySQL](https://img.shields.io/badge/MySQL-8.x-4479A1?style=for-the-badge&logo=mysql)
+![NodeJS](https://img.shields.io/badge/Node.js-22.x-339933?style=for-the-badge&logo=node.js)
+![Vite](https://img.shields.io/badge/Vite-8.x-646CFF?style=for-the-badge&logo=vite)
+![Bootstrap](https://img.shields.io/badge/Bootstrap-5.x-7952B3?style=for-the-badge&logo=bootstrap)
+![License](https://img.shields.io/badge/license-MIT-success?style=for-the-badge)
 
-1. Cadastro de clientes com dados essenciais.
-2. Cadastro de veículos associados aos clientes.
-3. Registro de diagnósticos e status da manutenção.
-4. Consulta de status de manutenção pelos clientes.
-5. Envio de notificações sobre mudanças de status.
+</div>
 
-## Requisitos Não Funcionais
+---
 
-- Segurança dos dados pessoais.
-- Interface intuitiva e responsiva.
-- Facilidade de manutenção e escalabilidade.
-- Suporte a acessos simultâneos.
+# 📖 Sobre o Projeto
 
-## Estrutura do Sistema
+O **SOS Mecânica** é um sistema web desenvolvido para modernizar o fluxo operacional de oficinas mecânicas.
 
-### Diagrama de Casos de Uso
-Inclui funcionalidades como cadastro de clientes, veículos, diagnósticos e envio de notificações.
+A plataforma concentra todas as etapas do atendimento em um único ambiente, permitindo controlar desde o cadastro de clientes e veículos até a abertura de Ordens de Serviço, controle financeiro, produtos, serviços e acompanhamento das manutenções.
 
-### Diagrama de Classe
-Descreve a relação entre clientes, veículos e manutenções.
+O principal objetivo do projeto é reduzir processos manuais, aumentar a produtividade da equipe e proporcionar uma experiência mais rápida tanto para funcionários quanto para clientes.
 
-### Descrição das Telas
+Além das funcionalidades tradicionais de um sistema de oficina, diversas automações foram implementadas para diminuir o tempo gasto no preenchimento das informações, reduzindo erros e retrabalho.
 
-#### Tela de Cadastro de Clientes
-- Nome, telefone, e-mail e endereço.
-- Botão para confirmar o cadastro.
+---
 
-#### Tela de Cadastro de Veículos
-- Placa, chassi e vínculo com cliente.
-- Botão para confirmar o cadastro.
+# ✨ Principais Recursos
 
-#### Tela de Registro de Diagnósticos
-- Exibe histórico e permite atualizar o status.
+- 🚗 Cadastro de veículos
+- 👤 Cadastro de clientes
+- 🔧 Gerenciamento de Ordens de Serviço
+- 📦 Controle de produtos
+- 🛠 Cadastro de serviços
+- 💰 Controle financeiro da O.S.
+- 📈 Cálculo automático de valores
+- 🔍 Consulta automática de veículo pela placa
+- ⚙️ Integração com API
+- 📋 Histórico de manutenções
+- 📊 Estrutura preparada para expansão
+- 📱 Interface responsiva
+- 🔒 Controle de autenticação
+- ⚡ Atualizações em tempo real via JavaScript
 
-#### Tela de Listagem e Gerenciamento
-- Listas de clientes, veículos, peças e colaboradores.
-- Opções de edição e remoção.
+---
 
-#### Tela Inicial (Landing Page)
-- Apresentação dos serviços.
-- Mapa com localização da oficina.
-- Links para orçamento e cadastro.
+# 📸 Demonstração
 
-## Pré-requisitos para Rodar o Projeto
+> **Em breve**
 
-- XAMPP -   **v3.3.0 (Para conexão com banco de dados Se for Windows)**
-- COMPOSER -    **Version 2.6.5 2023-10-06 10:11:52**
-- LARAVEL - **Laravel Framework 10.48.17**
-- NODE.JS - **v20.10.0**
+Espaço reservado para GIFs e capturas de tela do sistema.
 
-# Passo a passo:
+```
+/docs/images/dashboard.png
 
-## Configuração do Ambiente
+/docs/images/os.gif
 
-1. **Crie uma cópia para você:** Faça um fork deste repositório
+/docs/images/clientes.png
+```
 
-2. **Baixe o projeto:** Clone o repositório forkado no seu computador:
-   ```bash
-   git clone https://github.com/seu-usuario/nome-do-repositório.git
-   cd nome-do-repositório
-   ```
-3. **Instale as dependências:** Acesse com o terminal pasta do projeto e aplique os seguintes comandos:
-   ```bash
-   composer install
-   npm install
-   ```
+---
 
-4. **OBS:** No caso da mensagem: (4 vulnerabilities (2 moderate, 2 high) aparecer, aplique esse comando na pasta do projeto:
-    ```bash
-    npm audit fix
-    ```
+# 📑 Índice
 
-5. **Configure o ambiente:** Crie uma cópia do arquivo ```.env.example```, renomeie-a para ```.env``` e configure as variáveis de ambiente, incluindo as chaves de API.
+- [Sobre o Projeto](#-sobre-o-projeto)
+- [Principais Recursos](#-principais-recursos)
+- [Tecnologias](#-tecnologias-utilizadas)
+- [Arquitetura](#-arquitetura-do-projeto)
+- [Estrutura de Pastas](#-estrutura-do-projeto)
+- [Pré-requisitos](#-pré-requisitos)
+- [Instalação](#-instalação)
+- [Fluxo de Desenvolvimento](#-fluxo-de-desenvolvimento)
+- [Comandos Úteis](#-comandos-úteis)
+- [Implementações](#-principais-implementações)
+- [Roadmap](#-roadmap)
+- [Contribuição](#-contribuindo)
+- [Licença](#-licença)
 
-6. **Execute as migrações do banco de dados:**
-   ```bash
-   php artisan migrate --seed
-   ```
+---
 
-7. **Crie as chaves de criptografia da aplicação:**
-   ```bash
-   php artisan key:generate
-   ```
-8. **Execute o projeto:** Abra 2 terminais na pasta do projeto e aplique um dos comandos abaixo em cada terminal:
-    ```bash
-    php artisan serve
-    npm run dev
-    ```
+# 🚀 Tecnologias Utilizadas
+
+O projeto foi desenvolvido utilizando tecnologias modernas do ecossistema Laravel, priorizando desempenho, facilidade de manutenção e padronização do ambiente de desenvolvimento.
+
+## Back-end
+
+| Tecnologia | Versão |
+|------------|--------|
+| PHP | 8.5.x |
+| Laravel | 13.x |
+| Composer | 2.x |
+| Laravel Sail | Última versão |
+
+---
+
+## Front-end
+
+| Tecnologia | Versão |
+|------------|--------|
+| Blade | Laravel |
+| Bootstrap | 5.x |
+| JavaScript | ES6+ |
+| Vite | 8.x |
+| Node.js | 22.x |
+| npm | 10.x |
+
+---
+
+## Banco de Dados
+
+- MySQL 8
+
+---
+
+## Ambiente de Desenvolvimento
+
+- Docker
+- Laravel Sail
+- WSL 2
+- Ubuntu
+- Visual Studio Code
+- Git
+- GitHub
+
+---
+
+# 🏗 Arquitetura do Projeto
+
+O sistema foi estruturado utilizando a arquitetura MVC (Model-View-Controller), seguindo os padrões recomendados pelo Laravel.
+
+```
+Cliente
+    │
+    ▼
+Blade + Bootstrap + JavaScript
+    │
+    ▼
+Controllers
+    │
+    ▼
+Services / Regras de Negócio
+    │
+    ▼
+Models (Eloquent ORM)
+    │
+    ▼
+MySQL
+```
+
+Toda a comunicação entre interface e banco de dados ocorre através do framework Laravel, utilizando Eloquent ORM para manipulação dos dados e JavaScript para oferecer uma experiência dinâmica ao usuário.
+
+---
+
+# 🐳 Arquitetura Docker
+
+O ambiente de desenvolvimento é totalmente isolado utilizando Docker através do Laravel Sail.
+
+```
+                    Docker
+
+        ┌──────────────────────────┐
+        │      laravel.test        │
+        │──────────────────────────│
+        │ PHP 8.5                  │
+        │ Laravel 13               │
+        │ Composer                 │
+        │ Node.js                  │
+        │ npm                      │
+        │ Vite                     │
+        └────────────┬─────────────┘
+                     │
+                     │ Rede Docker
+                     │
+        ┌────────────▼─────────────┐
+        │          MySQL           │
+        │──────────────────────────│
+        │ Banco de Dados           │
+        │ Persistência             │
+        └──────────────────────────┘
+```
+
+Toda alteração realizada nos arquivos do projeto é refletida instantaneamente dentro do container através de **Bind Mounts**, permitindo desenvolvimento em tempo real sem necessidade de copiar arquivos para dentro do Docker.
+
+---
+
+# 📂 Estrutura do Projeto
+
+```
+📦 SOS-MECANICA
+├── app/
+│   ├── Http/
+│   ├── Models/
+│   ├── Providers/
+│   └── Services/
+│
+├── bootstrap/
+│
+├── config/
+│
+├── database/
+│   ├── migrations/
+│   ├── factories/
+│   └── seeders/
+│
+├── public/
+│   ├── build/
+│   ├── img/
+│   └── index.php
+│
+├── resources/
+│   ├── css/
+│   ├── js/
+│   └── views/
+│
+├── routes/
+│
+├── storage/
+│
+├── tests/
+│
+├── vendor/
+│
+├── compose.yaml
+├── composer.json
+├── package.json
+└── vite.config.js
+```
+
+---
+
+# ⚙ Principais Características da Arquitetura
+
+- ✅ Ambiente totalmente containerizado
+- ✅ Mesmo ambiente para toda a equipe
+- ✅ Laravel Sail como padrão de desenvolvimento
+- ✅ Banco de dados isolado em container próprio
+- ✅ Atualizações instantâneas através de Bind Mount
+- ✅ Assets compilados utilizando Vite
+- ✅ Estrutura preparada para produção
+- ✅ Fácil escalabilidade para novos módulos
+
+---
+
+# 💡 Filosofia do Projeto
+
+O projeto foi desenvolvido buscando manter um código organizado, modular e de fácil manutenção.
+
+Alguns princípios adotados durante o desenvolvimento:
+
+- Separação clara das responsabilidades.
+- Reutilização de componentes.
+- Interfaces intuitivas.
+- Redução de retrabalho através de automações.
+- Código preparado para futuras integrações.
+- Facilidade de onboarding para novos desenvolvedores.
