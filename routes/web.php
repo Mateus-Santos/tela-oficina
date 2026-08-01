@@ -6,7 +6,7 @@ use App\Http\Controllers\EnderecoController;
 use App\Http\Controllers\ProdutoController;
 use App\Http\Controllers\ColaboradorController;
 use App\Http\Controllers\ClienteController;
-use App\Http\Controllers\produtoVendaController;
+use App\Http\Controllers\ProdutoVendaController;
 use App\Http\Controllers\VeiculoController;
 use App\Http\Controllers\VeiculosClientesController;
 use App\Http\Controllers\ManutencaoController;
@@ -37,7 +37,7 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         Route::resource('notasitem', NotasItemController::class);
         Route::resource('users', UserController::class);
         Route::resource('clientes', ClienteController::class);
-        Route::resource('produtovendas', produtoVendaController::class);
+        Route::resource('produtovendas', ProdutoVendaController::class);
         Route::resource('produtos', ProdutoController::class);
         Route::resource('colaboradores', ColaboradorController::class);
         Route::resource('enderecos', EnderecoController::class);
