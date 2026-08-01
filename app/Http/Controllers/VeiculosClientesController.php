@@ -22,14 +22,18 @@ class VeiculosClientesController extends Controller
 
     public function index()
     {
-        if(auth()->user()->permitions == 2){
-            $veiculosclientes = VeiculosCliente::where('cliente_id', auth()->user()->pessoa->cliente->id)->get();
-            return view('veiculosclientes.listarveiculosclientes', compact('veiculosclientes'));
+        $user = auth()->user();
+
+        $query = VeiculosCliente::with(['veiculo.montadora', 'cliente.pessoa']);
+
+        if ($user->permitions == 2) {
+            $clienteId = $user->pessoa?->cliente?->id;
+            $query->where('cliente_id', $clienteId);
         }
-        else{
-            $veiculosclientes = VeiculosCliente::all();
-            return view('veiculosclientes.listarveiculosclientes', compact('veiculosclientes'));
-        }
+
+        $veiculosclientes = $query->latest()->paginate(10); // Exibe 10 registros por página ordenados pelo mais recente
+
+        return view('veiculosclientes.listarveiculosclientes', compact('veiculosclientes'));
     }
 
     public function create()
