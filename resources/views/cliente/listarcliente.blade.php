@@ -18,9 +18,9 @@
             @foreach($clientes as $cliente)
             <tr>
                 <td>{{ $cliente->id }}</td>
-                <td>{{ $cliente->pessoa?->nome ?? 'Sem e-mail cadastrado' }}</td>
-                <td>{{ $cliente->pontos }}</td>
-                <td><a href="/users/{{ $cliente->pessoa->user->id }}/edit" class="btn btn-info"><i class="bi bi-pencil-square"></i>Editar</a></td>
+                <td>{{ $cliente->pessoa?->nome ?? 'Sem nome cadastrado' }}</td>
+                <td>{{ $cliente->pessoa->cliente->pontos ?? 'Sem pontos cadastrados' }}</td>
+                <td><a href="/cliente/{{ $cliente->id }}/edit" class="btn btn-info"><i class="bi bi-pencil-square"></i>Editar</a></td>
                 <td>
                     <form action="" method="post">
                         @csrf
