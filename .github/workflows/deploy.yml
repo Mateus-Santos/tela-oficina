@@ -9,6 +9,9 @@ on:
 
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,6 +24,9 @@ jobs:
         run: echo "Building the app"
 
   deploy-production:
+    # Só roda em push direto na master ou disparo manual — NUNCA em pull_request
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+
     runs-on: ubuntu-latest
 
     environment:
@@ -33,6 +39,22 @@ jobs:
       - name: Repo Checkout
         uses: actions/checkout@v4
 
+      - name: Start SSH Agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
+          ssh-passphrase: ${{ secrets.SERVER_SSH_PASSPHRASE }}
+
+      - name: Configure known_hosts (evita MITM)
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          # SERVER_SSH_HOST_KEY deve conter a saída de:
+          #   ssh-keyscan -p <porta> <host>
+          # gerada uma única vez de um canal confiável e salva como secret.
+          echo "${{ secrets.SERVER_SSH_HOST_KEY }}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
       - name: Create Exclude File
         run: |
           echo ".git/" > .rsync-exclude
@@ -44,42 +66,44 @@ jobs:
           git ls-files --ignored --exclude-standard -o >> .rsync-exclude
 
       - name: Deploy files
-        uses: easingthemes/ssh-deploy@v2.1.5
-        with:
-          SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}
-          ARGS: "-avz --exclude-from='.rsync-exclude' --update"
-          SOURCE: "./"
-          REMOTE_HOST: ${{ vars.REMOTE_HOST }}
-          REMOTE_USER: ${{ vars.REMOTE_USER }}
-          REMOTE_PORT: ${{ vars.REMOTE_PORT }}
-          TARGET: ${{ vars.TARGET }}
+        run: |
+          rsync -avz \
+            --delete \
+            --exclude-from='.rsync-exclude' \
+            --update \
+            -e "ssh -p ${{ vars.REMOTE_PORT }} -o UserKnownHostsFile=~/.ssh/known_hosts -o StrictHostKeyChecking=yes" \
+            ./ \
+            ${{ vars.REMOTE_USER }}@${{ vars.REMOTE_HOST }}:${{ vars.TARGET }}/
 
       - name: Deploy application
-        uses: appleboy/ssh-action@v1.2.2
-        with:
-          host: ${{ vars.REMOTE_HOST }}
-          username: ${{ vars.REMOTE_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          port: ${{ vars.REMOTE_PORT }}
+        run: |
+          ssh \
+            -p ${{ vars.REMOTE_PORT }} \
+            -o UserKnownHostsFile=~/.ssh/known_hosts \
+            -o StrictHostKeyChecking=yes \
+            ${{ vars.REMOTE_USER }}@${{ vars.REMOTE_HOST }} << 'EOF'
 
-          script: |
-            set -e
+          set -e
 
-            cd ${{ vars.TARGET }}
+          cd ${{ vars.TARGET }}
 
-            echo "Building Docker containers..."
-            docker compose up -d --build
+          echo "Building Docker images (sem substituir containers ainda)..."
+          docker compose build
 
-            echo "Installing Composer dependencies..."
-            docker compose exec -T laravel.sosmecanica composer install \
-              --no-interaction \
-              --prefer-dist \
-              --optimize-autoloader
+          echo "Subindo container temporário para instalar dependências e migrar..."
+          docker compose run --rm laravel.sosmecanica composer install \
+            --no-interaction \
+            --prefer-dist \
+            --optimize-autoloader
 
-            echo "Running database migrations..."
-            docker compose exec -T laravel.sosmecanica php artisan migrate --force
+          echo "Running database migrations..."
+          docker compose run --rm laravel.sosmecanica php artisan migrate --force
 
-            echo "Optimizing Laravel..."
-            docker compose exec -T laravel.sosmecanica php artisan optimize
+          echo "Subindo/recriando containers com a nova imagem..."
+          docker compose up -d
 
-            echo "Deployment completed successfully."
+          echo "Optimizing Laravel..."
+          docker compose exec -T laravel.sosmecanica php artisan optimize
+
+          echo "Deployment completed successfully."
+          EOF
