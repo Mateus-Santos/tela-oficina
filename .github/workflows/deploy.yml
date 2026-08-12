@@ -1,29 +1,37 @@
-name: oficina.oficinamecanica.com deployment
+name: sosmecanica deployment
 
 on:
   push:
     branches: [master]
+    
   pull_request:
     branches: [master]
-  
+
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
+      - name: Repo Checkout
+        uses: actions/checkout@v4
+
       - name: Build
-        run: echo Building the app
-      
+        run: echo "Building the app"
+
   deploy-production:
     runs-on: ubuntu-latest
+
     environment:
       name: production
       url: ${{ vars.URL }}
+
     needs: build
+
     steps:
       - name: Repo Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Create Exclude File
         run: |
@@ -31,9 +39,11 @@ jobs:
           echo "node_modules/" >> .rsync-exclude
           echo "storage/" >> .rsync-exclude
           echo ".env" >> .rsync-exclude
+          echo "vendor/" >> .rsync-exclude
+          echo "public/build/" >> .rsync-exclude
           git ls-files --ignored --exclude-standard -o >> .rsync-exclude
 
-      - name: Hostgator Deployment
+      - name: Deploy files
         uses: easingthemes/ssh-deploy@v2.1.5
         with:
           SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}
@@ -43,3 +53,19 @@ jobs:
           REMOTE_USER: ${{ vars.REMOTE_USER }}
           REMOTE_PORT: ${{ vars.REMOTE_PORT }}
           TARGET: ${{ vars.TARGET }}
+
+      - name: Restart Docker
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ vars.REMOTE_HOST }}
+          username: ${{ vars.REMOTE_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ vars.REMOTE_PORT }}
+          script: |
+            cd ${{ vars.TARGET }}
+
+            docker compose up -d --build
+
+            docker compose exec -T laravel.test php artisan migrate --force
+
+            docker compose exec -T laravel.test php artisan optimize
