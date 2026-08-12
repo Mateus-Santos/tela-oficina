@@ -3,7 +3,7 @@ name: sosmecanica deployment
 on:
   push:
     branches: [master]
-    
+
   pull_request:
     branches: [master]
 
@@ -54,18 +54,32 @@ jobs:
           REMOTE_PORT: ${{ vars.REMOTE_PORT }}
           TARGET: ${{ vars.TARGET }}
 
-      - name: Restart Docker
+      - name: Deploy application
         uses: appleboy/ssh-action@v1.2.2
         with:
           host: ${{ vars.REMOTE_HOST }}
           username: ${{ vars.REMOTE_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: ${{ vars.REMOTE_PORT }}
+
           script: |
+            set -e
+
             cd ${{ vars.TARGET }}
 
+            echo "Building Docker containers..."
             docker compose up -d --build
 
-            docker compose exec -T laravel.test php artisan migrate --force
+            echo "Installing Composer dependencies..."
+            docker compose exec -T laravel.sosmecanica composer install \
+              --no-interaction \
+              --prefer-dist \
+              --optimize-autoloader
 
-            docker compose exec -T laravel.test php artisan optimize
+            echo "Running database migrations..."
+            docker compose exec -T laravel.sosmecanica php artisan migrate --force
+
+            echo "Optimizing Laravel..."
+            docker compose exec -T laravel.sosmecanica php artisan optimize
+
+            echo "Deployment completed successfully."
