@@ -27,9 +27,9 @@
             <tr>
                 <th scope="row">{{ $veiculoscliente->id }}</th>
                 <td>{{ $veiculoscliente->veiculo?->nome ?? 'N/A' }}</td>
+                <td>{{ $veiculoscliente->veiculo?->montadora?->nome ?? 'N/A' }}</td>
                 <td>{{ $veiculoscliente->placa }}</td>
                 <td>{{ $veiculoscliente->ano }}</td>
-                <td>{{ $veiculoscliente->veiculo?->montadora?->nome ?? 'N/A' }}</td>
                 <td>{{ $veiculoscliente->cor }}</td>
                 <td>{{ $veiculoscliente->cliente?->pessoa?->nome ?? 'N/A' }}</td>
                 
