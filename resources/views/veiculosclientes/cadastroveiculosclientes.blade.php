@@ -20,26 +20,46 @@
     <form action="{{ route('veiculosclientes.store') }}" method="POST">
       @csrf
         <div class="row mb-3">
+          
           @if(auth()->user() && auth()->user()->permitions != 2)
+            {{-- Visão para Admin / Outras permissões (Mostra Select com Todos os Clientes) --}}
             <div class="row mb-3">
               <div class="col-md-6">
                 <label class="form-label" for="id_cliente">Pessoa:*</label>
                 <select class="form-control" id="id_cliente" name="id_cliente" required>
-                <option selected>Escolher...</option>
-                  @foreach($users as $user)
-                    @if($user->permitions == 2)
-                      <option value="{{$user->pessoa->cliente->id}}">{{ $user->pessoa->nome }}</option>
-                    @endif
+                  <option value="">Escolher...</option>
+
+                  @foreach($clientes as $cliente)
+                    <option value="{{ $cliente->id }}">
+                      {{ $cliente->pessoa->nome ?? $cliente->id }}
+                    </option>
                   @endforeach
+
                 </select>
               </div>
             </div>
           @else
-            <div class="row mb">
-                <div class="col-md-2">
-                    <label class="form-label" for="id_cliente">{{auth()->user()->pessoa()->name}}</label>
-                    <input class="form-control" type="text" name="id_cliente" id="id_cliente" value="{{auth()->user()->id}}" readonly>
-                </div>
+            {{-- Visão para Permissão 2 (Usuário comum - exibe apenas seus dados fixos) --}}
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label class="form-label" for="id_cliente_nome">
+                  Pessoa: {{ auth()->user()->pessoa->nome ?? auth()->user()->name }}
+                </label>
+                
+                {{-- Envia o ID do cliente correspondente ao usuário logado --}}
+                <input 
+                  class="form-control" 
+                  type="text" 
+                  value="{{ auth()->user()->pessoa->cliente->id ?? auth()->user()->id }}" 
+                  readonly
+                >
+                {{-- Campo oculto para garantir que o ID do cliente seja enviado no formulário --}}
+                <input 
+                  type="hidden" 
+                  name="id_cliente" 
+                  value="{{ auth()->user()->pessoa->cliente->id ?? auth()->user()->id }}"
+                >
+              </div>
             </div>
           @endif
           <div class="col-md-4">

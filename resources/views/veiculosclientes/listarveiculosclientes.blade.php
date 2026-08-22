@@ -4,19 +4,20 @@
 
 <div class="container cadastro">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1>LISTAR VEÍCULOS</h1>
-        <a href="{{ route('veiculosclientes.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Novo Veículo</a>
+        <h1>LISTAR Veiculos</h1>
+        <a href="{{ route('veiculosclientes.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Novo Veiculo</a>
     </div>
 
     <table class="table table-striped table-hover align-middle">
         <thead>
             <tr>
                 <th scope="col">ID</th>
+                <th scope="col">Veiculo</th>
+                <th scope="col">Montadora</th>
                 <th scope="col">Placa</th>
                 <th scope="col">Ano</th>
-                <th scope="col">Montadora</th>
                 <th scope="col">Cor</th>
-                <th scope="col">Usuário</th>
+                <th scope="col">Responsável</th>
                 <th scope="col" class="text-center">Editar</th>
                 <th scope="col" class="text-center">Excluir</th>
             </tr>
@@ -25,6 +26,7 @@
             @forelse($veiculosclientes as $veiculoscliente)
             <tr>
                 <th scope="row">{{ $veiculoscliente->id }}</th>
+                <td>{{ $veiculoscliente->veiculo?->nome ?? 'N/A' }}</td>
                 <td>{{ $veiculoscliente->placa }}</td>
                 <td>{{ $veiculoscliente->ano }}</td>
                 <td>{{ $veiculoscliente->veiculo?->montadora?->nome ?? 'N/A' }}</td>
@@ -38,7 +40,7 @@
                 </td>
 
                 <td class="text-center">
-                    <form action="{{ route('veiculosclientes.destroy', $veiculoscliente->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este veículo?');">
+                    <form action="{{ route('veiculosclientes.destroy', $veiculoscliente->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este Veiculo?');">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-sm btn-danger" title="Excluir">
@@ -50,7 +52,7 @@
             @empty
             <tr>
                 <td colspan="8" class="text-center text-muted py-4">
-                    Nenhum veículo cadastrado até o momento.
+                    Nenhum Veiculo cadastrado até o momento.
                 </td>
             </tr>
             @endforelse
