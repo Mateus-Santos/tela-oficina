@@ -7,7 +7,7 @@ use App\Models\Montadora;
 
 class MontadoraController extends Controller
 {
-    public function veiculos($id)
+    public function veiculos(string $id)
     {
         $montadora = Montadora::with('veiculos')->find($id);
 
