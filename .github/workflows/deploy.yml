@@ -3,28 +3,15 @@ name: sosmecanica deployment
 on:
   push:
     branches: [master]
-
   pull_request:
     branches: [master]
-
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Repo Checkout
-        uses: actions/checkout@v4
-
-      - name: Build
-        run: echo "Building the app"
-
   deploy-production:
-    # Só roda em push direto na master ou disparo manual — NUNCA em pull_request
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
 
     runs-on: ubuntu-latest
@@ -32,8 +19,6 @@ jobs:
     environment:
       name: production
       url: ${{ vars.URL }}
-
-    needs: build
 
     steps:
       - name: Repo Checkout
@@ -51,6 +36,16 @@ jobs:
           echo "${{ secrets.SERVER_SSH_HOST_KEY }}" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Frontend Dependencies & Build
+        run: |
+          npm ci
+          npm run build
+
       - name: Create Exclude File
         run: |
           echo ".git/" > .rsync-exclude
@@ -58,8 +53,9 @@ jobs:
           echo "storage/" >> .rsync-exclude
           echo ".env" >> .rsync-exclude
           echo "vendor/" >> .rsync-exclude
-          echo "public/build/" >> .rsync-exclude
           git ls-files --ignored --exclude-standard -o >> .rsync-exclude
+          # Garante que public/build/ NUNCA seja ignorado pelo rsync
+          sed -i '/public\/build/d' .rsync-exclude
 
       - name: Deploy files
         run: |
@@ -92,19 +88,17 @@ jobs:
             --prefer-dist \
             --optimize-autoloader
 
-          echo "Installing frontend dependencies..."
-          docker compose run --rm laravel.sosmecanica npm ci
-
-          echo "Building frontend assets..."
-          docker compose run --rm laravel.sosmecanica npm run build
-
           echo "Running database migrations..."
           docker compose run --rm laravel.sosmecanica php artisan migrate --force
 
           echo "Recreating containers..."
           docker compose up -d --force-recreate
 
+          echo "Linking storage..."
+          docker compose exec -T laravel.sosmecanica php artisan storage:link || true
+
           echo "Optimizing Laravel..."
+          docker compose exec -T laravel.sosmecanica php artisan optimize:clear
           docker compose exec -T laravel.sosmecanica php artisan optimize
 
           echo "Deployment completed successfully."
