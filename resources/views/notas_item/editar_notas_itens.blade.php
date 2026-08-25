@@ -170,39 +170,69 @@
             </div>
         </div>
 
-        {{-- 4. Resumo Financeiro & Desconto Geral da Nota --}}
-        <div class="card mb-4 shadow-sm border-secondary">
-            <div class="card-header bg-secondary text-white">4. Resumo Financeiro & Desconto Geral</div>
-            <div class="card-body">
-                <div class="row align-items-center">
-                    <div class="col-md-4">
-                        <label class="form-label font-weight-bold">Desconto Geral da Nota</label>
-                        <div class="input-group">
-                            <select name="tipo_desconto_geral" id="tipo-desconto-geral" class="form-select" style="max-width: 90px;">
-                                <option value="valor" {{ ($nota->tipo_desconto ?? '') == 'valor' ? 'selected' : '' }}>R$</option>
-                                <option value="porcentagem" {{ ($nota->tipo_desconto ?? '') == 'porcentagem' ? 'selected' : '' }}>%</option>
-                            </select>
-                            <input type="number" name="desconto_geral" id="input-desconto-geral" class="form-control" step="0.01" min="0" value="{{ number_format($nota->desconto ?? 0, 2, '.', '') }}" placeholder="0.00">
-                        </div>
-                        <small class="text-muted">Aplica um desconto sobre a soma total dos itens.</small>
+        {{-- 4. Resumo Financeiro Consolidado Detalhado --}}
+        <div class="row mb-4">
+            <div class="col-md-7 offset-md-5">
+                <div class="card border-primary shadow-sm">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-2">
+                        <h5 class="mb-0 fs-6"><i class="bi bi-calculator"></i> Resumo Financeiro Detalhado</h5>
+                        <button type="button" class="btn btn-sm btn-light fw-bold text-primary" data-bs-toggle="modal" data-bs-target="#modalDescontos">
+                            <i class="bi bi-percent"></i> Aplicar / Editar Descontos
+                        </button>
                     </div>
+                    <div class="card-body p-3">
 
-                    <div class="col-md-8">
-                        <div class="p-3 bg-light rounded border">
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>Subtotal dos Itens:</span>
-                                <strong id="resumo-subtotal">R$ {{ number_format($nota->subtotal ?? $nota->total, 2, ',', '.') }}</strong>
+                        {{-- Seção: Peças / Produtos --}}
+                        <div class="bg-light p-2 rounded mb-3 border">
+                            <h6 class="fw-bold text-primary mb-2 border-bottom pb-1" style="font-size: 0.9rem;">
+                                <i class="bi bi-box-seam"></i> PEÇAS / PRODUTOS
+                            </h6>
+                            <div class="d-flex justify-content-between mb-1 fs-7">
+                                <span class="text-muted">Subtotal Bruto:</span>
+                                <span id="resumo-pecas-bruto">R$ 0,00</span>
                             </div>
-                            <div class="d-flex justify-content-between mb-2 text-danger">
-                                <span>Desconto Aplicado:</span>
-                                <strong id="resumo-desconto">- R$ {{ number_format($nota->desconto ?? 0, 2, ',', '.') }}</strong>
+                            <div class="d-flex justify-content-between mb-1 fs-7 text-danger">
+                                <span>(-) Desconto Aplicado:</span>
+                                <span id="resumo-pecas-desconto">R$ 0,00</span>
                             </div>
-                            <hr class="my-2">
-                            <div class="d-flex justify-content-between text-success fs-4 fw-bold">
-                                <span>Total Final:</span>
-                                <span id="valor-geral-os">R$ {{ number_format($nota->total, 2, ',', '.') }}</span>
+                            <div class="d-flex justify-content-between fw-bold text-dark pt-1 border-top">
+                                <span>Subtotal Líquido Peças:</span>
+                                <span id="resumo-pecas-liquido">R$ 0,00</span>
                             </div>
                         </div>
+
+                        {{-- Seção: Mão de Obra / Serviços --}}
+                        <div class="bg-light p-2 rounded mb-3 border">
+                            <h6 class="fw-bold text-warning text-dark mb-2 border-bottom pb-1" style="font-size: 0.9rem;">
+                                <i class="bi bi-tools"></i> MÃO DE OBRA / SERVIÇOS
+                            </h6>
+                            <div class="d-flex justify-content-between mb-1 fs-7">
+                                <span class="text-muted">Subtotal Bruto:</span>
+                                <span id="resumo-servicos-bruto">R$ 0,00</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1 fs-7 text-danger">
+                                <span>(-) Desconto Aplicado:</span>
+                                <span id="resumo-servicos-desconto">R$ 0,00</span>
+                            </div>
+                            <div class="d-flex justify-content-between fw-bold text-dark pt-1 border-top">
+                                <span>Subtotal Líquido Serviços:</span>
+                                <span id="resumo-servicos-liquido">R$ 0,00</span>
+                            </div>
+                        </div>
+
+                        <hr class="my-2">
+
+                        {{-- Consolidação Geral --}}
+                        <div class="d-flex justify-content-between mb-1 text-danger fw-bold">
+                            <span>TOTAL DE DESCONTOS CONCEDIDOS:</span>
+                            <span id="resumo-total-descontos">R$ 0,00</span>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                            <h5 class="mb-0 text-dark fw-bold">VALOR TOTAL DA NOTA:</h5>
+                            <h3 class="mb-0 text-success fw-bold" id="valor-geral-os">R$ 0,00</h3>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -215,8 +245,69 @@
         </div>
     </form>
 </div>
+
+{{-- MODAL DE DESCONTOS (POP-UP) --}}
+<div class="modal fade" id="modalDescontos" tabindex="-1" aria-labelledby="modalDescontosLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title" id="modalDescontosLabel"><i class="bi bi-tags-fill"></i> Gerenciador de Descontos</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {{-- Desconto Peças --}}
+                <div class="card mb-3 bg-light border-0">
+                    <div class="card-body p-3">
+                        <label class="form-label fw-bold text-primary"><i class="bi bi-box-seam"></i> Desconto em Peças / Produtos</label>
+                        <div class="row g-2">
+                            <div class="col-7">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">Val. (R$)</span>
+                                    <input type="number" id="modal-desc-pecas-valor" class="form-control" step="0.01" min="0" placeholder="0.00">
+                                </div>
+                            </div>
+                            <div class="col-5">
+                                <div class="input-group input-group-sm">
+                                    <input type="number" id="modal-desc-pecas-porcent" class="form-control" step="0.01" min="0" max="100" placeholder="0">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Desconto Mão de Obra --}}
+                <div class="card bg-light border-0">
+                    <div class="card-body p-3">
+                        <label class="form-label fw-bold text-warning text-dark"><i class="bi bi-tools"></i> Desconto em Mão de Obra / Serviços</label>
+                        <div class="row g-2">
+                            <div class="col-7">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">Val. (R$)</span>
+                                    <input type="number" id="modal-desc-servicos-valor" class="form-control" step="0.01" min="0" placeholder="0.00">
+                                </div>
+                            </div>
+                            <div class="col-5">
+                                <div class="input-group input-group-sm">
+                                    <input type="number" id="modal-desc-servicos-porcent" class="form-control" step="0.01" min="0" max="100" placeholder="0">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success fw-bold" id="btn-aplicar-descontos-modal">
+                    <i class="bi bi-check-circle"></i> Aplicar Descontos
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('scripts')
-@vite(['resources/js/gerenciadorItensOs.js', ])
+@vite(['resources/js/gerenciadorItensOs.js'])
 @endsection
