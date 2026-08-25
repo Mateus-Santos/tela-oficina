@@ -1,146 +1,171 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>Nota Nº {{ $nota->id }}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Recibo #{{ str_pad($nota->id, 6, '0', STR_PAD_LEFT) }}</title>
     <style>
-        /* Estilos base para PDF */
-        * {
-            box-sizing: border-box;
-            font-family: Arial, Helvetica, sans-serif;
-            margin: 0;
-            padding: 0;
+        @page {
+            margin: 15px 20px;
         }
 
         body {
-            font-size: 12px;
-            color: #333;
-            padding: 20px;
+            font-family: 'DejaVu Sans', Helvetica, Arial, sans-serif;
+            font-size: 10px;
+            color: #333333;
+            margin: 0;
+            padding: 0;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
         }
 
+        .text-left { text-align: left; }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
+        .font-bold { font-weight: bold; }
 
         /* Cabeçalho */
-        .header td {
-            vertical-align: top;
+        .header-table td {
+            padding-bottom: 10px;
+            border-bottom: 2px solid #dddddd;
+            vertical-align: middle;
         }
+
         .title {
             font-size: 18px;
             font-weight: bold;
-            color: #1a202c;
-            margin-bottom: 5px;
-        }
-        .header-info {
-            font-size: 11px;
-            color: #555;
-            line-height: 1.4;
-        }
-        .logo-img {
-            max-height: 60px;
-            width: auto;
+            color: #111111;
         }
 
-        /* Badges de Status otimizadas para Dompdf */
+        .meta-info {
+            font-size: 10px;
+            color: #555555;
+            margin-top: 3px;
+        }
+
+        /* Status Badge */
         .badge {
-            display: inline;
+            display: inline-block;
             padding: 2px 6px;
             font-size: 9px;
             font-weight: bold;
             color: #ffffff;
-            border-radius: 3px;
-            text-transform: uppercase;
+            background-color: #666666;
         }
-        .badge-cancelado { background-color: #e53e3e; }
-        .badge-finalizado { background-color: #38a169; }
-        .badge-pendente   { background-color: #d69e2e; }
+        .badge-cancelado { background-color: #d9534f; }
+        .badge-finalizado { background-color: #5cb85c; }
+        .badge-pendente   { background-color: #f0ad4e; }
 
-        /* Tabela de Informações */
-        .info-table {
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 4px;
+        /* Dados Cliente e Veículo */
+        .box-info {
+            background-color: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            margin-top: 10px;
+            margin-bottom: 12px;
         }
-        .info-table td {
-            padding: 10px;
+        .box-info td {
+            padding: 6px 8px;
             vertical-align: top;
-        }
-        .info-title {
             font-size: 10px;
+        }
+        .box-title {
+            font-size: 9px;
             font-weight: bold;
-            color: #718096;
+            color: #777777;
             text-transform: uppercase;
             margin-bottom: 3px;
         }
-        .info-value {
-            font-size: 12px;
-            font-weight: bold;
-            color: #2d3748;
-            line-height: 1.3;
-        }
-        .info-sub {
-            font-size: 11px;
-            font-weight: normal;
-            color: #4a5568;
-        }
 
         /* Tabela de Itens */
-        .table-data th {
-            background-color: #2d3748;
+        .table-items {
+            margin-bottom: 12px;
+        }
+        .table-items th {
+            background-color: #333333;
             color: #ffffff;
-            font-size: 11px;
-            padding: 8px;
+            font-size: 9.5px;
+            padding: 5px 6px;
             text-transform: uppercase;
         }
-        .table-data td {
-            padding: 8px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        .table-data tr:nth-child(even) {
-            background-color: #f7fafc;
+        .table-items td {
+            padding: 5px 6px;
+            border-bottom: 1px solid #eeeeee;
+            font-size: 9.5px;
         }
 
-        /* Caixa de Totais */
-        .total-box {
-            width: 45%;
-            margin-left: auto;
-            border: 1px solid #e2e8f0;
-            border-radius: 4px;
-        }
-        .total-box td {
-            padding: 6px 10px;
-            border-bottom: 1px solid #edf2f7;
-            font-size: 11px;
-        }
-        .total-box tr:last-child td {
-            border-bottom: none;
-            font-size: 13px;
+        .row-category td {
+            background-color: #eaeaea !important;
             font-weight: bold;
-            background-color: #edf2f7;
+            font-size: 9px;
+            color: #333333;
+            text-transform: uppercase;
+            padding: 4px 6px;
+            border-top: 1px solid #cccccc;
+            border-bottom: 1px solid #cccccc;
         }
-        .total-box .label {
-            color: #4a5568;
+
+        .row-subtotal td {
+            background-color: #f4f6f8 !important;
+            font-size: 9px;
+            color: #222222;
+            padding: 5px 6px;
+            border-bottom: 1px solid #cccccc;
+        }
+
+        /* Totais e Observações */
+        .table-footer td {
+            vertical-align: top;
+        }
+
+        .box-obs {
+            border: 1px solid #dddddd;
+            background-color: #fafafa;
+            padding: 6px 8px;
+            font-size: 9px;
+            color: #555555;
+        }
+
+        .table-summary {
+            border: 1px solid #cccccc;
+        }
+        .table-summary td {
+            padding: 5px 8px;
+            border-bottom: 1px solid #eeeeee;
+            font-size: 10px;
+        }
+        .table-summary tr.total-row td {
+            background-color: #333333;
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 11px;
+            border-bottom: none;
+        }
+
+        /* Assinatura */
+        .signature-line {
+            margin-top: 30px;
+            border-top: 1px solid #999999;
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center;
+            padding-top: 3px;
+            font-size: 9px;
+            color: #666666;
         }
     </style>
 </head>
 <body>
 
-    <table class="header">
+    <!-- CABEÇALHO -->
+    <table class="header-table">
         <tr>
-            <td>
-                <div class="title">
-                    RECIBO #000{{ $nota->id }}
-                </div>
-
-                <div class="header-info">
-                    Data: <strong>{{ $nota->created_at->format('d/m/Y H:i') }}</strong><br>
-                    Status:
+            <td width="60%">
+                <div class="title">RECIBO #{{ str_pad($nota->id, 6, '0', STR_PAD_LEFT) }}</div>
+                <div class="meta-info">
+                    Emissão: <strong>{{ $nota->created_at->format('d/m/Y \à\s H:i') }}</strong> | Status:
                     @php $status = strtolower(trim($nota->status)); @endphp
                     @if($status === 'cancelado')
                         <span class="badge badge-cancelado">CANCELADO</span>
@@ -151,122 +176,165 @@
                     @endif
                 </div>
             </td>
-
-            <td class="text-right">
-                <img src="{{ public_path('img/New Logo.png') }}" class="logo-img">
+            <td width="40%" class="text-right">
+                <img src="{{ public_path('img/New Logo.png') }}" style="max-height: 45px;" alt="Logo">
             </td>
         </tr>
     </table>
 
-    <table class="info-table">
+    <!-- INFORMAÇÕES CLIENTE E VEÍCULO -->
+    <table class="box-info">
         <tr>
-            <td width="50%">
-                <div class="info-title">CLIENTE</div>
-                <div class="info-value">
-                    {{ $nota->cliente->pessoa->nome ?? 'Não Informado' }}
-                </div>
-                <div class="info-sub">
-                    Tel: {{ $nota->cliente->pessoa->telefone_1 ?? $nota->cliente->pessoa->telefone_2 ?? 'N/A' }}
-                </div>
+            <td width="50%" style="border-right: 1px solid #e0e0e0;">
+                <div class="box-title">Dados do Cliente</div>
+                <strong>{{ $nota->cliente->pessoa->nome ?? 'Não Informado' }}</strong><br>
+                Telefone: {{ $nota->cliente->pessoa->telefone_1 ?? $nota->cliente->pessoa->telefone_2 ?? 'Não informado' }}
             </td>
-
             <td width="50%">
-                <div class="info-title">VEÍCULO</div>
-                <div class="info-value">
-                    {{ $nota->veiculosCliente->placa ?? 'Sem Placa' }}
-                </div>
-                <div class="info-sub">
-                    Modelo: {{ $nota->veiculosCliente->veiculo->nome ?? 'N/A' }} 
-                    | Ano: {{ $nota->veiculosCliente->ano ?? 'N/A' }}
-                </div>
+                <div class="box-title">Dados do Veículo</div>
+                <strong>Placa: {{ $nota->veiculosCliente->placa ?? 'Sem Placa' }}</strong><br>
+                Modelo: {{ $nota->veiculosCliente->veiculo->nome ?? 'N/A' }} | Ano: {{ $nota->veiculosCliente->ano ?? 'N/A' }}
             </td>
         </tr>
     </table>
 
-    <table class="table-data">
+    <!-- CÁLCULOS E FILTRAGENS DE ITENS -->
+    @php
+        $produtos = $nota->itens->filter(function($i) {
+            $t = strtolower($i->tipo ?? $i->tipo_formatado ?? '');
+            return !in_array($t, ['servico', 'serviço', 's']);
+        });
+
+        $servicos = $nota->itens->filter(function($i) {
+            $t = strtolower($i->tipo ?? $i->tipo_formatado ?? '');
+            return in_array($t, ['servico', 'serviço', 's']);
+        });
+
+        // Totais de Produtos
+        $brutoProdutos     = $produtos->sum(fn($i) => $i->quantidade * $i->valor_unitario);
+        $descontoProdutos  = $produtos->sum(fn($i) => $i->desconto ?? 0);
+        $subtotalProdutos  = $brutoProdutos - $descontoProdutos;
+
+        // Totais de Serviços
+        $brutoServicos    = $servicos->sum(fn($i) => $i->quantidade * $i->valor_unitario);
+        $descontoServicos = $servicos->sum(fn($i) => $i->desconto ?? 0);
+        $subtotalServicos = $brutoServicos - $descontoServicos;
+
+        // Totais Consolidados Gerais
+        $brutoGeral           = $brutoProdutos + $brutoServicos;
+        $totalDescontosItens  = $descontoProdutos + $descontoServicos;
+        $descontoGeral        = $nota->desconto ?? 0;
+        $totalDescontosGeral  = $totalDescontosItens + $descontoGeral;
+        $totalFinal           = $nota->total ?? ($brutoGeral - $totalDescontosGeral);
+    @endphp
+
+    <!-- TABELA DE ITENS -->
+    <table class="table-items">
         <thead>
             <tr>
-                <th width="12%">Tipo</th>
-                <th width="38%">Descrição</th>
-                <th width="8%" class="text-center">Qtd</th>
-                <th width="14%" class="text-right">Valor Unit.</th>
-                <th width="13%" class="text-right">Desconto</th>
-                <th width="15%" class="text-right">Total</th>
+                <th width="40%" class="text-left">Descrição do Item</th>
+                <th width="10%" class="text-center">Qtd</th>
+                <th width="16%" class="text-right">Valor Unit.</th>
+                <th width="14%" class="text-right">Desconto</th>
+                <th width="20%" class="text-right">Total Item</th>
             </tr>
         </thead>
         <tbody>
-            @forelse($nota->itens as $item)
-                <tr>
-                    <td class="text-center">
-                        {{ $item->tipo_formatado }}
-                    </td>
-                    <td>
-                        {{ $item->descricao }}
-                    </td>
-                    <td class="text-center">
-                        {{ $item->quantidade }}
-                    </td>
-                    <td class="text-right">
-                        R$ {{ number_format($item->valor_unitario, 2, ',', '.') }}
-                    </td>
-                    <td class="text-right">
-                        R$ {{ number_format($item->desconto ?? 0, 2, ',', '.') }}
-                    </td>
-                    <td class="text-right">
-                        R$ {{ number_format($item->valor_total ?? (($item->quantidade * $item->valor_unitario) - ($item->desconto ?? 0)), 2, ',', '.') }}
+            <!-- SEÇÃO PRODUTOS / PEÇAS -->
+            @if($produtos->count() > 0)
+                <tr class="row-category">
+                    <td colspan="5">&gt; PRODUTOS / PEÇAS</td>
+                </tr>
+                @foreach($produtos as $item)
+                    @php $itemTotal = ($item->quantidade * $item->valor_unitario) - ($item->desconto ?? 0); @endphp
+                    <tr>
+                        <td class="text-left">{{ $item->descricao }}</td>
+                        <td class="text-center">{{ $item->quantidade }}</td>
+                        <td class="text-right">R$ {{ number_format($item->valor_unitario, 2, ',', '.') }}</td>
+                        <td class="text-right">R$ {{ number_format($item->desconto ?? 0, 2, ',', '.') }}</td>
+                        <td class="text-right font-bold">R$ {{ number_format($item->valor_total ?? $itemTotal, 2, ',', '.') }}</td>
+                    </tr>
+                @endforeach
+                <!-- SUB-TOTAL PRODUTOS -->
+                <tr class="row-subtotal">
+                    <td colspan="3" class="text-right font-bold">Resumo Produtos:</td>
+                    <td class="text-right">Desc: R$ {{ number_format($descontoProdutos, 2, ',', '.') }}</td>
+                    <td class="text-right font-bold">
+                        Bruto: R$ {{ number_format($brutoProdutos, 2, ',', '.') }}<br>
+                        Líquido: R$ {{ number_format($subtotalProdutos, 2, ',', '.') }}
                     </td>
                 </tr>
-            @empty
-                <tr>
-                    <td colspan="6" class="text-center">
-                        Nenhum item encontrado.
+            @endif
+
+            <!-- SEÇÃO SERVIÇOS / MÃO DE OBRA -->
+            @if($servicos->count() > 0)
+                <tr class="row-category">
+                    <td colspan="5">&gt; SERVIÇOS / MÃO DE OBRA</td>
+                </tr>
+                @foreach($servicos as $item)
+                    @php $itemTotal = ($item->quantidade * $item->valor_unitario) - ($item->desconto ?? 0); @endphp
+                    <tr>
+                        <td class="text-left">{{ $item->descricao }}</td>
+                        <td class="text-center">{{ $item->quantidade }}</td>
+                        <td class="text-right">R$ {{ number_format($item->valor_unitario, 2, ',', '.') }}</td>
+                        <td class="text-right">R$ {{ number_format($item->desconto ?? 0, 2, ',', '.') }}</td>
+                        <td class="text-right font-bold">R$ {{ number_format($item->valor_total ?? $itemTotal, 2, ',', '.') }}</td>
+                    </tr>
+                @endforeach
+                <!-- SUB-TOTAL SERVIÇOS -->
+                <tr class="row-subtotal">
+                    <td colspan="3" class="text-right font-bold">Resumo Serviços:</td>
+                    <td class="text-right">Desc: R$ {{ number_format($descontoServicos, 2, ',', '.') }}</td>
+                    <td class="text-right font-bold">
+                        Bruto: R$ {{ number_format($brutoServicos, 2, ',', '.') }}<br>
+                        Líquido: R$ {{ number_format($subtotalServicos, 2, ',', '.') }}
                     </td>
                 </tr>
-            @endforelse
+            @endif
+
+            @if($nota->itens->isEmpty())
+                <tr>
+                    <td colspan="5" class="text-center" style="padding: 12px;">Nenhum item cadastrado.</td>
+                </tr>
+            @endif
         </tbody>
     </table>
 
-    @php
-        $subtotalProdutos = 0;
-        $subtotalServicos = 0;
+    <!-- TOTAIS E OBSERVAÇÕES -->
+    <table class="table-footer">
+        <tr>
+            <td width="55%" style="padding-right: 15px;">
+                @if(!empty($nota->observacao))
+                    <div class="box-obs">
+                        <strong>OBSERVAÇÕES:</strong><br>
+                        {{ $nota->observacao }}
+                    </div>
+                @endif
 
-        foreach ($nota->itens as $item) {
-            $valorItem = $item->valor_total ?? (($item->quantidade * $item->valor_unitario) - ($item->desconto ?? 0));
-            $tipo = strtolower($item->tipo ?? $item->tipo_formatado ?? '');
+                <div class="signature-area">
+                    <div class="signature-line">
+                        Assinatura do Cliente
+                    </div>
+                </div>
+            </td>
 
-            if (in_array($tipo, ['servico', 'serviço', 's'])) {
-                $subtotalServicos += $valorItem;
-            } else {
-                $subtotalProdutos += $valorItem;
-            }
-        }
-    @endphp
-
-    <table class="total-box">
-        <tr>
-            <td class="label">Subtotal de Produtos</td>
-            <td class="text-right">
-                R$ {{ number_format($subtotalProdutos, 2, ',', '.') }}
-            </td>
-        </tr>
-        <tr>
-            <td class="label">Subtotal de Serviços</td>
-            <td class="text-right">
-                R$ {{ number_format($subtotalServicos, 2, ',', '.') }}
-            </td>
-        </tr>
-        @if(($nota->desconto ?? 0) > 0)
-        <tr>
-            <td class="label">Desconto Geral</td>
-            <td class="text-right">
-                - R$ {{ number_format($nota->desconto, 2, ',', '.') }}
-            </td>
-        </tr>
-        @endif
-        <tr>
-            <td>TOTAL DA NOTA</td>
-            <td class="text-right">
-                R$ {{ number_format($nota->total, 2, ',', '.') }}
+            <td width="45%">
+                <table class="summary-table">
+                    <tr>
+                        <td class="text-left">Total Bruto Geral:</td>
+                        <td class="text-right">R$ {{ number_format($brutoGeral, 2, ',', '.') }}</td>
+                    </tr>
+                    @if($totalDescontosGeral > 0)
+                    <tr>
+                        <td class="text-left" style="color: #d9534f;">Total de Descontos:</td>
+                        <td class="text-right" style="color: #d9534f;">- R$ {{ number_format($totalDescontosGeral, 2, ',', '.') }}</td>
+                    </tr>
+                    @endif
+                    <tr class="total-row">
+                        <td class="text-left">TOTAL FINAL:</td>
+                        <td class="text-right">R$ {{ number_format($totalFinal, 2, ',', '.') }}</td>
+                    </tr>
+                </table>
             </td>
         </tr>
     </table>

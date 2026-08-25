@@ -49,7 +49,7 @@ class NotaController extends Controller
         $itens = $nota->notasitem;
 
         $valorTotal = $itens->sum(function ($item) {
-            return $item->quantidade * $item->valor_unitario;
+            return ($item->quantidade * $item->valor_unitario) - $item->desconto;
         });
 
         return view('notas_item.show_notas_itens', compact('nota', 'itens', 'valorTotal'));

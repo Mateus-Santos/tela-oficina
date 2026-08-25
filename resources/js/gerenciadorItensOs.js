@@ -1,13 +1,73 @@
+window.recalcularTotalGeral = function () {
+    let brutoProdutos = 0;
+    let descontoProdutos = 0;
+
+    let brutoServicos = 0;
+    let descontoServicos = 0;
+
+    const linhas = document.querySelectorAll('.item-row');
+
+    linhas.forEach(linha => {
+        const inputType = linha.querySelector('input[name*="[itemable_type]"]');
+        if (!inputType) return;
+
+        const isProduto = inputType.value.includes('Produto');
+
+        const elQtd = linha.querySelector('.input-qtd');
+        const elVunit = linha.querySelector('.input-vunit');
+        const elDescItem = linha.querySelector('.input-desc-val');
+
+        const qtd = elQtd ? parseFloat(elQtd.value) || 0 : 0;
+        const vunit = elVunit ? parseFloat(elVunit.value) || 0 : 0;
+        const descItem = elDescItem ? parseFloat(elDescItem.value) || 0 : 0;
+
+        const subtotalLinhaBruto = qtd * vunit;
+
+        if (isProduto) {
+            brutoProdutos += subtotalLinhaBruto;
+            descontoProdutos += descItem;
+        } else {
+            brutoServicos += subtotalLinhaBruto;
+            descontoServicos += descItem;
+        }
+    });
+
+    // Cálculos dos Subtotais Líquidos
+    const liquidoProdutos = Math.max(0, brutoProdutos - descontoProdutos);
+    const liquidoServicos = Math.max(0, brutoServicos - descontoServicos);
+    const totalDescontos = descontoProdutos + descontoServicos;
+    const valorTotalNota = liquidoProdutos + liquidoServicos;
+
+    // Função de formatação para R$
+    const fmt = (val) => 'R$ ' + val.toFixed(2).replace('.', ',');
+
+    // Atualização dos elementos da DOM (Peças)
+    const elPecasBruto = document.getElementById('resumo-pecas-bruto');
+    const elPecasDesc = document.getElementById('resumo-pecas-desconto');
+    const elPecasLiq = document.getElementById('resumo-pecas-liquido');
+
+    if (elPecasBruto) elPecasBruto.innerText = fmt(brutoProdutos);
+    if (elPecasDesc) elPecasDesc.innerText = fmt(descontoProdutos);
+    if (elPecasLiq) elPecasLiq.innerText = fmt(liquidoProdutos);
+
+    // Atualização dos elementos da DOM (Serviços)
+    const elServicosBruto = document.getElementById('resumo-servicos-bruto');
+    const elServicosDesc = document.getElementById('resumo-servicos-desconto');
+    const elServicosLiq = document.getElementById('resumo-servicos-liquido');
+
+    if (elServicosBruto) elServicosBruto.innerText = fmt(brutoServicos);
+    if (elServicosDesc) elServicosDesc.innerText = fmt(descontoServicos);
+    if (elServicosLiq) elServicosLiq.innerText = fmt(liquidoServicos);
+
+    // Atualização Totais Gerais
+    const elTotalDesc = document.getElementById('resumo-total-descontos');
+    const elValorGeralOs = document.getElementById('valor-geral-os');
+
+    if (elTotalDesc) elTotalDesc.innerText = fmt(totalDescontos);
+    if (elValorGeralOs) elValorGeralOs.innerText = fmt(valorTotalNota);
+};
+
 document.addEventListener('DOMContentLoaded', () => {
-
-    // --- ELEMENTOS DE IDENTIFICAÇÃO DO VEÍCULO E PLACA ---
-    const placaInput = document.getElementById('placa_input');
-    const clienteNome = document.getElementById('cliente_nome');
-    const idVeiculo = document.getElementById('veiculo_cliente_id');
-    const clienteIdInput = document.getElementById('cliente_id');
-    const kmInput = document.getElementById('km'); // <-- Adicionado referência ao KM
-
-    // --- ELEMENTOS DO CONSTRUTOR DE ITENS ---
     const typeSelect = document.getElementById('builder_type');
     const itemIdSelect = document.getElementById('builder_item_id');
     const valorUnitInput = document.getElementById('builder_valor_unitario');
@@ -17,152 +77,149 @@ document.addEventListener('DOMContentLoaded', () => {
     const garantiaInput = document.getElementById('builder_garantia');
     const btnAdicionar = document.getElementById('btn-adicionar-item');
 
-    // --- ELEMENTO LOCAL OCULTO DE PRODUTOS ---
-    const produtosEstaticosLocal = document.getElementById('produtos_estatiticos_local');
-
-    // --- ELEMENTOS DA TABELA ---
     const containerItens = document.getElementById('container-itens-dinamicos');
     const linhaVazia = document.getElementById('linha-vazia');
 
-    // --- ELEMENTOS DE DESCONTO E RESUMO GERAL ---
-    const elDescontoGeral = document.getElementById('input-desconto-geral');
-    const elTipoDesconto = document.getElementById('tipo-desconto-geral');
+    // Elementos do Modal
+    const modalDescPecasValor = document.getElementById('modal-desc-pecas-valor');
+    const modalDescPecasPorcent = document.getElementById('modal-desc-pecas-porcent');
+    const modalDescServicosValor = document.getElementById('modal-desc-servicos-valor');
+    const modalDescServicosPorcent = document.getElementById('modal-desc-servicos-porcent');
+    const btnAplicarModal = document.getElementById('btn-aplicar-descontos-modal');
+    const modalElement = document.getElementById('modalDescontos');
 
-    let ordensServicoDoVeiculo = [];
-
-    // Contador de índice com base nos itens já existentes (Edição)
     let itemIndex = containerItens ? containerItens.querySelectorAll('tr.item-row').length : 0;
 
-    // --- 1. BUSCA POR PLACA ---
-    if (placaInput) {
-        placaInput.addEventListener('blur', async () => {
-            let placa = placaInput.value.toUpperCase().replace(/[-\s]/g, '');
-            if (!placa) return;
+    // --- LER TABELA E CARREGAR VALORES NO MODAL AO ABRIR ---
+    if (modalElement) {
+        modalElement.addEventListener('show.bs.modal', () => {
+            let subtotalPecas = 0;
+            let descontoPecas = 0;
+            let subtotalServicos = 0;
+            let descontoServicos = 0;
 
-            ordensServicoDoVeiculo = [];
+            document.querySelectorAll('.item-row').forEach(linha => {
+                const inputType = linha.querySelector('input[name*="[itemable_type]"]');
+                if (!inputType) return;
 
-            try {
-                const response = await fetch(`/api/veiculo/placa/${placa}`);
+                const isProduto = inputType.value.includes('Produto');
+                const qtd = parseFloat(linha.querySelector('.input-qtd')?.value) || 0;
+                const vunit = parseFloat(linha.querySelector('.input-vunit')?.value) || 0;
+                const desc = parseFloat(linha.querySelector('.input-desc-val')?.value) || 0;
 
-                if (!response.ok) {
-                    clienteNome.value = '';
-                    if (clienteIdInput) clienteIdInput.value = '';
-                    if (idVeiculo) idVeiculo.value = '';
-                    if (kmInput) kmInput.value = '';
-                    resetBuilder();
-                    return;
+                const subtotalItem = qtd * vunit;
+
+                if (isProduto) {
+                    subtotalPecas += subtotalItem;
+                    descontoPecas += desc;
+                } else {
+                    subtotalServicos += subtotalItem;
+                    descontoServicos += desc;
                 }
-
-                const data = await response.json();
-
-                if (clienteNome) clienteNome.value = data.cliente_nome || '';
-                if (clienteIdInput) clienteIdInput.value = data.cliente_id || '';
-                if (idVeiculo) idVeiculo.value = data.veiculo_id || '';
-                if (kmInput && data.km) kmInput.value = data.km; // <-- Preenche o KM vindo da API
-
-                ordensServicoDoVeiculo = data.ordens_servico || [];
-
-                if (typeSelect && typeSelect.value === 'App\\Models\\OrdemServico') {
-                    atualizarOpcoesItemRelacionado();
-                }
-
-            } catch (error) {
-                console.error("Erro na busca por placa:", error);
-                alert('Erro ao buscar dados do veículo. Verifique o console.');
-            }
-        });
-    }
-
-    // --- 2. ALTERNÂNCIA DE TIPOS POLIMÓRFICOS ---
-    if (typeSelect) {
-        typeSelect.addEventListener('change', () => {
-            atualizarOpcoesItemRelacionado();
-        });
-    }
-
-    function atualizarOpcoesItemRelacionado() {
-        if (!typeSelect || !itemIdSelect) return;
-
-        const tipo = typeSelect.value;
-        itemIdSelect.innerHTML = '';
-        itemIdSelect.disabled = true;
-        if (valorUnitInput) valorUnitInput.value = '';
-        if (descInput) descInput.value = '';
-
-        if (!tipo) {
-            itemIdSelect.innerHTML = '<option value="">Selecione o tipo primeiro</option>';
-            return;
-        }
-
-        if (tipo === 'App\\Models\\OrdemServico') {
-            if (ordensServicoDoVeiculo.length === 0) {
-                itemIdSelect.innerHTML = '<option value="">Nenhuma O.S disponível para esta placa</option>';
-                return;
-            }
-
-            itemIdSelect.innerHTML = '<option value="">Selecione qual O.S inserir...</option>';
-            itemIdSelect.disabled = false;
-
-            ordensServicoDoVeiculo.forEach(os => {
-                const option = document.createElement('option');
-                option.value = os.id;
-                option.textContent = `OS #${os.id} - ${os.descricao}`;
-                option.setAttribute('data-preco', os.valor || 0);
-                itemIdSelect.appendChild(option);
             });
-        }
-        else if (tipo === 'App\\Models\\Produto') {
-            if (!produtosEstaticosLocal || produtosEstaticosLocal.options.length === 0) {
-                itemIdSelect.innerHTML = '<option value="">Nenhum produto cadastrado no sistema</option>';
-                return;
+
+            // Preenche Peças
+            if (modalDescPecasValor) modalDescPecasValor.value = descontoPecas.toFixed(2);
+            if (modalDescPecasPorcent) {
+                modalDescPecasPorcent.value = subtotalPecas > 0 ? ((descontoPecas / subtotalPecas) * 100).toFixed(2) : '0.00';
             }
 
-            itemIdSelect.innerHTML = '<option value="">Selecione um produto...</option>';
-            itemIdSelect.disabled = false;
-
-            Array.from(produtosEstaticosLocal.options).forEach(opt => {
-                const option = document.createElement('option');
-                option.value = opt.value;
-                option.textContent = opt.textContent;
-                option.setAttribute('data-preco', opt.getAttribute('data-preco') || 0);
-                itemIdSelect.appendChild(option);
-            });
-        }
-    }
-
-    if (itemIdSelect) {
-        itemIdSelect.addEventListener('change', () => {
-            const selectedOption = itemIdSelect.options[itemIdSelect.selectedIndex];
-            if (selectedOption && selectedOption.value) {
-                if (valorUnitInput) valorUnitInput.value = selectedOption.getAttribute('data-preco') || 0;
-                if (descInput) descInput.value = selectedOption.textContent.trim();
+            // Preenche Mão de Obra
+            if (modalDescServicosValor) modalDescServicosValor.value = descontoServicos.toFixed(2);
+            if (modalDescServicosPorcent) {
+                modalDescServicosPorcent.value = subtotalServicos > 0 ? ((descontoServicos / subtotalServicos) * 100).toFixed(2) : '0.00';
             }
         });
     }
 
-    // --- 3. ADICIONAR ITEM NA TABELA DINÂMICA ---
+    // --- CÁLCULOS DINÂMICOS NO MODAL (DENTRO DO POP-UP) ---
+    function recalcularValoresModal(tipo, origem) {
+        let subtotalTipo = 0;
+
+        document.querySelectorAll('.item-row').forEach(linha => {
+            const inputType = linha.querySelector('input[name*="[itemable_type]"]');
+            if (!inputType) return;
+
+            const isProduto = inputType.value.includes('Produto');
+            if ((tipo === 'pecas' && isProduto) || (tipo === 'servicos' && !isProduto)) {
+                const qtd = parseFloat(linha.querySelector('.input-qtd')?.value) || 0;
+                const vunit = parseFloat(linha.querySelector('.input-vunit')?.value) || 0;
+                subtotalTipo += (qtd * vunit);
+            }
+        });
+
+        const inputVal = tipo === 'pecas' ? modalDescPecasValor : modalDescServicosValor;
+        const inputPct = tipo === 'pecas' ? modalDescPecasPorcent : modalDescServicosPorcent;
+
+        if (origem === 'valor') {
+            const val = parseFloat(inputVal.value) || 0;
+            inputPct.value = subtotalTipo > 0 ? ((val / subtotalTipo) * 100).toFixed(2) : '0.00';
+        } else if (origem === 'porcentagem') {
+            const pct = parseFloat(inputPct.value) || 0;
+            inputVal.value = ((subtotalTipo * pct) / 100).toFixed(2);
+        }
+    }
+
+    if (modalDescPecasValor) modalDescPecasValor.addEventListener('input', () => recalcularValoresModal('pecas', 'valor'));
+    if (modalDescPecasPorcent) modalDescPecasPorcent.addEventListener('input', () => recalcularValoresModal('pecas', 'porcentagem'));
+    if (modalDescServicosValor) modalDescServicosValor.addEventListener('input', () => recalcularValoresModal('servicos', 'valor'));
+    if (modalDescServicosPorcent) modalDescServicosPorcent.addEventListener('input', () => recalcularValoresModal('servicos', 'porcentagem'));
+
+    // --- APLICAR DESCONTO PROPORCIONAL AOS ITENS DA TABELA ---
+    if (btnAplicarModal) {
+        btnAplicarModal.addEventListener('click', () => {
+            const descPecasPct = parseFloat(modalDescPecasPorcent.value) || 0;
+            const descServicosPct = parseFloat(modalDescServicosPorcent.value) || 0;
+
+            document.querySelectorAll('.item-row').forEach(linha => {
+                const inputType = linha.querySelector('input[name*="[itemable_type]"]');
+                if (!inputType) return;
+
+                const isProduto = inputType.value.includes('Produto');
+                const pctAplicar = isProduto ? descPecasPct : descServicosPct;
+
+                const elQtd = linha.querySelector('.input-qtd');
+                const elVunit = linha.querySelector('.input-vunit');
+                const elDescItem = linha.querySelector('.input-desc-val');
+                const elVtotal = linha.querySelector('.input-vtotal');
+
+                const qtd = parseFloat(elQtd?.value) || 0;
+                const vunit = parseFloat(elVunit?.value) || 0;
+                const subtotalBruto = qtd * vunit;
+
+                const descontoProporcional = (subtotalBruto * pctAplicar) / 100;
+                const totalComDesconto = Math.max(0, subtotalBruto - descontoProporcional);
+
+                if (elDescItem) elDescItem.value = descontoProporcional.toFixed(2);
+                if (elVtotal) elVtotal.value = totalComDesconto.toFixed(2).replace('.', ',');
+            });
+
+            window.recalcularTotalGeral();
+
+            const bsModal = bootstrap.Modal.getInstance(modalElement);
+            if (bsModal) bsModal.hide();
+        });
+    }
+
+    // --- INSERIR NOVO ITEM NA TABELA ---
     if (btnAdicionar) {
         btnAdicionar.addEventListener('click', () => {
             if (!typeSelect.value || !itemIdSelect.value || !descInput.value.trim() || !valorUnitInput.value) {
-                alert('Preencha os campos obrigatórios do item antes de inserir.');
+                alert('Preencha os campos obrigatórios do item.');
                 return;
             }
 
             const itemableType = typeSelect.value;
             const itemableId = itemIdSelect.value;
-            const tipoText = itemableType.includes('Produto') ? 'Produto' : 'Serviço';
-            const badgeColor = itemableType.includes('Produto') ? 'bg-info' : 'bg-warning';
+            const isProduto = itemableType.includes('Produto');
+            const tipoText = isProduto ? 'Produto' : 'Serviço';
+            const badgeColor = isProduto ? 'bg-info' : 'bg-warning';
 
             const descricao = descInput.value.trim();
             const quantidade = parseInt(qtdInput.value) || 1;
             const valorUnitario = parseFloat(valorUnitInput.value) || 0;
             const desconto = parseFloat(descontoInput.value) || 0;
             const garantiaDias = garantiaInput.value ? parseInt(garantiaInput.value) : '';
-
-            if ((quantidade * valorUnitario) < desconto) {
-                alert('O desconto não pode ser maior do que o valor total do item!');
-                return;
-            }
 
             const valorTotalItem = Math.max(0, (quantidade * valorUnitario) - desconto);
 
@@ -205,114 +262,34 @@ document.addEventListener('DOMContentLoaded', () => {
             containerItens.appendChild(novaLinha);
             itemIndex++;
 
-            resetBuilder();
-            recalcularTotalGeral();
+            window.recalcularTotalGeral();
         });
     }
 
-    // --- 4. REMOÇÃO E EDIÇÃO NA TABELA ---
+    // --- REMOÇÃO E EDIÇÃO NA TABELA ---
     if (containerItens) {
         containerItens.addEventListener('click', (e) => {
-            const btnRemove = e.target.closest('.btn-remover-item');
-            if (btnRemove) {
-                btnRemove.closest('tr').remove();
-                if (containerItens.querySelectorAll('tr.item-row').length === 0 && linhaVazia) {
-                    linhaVazia.style.display = '';
-                }
-                recalcularTotalGeral();
+            if (e.target.closest('.btn-remover-item')) {
+                e.target.closest('tr').remove();
+                window.recalcularTotalGeral();
             }
         });
 
         containerItens.addEventListener('input', (e) => {
-            if (e.target.classList.contains('input-qtd') ||
-                e.target.classList.contains('input-vunit') ||
-                e.target.classList.contains('input-desc-val')) {
-
+            if (e.target.classList.contains('input-qtd') || e.target.classList.contains('input-vunit') || e.target.classList.contains('input-desc-val')) {
                 const linha = e.target.closest('tr');
                 if (linha) {
-                    const elQtd = linha.querySelector('.input-qtd');
-                    const elVunit = linha.querySelector('.input-vunit');
-                    const elDescItem = linha.querySelector('.input-desc-val');
-                    const elVtotal = linha.querySelector('.input-vtotal');
-
-                    const qtd = elQtd ? parseFloat(elQtd.value) || 0 : 0;
-                    const vunit = elVunit ? parseFloat(elVunit.value) || 0 : 0;
-                    const descItem = elDescItem ? parseFloat(elDescItem.value) || 0 : 0;
-
-                    const totalItem = Math.max(0, (qtd * vunit) - descItem);
-                    if (elVtotal) {
-                        elVtotal.value = totalItem.toFixed(2).replace('.', ',');
-                    }
+                    const qtd = parseFloat(linha.querySelector('.input-qtd')?.value) || 0;
+                    const vunit = parseFloat(linha.querySelector('.input-vunit')?.value) || 0;
+                    const desc = parseFloat(linha.querySelector('.input-desc-val')?.value) || 0;
+                    const totalItem = Math.max(0, (qtd * vunit) - desc);
+                    linha.querySelector('.input-vtotal').value = totalItem.toFixed(2).replace('.', ',');
                 }
-                recalcularTotalGeral();
+                window.recalcularTotalGeral();
             }
         });
     }
 
-    // --- 5. ESCUTADORES DO DESCONTO GERAL ---
-    if (elDescontoGeral) elDescontoGeral.addEventListener('input', recalcularTotalGeral);
-    if (elTipoDesconto) elTipoDesconto.addEventListener('change', recalcularTotalGeral);
-
-    function resetBuilder() {
-        if (typeSelect) typeSelect.value = '';
-        if (itemIdSelect) {
-            itemIdSelect.innerHTML = '<option value="">Selecione o tipo primeiro</option>';
-            itemIdSelect.disabled = true;
-        }
-        if (descInput) descInput.value = '';
-        if (qtdInput) qtdInput.value = '1';
-        if (valorUnitInput) valorUnitInput.value = '';
-        if (descontoInput) descontoInput.value = '0.00';
-        if (garantiaInput) garantiaInput.value = '';
-    }
-
-    recalcularTotalGeral();
+    // Cálculo inicial ao carregar a página
+    window.recalcularTotalGeral();
 });
-
-// --- CÁLCULO FINANCEIRO GERENCIADO ---
-function recalcularTotalGeral() {
-    let subtotal = 0;
-
-    document.querySelectorAll('.item-row').forEach(linha => {
-        const elQtd = linha.querySelector('.input-qtd');
-        const elVunit = linha.querySelector('.input-vunit');
-        const elDescItem = linha.querySelector('.input-desc-val');
-
-        const qtd = elQtd ? parseFloat(elQtd.value) || 0 : 0;
-        const vunit = elVunit ? parseFloat(elVunit.value) || 0 : 0;
-        const descItem = elDescItem ? parseFloat(elDescItem.value) || 0 : 0;
-
-        subtotal += Math.max(0, (qtd * vunit) - descItem);
-    });
-
-    const elDescontoGeral = document.getElementById('input-desconto-geral');
-    const elTipoDesconto = document.getElementById('tipo-desconto-geral');
-
-    let valDescontoGeral = elDescontoGeral ? parseFloat(elDescontoGeral.value) || 0 : 0;
-    let valorDescontoCalculado = valDescontoGeral;
-
-    if (elTipoDesconto && elTipoDesconto.value === 'porcentagem') {
-        if (valDescontoGeral > 100) {
-            valDescontoGeral = 100;
-            if (elDescontoGeral) elDescontoGeral.value = 100;
-        }
-        valorDescontoCalculado = (subtotal * valDescontoGeral) / 100;
-    }
-
-    const totalFinal = Math.max(0, subtotal - valorDescontoCalculado);
-
-    const elResumoSubtotal = document.getElementById('resumo-subtotal');
-    if (elResumoSubtotal) {
-        elResumoSubtotal.innerText = 'R$ ' + subtotal.toFixed(2).replace('.', ',');
-    }
-
-    const elResumoDesconto = document.getElementById('resumo-desconto');
-    if (elResumoDesconto) {
-        elResumoDesconto.innerText = '- R$ ' + valorDescontoCalculado.toFixed(2).replace('.', ',');
-    }
-
-    const elTotalFinal = document.getElementById('valor-geral-os');
-    if (elTotalFinal) {
-        elTotalFinal.innerText = 'R$ ' + totalFinal.toFixed(2).replace('.', ',');
-    }
-}
