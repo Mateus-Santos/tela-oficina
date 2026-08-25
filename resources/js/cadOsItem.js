@@ -1,58 +1,88 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+    // Guarda as O.S retornadas pela API para o gerenciador de itens
+    window.ordensServicoVeiculo = [];
+
     const placaInput = document.getElementById('placa_input');
     const clienteNome = document.getElementById('cliente_nome');
+    const clienteId = document.getElementById('cliente_id');
     const idVeiculo = document.getElementById('veiculo_cliente_id');
-    const osSelect = document.getElementById('ordem_servico_select');
 
-    if (!placaInput) return;
+    if (!placaInput) {
+        console.warn('[SOS Mecânica] Elemento #placa_input não encontrado no DOM.');
+        return;
+    }
 
-    placaInput.addEventListener('blur', async () => {
+    const buscarDadosPlaca = async () => {
 
-        let placa = placaInput.value.toUpperCase().replace(/[-\s]/g, '');
+        let placa = placaInput.value
+            .toUpperCase()
+            .replace(/[-\s]/g, '');
 
         if (!placa) return;
-
-        osSelect.innerHTML = `<option>Carregando...</option>`;
 
         try {
 
             const response = await fetch(`/api/veiculo/placa/${placa}`);
 
             if (!response.ok) {
-                clienteNome.value = '';
-                idVeiculo.value = '';
-                osSelect.innerHTML = `<option value="">Veículo não encontrado</option>`;
+
+                if (clienteNome) clienteNome.value = '';
+                if (clienteId) clienteId.value = '';
+                if (idVeiculo) idVeiculo.value = '';
+
+                window.ordensServicoVeiculo = [];
+
                 return;
             }
 
             const data = await response.json();
 
-            // Preenche cliente e id veículo
-            clienteNome.value = data.cliente_nome;
-            idVeiculo.value = data.veiculo_id;
-
-            // Limpa select
-            osSelect.innerHTML = `<option value="">Selecione uma O.S</option>`;
-
-            if (data.ordens_servico.length === 0) {
-                osSelect.innerHTML = `<option value="">Nenhuma O.S encontrada</option>`;
-                return;
+            // Preenche os dados do cliente e veículo
+            if (clienteNome) {
+                clienteNome.value = data.cliente_nome || '';
             }
 
-            // Preenche as OS
-            data.ordens_servico.forEach(os => {
-                const option = document.createElement('option');
-                option.value = os.id;
-                option.textContent = os.descricao;
-                osSelect.appendChild(option);
-            });
+            if (clienteId) {
+                clienteId.value = data.cliente_id || '';
+            }
+
+            if (idVeiculo) {
+                idVeiculo.value = data.veiculo_id || '';
+            }
+
+            // Guarda as O.S encontradas para o gerenciador de itens
+            window.ordensServicoVeiculo = data.ordens_servico || [];
+
+            console.log(
+                '[SOS Mecânica] O.S encontradas:',
+                window.ordensServicoVeiculo
+            );
 
         } catch (error) {
-            console.error(error);
-            osSelect.innerHTML = `<option value="">Erro ao carregar O.S</option>`;
-        }
 
+            console.error('Erro ao buscar placa:', error);
+
+            window.ordensServicoVeiculo = [];
+
+            if (clienteNome) clienteNome.value = '';
+            if (clienteId) clienteId.value = '';
+            if (idVeiculo) idVeiculo.value = '';
+        }
+    };
+
+    // Busca ao sair do campo
+    placaInput.addEventListener('blur', buscarDadosPlaca);
+
+    // Busca ao pressionar Enter
+    placaInput.addEventListener('keypress', (e) => {
+
+        if (e.key === 'Enter') {
+
+            e.preventDefault();
+
+            buscarDadosPlaca();
+        }
     });
 
 });
