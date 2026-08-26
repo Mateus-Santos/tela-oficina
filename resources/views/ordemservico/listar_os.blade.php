@@ -12,6 +12,7 @@
                 <th scope="col">Data Abertura</th>
                 <th scope="col">Cliente</th>
                 <th scope="col">Veículo</th>
+                <th scope="col">Placa</th>
                 <th scope="col">Descrição</th>
                 <th scope="col">Setor</th>
                 <th scope="col">Excluir</th>
@@ -26,6 +27,7 @@
             </td>
             <td>{{ $ordemservico->data_abertura }}</td>
             <td>{{ $ordemservico->veiculoscliente->cliente->pessoa->nome }}</td>
+            <td>{{ $ordemservico->veiculoscliente->veiculo->nome }} ({{ $ordemservico->veiculoscliente->veiculo->montadora->nome }})</td>
             <td>{{ $ordemservico->veiculoscliente->placa }}</td>
             <td>{{ $ordemservico->descricao }}</td>
             <td>{{ $ordemservico->setorservico->setor }}</td>
