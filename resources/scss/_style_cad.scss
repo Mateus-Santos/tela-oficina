@@ -64,17 +64,6 @@ $larguras: 1rem;
   }
 }
 
-/* Container para erros em overlay */
-.mensseger_error_container {
-  z-index: 9999;
-  position: fixed;
-  top: 35%;
-  left: 30%;
-  background-color: $color_5;
-  border-radius: 10px;
-  padding: $larguras;
-}
-
 .tags-input {
     padding: 5px 8px;
     border-radius: 1rem;
