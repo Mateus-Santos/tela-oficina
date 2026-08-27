@@ -2,24 +2,28 @@
 
 @section('content')
 
-@if ($errors->any()) <div class="alert alert-danger"> <ul class="mb-0">
-@foreach ($errors->all() as $error) <li>{{ $error }}</li>
-@endforeach </ul> </div>
+<div class="container cadastro">
+
+
+@if ($errors->any())
+    <div class="alert alert-danger">
+        <ul class="mb-0">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
 @endif
 
 @php
+    $ordensServicoVeiculo = collect();
 
-$ordensServicoVeiculo = collect();
-
-
-if ($nota->veiculoscliente) {
-    $ordensServicoVeiculo = $nota->veiculoscliente
-        ->ordensServico()
-        ->orderBy('created_at', 'desc')
-        ->get();
-}
-
-
+    if ($nota->veiculosCliente) {
+        $ordensServicoVeiculo = $nota->veiculosCliente
+            ->ordensServico()
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
 @endphp
 
 <script>
@@ -27,20 +31,22 @@ if ($nota->veiculoscliente) {
         $ordensServicoVeiculo->map(function ($os) {
             return [
                 'id' => $os->id,
-                'descricao' => $os->descricao ?: 'OS #' . $os->id . ' (' . ($os->status ?? 'Aberta') . ')',
+                'descricao' => $os->descricao
+                    ?: 'OS #' . $os->id . ' (' . ($os->status ?? 'Aberta') . ')',
             ];
         })->values()
     );
 </script>
 
-<div class="container cadastro">
+<h1 class="mb-4">
+    EDITAR NOTA FISCAL #{{ $nota->id }}
+</h1>
 
-
-<h1 class="mb-4">EDITAR NOTA FISCAL #{{ $nota->id }}</h1>
-
-<form action="{{ route('notasitem.update', $nota->id) }}"
-      method="POST"
-      id="form-os-itens">
+<form
+    action="{{ route('notasitem.update', $nota->id) }}"
+    method="POST"
+    id="form-os-itens"
+>
 
     @csrf
     @method('PUT')
@@ -48,6 +54,7 @@ if ($nota->veiculoscliente) {
     {{-- ============================================================
          1. IDENTIFICAÇÃO DO CLIENTE / VEÍCULO
     ============================================================ --}}
+
     <div class="card mb-4 shadow-sm">
 
         <div class="card-header bg-dark text-white">
@@ -58,6 +65,7 @@ if ($nota->veiculoscliente) {
 
             <div class="row">
 
+                {{-- VEÍCULO --}}
                 <div class="col-md-4">
 
                     <label class="form-label">
@@ -69,18 +77,19 @@ if ($nota->veiculoscliente) {
                         class="form-control"
                         id="placa_input"
                         placeholder="Digite a placa"
-                        value="{{ $nota->veiculoscliente?->placa }}"
+                        value="{{ $nota->veiculosCliente?->placa }}"
                     >
 
                     <input
                         type="hidden"
                         name="veiculo_cliente_id"
                         id="veiculo_cliente_id"
-                        value="{{ $nota->veiculo_cliente_id }}"
+                        value="{{ old('veiculo_cliente_id', $nota->veiculo_cliente_id) }}"
                     >
 
                 </div>
 
+                {{-- KM --}}
                 <div class="col-md-4">
 
                     <label class="form-label">
@@ -99,6 +108,7 @@ if ($nota->veiculoscliente) {
 
                 </div>
 
+                {{-- CLIENTE --}}
                 <div class="col-md-4">
 
                     <label class="form-label">
@@ -119,7 +129,7 @@ if ($nota->veiculoscliente) {
                         type="hidden"
                         name="cliente_id"
                         id="cliente_id"
-                        value="{{ $nota->cliente_id }}"
+                        value="{{ old('cliente_id', $nota->cliente_id) }}"
                     >
 
                 </div>
@@ -133,6 +143,7 @@ if ($nota->veiculoscliente) {
     {{-- ============================================================
          2. ADICIONAR NOVO ITEM
     ============================================================ --}}
+
     <div class="card mb-4 shadow-sm border-primary">
 
         <div class="card-header bg-primary text-white">
@@ -143,6 +154,7 @@ if ($nota->veiculoscliente) {
 
             <div class="row mb-3">
 
+                {{-- TIPO --}}
                 <div class="col-md-3">
 
                     <label class="form-label">
@@ -153,7 +165,10 @@ if ($nota->veiculoscliente) {
                         id="builder_type"
                         class="form-control"
                     >
-                        <option value="">Selecione...</option>
+
+                        <option value="">
+                            Selecione...
+                        </option>
 
                         <option value="App\Models\Produto">
                             Produto (Autopeça)
@@ -162,10 +177,13 @@ if ($nota->veiculoscliente) {
                         <option value="App\Models\OrdemServico">
                             Serviço (Ordem de Serviço)
                         </option>
+
                     </select>
 
                 </div>
 
+
+                {{-- ITEM --}}
                 <div class="col-md-4">
 
                     <label class="form-label">
@@ -177,13 +195,17 @@ if ($nota->veiculoscliente) {
                         class="form-control"
                         disabled
                     >
+
                         <option value="">
                             Selecione o tipo primeiro
                         </option>
+
                     </select>
 
                 </div>
 
+
+                {{-- DESCRIÇÃO --}}
                 <div class="col-md-5">
 
                     <label class="form-label">
@@ -204,6 +226,7 @@ if ($nota->veiculoscliente) {
 
             <div class="row mb-3">
 
+                {{-- QUANTIDADE --}}
                 <div class="col-md-2">
 
                     <label class="form-label">
@@ -221,6 +244,8 @@ if ($nota->veiculoscliente) {
 
                 </div>
 
+
+                {{-- VALOR UNITÁRIO --}}
                 <div class="col-md-3">
 
                     <label class="form-label">
@@ -237,6 +262,8 @@ if ($nota->veiculoscliente) {
 
                 </div>
 
+
+                {{-- DESCONTO --}}
                 <div class="col-md-3">
 
                     <label class="form-label">
@@ -254,6 +281,8 @@ if ($nota->veiculoscliente) {
 
                 </div>
 
+
+                {{-- GARANTIA --}}
                 <div class="col-md-2">
 
                     <label class="form-label">
@@ -270,6 +299,8 @@ if ($nota->veiculoscliente) {
 
                 </div>
 
+
+                {{-- BOTÃO --}}
                 <div class="col-md-2 d-flex align-items-end">
 
                     <button
@@ -291,12 +322,13 @@ if ($nota->veiculoscliente) {
     {{-- ============================================================
          SELECT OCULTO DE PRODUTOS
     ============================================================ --}}
+
     <select
         id="produtos_estatiticos_local"
         style="display: none;"
     >
 
-        @foreach($produtos as $prod)
+        @foreach($produtos ?? [] as $prod)
 
             <option
                 value="{{ $prod->id }}"
@@ -313,6 +345,7 @@ if ($nota->veiculoscliente) {
     {{-- ============================================================
          3. ITENS DA NOTA
     ============================================================ --}}
+
     <div class="card mb-4 shadow-sm">
 
         <div class="card-header bg-success text-white">
@@ -369,28 +402,41 @@ if ($nota->veiculoscliente) {
 
                 <tbody id="container-itens-dinamicos">
 
-                    @forelse($nota->notasitem as $index => $item)
+                    @forelse($nota->itens ?? collect() as $index => $item)
 
                         @php
-                            $isProduto = $item->itemable_type === 'App\Models\Produto';
 
-                            $quantidade = (float) ($item->quantidade ?? 0);
-                            $valorUnitario = (float) ($item->valor_unitario ?? 0);
-                            $desconto = (float) ($item->desconto ?? 0);
+                            $isProduto =
+                                $item->itemable_type === 'App\Models\Produto';
+
+                            $quantidade =
+                                (float) ($item->quantidade ?? 0);
+
+                            $valorUnitario =
+                                (float) ($item->valor_unitario ?? 0);
+
+                            $desconto =
+                                (float) ($item->desconto ?? 0);
 
                             $valorTotalItem = max(
                                 0,
                                 ($quantidade * $valorUnitario) - $desconto
                             );
+
                         @endphp
+
 
                         <tr class="item-row">
 
+                            {{-- TIPO --}}
                             <td>
 
-                                <span class="badge {{ $isProduto ? 'bg-info' : 'bg-warning' }} text-dark">
+                                <span
+                                    class="badge {{ $isProduto ? 'bg-info' : 'bg-warning' }} text-dark"
+                                >
                                     {{ $isProduto ? 'Produto' : 'Serviço' }}
                                 </span>
+
 
                                 <input
                                     type="hidden"
@@ -413,19 +459,21 @@ if ($nota->veiculoscliente) {
                             </td>
 
 
+                            {{-- DESCRIÇÃO --}}
                             <td>
 
                                 <input
                                     type="text"
                                     name="itens[{{ $index }}][descricao]"
                                     class="form-control form-control-sm input-desc"
-                                    value="{{ $item->descricao }}"
+                                    value="{{ old('itens.' . $index . '.descricao', $item->descricao) }}"
                                     required
                                 >
 
                             </td>
 
 
+                            {{-- QUANTIDADE --}}
                             <td>
 
                                 <input
@@ -441,6 +489,7 @@ if ($nota->veiculoscliente) {
                             </td>
 
 
+                            {{-- VALOR UNITÁRIO --}}
                             <td>
 
                                 <input
@@ -456,6 +505,7 @@ if ($nota->veiculoscliente) {
                             </td>
 
 
+                            {{-- DESCONTO --}}
                             <td>
 
                                 <input
@@ -470,6 +520,7 @@ if ($nota->veiculoscliente) {
                             </td>
 
 
+                            {{-- TOTAL --}}
                             <td>
 
                                 <input
@@ -482,6 +533,7 @@ if ($nota->veiculoscliente) {
                             </td>
 
 
+                            {{-- GARANTIA --}}
                             <td>
 
                                 <input
@@ -496,6 +548,7 @@ if ($nota->veiculoscliente) {
                             </td>
 
 
+                            {{-- AÇÕES --}}
                             <td class="text-center">
 
                                 <button
@@ -530,24 +583,32 @@ if ($nota->veiculoscliente) {
             </table>
 
         </div>
+
     </div>
 
 
     {{-- ============================================================
          4. RESUMO FINANCEIRO
     ============================================================ --}}
+
     <div class="row mb-4">
 
         <div class="col-md-7 offset-md-5">
 
             <div class="card border-primary shadow-sm">
 
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-2">
+                <div
+                    class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-2"
+                >
 
                     <h5 class="mb-0 fs-6">
+
                         <i class="bi bi-calculator"></i>
+
                         Resumo Financeiro Detalhado
+
                     </h5>
+
 
                     <button
                         type="button"
@@ -555,8 +616,11 @@ if ($nota->veiculoscliente) {
                         data-bs-toggle="modal"
                         data-bs-target="#modalDescontos"
                     >
+
                         <i class="bi bi-percent"></i>
+
                         Aplicar / Editar Descontos
+
                     </button>
 
                 </div>
@@ -572,11 +636,17 @@ if ($nota->veiculoscliente) {
                             class="fw-bold text-primary mb-2 border-bottom pb-1"
                             style="font-size: 0.9rem;"
                         >
+
                             <i class="bi bi-box-seam"></i>
+
                             PEÇAS / PRODUTOS
+
                         </h6>
 
-                        <div class="d-flex justify-content-between mb-1 fs-7">
+
+                        <div
+                            class="d-flex justify-content-between mb-1 fs-7"
+                        >
 
                             <span class="text-muted">
                                 Subtotal Bruto:
@@ -588,7 +658,10 @@ if ($nota->veiculoscliente) {
 
                         </div>
 
-                        <div class="d-flex justify-content-between mb-1 fs-7 text-danger">
+
+                        <div
+                            class="d-flex justify-content-between mb-1 fs-7 text-danger"
+                        >
 
                             <span>
                                 (-) Desconto Aplicado:
@@ -600,7 +673,10 @@ if ($nota->veiculoscliente) {
 
                         </div>
 
-                        <div class="d-flex justify-content-between fw-bold text-dark pt-1 border-top">
+
+                        <div
+                            class="d-flex justify-content-between fw-bold text-dark pt-1 border-top"
+                        >
 
                             <span>
                                 Subtotal Líquido Peças:
@@ -623,11 +699,17 @@ if ($nota->veiculoscliente) {
                             class="fw-bold text-warning text-dark mb-2 border-bottom pb-1"
                             style="font-size: 0.9rem;"
                         >
+
                             <i class="bi bi-tools"></i>
+
                             MÃO DE OBRA / SERVIÇOS
+
                         </h6>
 
-                        <div class="d-flex justify-content-between mb-1 fs-7">
+
+                        <div
+                            class="d-flex justify-content-between mb-1 fs-7"
+                        >
 
                             <span class="text-muted">
                                 Subtotal Bruto:
@@ -639,7 +721,10 @@ if ($nota->veiculoscliente) {
 
                         </div>
 
-                        <div class="d-flex justify-content-between mb-1 fs-7 text-danger">
+
+                        <div
+                            class="d-flex justify-content-between mb-1 fs-7 text-danger"
+                        >
 
                             <span>
                                 (-) Desconto Aplicado:
@@ -651,7 +736,10 @@ if ($nota->veiculoscliente) {
 
                         </div>
 
-                        <div class="d-flex justify-content-between fw-bold text-dark pt-1 border-top">
+
+                        <div
+                            class="d-flex justify-content-between fw-bold text-dark pt-1 border-top"
+                        >
 
                             <span>
                                 Subtotal Líquido Serviços:
@@ -669,7 +757,11 @@ if ($nota->veiculoscliente) {
                     <hr class="my-2">
 
 
-                    <div class="d-flex justify-content-between mb-1 text-danger fw-bold">
+                    {{-- TOTAL DE DESCONTOS --}}
+
+                    <div
+                        class="d-flex justify-content-between mb-1 text-danger fw-bold"
+                    >
 
                         <span>
                             TOTAL DE DESCONTOS CONCEDIDOS:
@@ -682,7 +774,11 @@ if ($nota->veiculoscliente) {
                     </div>
 
 
-                    <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                    {{-- TOTAL --}}
+
+                    <div
+                        class="d-flex justify-content-between align-items-center pt-2 border-top"
+                    >
 
                         <h5 class="mb-0 text-dark fw-bold">
                             VALOR TOTAL DA NOTA:
@@ -706,6 +802,8 @@ if ($nota->veiculoscliente) {
     </div>
 
 
+    {{-- BOTÃO ATUALIZAR --}}
+
     <div class="text-center mb-5">
 
         <button
@@ -718,7 +816,7 @@ if ($nota->veiculoscliente) {
     </div>
 
 </form>
-```
+
 
 </div>
 
@@ -734,7 +832,7 @@ MODAL DE DESCONTOS
     aria-hidden="true"
 >
 
-```
+
 <div class="modal-dialog modal-dialog-centered">
 
     <div class="modal-content">
@@ -745,9 +843,13 @@ MODAL DE DESCONTOS
                 class="modal-title"
                 id="modalDescontosLabel"
             >
+
                 <i class="bi bi-tags-fill"></i>
+
                 Gerenciador de Descontos
+
             </h5>
+
 
             <button
                 type="button"
@@ -768,22 +870,16 @@ MODAL DE DESCONTOS
                 <div class="card-body p-3">
 
                     <label class="form-label fw-bold text-primary">
-
                         <i class="bi bi-box-seam"></i>
                         Desconto em Peças / Produtos
-
                     </label>
 
                     <div class="row g-2">
-
                         <div class="col-7">
-
                             <div class="input-group input-group-sm">
-
                                 <span class="input-group-text">
                                     Val. (R$)
                                 </span>
-
                                 <input
                                     type="number"
                                     id="modal-desc-pecas-valor"
@@ -794,7 +890,6 @@ MODAL DE DESCONTOS
                                 >
 
                             </div>
-
                         </div>
 
 
@@ -836,9 +931,11 @@ MODAL DE DESCONTOS
                     <label class="form-label fw-bold text-warning text-dark">
 
                         <i class="bi bi-tools"></i>
+
                         Desconto em Mão de Obra / Serviços
 
                     </label>
+
 
                     <div class="row g-2">
 
@@ -905,6 +1002,7 @@ MODAL DE DESCONTOS
                 Cancelar
             </button>
 
+
             <button
                 type="button"
                 class="btn btn-success fw-bold"
@@ -913,11 +1011,8 @@ MODAL DE DESCONTOS
                 <i class="bi bi-check-circle"></i>
                 Aplicar Descontos
             </button>
-
         </div>
-
     </div>
-
 </div>
 
 </div>
