@@ -22,10 +22,12 @@ class Nota extends Model
         'total',
         'observacoes',
         'km',
+        'km_proxima_troca_oleo'
     ];
 
     protected $casts = [
         'km' => 'int',
+        'km_proxima_troca_oleo' => 'int',
         'subtotal' => 'decimal:2',
         'desconto' => 'decimal:2',
         'total'    => 'decimal:2',
@@ -65,10 +67,5 @@ class Nota extends Model
         }
 
         return $query;
-    }
-
-    public function notasItem()
-    {
-        return $this->hasMany(NotasItem::class, 'nota_id');
     }
 }
