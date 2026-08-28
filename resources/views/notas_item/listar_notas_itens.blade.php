@@ -40,6 +40,7 @@
                 <th scope="col">ID</th>
                 <th scope="col">STATUS</th>
                 <th scope="col">Cliente</th>
+                <th scope="col">Veículo</th>
                 <th scope="col">Placa Veículo</th>
                 <th scope="col">Imprimir</th>
                 <th scope="col">Ver</th>
@@ -54,6 +55,7 @@
                     @livewire('status-nota-selector', ['nota' => $nota], key($nota->id))
                 </td>
                 <td>{{ $nota->cliente?->pessoa?->nome ?? 'Cliente Geral / Balcão' }}</td>
+                <td>{{ $nota->veiculoscliente->veiculo->nome ?? 'N/A' }} ({{ $nota->veiculoscliente->veiculo->montadora->nome ?? 'N/A' }})</td>
                 <td>{{ $nota->veiculoscliente?->placa ?? 'N/A' }}</td>
                 <td>
                     <a href="{{ route('notas.pdf', $nota->id) }}" target="_blank" class="btn btn-danger">
