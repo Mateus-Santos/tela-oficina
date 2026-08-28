@@ -9,10 +9,11 @@ use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\ProdutoVendaController;
 use App\Http\Controllers\VeiculoController;
 use App\Http\Controllers\VeiculosClientesController;
-use App\Http\Controllers\ManutencaoController;
 use App\Http\Controllers\OrdemServicoController;
 use App\Http\Controllers\NotasItemController;
 use App\Http\Controllers\NotaController;
+use App\Http\Controllers\MontadoraController;
+use App\Http\Controllers\SetorServicoController;
 //use App\Http\Controllers\ChatController;
 
 Route::get('/', function () {
@@ -44,6 +45,9 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         Route::get('/endereco/create/{id}', [EnderecoController::class, 'create']);
         Route::get('/notas/{id}/pdf', [NotaController::class, 'gerarpdf'])->name('notas.pdf');
         Route::resource('notas', NotaController::class);
+        Route::resource('veiculos', VeiculoController::class);
+        Route::resource('montadoras', MontadoraController::class);
+        Route::resource('setorserivos', SetorServicoController::class);
     });
 });
 
