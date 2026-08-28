@@ -4,20 +4,34 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Veiculo;
+use App\Models\Montadora;
 use App\Models\User;
 
 class VeiculoController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        if(auth()->user()->permitions == 2){
-            $veiculos = Veiculo::where('id_user', auth()->user()->id)->get();
-            return view('veiculo.listarveiculo', compact('veiculos'));
+        $query = Veiculo::with('montadora');
+
+        if ($request->filled('veiculo')) {
+            $query->where('nome', 'like', '%' . $request->veiculo . '%');
         }
-        else{
-            $veiculos = Veiculo::all();
-            return view('veiculo.listarveiculo', compact('veiculos'));
+
+        if ($request->filled('montadora')) {
+            $query->where('montadora_id', $request->montadora);
         }
+
+        $veiculos = $query
+            ->orderBy('id', 'desc')
+            ->paginate(15)
+            ->withQueryString();
+
+        $montadoras = Montadora::orderBy('nome')->get();
+
+        return view('veiculo.listarveiculo', compact(
+            'veiculos',
+            'montadoras'
+        ));
     }
 
     public function porMontadora($id)
