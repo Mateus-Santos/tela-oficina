@@ -189,7 +189,24 @@
             </li>
           </ul>
         </li>
-
+        <li class="nav-item dropdown">
+          <a class="btn btn-warning dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-gear-fill"></i>
+            Configurações
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a href="{{ route('veiculos.index') }}" class="dropdown-item">Veículos</a>
+            </li>
+            <li>
+              <a href="{{ route('montadoras.index') }}" class="dropdown-item">Montadora</a>
+            </li>
+            <li>
+              <a href="{{ route('setorserivos.index') }}" class="dropdown-item">Setor de Serviço</a>
+            </li>
+          </ul>
+        </li>
+        <!-- Subgrupo Vendas
         <li class="nav-item dropdown">
           <a class="btn btn-warning dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-cart-fill"></i>
@@ -200,6 +217,7 @@
             <li><a class="dropdown-item" href="{{ route('produtovendas.index') }}">Listar Vendas</a></li>
           </ul>
         </li>
+        -->
         @endif
         <li class="nav-item">
           <form action="/logout" method="POST">
