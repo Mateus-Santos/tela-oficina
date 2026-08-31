@@ -3,107 +3,86 @@
 @vite(['resources/js/validateForm.js'])
 
 @section('content')
+
 <section class="container cadastro">
-  <h1><i class="bi bi-gear"></i> CADASTRO DE VEÍCULOS</h1>
-  <div class="campos">
+
+
+<h1>
+    <i class="bi bi-gear"></i> CADASTRO DE VEÍCULOS
+</h1>
+
+<div class="campos">
 
     @if ($errors->any())
-    <div class="alert alert-danger">
-      <ul>
-        @foreach ($errors->all() as $error)
-        <li>{{ $error }}</li>
-        @endforeach
-      </ul>
-    </div>
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
     @endif
-    
-    <form action="{{ route('veiculosclientes.store') }}" method="POST">
-      @csrf
+
+    <form action="{{ route('veiculos.store') }}" method="POST">
+        @csrf
+
         <div class="row mb-3">
-          
-          @if(auth()->user() && auth()->user()->permitions != 2)
-            {{-- Visão para Admin / Outras permissões (Mostra Select com Todos os Clientes) --}}
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label class="form-label" for="id_cliente">Pessoa:*</label>
-                <select class="form-control" id="id_cliente" name="id_cliente" required>
-                  <option value="">Escolher...</option>
 
-                  @foreach($clientes as $cliente)
-                    <option value="{{ $cliente->id }}">
-                      {{ $cliente->pessoa->nome ?? $cliente->id }}
-                    </option>
-                  @endforeach
-
-                </select>
-              </div>
-            </div>
-          @else
-            {{-- Visão para Permissão 2 (Usuário comum - exibe apenas seus dados fixos) --}}
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label class="form-label" for="id_cliente_nome">
-                  Pessoa: {{ auth()->user()->pessoa->nome ?? auth()->user()->name }}
+            <div class="col-md-6">
+                <label class="form-label" for="montadora_id">
+                    Montadora:*
                 </label>
-                
-                {{-- Envia o ID do cliente correspondente ao usuário logado --}}
-                <input 
-                  class="form-control" 
-                  type="text" 
-                  value="{{ auth()->user()->pessoa->cliente->id ?? auth()->user()->id }}" 
-                  readonly
+
+                <select
+                    class="form-control"
+                    id="montadora_id"
+                    name="montadora_id"
+                    required
                 >
-                {{-- Campo oculto para garantir que o ID do cliente seja enviado no formulário --}}
-                <input 
-                  type="hidden" 
-                  name="id_cliente" 
-                  value="{{ auth()->user()->pessoa->cliente->id ?? auth()->user()->id }}"
-                >
-              </div>
+                    <option value="">Escolher...</option>
+
+                    @foreach ($montadoras as $montadora)
+                        <option
+                            value="{{ $montadora->id }}"
+                            @selected(old('montadora_id') == $montadora->id)
+                        >
+                            {{ $montadora->nome }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
-          @endif
-          <div class="col-md-4">
-            <label class="form-label" for="montadora">Montadora:*</label>
-            <select class="form-control" id="montadora" name="montadora" required>
-              @foreach($montadoras as $montadora)
-                <option value="{{$montadora->id}}">{{$montadora->nome}}</option>
-              @endforeach
-            </select>
-          </div>
-          <div class="col-md-4">
-            <label class="form-label" for="veiculo_id">Veiculo:*</label>
-            <select id="veiculo_id" name="veiculo_id" class="form-control">
-                <option value="">Selecione a montadora primeiro</option>
-            </select>
-          </div>
+
+            <div class="col-md-6">
+                <label class="form-label" for="nome">
+                    Veículo:*
+                </label>
+
+                <input
+                    type="text"
+                    class="form-control"
+                    id="nome"
+                    name="nome"
+                    value="{{ old('nome') }}"
+                    placeholder="Digite o nome do veículo"
+                    maxlength="255"
+                >
+            </div>
+
         </div>
 
-        <div class="row mb">
-        <div class="col-md-4">
-            <label class="form-label" for="placa">Placa:*</label>
-            <input type="text" class="form-control" id="placa" name="placa" placeholder="Digite a placa do veículo" maxlength="8" required>
-          </div>
-          <div class="col-md-2">
-            <label class="form-label" for="ano">Ano:*</label>
-            <input type="number" class="form-control" id="ano" name="ano" placeholder="ex.: 2022" min="1900" max="{{ date('Y') }}" required>
-          </div>
-          <div class="col-md-3">
-            <label class="form-label" for="cor">Cor:*</label>
-            <input type="text" class="form-control" id="cor" name="cor" placeholder="Digite a cor do veículo" maxlength="30" required>
-          </div>
-        </div>
         <div class="col text-center mt-4">
-          <button type="submit" class="btn btn-success">Cadastrar Veículo</button>
+            <button
+                type="submit"
+                class="btn btn-success"
+            >
+                Cadastrar Veículo
+            </button>
         </div>
-    </form>
-  </section>
-  </div>
-</section>
-@endsection
 
-@section('scripts')
-    <script>
-        var veiculoSelecionado = "{{ $montadoras[0] }}";
-    </script>
-    @vite(['resources/js/cadVeiculo.js'])    
+    </form>
+
+</div>
+
+</section>
+
 @endsection

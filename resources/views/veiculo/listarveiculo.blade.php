@@ -55,7 +55,7 @@
 
         {{-- Limpar filtros --}}
         <a
-            href="{{ route('veiculosclientes.index') }}"
+            href="{{ route('veiculos.index') }}"
             class="btn btn-secondary"
         >
             <i class="bi bi-filter"></i> Limpar Filtros
@@ -95,7 +95,7 @@
                 <td class="text-center">
 
                     <a
-                        href="{{ route('veiculosclientes.edit', $veiculo->id) }}"
+                        href="{{ route('veiculos.edit', $veiculo->id) }}"
                         class="btn btn-sm btn-info text-white"
                         title="Editar"
                     >
@@ -107,7 +107,7 @@
                 <td class="text-center">
 
                     <form
-                        action="{{ route('veiculosclientes.destroy', $veiculo->id) }}"
+                        action="{{ route('veiculos.destroy', $veiculo->id) }}"
                         method="POST"
                         onsubmit="return confirm('Tem certeza que deseja excluir este Veículo?');"
                     >
