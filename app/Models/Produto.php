@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Produto extends Model
 {
@@ -42,13 +41,9 @@ class Produto extends Model
             );
     }
 
-    public function veiculos()
+    public function veiculos(): BelongsToMany
     {
         return $this->belongsToMany(Veiculo::class, 'produtos_veiculos');
     }
 
-    public function produtoVendas(): HasMany
-    {
-        return $this->hasMany(ProdutoVenda::class);
-    }
 }
