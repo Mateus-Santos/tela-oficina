@@ -360,6 +360,54 @@
 
                 </li>
 
+                <li class="dropdown-hover-submenu">
+
+                    <a
+                        class="dropdown-item dropdown-toggle d-flex align-items-center justify-content-between"
+                        href="#"
+                    >
+
+                        <span>
+
+                        <i class="bi bi-car-front-fill me-2"></i>
+                        Veículos Clientes
+
+                        </span>
+
+                    </a>
+
+                    <ul class="dropdown-menu">
+                        <li>
+
+                        <a
+                            href="{{ route('veiculosclientes.index') }}"
+                            class="dropdown-item"
+                        >
+
+                            <i class="bi bi-list-ul me-2"></i>
+                            Listar Veículos
+
+                        </a>
+
+                        </li>
+
+                        <li>
+
+                        <a
+                            href="{{ route('veiculosclientes.create') }}"
+                            class="dropdown-item"
+                        >
+
+                            <i class="bi bi-person-plus-fill me-2"></i>
+                            Cadastrar Veículo do Cliente
+
+                        </a>
+
+                        </li>
+                    </ul>
+
+                </li>
+
               </ul>
 
             </li>
@@ -367,61 +415,6 @@
           </ul>
 
         </li>
-
-
-        {{-- ========================================================= --}}
-        {{-- VEÍCULOS --}}
-        {{-- ========================================================= --}}
-
-        <li class="nav-item dropdown">
-
-          <a
-            class="btn btn-warning dropdown-toggle"
-            href="#"
-            role="button"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-          >
-
-            <i class="bi bi-car-front-fill"></i>
-            Veículos
-
-          </a>
-
-          <ul class="dropdown-menu">
-
-            <li>
-
-              <a
-                href="{{ route('veiculosclientes.index') }}"
-                class="dropdown-item"
-              >
-
-                <i class="bi bi-list-ul me-2"></i>
-                Listar Veículos
-
-              </a>
-
-            </li>
-
-            <li>
-
-              <a
-                href="{{ route('veiculosclientes.create') }}"
-                class="dropdown-item"
-              >
-
-                <i class="bi bi-plus-circle me-2"></i>
-                Cadastrar Veículo
-
-              </a>
-
-            </li>
-
-          </ul>
-
-        </li>
-
 
         {{-- ========================================================= --}}
         {{-- ORDEM DE SERVIÇO --}}

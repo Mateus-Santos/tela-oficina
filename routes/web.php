@@ -6,7 +6,6 @@ use App\Http\Controllers\EnderecoController;
 use App\Http\Controllers\ProdutoController;
 use App\Http\Controllers\ColaboradorController;
 use App\Http\Controllers\ClienteController;
-use App\Http\Controllers\ProdutoVendaController;
 use App\Http\Controllers\VeiculoController;
 use App\Http\Controllers\VeiculosClientesController;
 use App\Http\Controllers\OrdemServicoController;
@@ -14,6 +13,11 @@ use App\Http\Controllers\NotasItemController;
 use App\Http\Controllers\NotaController;
 use App\Http\Controllers\MontadoraController;
 use App\Http\Controllers\SetorServicoController;
+use App\Http\Controllers\CategoriaFinanceiraController;
+use App\Http\Controllers\ContaReceberController;
+use App\Http\Controllers\FormaPagamentoController;
+use App\Http\Controllers\RecebimentoController;
+
 //use App\Http\Controllers\ChatController;
 
 Route::get('/', function () {
@@ -24,21 +28,23 @@ Route::get('/home', function () {
     return view('index');
 });
 
-//Usuários está desbloqueados.
+// Usuários estão desbloqueados.
 Route::middleware(['auth', 'check.blocked'])->group(function () {
+
     Route::get('/perfil', function () {
         return view('cliente/editarcliente');
     })->name('perfil');
+
     Route::put('/perfil/{id_user}/update', [UserController::class, 'update']);
     Route::resource('veiculosclientes', VeiculosClientesController::class);
     Route::get('/veiculos/montadora/{id}', [VeiculoController::class, 'porMontadora']);
-    //Rotas para administradores.
+
+    // Rotas para administradores.
     Route::middleware(['admin'])->group(function () {
         Route::resource('ordemservicos', OrdemServicoController::class);
         Route::resource('notasitem', NotasItemController::class);
         Route::resource('users', UserController::class);
         Route::resource('clientes', ClienteController::class);
-        Route::resource('produtovendas', ProdutoVendaController::class);
         Route::resource('produtos', ProdutoController::class);
         Route::resource('colaboradores', ColaboradorController::class);
         Route::resource('enderecos', EnderecoController::class);
@@ -48,6 +54,18 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         Route::resource('veiculos', VeiculoController::class);
         Route::resource('montadoras', MontadoraController::class);
         Route::resource('setorserivos', SetorServicoController::class);
+
+        Route::resource('formas-pagamento', FormaPagamentoController::class)
+            ->parameters(['formas-pagamento' => 'formaPagamento']);
+
+        Route::resource('categorias-financeiras', CategoriaFinanceiraController::class)
+            ->parameters(['categorias-financeiras' => 'categoriaFinanceira']);
+
+        Route::resource('contas-receber', ContaReceberController::class)
+            ->parameters(['contas-receber' => 'contaReceber']);
+
+        Route::get('contas-receber/{contaReceber}/recebimentos/create', [RecebimentoController::class, 'create'])->name('recebimentos.create');
+        Route::post('recebimentos', [RecebimentoController::class, 'store'])->name('recebimentos.store');
     });
 });
 
@@ -61,7 +79,6 @@ Route::middleware([
     })->name('dashboard');
 });
 
-
 Route::get('/erro-autenticacao', function () {
     return view('errors.403');
 })->name('erro-autenticacao');
@@ -69,7 +86,6 @@ Route::get('/erro-autenticacao', function () {
 Route::patch('/users/{id}/block', [UserController::class, 'toggleBlock'])->name('toggleBlock');
 
 // Rotas de teste para as novas views:
-
 Route::get('/termos-de-uso', function () {
     return view('termos/termosdeuso');
 })->name('termos');
