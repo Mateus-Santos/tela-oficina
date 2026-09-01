@@ -679,62 +679,6 @@
 
         </li>
 
-
-        {{-- ========================================================= --}}
-        {{-- VENDAS - DESATIVADO --}}
-        {{-- ========================================================= --}}
-
-        <!--
-
-        <li class="nav-item dropdown">
-
-          <a
-            class="btn btn-warning dropdown-toggle"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-          >
-
-            <i class="bi bi-cart-fill"></i>
-            Vendas
-
-          </a>
-
-          <ul class="dropdown-menu">
-
-            <li>
-
-              <a
-                class="dropdown-item"
-                href="{{ route('produtovendas.create') }}"
-              >
-
-                <i class="bi bi-cart-plus me-2"></i>
-                Cadastrar Venda
-
-              </a>
-
-            </li>
-
-            <li>
-
-              <a
-                class="dropdown-item"
-                href="{{ route('produtovendas.index') }}"
-              >
-
-                <i class="bi bi-list-ul me-2"></i>
-                Listar Vendas
-
-              </a>
-
-            </li>
-
-          </ul>
-
-        </li>
-
-        -->
-
         @endif
 
 
