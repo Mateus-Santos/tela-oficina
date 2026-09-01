@@ -1,26 +1,50 @@
 <!DOCTYPE html>
+
 <html lang="pt-br">
 
 <head>
+
   <meta charset="utf-8">
+
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
   <meta name="csrf-token" content="{{ csrf_token() }}">
 
   <!-- IMPORTANDO BOOTSTRAP -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+    integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+    crossorigin="anonymous"
+  >
+
   <!-- Favicons -->
   <link href="{{ asset('img/favicon.png') }}" rel="icon">
   <link href="{{ asset('img/apple-touch-icon.png') }}" rel="apple-touch-icon">
 
   <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Jost:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Jost:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i"
+    rel="stylesheet"
+  >
 
   <!-- Template Main CSS File -->
   <script src="{{ asset('/vendor/waypoints/noframework.waypoints.js') }}"></script>
-  @vite(['resources/js/app.js', 'resources/scss/_app.scss', 'resources/js/cadError.js'])
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+  @vite([
+    'resources/js/app.js',
+    'resources/scss/_app.scss',
+    'resources/js/cadError.js'
+  ])
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"
+  ></script>
+
   <title>Oficina SOS Mecânica {{ env('APP_VERSION') }}</title>
 
   <script src="https://cdn.jsdelivr.net/npm/inputmask@5.0.6/dist/inputmask.min.js"></script>
@@ -32,231 +56,797 @@
   <!-- ======= Header ======= -->
 
   <nav id="header" class="navbar navbar-expand-lg fixed-top">
+
     <div class="container-fluid">
-      <h1><a href="/"><img src="/img/New Logo.png" alt=""></a></h1>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+
+      <h1>
+        <a href="/">
+          <img src="/img/New Logo.png" alt="">
+        </a>
+      </h1>
+
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarNavDropdown"
+        aria-controls="navbarNavDropdown"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
         <span class="navbar-toggler-icon"></span>
       </button>
+
     </div>
 
 
     <div class="collapse navbar-collapse" id="navbarNavDropdown">
 
       <ul class="navbar-nav">
-        @guest
-        <li class="nav-item"><a class="nav-link active" href="#">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="#about">Sobre</a></li>
-        <li class="nav-item"><a class="nav-link" href="#team">Equipe</a></li>
 
-        <li class="nav-item"><a class="btn btn-success" href="/login"><i class="bi bi-box-arrow-in-right"></i> Entrar</a></li>
-        <li class="nav-item"><a class="btn btn-warning" href="/register"><i class="bi bi-person-plus"></i> Cadastre-se</a></li>
+        {{-- ========================================================= --}}
+        {{-- USUÁRIO NÃO AUTENTICADO --}}
+        {{-- ========================================================= --}}
+
+        @guest
+
+        <li class="nav-item">
+          <a class="nav-link active" href="#">
+            <i class="bi bi-house-door-fill"></i>
+            Home
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="#about">
+            <i class="bi bi-info-circle-fill"></i>
+            Sobre
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="#team">
+            <i class="bi bi-people-fill"></i>
+            Equipe
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a class="btn btn-success" href="/login">
+            <i class="bi bi-box-arrow-in-right"></i>
+            Entrar
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a class="btn btn-warning" href="/register">
+            <i class="bi bi-person-plus-fill"></i>
+            Cadastre-se
+          </a>
+        </li>
+
         @endguest
+
+
+        {{-- ========================================================= --}}
+        {{-- USUÁRIO AUTENTICADO --}}
+        {{-- ========================================================= --}}
 
         @auth
 
-        @if(auth()->user() && auth()->user()->permitions === 2)
-            <li class="nav-item dropdown">
-                <a class="btn btn-warning dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-car-front"></i>
-                    Veículos
-                </a>
-                <ul class="dropdown-menu">
-                    <li>
-                        <a href="{{ route('veiculosclientes.index') }}" class="dropdown-item">Listar Veículos</a>
-                    </li>
-                    <li>
-                        <a href="{{ route('veiculosclientes.create') }}" class="dropdown-item">Cadastrar Veículo</a>
-                    </li>
-                </ul>
-            </li>
-        <li class="nav-item dropdown">
-          <a class="btn btn-warning" href="{{ route('ordemservicos.index') }}" aria-expanded="false">
-            <i class="bi bi-wrench-adjustable-circle"></i>
-            Históricos
-          </a>
-        </li>
 
-        <li class="nav-item dropdown">
-          <a class="btn btn-warning" href="/perfil" aria-expanded="false">
-            <i class="bi bi-person-square"></i>
-            {{auth()->user()->name}}
-          </a>
-        </li>
+        {{-- ========================================================= --}}
+        {{-- ADMINISTRADOR / PERMISSÃO 2 --}}
+        {{-- ========================================================= --}}
+
+        @if(auth()->user() && auth()->user()->permitions === 2)
+
+          {{-- VEÍCULOS --}}
+          <li class="nav-item dropdown">
+
+            <a
+              class="btn btn-warning dropdown-toggle"
+              role="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+
+              <i class="bi bi-car-front-fill"></i>
+              Veículos
+
+            </a>
+
+            <ul class="dropdown-menu">
+
+              <li>
+                <a
+                  href="{{ route('veiculosclientes.index') }}"
+                  class="dropdown-item"
+                >
+                  <i class="bi bi-list-ul me-2"></i>
+                  Listar Veículos
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="{{ route('veiculosclientes.create') }}"
+                  class="dropdown-item"
+                >
+                  <i class="bi bi-plus-circle me-2"></i>
+                  Cadastrar Veículo
+                </a>
+              </li>
+
+            </ul>
+
+          </li>
+
+
+          {{-- HISTÓRICOS --}}
+          <li class="nav-item">
+
+            <a
+              class="btn btn-warning"
+              href="{{ route('ordemservicos.index') }}"
+            >
+
+              <i class="bi bi-clock-history"></i>
+              Históricos
+
+            </a>
+
+          </li>
+
+
+          {{-- PERFIL --}}
+          <li class="nav-item">
+
+            <a
+              class="btn btn-warning"
+              href="/perfil"
+            >
+
+              <i class="bi bi-person-circle"></i>
+              {{ auth()->user()->name }}
+
+            </a>
+
+          </li>
 
         @endif
+
+
+        {{-- ========================================================= --}}
+        {{-- COLABORADOR / PERMISSÃO 1 --}}
+        {{-- ========================================================= --}}
+
         @if(auth()->user() && auth()->user()->permitions === 1)
-        <!-- Colaborator -->
+
+        <!-- Colaborador -->
+
+        {{-- USUÁRIOS --}}
         <li class="nav-item dropdown">
-          <a class="btn btn-warning dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+
+          <a
+            class="btn btn-warning dropdown-toggle"
+            href="#"
+            role="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+
             <i class="bi bi-person-lines-fill"></i>
             Usuários
+
           </a>
+
           <ul class="dropdown-menu">
+
+            {{-- LISTAR USUÁRIOS --}}
             <li>
-              <a href="{{ route('users.index') }}" class="dropdown-item">Listar todos os Usuários</a>
+
+              <a
+                href="{{ route('users.index') }}"
+                class="dropdown-item"
+              >
+
+                <i class="bi bi-people-fill me-2"></i>
+                Listar todos os Usuários
+
+              </a>
+
             </li>
 
-            <li><hr class="dropdown-divider"></li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
 
-            <!-- Subgrupo Colaboradores -->
+
+            {{-- SUBGRUPO COLABORADORES --}}
             <li class="dropdown-hover-submenu">
-              <a class="dropdown-item dropdown-toggle d-flex align-items-center justify-content-between" href="#">
-                <span><i class="bi bi-person-badge me-1"></i> Colaboradores</span>
+
+              <a
+                class="dropdown-item dropdown-toggle d-flex align-items-center justify-content-between"
+                href="#"
+              >
+
+                <span>
+
+                  <i class="bi bi-person-badge-fill me-2"></i>
+                  Colaboradores
+
+                </span>
+
               </a>
+
               <ul class="dropdown-menu">
                 <li>
-                  <a href="{{ route('colaboradores.create') }}" class="dropdown-item">Cadastrar Colaborador</a>
+
+                  <a
+                    href="{{ route('colaboradores.index') }}"
+                    class="dropdown-item"
+                  >
+
+                    <i class="bi bi-list-ul me-2"></i>
+                    Listar Colaboradores
+
+                  </a>
+
                 </li>
+
                 <li>
-                  <a href="{{ route('colaboradores.index') }}" class="dropdown-item">Listar Colaboradores</a>
+
+                  <a
+                    href="{{ route('colaboradores.create') }}"
+                    class="dropdown-item"
+                  >
+
+                    <i class="bi bi-person-plus-fill me-2"></i>
+                    Cadastrar Colaborador
+
+                  </a>
+
                 </li>
               </ul>
+
             </li>
 
-            <!-- Subgrupo Clientes -->
+
+            {{-- SUBGRUPO CLIENTES --}}
             <li class="dropdown-hover-submenu">
-              <a class="dropdown-item dropdown-toggle d-flex align-items-center justify-content-between" href="#">
-                <span><i class="bi bi-people me-1"></i> Clientes</span>
+
+              <a
+                class="dropdown-item dropdown-toggle d-flex align-items-center justify-content-between"
+                href="#"
+              >
+
+                <span>
+
+                  <i class="bi bi-person-vcard-fill me-2"></i>
+                  Clientes
+
+                </span>
+
               </a>
+
               <ul class="dropdown-menu">
+
                 <li>
-                  <a href="{{ route('clientes.index') }}" class="dropdown-item">Listar Clientes</a>
+
+                  <a
+                    href="{{ route('clientes.index') }}"
+                    class="dropdown-item"
+                  >
+
+                    <i class="bi bi-list-ul me-2"></i>
+                    Listar Clientes
+
+                  </a>
+
                 </li>
+
                 <li>
-                  <a href="{{ route('clientes.create') }}" class="dropdown-item">Cadastrar Clientes</a>
+
+                  <a
+                    href="{{ route('clientes.create') }}"
+                    class="dropdown-item"
+                  >
+
+                    <i class="bi bi-person-plus-fill me-2"></i>
+                    Cadastrar Cliente
+
+                  </a>
+
                 </li>
+
               </ul>
+
             </li>
+
           </ul>
+
         </li>
 
+
+        {{-- ========================================================= --}}
+        {{-- VEÍCULOS --}}
+        {{-- ========================================================= --}}
+
         <li class="nav-item dropdown">
-          <a class="btn btn-warning dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="bi bi-car-front"></i>
+
+          <a
+            class="btn btn-warning dropdown-toggle"
+            href="#"
+            role="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+
+            <i class="bi bi-car-front-fill"></i>
             Veículos
+
           </a>
+
           <ul class="dropdown-menu">
+
             <li>
-              <a href="{{ route('veiculosclientes.index') }}" class="dropdown-item">Listar Veículos</a>
+
+              <a
+                href="{{ route('veiculosclientes.index') }}"
+                class="dropdown-item"
+              >
+
+                <i class="bi bi-list-ul me-2"></i>
+                Listar Veículos
+
+              </a>
+
             </li>
+
             <li>
-              <a href="{{ route('veiculosclientes.create') }}" class="dropdown-item">Cadastrar Veículo</a>
+
+              <a
+                href="{{ route('veiculosclientes.create') }}"
+                class="dropdown-item"
+              >
+
+                <i class="bi bi-plus-circle me-2"></i>
+                Cadastrar Veículo
+
+              </a>
+
             </li>
+
           </ul>
+
         </li>
 
+
+        {{-- ========================================================= --}}
+        {{-- ORDEM DE SERVIÇO --}}
+        {{-- ========================================================= --}}
+
         <li class="nav-item dropdown">
-          <a class="btn btn-warning dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="bi bi-wrench-adjustable-circle"></i>
+
+          <a
+            class="btn btn-warning dropdown-toggle"
+            href="#"
+            role="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+
+            <i class="bi bi-wrench-adjustable-circle-fill"></i>
             Ordem Serviço
+
           </a>
+
           <ul class="dropdown-menu">
+
             <li>
-              <a href="{{ route('ordemservicos.create') }}" class="dropdown-item">Cadastrar Ordem Serviço</a>
+
+              <a
+                href="{{ route('ordemservicos.index') }}"
+                class="dropdown-item"
+              >
+
+                <i class="bi bi-list-ul me-2"></i>
+                Listar OS
+
+              </a>
+
             </li>
+
             <li>
-              <a href="{{ route('ordemservicos.index') }}" class="dropdown-item">Listar OS</a>
+
+              <a
+                href="{{ route('ordemservicos.create') }}"
+                class="dropdown-item"
+              >
+
+                <i class="bi bi-plus-circle me-2"></i>
+                Cadastrar OS
+
+              </a>
+
             </li>
+
           </ul>
+
         </li>
 
+
+        {{-- ========================================================= --}}
+        {{-- NOTAS --}}
+        {{-- ========================================================= --}}
+
         <li class="nav-item dropdown">
-          <a class="btn btn-warning dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="bi bi-wrench-adjustable-circle"></i>
+
+          <a
+            class="btn btn-warning dropdown-toggle"
+            href="#"
+            role="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+
+            <i class="bi bi-receipt"></i>
             Notas
+
           </a>
+
           <ul class="dropdown-menu">
+
             <li>
-              <a href="{{ route('notasitem.create') }}" class="dropdown-item">Cadastrar Nota</a>
+
+              <a
+                href="{{ route('notasitem.index') }}"
+                class="dropdown-item"
+              >
+
+                <i class="bi bi-list-ul me-2"></i>
+                Listar Notas
+
+              </a>
+
             </li>
+
             <li>
-              <a href="{{ route('notasitem.index') }}" class="dropdown-item">Listar Notas</a>
+
+              <a
+                href="{{ route('notasitem.create') }}"
+                class="dropdown-item"
+              >
+
+                <i class="bi bi-receipt-cutoff me-2"></i>
+                Cadastrar Nota
+
+              </a>
+
             </li>
+
           </ul>
+
         </li>
 
+
+        {{-- ========================================================= --}}
+        {{-- LOJA --}}
+        {{-- ========================================================= --}}
+
         <li class="nav-item dropdown">
-          <a class="btn btn-warning dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+
+          <a
+            class="btn btn-warning dropdown-toggle"
+            href="#"
+            role="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+
             <i class="bi bi-bag-fill"></i>
             Loja
+
           </a>
+
           <ul class="dropdown-menu">
+
             <li>
-              <a href="{{ route('produtos.create') }}" class="dropdown-item">Cadastrar Produto</a>
+
+              <a
+                href="{{ route('produtos.index') }}"
+                class="dropdown-item"
+              >
+
+                <i class="bi bi-box-seam me-2"></i>
+                Listar Produtos
+
+              </a>
+
             </li>
+
             <li>
-              <a href="{{ route('produtos.index') }}" class="dropdown-item">Listar Produtos</a>
+
+              <a
+                href="{{ route('produtos.create') }}"
+                class="dropdown-item"
+              >
+
+                <i class="bi bi-plus-circle me-2"></i>
+                Cadastrar Produto
+
+              </a>
+
             </li>
+
           </ul>
+
         </li>
+
+
+        {{-- ========================================================= --}}
+        {{-- FINANCEIRO --}}
+        {{-- ========================================================= --}}
+
         <li class="nav-item dropdown">
-          <a class="btn btn-warning dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+
+          <a
+            class="btn btn-warning "
+            href="#"
+            role="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+
+            <i class="bi bi-cash-stack"></i>
+            Financeiro
+
+          </a>
+
+        </li>
+
+
+        {{-- ========================================================= --}}
+        {{-- CONFIGURAÇÕES --}}
+        {{-- ========================================================= --}}
+
+        <li class="nav-item dropdown">
+
+          <a
+            class="btn btn-warning dropdown-toggle"
+            href="#"
+            role="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+
             <i class="bi bi-gear-fill"></i>
-            Configurações
+            Setup
+
           </a>
+
           <ul class="dropdown-menu">
+
+            {{-- VEÍCULOS --}}
             <li>
-              <a href="{{ route('veiculos.index') }}" class="dropdown-item">Veículos</a>
+
+              <a
+                href="{{ route('veiculos.index') }}"
+                class="dropdown-item"
+              >
+
+                <i class="bi bi-car-front me-2"></i>
+                Veículos
+
+              </a>
+
             </li>
+
+
+            {{-- MONTADORA --}}
             <li>
-              <a href="{{ route('montadoras.index') }}" class="dropdown-item">Montadora</a>
+
+              <a
+                href="{{ route('montadoras.index') }}"
+                class="dropdown-item"
+              >
+
+                <i class="bi bi-buildings me-2"></i>
+                Montadora
+
+              </a>
+
             </li>
+
+
+            {{-- SETOR DE SERVIÇO --}}
             <li>
-              <a href="{{ route('setorserivos.index') }}" class="dropdown-item">Setor de Serviço</a>
+
+              <a
+                href="{{ route('setorserivos.index') }}"
+                class="dropdown-item"
+              >
+
+                <i class="bi bi-diagram-3-fill me-2"></i>
+                Setor de Serviço
+
+              </a>
+
             </li>
+
           </ul>
+
         </li>
-        <!-- Subgrupo Vendas
+
+
+        {{-- ========================================================= --}}
+        {{-- VENDAS - DESATIVADO --}}
+        {{-- ========================================================= --}}
+
+        <!--
+
         <li class="nav-item dropdown">
-          <a class="btn btn-warning dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+
+          <a
+            class="btn btn-warning dropdown-toggle"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+
             <i class="bi bi-cart-fill"></i>
             Vendas
+
           </a>
+
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="{{ route('produtovendas.create') }}">Cadastrar Vendas</a></li>
-            <li><a class="dropdown-item" href="{{ route('produtovendas.index') }}">Listar Vendas</a></li>
+
+            <li>
+
+              <a
+                class="dropdown-item"
+                href="{{ route('produtovendas.create') }}"
+              >
+
+                <i class="bi bi-cart-plus me-2"></i>
+                Cadastrar Venda
+
+              </a>
+
+            </li>
+
+            <li>
+
+              <a
+                class="dropdown-item"
+                href="{{ route('produtovendas.index') }}"
+              >
+
+                <i class="bi bi-list-ul me-2"></i>
+                Listar Vendas
+
+              </a>
+
+            </li>
+
           </ul>
+
         </li>
+
         -->
+
         @endif
+
+
+        {{-- ========================================================= --}}
+        {{-- SAIR --}}
+        {{-- ========================================================= --}}
+
         <li class="nav-item">
+
           <form action="/logout" method="POST">
+
             @csrf
-            <a class="btn btn-light" href="/logout"
-              onclick="event.preventDefault();
-              this.closest('form').submit();">
+
+            <a
+              class="btn btn-light"
+              href="/logout"
+              onclick="
+                event.preventDefault();
+                this.closest('form').submit();
+              "
+            >
+
+              <i class="bi bi-box-arrow-right"></i>
               Sair
+
             </a>
+
           </form>
+
         </li>
+
         @endauth
+
       </ul>
+
     </div>
+
   </nav>
+
 
   @include('errors.error-message')
 
   @yield('content')
 
+
+  <!-- ======= Footer ======= -->
+
   <footer id="footer">
+
     <div class="container footer-bottom clearfix">
+
       <div class="copyright">
-        &copy; Copyright 2026 <strong><span>Oficina SOS Mecânica</span></strong>. All Rights Reserved
+
+        &copy; Copyright 2026
+
+        <strong>
+          <span>Oficina SOS Mecânica</span>
+        </strong>.
+
+        All Rights Reserved
+
       </div>
+
     </div>
+
   </footer>
 
+
   <div id="preloader"></div>
-  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><img src="{{ asset('svg/arrow-up.svg') }}" alt="Logo" /></a>
+
+
+  <!-- ======= Back To Top ======= -->
+
+  <a
+    href="#"
+    class="back-to-top d-flex align-items-center justify-content-center"
+  >
+
+    <img
+      src="{{ asset('svg/arrow-up.svg') }}"
+      alt="Voltar ao topo"
+    />
+
+  </a>
+
+
+  <!-- Vendor JS Files -->
+
   <script src="{{ asset('/vendor/aos/aos.js') }}"></script>
+
   <script src="{{ asset('/vendor/glightbox/js/glightbox.min.js') }}"></script>
+
   <script src="{{ asset('/vendor/isotope-layout/isotope.pkgd.min.js') }}"></script>
+
   <script src="{{ asset('/vendor/php-email-form/validate.js') }}"></script>
+
   <script src="{{ asset('/vendor/swiper/swiper-bundle.min.js') }}"></script>
+
   <script src="{{ asset('/vendor/waypoints/noframework.waypoints.js') }}"></script>
+
+
   <!-- Template Main JS File -->
-  <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+
+  <script
+    src="https://code.jquery.com/jquery-3.7.1.js"
+    integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+    crossorigin="anonymous"
+  ></script>
+
   @yield('scripts')
+
 </body>
 
 </html>
+
