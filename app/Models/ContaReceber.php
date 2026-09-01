@@ -64,4 +64,10 @@ class ContaReceber extends Model
             'conta_receber_id'
         );
     }
+
+    public function estaVencida(): bool
+    {
+        return in_array($this->status, ['aberta', 'parcial'])
+            && $this->data_vencimento->isPast();
+    }
 }

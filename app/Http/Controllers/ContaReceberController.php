@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Financeiro\AtualizarContaReceber;
 use App\Actions\Financeiro\CriarContaReceber;
 use App\Http\Requests\StoreContaReceberRequest;
 use App\Http\Requests\UpdateContaReceberRequest;
@@ -10,8 +11,6 @@ use App\Models\Cliente;
 use App\Models\ContaReceber;
 use App\Models\Nota;
 use Illuminate\Http\Request;
-use App\Actions\Financeiro\AtualizarContaReceber;
-
 
 class ContaReceberController extends Controller
 {
@@ -19,22 +18,53 @@ class ContaReceberController extends Controller
     {
         $query = ContaReceber::query()
             ->with([
-                'cliente',
-                'nota',
+                'cliente.pessoa',
+                'nota.cliente.pessoa',
                 'categoriaFinanceira',
-            ]);
+            ])
+            ->withSum('recebimentos', 'valor')
+            ->withExists('recebimentos');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Filtro por cliente
+        |--------------------------------------------------------------------------
+        */
 
         if ($request->filled('cliente')) {
             $cliente = $request->input('cliente');
 
-            $query->whereHas('cliente', function ($q) use ($cliente) {
+            $query->whereHas('cliente.pessoa', function ($q) use ($cliente) {
                 $q->where('nome', 'like', "%{$cliente}%");
             });
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Filtro por status
+        |--------------------------------------------------------------------------
+        */
+
         if ($request->filled('status')) {
-            $query->where('status', $request->input('status'));
+            $status = $request->input('status');
+
+            if ($status === 'vencida') {
+                $query->whereIn('status', ['aberta', 'parcial'])
+                    ->whereDate(
+                        'data_vencimento',
+                        '<',
+                        now()->toDateString()
+                    );
+            } else {
+                $query->where('status', $status);
+            }
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Filtro por período
+        |--------------------------------------------------------------------------
+        */
 
         if ($request->filled('data_inicio')) {
             $query->whereDate(
@@ -51,6 +81,12 @@ class ContaReceberController extends Controller
                 $request->input('data_fim')
             );
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Filtro por nota
+        |--------------------------------------------------------------------------
+        */
 
         if ($request->filled('nota_id')) {
             $query->where(
@@ -73,11 +109,13 @@ class ContaReceberController extends Controller
     public function create()
     {
         $clientes = Cliente::query()
-            ->orderBy('nome')
-            ->get();
+            ->with('pessoa')
+            ->whereHas('pessoa')
+            ->get()
+            ->sortBy('pessoa.nome');
 
         $notas = Nota::query()
-            ->with('cliente')
+            ->with('cliente.pessoa')
             ->orderByDesc('id')
             ->get();
 
@@ -107,14 +145,17 @@ class ContaReceberController extends Controller
 
         return redirect()
             ->route('contas-receber.index')
-            ->with('success', 'Conta a receber criada com sucesso.');
+            ->with(
+                'success',
+                'Conta a receber criada com sucesso.'
+            );
     }
 
     public function show(ContaReceber $contaReceber)
     {
         $contaReceber->load([
-            'cliente',
-            'nota',
+            'cliente.pessoa',
+            'nota.cliente.pessoa',
             'categoriaFinanceira',
             'recebimentos.formaPagamento',
             'recebimentos.usuario',
@@ -132,13 +173,21 @@ class ContaReceberController extends Controller
 
         $saldo = $valorDevido - $valorRecebido;
 
+        $vencida =
+            in_array(
+                $contaReceber->status,
+                ['aberta', 'parcial']
+            )
+            && $contaReceber->data_vencimento->isPast();
+
         return view(
             'financeiro.contas_receber.show',
             compact(
                 'contaReceber',
                 'valorDevido',
                 'valorRecebido',
-                'saldo'
+                'saldo',
+                'vencida'
             )
         );
     }
@@ -158,11 +207,13 @@ class ContaReceberController extends Controller
         }
 
         $clientes = Cliente::query()
-            ->orderBy('nome')
-            ->get();
+            ->with('pessoa')
+            ->whereHas('pessoa')
+            ->get()
+            ->sortBy('pessoa.nome');
 
         $notas = Nota::query()
-            ->with('cliente')
+            ->with('cliente.pessoa')
             ->orderByDesc('id')
             ->get();
 
@@ -183,13 +234,25 @@ class ContaReceberController extends Controller
         );
     }
 
-    public function update(UpdateContaReceberRequest $request, ContaReceber $contaReceber, AtualizarContaReceber $atualizarContaReceber)
-    {
-        $atualizarContaReceber->execute($contaReceber, $request->validated());
+    public function update(
+        UpdateContaReceberRequest $request,
+        ContaReceber $contaReceber,
+        AtualizarContaReceber $atualizarContaReceber
+    ) {
+        $atualizarContaReceber->execute(
+            $contaReceber,
+            $request->validated()
+        );
 
         return redirect()
-            ->route('contas-receber.show', $contaReceber)
-            ->with('success', 'Conta a receber atualizada com sucesso.');
+            ->route(
+                'contas-receber.show',
+                $contaReceber
+            )
+            ->with(
+                'success',
+                'Conta a receber atualizada com sucesso.'
+            );
     }
 
     public function destroy(ContaReceber $contaReceber)

@@ -23,16 +23,31 @@ class CategoriaFinanceiraController extends Controller
 
     public function create()
     {
-        return view('financeiro.categorias.create');
+        return view(
+            'financeiro.categorias.create'
+        );
     }
 
     public function store(StoreCategoriaFinanceiraRequest $request)
     {
-        CategoriaFinanceira::create($request->validated());
+        CategoriaFinanceira::create(
+            $request->validated()
+        );
 
         return redirect()
-            ->route('categorias-financeiras.index')
-            ->with('success', 'Categoria financeira cadastrada com sucesso.');
+            ->route('financeiro.categorias.index')
+            ->with(
+                'success',
+                'Categoria financeira cadastrada com sucesso.'
+            );
+    }
+
+    public function show(CategoriaFinanceira $categoriaFinanceira)
+    {
+        return view(
+            'financeiro.categorias.show',
+            compact('categoriaFinanceira')
+        );
     }
 
     public function edit(CategoriaFinanceira $categoriaFinanceira)
@@ -47,11 +62,16 @@ class CategoriaFinanceiraController extends Controller
         UpdateCategoriaFinanceiraRequest $request,
         CategoriaFinanceira $categoriaFinanceira
     ) {
-        $categoriaFinanceira->update($request->validated());
+        $categoriaFinanceira->update(
+            $request->validated()
+        );
 
         return redirect()
-            ->route('categorias-financeiras.index')
-            ->with('success', 'Categoria financeira atualizada com sucesso.');
+            ->route('financeiro.categorias.show', $categoriaFinanceira)
+            ->with(
+                'success',
+                'Categoria financeira atualizada com sucesso.'
+            );
     }
 
     public function destroy(CategoriaFinanceira $categoriaFinanceira)
@@ -59,7 +79,10 @@ class CategoriaFinanceiraController extends Controller
         $categoriaFinanceira->delete();
 
         return redirect()
-            ->route('categorias-financeiras.index')
-            ->with('success', 'Categoria financeira excluída com sucesso.');
+            ->route('financeiro.categorias.index')
+            ->with(
+                'success',
+                'Categoria financeira excluída com sucesso.'
+            );
     }
 }
