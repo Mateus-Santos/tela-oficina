@@ -35,7 +35,7 @@ class CategoriaFinanceiraController extends Controller
         );
 
         return redirect()
-            ->route('financeiro.categorias.index')
+            ->route('categorias-financeiras.index')
             ->with(
                 'success',
                 'Categoria financeira cadastrada com sucesso.'
@@ -79,7 +79,7 @@ class CategoriaFinanceiraController extends Controller
         $categoriaFinanceira->delete();
 
         return redirect()
-            ->route('financeiro.categorias.index')
+            ->route('categorias-financeiras.index')
             ->with(
                 'success',
                 'Categoria financeira excluída com sucesso.'

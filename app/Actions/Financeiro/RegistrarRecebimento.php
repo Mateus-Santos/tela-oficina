@@ -16,6 +16,10 @@ class RegistrarRecebimento
                 ->lockForUpdate()
                 ->findOrFail($dados['conta_receber_id']);
 
+            /*
+             * Validações de status
+             */
+
             if ($conta->status === 'cancelada') {
                 throw ValidationException::withMessages([
                     'conta_receber_id' => 'Não é possível receber uma conta cancelada.',
@@ -28,25 +32,82 @@ class RegistrarRecebimento
                 ]);
             }
 
-            $valorDevido =
-                (float) $conta->valor_original
-                - (float) $conta->desconto
-                + (float) $conta->juros
-                + (float) $conta->multa;
+            $valorOriginalCentavos = (int) round(
+                (float) $conta->valor_original * 100
+            );
 
-            $valorRecebido = (float) $conta->recebimentos()
-                ->sum('valor');
+            $descontoCentavos = (int) round(
+                (float) $conta->desconto * 100
+            );
 
-            $saldo = $valorDevido - $valorRecebido;
+            $jurosCentavos = (int) round(
+                (float) $conta->juros * 100
+            );
 
-            if ((float) $dados['valor'] > $saldo) {
+            $multaCentavos = (int) round(
+                (float) $conta->multa * 100
+            );
+
+            /*
+             * Valor total devido:
+             *
+             * Valor original
+             * - desconto
+             * + juros
+             * + multa
+             */
+
+            $valorDevidoCentavos =
+                $valorOriginalCentavos
+                - $descontoCentavos
+                + $jurosCentavos
+                + $multaCentavos;
+
+            /*
+             * Soma dos recebimentos já registrados.
+             */
+
+            $valorRecebidoCentavos = (int) round(
+                (float) $conta->recebimentos()->sum('valor') * 100
+            );
+
+            /*
+             * Valor que está sendo recebido agora.
+             */
+
+            $valorCentavos = (int) round(
+                (float) $dados['valor'] * 100
+            );
+
+            /*
+             * Saldo atual da conta.
+             */
+
+            $saldoCentavos =
+                $valorDevidoCentavos
+                - $valorRecebidoCentavos;
+
+            /*
+             * Impede recebimento acima do saldo.
+             */
+
+            if ($valorCentavos > $saldoCentavos) {
                 throw ValidationException::withMessages([
                     'valor' => sprintf(
                         'O valor informado é superior ao saldo da conta. Saldo disponível: R$ %s.',
-                        number_format($saldo, 2, ',', '.')
+                        number_format(
+                            $saldoCentavos / 100,
+                            2,
+                            ',',
+                            '.'
+                        )
                     ),
                 ]);
             }
+
+            /*
+             * Registra o recebimento.
+             */
 
             $recebimento = Recebimento::create([
                 'conta_receber_id' => $conta->id,
@@ -57,9 +118,22 @@ class RegistrarRecebimento
                 'observacoes' => $dados['observacoes'] ?? null,
             ]);
 
-            $novoTotalRecebido = $valorRecebido + (float) $dados['valor'];
+            /*
+             * Calcula o novo total recebido.
+             */
 
-            if ($novoTotalRecebido >= $valorDevido) {
+            $novoTotalRecebidoCentavos =
+                $valorRecebidoCentavos
+                + $valorCentavos;
+
+            /*
+             * Atualiza o status da conta.
+             *
+             * Se o total recebido atingir ou ultrapassar
+             * o valor devido, a conta será considerada quitada.
+             */
+
+            if ($novoTotalRecebidoCentavos >= $valorDevidoCentavos) {
                 $conta->update([
                     'status' => 'quitada',
                     'data_quitacao' => $dados['data_pagamento'],
