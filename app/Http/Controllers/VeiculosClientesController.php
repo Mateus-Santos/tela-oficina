@@ -2,150 +2,240 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\VeiculosClientes\AtualizarVeiculoCliente;
+use App\Actions\VeiculosClientes\CriarVeiculoCliente;
+use App\Http\Requests\VeiculosClientes\StoreVeiculosClienteRequest;
+use App\Http\Requests\VeiculosClientes\UpdateVeiculosClienteRequest;
+use App\Models\Cliente;
+use App\Models\Montadora;
+use App\Models\VeiculosCliente;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\VeiculosCliente;
-use App\Models\Veiculo;
-use App\Models\Montadora;
-use App\Models\User;
-use App\Models\Pessoa;
-use App\Models\Cliente;
 
 class VeiculosClientesController extends Controller
 {
     public function veiculosPorCliente($id)
     {
         $veiculos = VeiculosCliente::where('cliente_id', $id)
-            ->with('veiculosClientes')
+            ->with(['veiculo.montadora'])
             ->get();
 
         return response()->json($veiculos);
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
-        $query = VeiculosCliente::with(['veiculo.montadora', 'cliente.pessoa']);
+
+        $query = VeiculosCliente::with([
+            'veiculo.montadora',
+            'cliente.pessoa'
+        ]);
 
         if ($user->permitions == 2) {
             $clienteId = $user->pessoa?->cliente?->id;
-            $query->where('cliente_id', $clienteId);
+
+            if (!$clienteId) {
+                $query->whereRaw('1 = 0');
+            } else {
+                $query->where('cliente_id', $clienteId);
+            }
         }
 
-        $veiculosclientes = $query->latest()->paginate(10);
+        $query
+            ->when($request->filled('cliente'), function ($query) use ($request) {
+                $query->whereHas('cliente.pessoa', function ($query) use ($request) {
+                    $query->where(
+                        'nome',
+                        'like',
+                        '%' . $request->cliente . '%'
+                    );
+                });
+            })
+            ->when($request->filled('placa'), function ($query) use ($request) {
+                $placa = strtoupper(
+                    preg_replace('/[^A-Z0-9]/', '', $request->placa)
+                );
 
-        return view('veiculosclientes.listarveiculosclientes', compact('veiculosclientes'));
+                $query->where('placa', 'like', '%' . $placa . '%');
+            })
+            ->when($request->filled('veiculo'), function ($query) use ($request) {
+                $query->whereHas('veiculo', function ($query) use ($request) {
+                    $query->where(
+                        'nome',
+                        'like',
+                        '%' . $request->veiculo . '%'
+                    );
+                });
+            })
+            ->when($request->filled('montadora'), function ($query) use ($request) {
+                $query->whereHas('veiculo', function ($query) use ($request) {
+                    $query->where(
+                        'montadora_id',
+                        $request->montadora
+                    );
+                });
+            })
+            ->when($request->filled('ano'), function ($query) use ($request) {
+                $query->where('ano', $request->ano);
+            })
+            ->when($request->filled('cor'), function ($query) use ($request) {
+                $query->where(
+                    'cor',
+                    'like',
+                    '%' . $request->cor . '%'
+                );
+            });
+
+        $veiculosclientes = $query
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        $montadoras = Montadora::select('id', 'nome')
+            ->orderBy('nome')
+            ->get();
+
+        return view(
+            'veiculosclientes.listarveiculosclientes',
+            compact('veiculosclientes', 'montadoras')
+        );
     }
 
     public function create()
     {
-        $montadoras = Montadora::select('id', 'nome')->get();
+        $montadoras = Montadora::select('id', 'nome')
+            ->orderBy('nome')
+            ->get();
+
         $userLogado = Auth::user();
 
         if ($userLogado->permitions == 1) {
-            $clientes = Cliente::with('pessoa')->get();
+            $clientes = Cliente::with('pessoa')
+                ->orderBy('id', 'desc')
+                ->get();
         } else {
-            // Correção: a coluna em pessoas é user_id
             $clientes = Cliente::whereHas('pessoa', function ($query) use ($userLogado) {
                 $query->where('user_id', $userLogado->id);
-            })->with('pessoa')->get();
+            })
+                ->with('pessoa')
+                ->get();
         }
 
-        return view('veiculosclientes.cadastroveiculosclientes', compact('clientes', 'montadoras'));
+        return view(
+            'veiculosclientes.cadastroveiculosclientes',
+            compact('clientes', 'montadoras')
+        );
     }
 
-    public function store(Request $request)
-    {
-        $userLogado = auth()->user();
+    public function store(
+        StoreVeiculosClienteRequest $request,
+        CriarVeiculoCliente $criarVeiculoCliente
+    ) {
+        $dados = $request->validated();
 
-        $request->validate([
-            'placa' => 'required|string|max:8',
-            'ano' => 'required|numeric',
-            'cor' => 'required|string|max:30',
-            'veiculo_id' => 'required|exists:veiculos,id',
-            'id_cliente' => $userLogado->permitions == 1 ? 'required|exists:clientes,id' : 'nullable',
-        ]);
+        $criarVeiculoCliente->execute(
+            $dados,
+            auth()->user()
+        );
 
-        $veiculosclientes = new VeiculosCliente();
-        $veiculosclientes->placa = $request->input("placa");
-        $veiculosclientes->ano = $request->input("ano");
-        $veiculosclientes->cor = $request->input("cor");
-        $veiculosclientes->veiculo_id = $request->input("veiculo_id");
-
-        if ($userLogado->permitions == 1) {
-            $veiculosclientes->cliente_id = $request->input("id_cliente");
-        } else {
-            $veiculosclientes->cliente_id = $userLogado->pessoa->cliente->id;
-        }
-
-        $veiculosclientes->save();
-        return redirect()->route('veiculosclientes.index')->with('success', 'Veículo cadastrado com sucesso!');
+        return redirect()
+            ->route('veiculosclientes.index')
+            ->with(
+                'success',
+                'Veículo cadastrado com sucesso!'
+            );
     }
 
     public function edit(string $id)
     {
-        $veiculoscliente = VeiculosCliente::with(['cliente.pessoa', 'veiculo.montadora'])->findOrFail($id);
         $userLogado = auth()->user();
+
+        $veiculoscliente = VeiculosCliente::with([
+            'cliente.pessoa',
+            'veiculo.montadora'
+        ])->findOrFail($id);
 
         if ($userLogado->permitions != 1) {
             $clienteIdLogado = $userLogado->pessoa?->cliente?->id;
-            if ($veiculoscliente->cliente_id !== $clienteIdLogado) {
+
+            if (
+                !$clienteIdLogado ||
+                $veiculoscliente->cliente_id !== $clienteIdLogado
+            ) {
                 abort(403, 'Ação não autorizada.');
             }
         }
 
-        $montadoras = Montadora::all();
-        $clientes = [];
+        $montadoras = Montadora::select('id', 'nome')
+            ->orderBy('nome')
+            ->get();
+
+        $clientes = collect();
 
         if ($userLogado->permitions == 1) {
-            $clientes = Cliente::with('pessoa')->get();
+            $clientes = Cliente::with('pessoa')
+                ->orderBy('id', 'desc')
+                ->get();
         }
 
-        return view('veiculosclientes.editarveiculosclientes', compact('veiculoscliente', 'montadoras', 'clientes'));
+        return view(
+            'veiculosclientes.editarveiculosclientes',
+            compact(
+                'veiculoscliente',
+                'montadoras',
+                'clientes'
+            )
+        );
     }
 
-    public function update(Request $request, string $id)
-    {
-        $veiculoscliente = VeiculosCliente::findOrFail($id);
-        $userLogado = auth()->user();
+    public function update(
+        UpdateVeiculosClienteRequest $request,
+        VeiculosCliente $veiculoscliente,
+        AtualizarVeiculoCliente $atualizarVeiculoCliente
+    ) {
+        $dados = $request->validated();
 
-        if ($userLogado->permitions != 1) {
-            $clienteIdLogado = $userLogado->pessoa?->cliente?->id;
-            if ($veiculoscliente->cliente_id !== $clienteIdLogado) {
-                abort(403, 'Ação não autorizada.');
-            }
-        }
-
-        // Validação ajustada para usar 'id_cliente' (igual ao formulário Blade)
-        $request->validate([
-            'placa' => 'required|string|max:8',
-            'ano' => 'required|numeric',
-            'cor' => 'required|string|max:30',
-            'veiculo_id' => 'required|exists:veiculos,id',
-            'id_cliente' => $userLogado->permitions == 1 ? 'required|exists:clientes,id' : 'nullable',
-        ]);
-
-        $veiculoscliente->placa = $request->input("placa");
-        $veiculoscliente->ano = $request->input("ano");
-        $veiculoscliente->cor = $request->input("cor");
-        $veiculoscliente->veiculo_id = $request->input("veiculo_id");
-
-        if ($userLogado->permitions == 1) {
-            $veiculoscliente->cliente_id = $request->input("id_cliente");
-        } else {
-            $veiculoscliente->cliente_id = $userLogado->pessoa->cliente->id;
-        }
-
-        $veiculoscliente->save();
+        $atualizarVeiculoCliente->execute(
+            $veiculoscliente,
+            $dados,
+            auth()->user()
+        );
 
         return redirect()
             ->route('veiculosclientes.index')
-            ->with('success', 'Veículo atualizado com sucesso!');
+            ->with(
+                'success',
+                'Veículo atualizado com sucesso!'
+            );
     }
 
     public function destroy(string $id)
     {
-        VeiculosCliente::where('id', $id)->delete();
-        return redirect()->route('veiculosclientes.index');
+        $user = auth()->user();
+
+        $query = VeiculosCliente::query()
+            ->where('id', $id);
+
+        if ($user->permitions != 1) {
+            $clienteId = $user->pessoa?->cliente?->id;
+
+            if (!$clienteId) {
+                abort(403, 'Ação não autorizada.');
+            }
+
+            $query->where('cliente_id', $clienteId);
+        }
+
+        $veiculoCliente = $query->firstOrFail();
+
+        $veiculoCliente->delete();
+
+        return redirect()
+            ->route('veiculosclientes.index')
+            ->with(
+                'success',
+                'Veículo excluído com sucesso!'
+            );
     }
 }

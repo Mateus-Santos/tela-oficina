@@ -4,160 +4,199 @@
 
 <div class="container cadastro">
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h1>LISTAR VEÍCULOS</h1>
+    <x-list-header
+        title="LISTAR VEÍCULOS"
+        icon="bi-car-front"
+        create-route="veiculos.create"
+        create-text="Novo Veículo"
+        create-icon="bi-plus-lg"
+    />
 
-    <a href="{{ route('veiculos.create') }}" class="btn btn-primary">
-        <i class="bi bi-plus-lg"></i> Novo Veículo
-    </a>
-</div>
+    @if (session('success'))
+        <div class="alert alert-success">
+            <i class="bi bi-check-circle"></i>
+            {{ session('success') }}
+        </div>
+    @endif
 
-{{-- Filtros --}}
-<div class="filtros-container">
+    @if (session('error'))
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle"></i>
+            {{ session('error') }}
+        </div>
+    @endif
 
-    <form
-        method="GET"
+    <x-filtros-container
         action="{{ route('veiculos.index') }}"
-        class="filtros-container__form"
+        id="filtros-veiculos"
+        :collapsible="false"
     >
+        <div class="row g-3 align-items-end">
 
-        {{-- Busca por veículo --}}
-        <input
-            type="text"
-            name="veiculo"
-            class="filtros-container__input"
-            placeholder="Nome do veículo..."
-            value="{{ request('veiculo') }}"
-        >
+            <div class="col-12 col-md-5">
+                <label for="veiculo" class="form-label">
+                    <i class="bi bi-car-front"></i>
+                    Veículo
+                </label>
 
-        {{-- Filtro por montadora --}}
-        <select
-            name="montadora"
-            class="filtros-container__select"
-        >
-            <option value="">Todas as montadoras</option>
-
-            @foreach($montadoras as $montadora)
-                <option
-                    value="{{ $montadora->id }}"
-                    {{ request('montadora') == $montadora->id ? 'selected' : '' }}
+                <input
+                    type="text"
+                    name="veiculo"
+                    id="veiculo"
+                    class="filtros-container__input"
+                    placeholder="Nome do veículo"
+                    value="{{ request('veiculo') }}"
                 >
-                    {{ $montadora->nome }}
-                </option>
-            @endforeach
+            </div>
 
-        </select>
+            <div class="col-12 col-md-5">
+                <label for="montadora" class="form-label">
+                    <i class="bi bi-building"></i>
+                    Montadora
+                </label>
 
-        {{-- Botão filtrar --}}
-        <button class="btn btn-warning" type="submit">
-            <i class="bi bi-funnel"></i> Filtrar
-        </button>
+                <select
+                    name="montadora"
+                    id="montadora"
+                    class="filtros-container__select"
+                >
+                    <option value="">Todas as montadoras</option>
 
-        {{-- Limpar filtros --}}
-        <a
-            href="{{ route('veiculos.index') }}"
-            class="btn btn-secondary"
-        >
-            <i class="bi bi-filter"></i> Limpar Filtros
-        </a>
+                    @foreach ($montadoras as $montadora)
+                        <option
+                            value="{{ $montadora->id }}"
+                            @selected(request('montadora') == $montadora->id)
+                        >
+                            {{ $montadora->nome }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
 
-    </form>
+            <div class="col-12 col-md-2">
+                <div class="filtros-container__actions">
 
-</div>
-
-{{-- Tabela de Veículos --}}
-<table class="table table-striped table-hover align-middle">
-
-    <thead>
-        <tr>
-            <th scope="col">ID</th>
-            <th scope="col">MONTADORA</th>
-            <th scope="col">VEÍCULO</th>
-            <th scope="col" class="text-center">EDITAR</th>
-            <th scope="col" class="text-center">EXCLUIR</th>
-        </tr>
-    </thead>
-
-    <tbody>
-
-        @forelse($veiculos as $veiculo)
-
-            <tr>
-
-                <th scope="row">
-                    {{ $veiculo->id }}
-                </th>
-
-                <td>{{ $veiculo->montadora?->nome ?? 'N/A' }}</td>
-
-                <td>{{ $veiculo->nome ?? 'N/A' }}</td>
-
-                <td class="text-center">
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        title="Filtrar veículos"
+                    >
+                        <i class="bi bi-search"></i>
+                        Filtrar
+                    </button>
 
                     <a
-                        href="{{ route('veiculos.edit', $veiculo->id) }}"
-                        class="btn btn-sm btn-info text-white"
-                        title="Editar"
+                        href="{{ route('veiculos.index') }}"
+                        class="btn btn-secondary"
+                        title="Limpar filtros"
                     >
-                        <i class="bi bi-pencil-square"></i>
+                        <i class="bi bi-x-lg"></i>
                     </a>
 
-                </td>
+                </div>
+            </div>
 
-                <td class="text-center">
+        </div>
+    </x-filtros-container>
 
-                    <form
-                        action="{{ route('veiculos.destroy', $veiculo->id) }}"
-                        method="POST"
-                        onsubmit="return confirm('Tem certeza que deseja excluir este Veículo?');"
-                    >
+    @php
+        $possuiFiltros = request()->filled('veiculo') || request()->filled('montadora');
+    @endphp
 
-                        @csrf
-                        @method('DELETE')
+    @if ($veiculos->isEmpty())
+        <div class="alert alert-{{ $possuiFiltros ? 'warning' : 'info' }}">
+            <i class="bi {{ $possuiFiltros ? 'bi-exclamation-triangle' : 'bi-info-circle' }}"></i>
 
-                        <button
-                            type="submit"
-                            class="btn btn-sm btn-danger"
-                            title="Excluir"
-                        >
-                            <i class="bi bi-trash3"></i>
-                        </button>
+            {{ $possuiFiltros
+                ? 'Nenhum veículo encontrado com os filtros informados.'
+                : 'Nenhum veículo cadastrado.' }}
+        </div>
+    @endif
 
-                    </form>
+    @if ($veiculos->isNotEmpty())
 
-                </td>
+        <div class="table-responsive">
 
-            </tr>
+            <table class="table table-striped table-hover align-middle">
 
-        @empty
+                <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">MONTADORA</th>
+                        <th scope="col">VEÍCULO</th>
+                        <th scope="col" class="text-center">EDITAR</th>
+                        <th scope="col" class="text-center">EXCLUIR</th>
+                    </tr>
+                </thead>
 
-            <tr>
-                <td
-                    colspan="5"
-                    class="text-center text-muted py-4"
-                >
-                    @if(request()->hasAny(['veiculo', 'montadora']))
-                        Nenhum veículo encontrado com os filtros informados.
-                    @else
-                        Nenhum Veículo cadastrado até o momento.
-                    @endif
-                </td>
-            </tr>
+                <tbody>
 
-        @endforelse
+                    @foreach ($veiculos as $veiculo)
 
-    </tbody>
+                        <tr>
 
-</table>
+                            <th scope="row">
+                                {{ $veiculo->id }}
+                            </th>
 
-{{-- Paginação --}}
-@if($veiculos->hasPages())
+                            <td>
+                                <i class="bi bi-building"></i>
+                                {{ $veiculo->montadora?->nome ?? 'N/A' }}
+                            </td>
 
-    <div class="d-flex justify-content-center mt-4">
-        {{ $veiculos->links() }}
-    </div>
+                            <td>
+                                <i class="bi bi-car-front"></i>
+                                {{ $veiculo->nome ?? 'N/A' }}
+                            </td>
 
-@endif
+                            <td class="text-center">
+                                <a
+                                    href="{{ route('veiculos.edit', $veiculo->id) }}"
+                                    class="btn btn-sm btn-primary"
+                                    title="Editar veículo"
+                                >
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                            </td>
+
+                            <td class="text-center">
+
+                                <form
+                                    action="{{ route('veiculos.destroy', $veiculo->id) }}"
+                                    method="POST"
+                                    onsubmit="return confirm('Tem certeza que deseja excluir este veículo?');"
+                                >
+                                    @csrf
+                                    @method('DELETE')
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-sm btn-danger"
+                                        title="Excluir veículo"
+                                    >
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </form>
+
+                            </td>
+
+                        </tr>
+
+                    @endforeach
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        @if (method_exists($veiculos, 'hasPages') && $veiculos->hasPages())
+            <div class="d-flex justify-content-center mt-4">
+                {{ $veiculos->links() }}
+            </div>
+        @endif
+
+    @endif
 
 </div>
 
