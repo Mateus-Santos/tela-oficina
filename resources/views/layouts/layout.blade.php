@@ -4,55 +4,58 @@
 
 <head>
 
-<meta charset="utf-8">
-<meta content="width=device-width, initial-scale=1.0" name="viewport">
-<meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta charset="utf-8">
 
-<!-- IMPORTANDO BOOTSTRAP -->
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-<link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-<link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-    integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
-    crossorigin="anonymous"
->
+    <!-- IMPORTANDO BOOTSTRAP -->
 
-<!-- Favicons -->
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+    >
 
-<link href="{{ asset('img/favicon.png') }}" rel="icon">
-<link href="{{ asset('img/apple-touch-icon.png') }}" rel="apple-touch-icon">
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+        crossorigin="anonymous"
+    >
 
-<!-- Google Fonts -->
+    <!-- Favicons -->
 
-<link
-    href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Jost:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i"
-    rel="stylesheet"
->
+    <link href="{{ asset('img/favicon.png') }}" rel="icon">
 
-<!-- Template Main CSS File -->
+    <link href="{{ asset('img/apple-touch-icon.png') }}" rel="apple-touch-icon">
 
-<script src="{{ asset('/vendor/waypoints/noframework.waypoints.js') }}"></script>
+    <!-- Google Fonts -->
 
-@vite([
-    'resources/js/app.js',
-    'resources/scss/_app.scss',
-    'resources/js/cadError.js'
-])
+    <link
+        href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Jost:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i"
+        rel="stylesheet"
+    >
 
-<script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-    crossorigin="anonymous"
-></script>
+    <!-- Template Main CSS File -->
 
-<title>Oficina SOS Mecânica {{ env('APP_VERSION') }}</title>
+    <script src="{{ asset('/vendor/waypoints/noframework.waypoints.js') }}"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/inputmask@5.0.6/dist/inputmask.min.js"></script>
+    @vite([
+        'resources/js/app.js',
+        'resources/scss/_app.scss',
+        'resources/js/cadError.js'
+    ])
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"
+    ></script>
+
+    <title>Oficina SOS Mecânica {{ env('APP_VERSION') }}</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/inputmask@5.0.6/dist/inputmask.min.js"></script>
 
 </head>
 
@@ -66,8 +69,14 @@
 
         <h1>
             <a href="/">
-                <img src="/img/New Logo.png" alt="">
+
+                <img
+                    src="/img/New Logo.png"
+                    alt="SOS Mecânica"
+                >
+
             </a>
+
         </h1>
 
         <button
@@ -95,41 +104,76 @@
             @guest
 
                 <li class="nav-item">
-                    <a class="nav-link active" href="#">
+
+                    <a
+                        class="nav-link active"
+                        href="#"
+                    >
+
                         <i class="bi bi-house-door-fill"></i>
                         Home
                     </a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="#about">
+
+                    <a
+                        class="nav-link"
+                        href="#about"
+                    >
+
                         <i class="bi bi-info-circle-fill"></i>
+
                         Sobre
+
                     </a>
+
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="#team">
+
+                    <a
+                        class="nav-link"
+                        href="#team"
+                    >
+
                         <i class="bi bi-people-fill"></i>
                         Equipe
                     </a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="btn btn-success" href="/login">
+
+                    <a
+                        class="btn btn-success"
+                        href="/login"
+                    >
+
                         <i class="bi bi-box-arrow-in-right"></i>
+
                         Entrar
+
                     </a>
+
                 </li>
 
                 <li class="nav-item">
-                    <a class="btn btn-warning" href="/register">
+
+                    <a
+                        class="btn btn-warning"
+                        href="/register"
+                    >
+
                         <i class="bi bi-person-plus-fill"></i>
+
                         Cadastre-se
+
                     </a>
+
                 </li>
 
             @endguest
+
 
             {{-- ========================================================= --}}
             {{-- USUÁRIO AUTENTICADO --}}
@@ -138,282 +182,72 @@
             @auth
 
                 {{-- ========================================================= --}}
-                {{-- ADMINISTRADOR / PERMISSÃO 2 --}}
+                {{-- ATENDIMENTO --}}
                 {{-- ========================================================= --}}
 
-                @if(auth()->user() && auth()->user()->permitions === 2)
-
-                    {{-- VEÍCULOS --}}
+                @if(auth()->user()->permitions === 1)
 
                     <li class="nav-item dropdown">
 
                         <a
                             class="btn btn-warning dropdown-toggle"
+                            href="#"
                             role="button"
                             data-bs-toggle="dropdown"
                             aria-expanded="false"
                         >
-                            <i class="bi bi-car-front-fill"></i>
-                            Veículos
+
+                            <i class="bi bi-tools"></i>
+
+                            Atendimento
+
                         </a>
 
                         <ul class="dropdown-menu">
 
+                            {{-- ================================================= --}}
+                            {{-- CLIENTES --}}
+                            {{-- ================================================= --}}
+
                             <li>
+
+                                <a
+                                    href="{{ route('clientes.index') }}"
+                                    class="dropdown-item"
+                                >
+
+                                    <i class="bi bi-people-fill me-2"></i>
+
+                                    Clientes
+
+                                </a>
+
+                            </li>
+
+
+                            {{-- ================================================= --}}
+                            {{-- VEÍCULOS DOS CLIENTES --}}
+                            {{-- ================================================= --}}
+
+                            <li>
+
                                 <a
                                     href="{{ route('veiculosclientes.index') }}"
                                     class="dropdown-item"
                                 >
-                                    <i class="bi bi-list-ul me-2"></i>
-                                    Listar Veículos
-                                </a>
-                            </li>
 
-                            <li>
-                                <a
-                                    href="{{ route('veiculosclientes.create') }}"
-                                    class="dropdown-item"
-                                >
-                                    <i class="bi bi-plus-circle me-2"></i>
-                                    Cadastrar Veículo
-                                </a>
-                            </li>
+                                    <i class="bi bi-car-front-fill me-2"></i>
 
-                        </ul>
-
-                    </li>
-
-                    {{-- HISTÓRICOS --}}
-
-                    <li class="nav-item">
-
-                        <a
-                            class="btn btn-warning"
-                            href="{{ route('ordemservicos.index') }}"
-                        >
-                            <i class="bi bi-clock-history"></i>
-                            Históricos
-                        </a>
-
-                    </li>
-
-                    {{-- PERFIL --}}
-
-                    <li class="nav-item">
-
-                        <a
-                            class="btn btn-warning"
-                            href="/perfil"
-                        >
-                            <i class="bi bi-person-circle"></i>
-                            {{ auth()->user()->name }}
-                        </a>
-
-                    </li>
-
-                @endif
-
-                {{-- ========================================================= --}}
-                {{-- COLABORADOR / PERMISSÃO 1 --}}
-                {{-- ========================================================= --}}
-
-                @if(auth()->user() && auth()->user()->permitions === 1)
-
-                    {{-- ========================================================= --}}
-                    {{-- USUÁRIOS --}}
-                    {{-- ========================================================= --}}
-
-                    <li class="nav-item dropdown">
-
-                        <a
-                            class="btn btn-warning dropdown-toggle"
-                            href="#"
-                            role="button"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false"
-                        >
-                            <i class="bi bi-person-lines-fill"></i>
-                            Usuários
-                        </a>
-
-                        <ul class="dropdown-menu">
-
-                            {{-- LISTAR USUÁRIOS --}}
-
-                            <li>
-
-                                <a
-                                    href="{{ route('users.index') }}"
-                                    class="dropdown-item"
-                                >
-                                    <i class="bi bi-people-fill me-2"></i>
-                                    Listar todos os Usuários
-                                </a>
-
-                            </li>
-
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-
-                            {{-- SUBGRUPO COLABORADORES --}}
-
-                            <li class="dropdown-hover-submenu">
-
-                                <a
-                                    class="dropdown-item dropdown-toggle d-flex align-items-center justify-content-between"
-                                    href="#"
-                                >
-
-                                    <span>
-                                        <i class="bi bi-person-badge-fill me-2"></i>
-                                        Colaboradores
-                                    </span>
+                                    Veículos dos Clientes
 
                                 </a>
 
-                                <ul class="dropdown-menu">
-
-                                    <li>
-
-                                        <a
-                                            href="{{ route('colaboradores.index') }}"
-                                            class="dropdown-item"
-                                        >
-                                            <i class="bi bi-list-ul me-2"></i>
-                                            Listar Colaboradores
-                                        </a>
-
-                                    </li>
-
-                                    <li>
-
-                                        <a
-                                            href="{{ route('colaboradores.create') }}"
-                                            class="dropdown-item"
-                                        >
-                                            <i class="bi bi-person-plus-fill me-2"></i>
-                                            Cadastrar Colaborador
-                                        </a>
-
-                                    </li>
-
-                                </ul>
-
                             </li>
 
-                            {{-- SUBGRUPO CLIENTES --}}
 
-                            <li class="dropdown-hover-submenu">
-
-                                <a
-                                    class="dropdown-item dropdown-toggle d-flex align-items-center justify-content-between"
-                                    href="#"
-                                >
-
-                                    <span>
-                                        <i class="bi bi-person-vcard-fill me-2"></i>
-                                        Clientes
-                                    </span>
-
-                                </a>
-
-                                <ul class="dropdown-menu">
-
-                                    <li>
-
-                                        <a
-                                            href="{{ route('clientes.index') }}"
-                                            class="dropdown-item"
-                                        >
-                                            <i class="bi bi-list-ul me-2"></i>
-                                            Listar Clientes
-                                        </a>
-
-                                    </li>
-
-                                    <li>
-
-                                        <a
-                                            href="{{ route('clientes.create') }}"
-                                            class="dropdown-item"
-                                        >
-                                            <i class="bi bi-person-plus-fill me-2"></i>
-                                            Cadastrar Cliente
-                                        </a>
-
-                                    </li>
-
-                                    <li class="dropdown-hover-submenu">
-
-                                        <a
-                                            class="dropdown-item dropdown-toggle d-flex align-items-center justify-content-between"
-                                            href="#"
-                                        >
-
-                                            <span>
-                                                <i class="bi bi-car-front-fill me-2"></i>
-                                                Veículos Clientes
-                                            </span>
-
-                                        </a>
-
-                                        <ul class="dropdown-menu">
-
-                                            <li>
-
-                                                <a
-                                                    href="{{ route('veiculosclientes.index') }}"
-                                                    class="dropdown-item"
-                                                >
-                                                    <i class="bi bi-list-ul me-2"></i>
-                                                    Listar Veículos
-                                                </a>
-
-                                            </li>
-
-                                            <li>
-
-                                                <a
-                                                    href="{{ route('veiculosclientes.create') }}"
-                                                    class="dropdown-item"
-                                                >
-                                                    <i class="bi bi-person-plus-fill me-2"></i>
-                                                    Cadastrar Veículo do Cliente
-                                                </a>
-
-                                            </li>
-
-                                        </ul>
-
-                                    </li>
-
-                                </ul>
-
-                            </li>
-
-                        </ul>
-
-                    </li>
-
-                    {{-- ========================================================= --}}
-                    {{-- ORDEM DE SERVIÇO --}}
-                    {{-- ========================================================= --}}
-
-                    <li class="nav-item dropdown">
-
-                        <a
-                            class="btn btn-warning dropdown-toggle"
-                            href="#"
-                            role="button"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false"
-                        >
-                            <i class="bi bi-wrench-adjustable-circle-fill"></i>
-                            Ordem Serviço
-                        </a>
-
-                        <ul class="dropdown-menu">
+                            {{-- ================================================= --}}
+                            {{-- ORDEM DE SERVIÇO --}}
+                            {{-- ================================================= --}}
 
                             <li>
 
@@ -421,20 +255,31 @@
                                     href="{{ route('ordemservicos.index') }}"
                                     class="dropdown-item"
                                 >
-                                    <i class="bi bi-list-ul me-2"></i>
-                                    Listar OS
+
+                                    <i class="bi bi-wrench-adjustable-circle-fill me-2"></i>
+
+                                    Ordens de Serviço
+
                                 </a>
 
                             </li>
 
+
+                            {{-- ================================================= --}}
+                            {{-- HISTÓRICO --}}
+                            {{-- ================================================= --}}
+
                             <li>
 
                                 <a
-                                    href="{{ route('ordemservicos.create') }}"
+                                    href="#"
                                     class="dropdown-item"
                                 >
-                                    <i class="bi bi-plus-circle me-2"></i>
-                                    Cadastrar OS
+
+                                    <i class="bi bi-clock-history me-2"></i>
+
+                                    Histórico
+
                                 </a>
 
                             </li>
@@ -443,9 +288,14 @@
 
                     </li>
 
-                    {{-- ========================================================= --}}
-                    {{-- NOTAS --}}
-                    {{-- ========================================================= --}}
+                @endif
+
+
+                {{-- ========================================================= --}}
+                {{-- LOJA --}}
+                {{-- ========================================================= --}}
+
+                @if(auth()->user()->permitions === 1)
 
                     <li class="nav-item dropdown">
 
@@ -456,55 +306,11 @@
                             data-bs-toggle="dropdown"
                             aria-expanded="false"
                         >
-                            <i class="bi bi-receipt"></i>
-                            Notas
-                        </a>
 
-                        <ul class="dropdown-menu">
-
-                            <li>
-
-                                <a
-                                    href="{{ route('notasitem.index') }}"
-                                    class="dropdown-item"
-                                >
-                                    <i class="bi bi-list-ul me-2"></i>
-                                    Listar Notas
-                                </a>
-
-                            </li>
-
-                            <li>
-
-                                <a
-                                    href="{{ route('notasitem.create') }}"
-                                    class="dropdown-item"
-                                >
-                                    <i class="bi bi-receipt-cutoff me-2"></i>
-                                    Cadastrar Nota
-                                </a>
-
-                            </li>
-
-                        </ul>
-
-                    </li>
-
-                    {{-- ========================================================= --}}
-                    {{-- LOJA --}}
-                    {{-- ========================================================= --}}
-
-                    <li class="nav-item dropdown">
-
-                        <a
-                            class="btn btn-warning dropdown-toggle"
-                            href="#"
-                            role="button"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false"
-                        >
                             <i class="bi bi-bag-fill"></i>
+
                             Loja
+
                         </a>
 
                         <ul class="dropdown-menu">
@@ -515,20 +321,11 @@
                                     href="{{ route('produtos.index') }}"
                                     class="dropdown-item"
                                 >
+
                                     <i class="bi bi-box-seam me-2"></i>
-                                    Listar Produtos
-                                </a>
 
-                            </li>
+                                    Produtos
 
-                            <li>
-
-                                <a
-                                    href="{{ route('produtos.create') }}"
-                                    class="dropdown-item"
-                                >
-                                    <i class="bi bi-plus-circle me-2"></i>
-                                    Cadastrar Produto
                                 </a>
 
                             </li>
@@ -537,9 +334,14 @@
 
                     </li>
 
-                    {{-- ========================================================= --}}
-                    {{-- FINANCEIRO --}}
-                    {{-- ========================================================= --}}
+                @endif
+
+
+                {{-- ========================================================= --}}
+                {{-- FINANCEIRO --}}
+                {{-- ========================================================= --}}
+
+                @if(auth()->user()->permitions === 1)
 
                     <li class="nav-item dropdown">
 
@@ -550,8 +352,11 @@
                             data-bs-toggle="dropdown"
                             aria-expanded="false"
                         >
+
                             <i class="bi bi-cash-stack"></i>
+
                             Financeiro
+
                         </a>
 
                         <ul class="dropdown-menu">
@@ -564,8 +369,11 @@
                                     href="{{ route('contas-receber.index') }}"
                                     class="dropdown-item"
                                 >
+
                                     <i class="bi bi-cash-stack me-2"></i>
+
                                     Contas a Receber
+
                                 </a>
 
                             </li>
@@ -576,39 +384,11 @@
                                     href="{{ route('contas-receber.create') }}"
                                     class="dropdown-item"
                                 >
+
                                     <i class="bi bi-plus-circle me-2"></i>
+
                                     Nova Conta a Receber
-                                </a>
 
-                            </li>
-
-
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-
-                            {{-- CATEGORIAS FINANCEIRAS --}}
-
-                            <li>
-
-                                <a
-                                    href="{{ route('categorias-financeiras.index') }}"
-                                    class="dropdown-item"
-                                >
-                                    <i class="bi bi-tags-fill me-2"></i>
-                                    Categorias Financeiras
-                                </a>
-
-                            </li>
-
-                            <li>
-
-                                <a
-                                    href="{{ route('categorias-financeiras.create') }}"
-                                    class="dropdown-item"
-                                >
-                                    <i class="bi bi-plus-circle me-2"></i>
-                                    Cadastrar Categoria
                                 </a>
 
                             </li>
@@ -617,9 +397,14 @@
 
                     </li>
 
-                    {{-- ========================================================= --}}
-                    {{-- CONFIGURAÇÕES --}}
-                    {{-- ========================================================= --}}
+                @endif
+
+
+                {{-- ========================================================= --}}
+                {{-- NOTAS --}}
+                {{-- ========================================================= --}}
+
+                @if(auth()->user()->permitions === 1)
 
                     <li class="nav-item dropdown">
 
@@ -630,64 +415,26 @@
                             data-bs-toggle="dropdown"
                             aria-expanded="false"
                         >
-                            <i class="bi bi-gear-fill"></i>
-                            Setup
+
+                            <i class="bi bi-receipt"></i>
+
+                            Notas
+
                         </a>
 
                         <ul class="dropdown-menu">
 
-                            {{-- VEÍCULOS --}}
-
                             <li>
 
                                 <a
-                                    href="{{ route('veiculos.index') }}"
+                                    href="{{ route('notasitem.index') }}"
                                     class="dropdown-item"
                                 >
-                                    <i class="bi bi-car-front me-2"></i>
-                                    Veículos
-                                </a>
 
-                            </li>
+                                    <i class="bi bi-list-ul me-2"></i>
 
-                            {{-- MONTADORA --}}
+                                    Notas
 
-                            <li>
-
-                                <a
-                                    href="{{ route('montadoras.index') }}"
-                                    class="dropdown-item"
-                                >
-                                    <i class="bi bi-buildings me-2"></i>
-                                    Montadora
-                                </a>
-
-                            </li>
-
-                            {{-- SETOR DE SERVIÇO --}}
-
-                            <li>
-
-                                <a
-                                    href="{{ route('setorserivos.index') }}"
-                                    class="dropdown-item"
-                                >
-                                    <i class="bi bi-diagram-3-fill me-2"></i>
-                                    Setor de Serviço
-                                </a>
-
-                            </li>
-
-                            {{-- FORMAS DE PAGAMENTO --}}
-
-                            <li>
-
-                                <a
-                                    href="{{ route('formas-pagamento.index') }}"
-                                    class="dropdown-item"
-                                >
-                                    <i class="bi bi-credit-card-fill me-2"></i>
-                                    Formas de Pagamento
                                 </a>
 
                             </li>
@@ -695,16 +442,393 @@
                             <li>
 
                                 <a
-                                    href="{{ route('formas-pagamento.create') }}"
+                                    href="{{ route('notasitem.create') }}"
                                     class="dropdown-item"
                                 >
+
                                     <i class="bi bi-plus-circle me-2"></i>
-                                    Cadastrar Forma de Pagamento
+
+                                    Nova Nota
+
                                 </a>
 
                             </li>
 
                         </ul>
+
+                    </li>
+
+                @endif
+
+
+                {{-- ========================================================= --}}
+                {{-- SETUP --}}
+                {{-- ========================================================= --}}
+
+                @if(auth()->user()->permitions === 1)
+
+                    <li class="nav-item dropdown">
+
+                        <a
+                            class="btn btn-warning dropdown-toggle"
+                            href="#"
+                            role="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                        >
+
+                            <i class="bi bi-gear-fill"></i>
+
+                            Setup
+
+                        </a>
+
+
+                        {{-- ================================================= --}}
+                        {{-- MENU PRINCIPAL DO SETUP --}}
+                        {{-- ================================================= --}}
+
+                        <ul class="dropdown-menu dropdown-menu-end">
+
+
+                            {{-- ================================================= --}}
+                            {{-- ADMINISTRAÇÃO --}}
+                            {{-- ================================================= --}}
+
+                            <li class="dropdown-hover-submenu">
+
+                                <a
+                                    class="dropdown-item dropdown-toggle d-flex align-items-center justify-content-between"
+                                    href="#"
+                                >
+
+                                    <span>
+
+                                        <i class="bi bi-shield-lock-fill me-2"></i>
+
+                                        Administração
+
+                                    </span>
+
+                                </a>
+
+
+                                {{-- SUBMENU ABRE PARA A ESQUERDA --}}
+
+                                <ul
+                                    class="dropdown-menu"
+                                    style="right: 100%; left: auto; top: 0; margin-right: 2px;"
+                                >
+
+                                    <li>
+
+                                        <a
+                                            href="{{ route('users.index') }}"
+                                            class="dropdown-item"
+                                        >
+
+                                            <i class="bi bi-people-fill me-2"></i>
+
+                                            Usuários
+
+                                        </a>
+
+                                    </li>
+
+                                    <li>
+
+                                        <a
+                                            href="{{ route('colaboradores.index') }}"
+                                            class="dropdown-item"
+                                        >
+
+                                            <i class="bi bi-person-badge-fill me-2"></i>
+
+                                            Colaboradores
+
+                                        </a>
+
+                                    </li>
+
+                                </ul>
+
+                            </li>
+
+
+                            {{-- ================================================= --}}
+                            {{-- VEÍCULOS --}}
+                            {{-- ================================================= --}}
+
+                            <li class="dropdown-hover-submenu">
+
+                                <a
+                                    class="dropdown-item dropdown-toggle d-flex align-items-center justify-content-between"
+                                    href="#"
+                                >
+
+                                    <span>
+
+                                        <i class="bi bi-car-front-fill me-2"></i>
+
+                                        Veículos
+
+                                    </span>
+
+                                </a>
+
+
+                                {{-- SUBMENU ABRE PARA A ESQUERDA --}}
+
+                                <ul
+                                    class="dropdown-menu"
+                                    style="right: 100%; left: auto; top: 0; margin-right: 2px;"
+                                >
+
+                                    <li>
+
+                                        <a
+                                            href="{{ route('veiculos.index') }}"
+                                            class="dropdown-item"
+                                        >
+
+                                            <i class="bi bi-car-front me-2"></i>
+
+                                            Veículos
+
+                                        </a>
+
+                                    </li>
+
+                                    <li>
+
+                                        <a
+                                            href="{{ route('montadoras.index') }}"
+                                            class="dropdown-item"
+                                        >
+
+                                            <i class="bi bi-buildings me-2"></i>
+
+                                            Montadoras
+
+                                        </a>
+
+                                    </li>
+
+                                </ul>
+
+                            </li>
+
+
+                            {{-- ================================================= --}}
+                            {{-- SERVIÇOS --}}
+                            {{-- ================================================= --}}
+
+                            <li class="dropdown-hover-submenu">
+
+                                <a
+                                    class="dropdown-item dropdown-toggle d-flex align-items-center justify-content-between"
+                                    href="#"
+                                >
+
+                                    <span>
+
+                                        <i class="bi bi-wrench-adjustable me-2"></i>
+
+                                        Serviços
+
+                                    </span>
+
+                                </a>
+
+
+                                {{-- SUBMENU ABRE PARA A ESQUERDA --}}
+
+                                <ul
+                                    class="dropdown-menu"
+                                    style="right: 100%; left: auto; top: 0; margin-right: 2px;"
+                                >
+
+                                    <li>
+
+                                        <a
+                                            href="{{ route('setorserivos.index') }}"
+                                            class="dropdown-item"
+                                        >
+
+                                            <i class="bi bi-diagram-3-fill me-2"></i>
+
+                                            Setores de Serviço
+
+                                        </a>
+
+                                    </li>
+
+                                </ul>
+
+                            </li>
+
+
+                            {{-- ================================================= --}}
+                            {{-- FINANCEIRO --}}
+                            {{-- ================================================= --}}
+
+                            <li class="dropdown-hover-submenu">
+
+                                <a
+                                    class="dropdown-item dropdown-toggle d-flex align-items-center justify-content-between"
+                                    href="#"
+                                >
+
+                                    <span>
+
+                                        <i class="bi bi-cash-coin me-2"></i>
+
+                                        Financeiro
+
+                                    </span>
+
+                                </a>
+
+
+                                {{-- SUBMENU ABRE PARA A ESQUERDA --}}
+
+                                <ul
+                                    class="dropdown-menu"
+                                    style="right: 100%; left: auto; top: 0; margin-right: 2px;"
+                                >
+
+                                    <li>
+
+                                        <a
+                                            href="{{ route('formas-pagamento.index') }}"
+                                            class="dropdown-item"
+                                        >
+
+                                            <i class="bi bi-credit-card-fill me-2"></i>
+
+                                            Formas de Pagamento
+
+                                        </a>
+
+                                    </li>
+
+                                    <li>
+
+                                        <a
+                                            href="{{ route('categorias-financeiras.index') }}"
+                                            class="dropdown-item"
+                                        >
+
+                                            <i class="bi bi-tags-fill me-2"></i>
+
+                                            Categorias Financeiras
+
+                                        </a>
+
+                                    </li>
+
+                                </ul>
+
+                            </li>
+
+                        </ul>
+
+                    </li>
+
+                @endif
+
+                {{-- ========================================================= --}}
+                {{-- ADMINISTRADOR / PERMISSÃO 2 --}}
+                {{-- ========================================================= --}}
+
+                @if(auth()->user()->permitions === 2)
+
+                    {{-- VEÍCULOS DO SISTEMA --}}
+
+                    <li class="nav-item dropdown">
+
+                        <a
+                            class="btn btn-warning dropdown-toggle"
+                            href="#"
+                            role="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                        >
+
+                            <i class="bi bi-car-front-fill"></i>
+
+                            Veículos
+
+                        </a>
+
+                        <ul class="dropdown-menu">
+
+                            <li>
+
+                                <a
+                                    href="{{ route('veiculosclientes.index') }}"
+                                    class="dropdown-item"
+                                >
+
+                                    <i class="bi bi-list-ul me-2"></i>
+
+                                    Veículos
+                                </a>
+
+                            </li>
+
+                            <li>
+
+                                <a
+                                    href="{{ route('veiculosclientes.create') }}"
+                                    class="dropdown-item"
+                                >
+
+                                    <i class="bi bi-plus-circle me-2"></i>
+
+                                    Cadastrar Veículo
+
+                                </a>
+
+                            </li>
+
+                        </ul>
+
+                    </li>
+
+
+                    {{-- HISTÓRICOS --}}
+
+                    <li class="nav-item">
+
+                        <a
+                            class="btn btn-warning"
+                            href="#"
+                        >
+
+                            <i class="bi bi-clock-history"></i>
+
+                            Históricos
+
+                        </a>
+
+                    </li>
+
+
+                    {{-- PERFIL --}}
+
+                    <li class="nav-item">
+
+                        <a
+                            class="btn btn-warning"
+                            href="/perfil"
+                        >
+
+                            <i class="bi bi-person-circle"></i>
+
+                            {{ auth()->user()->name }}
+
+                        </a>
 
                     </li>
 
@@ -716,7 +840,10 @@
 
                 <li class="nav-item">
 
-                    <form action="/logout" method="POST">
+                    <form
+                        action="/logout"
+                        method="POST"
+                    >
 
                         @csrf
 
@@ -757,15 +884,11 @@
         <div class="copyright">
 
             &copy; Copyright 2026
-
             <strong>
                 <span>Oficina SOS Mecânica</span>
             </strong>.
-
             All Rights Reserved
-
         </div>
-
     </div>
 
 </footer>
