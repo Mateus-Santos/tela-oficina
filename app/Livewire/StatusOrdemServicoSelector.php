@@ -19,7 +19,7 @@ class StatusOrdemServicoSelector extends Component
     public function updatedStatus($value)
     {
         $this->ordemServico->update([
-            'status' => $value
+            'status' => $value,
         ]);
     }
 
