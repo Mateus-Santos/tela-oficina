@@ -12,9 +12,7 @@ use App\Models\User;
 
 class ClienteController extends Controller
 {
-    /**
-     * Remove todos os caracteres não numéricos.
-     */
+
     private function limparMascara(?string $valor): ?string
     {
         return $valor ? preg_replace('/\D/', '', $valor) : null;
@@ -145,8 +143,21 @@ class ClienteController extends Controller
 
     public function edit(string $id)
     {
-        $cliente = Cliente::with('pessoa')->findOrFail($id);
-        return view('cliente.editarcliente', compact('cliente'));
+        $usuarioLogado = auth()->user();
+
+        if ($usuarioLogado->permitions === 1) {
+            $cliente = Cliente::with('pessoa')->findOrFail($id);
+
+            $usuario = User::where('pessoa_id', $cliente->pessoa_id)->first();
+        } else {
+            $usuario = $usuarioLogado;
+
+            $cliente = Cliente::with('pessoa')
+                ->where('pessoa_id', $usuarioLogado->pessoa_id)
+                ->firstOrFail();
+        }
+
+        return view('cliente.editarcliente', compact('cliente', 'usuario'));
     }
 
     public function update(Request $request, string $id)
