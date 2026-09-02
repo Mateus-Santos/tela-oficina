@@ -651,7 +651,7 @@
                                     <li>
 
                                         <a
-                                            href="{{ route('setorserivos.index') }}"
+                                            href="{{ route('setor-servicos.index') }}"
                                             class="dropdown-item"
                                         >
 

@@ -53,7 +53,7 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         Route::resource('notas', NotaController::class);
         Route::resource('veiculos', VeiculoController::class);
         Route::resource('montadoras', MontadoraController::class);
-        Route::resource('setorserivos', SetorServicoController::class);
+        Route::resource('setor-servicos', SetorServicoController::class);
 
         Route::resource('formas-pagamento', FormaPagamentoController::class)
             ->parameters(['formas-pagamento' => 'formaPagamento']);

@@ -15,7 +15,7 @@ class OrdemServico extends Model
         'veiculo_cliente_id',
         'status',
         'descricao',
-        'valor_total',
+        'valor',
         'data_abertura',
         'data_fechamento'
     ];
