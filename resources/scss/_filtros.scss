@@ -245,3 +245,17 @@
     margin: $spacing-unit;
   }
 }
+
+// ====================
+// Legibilidade das labels
+// ====================
+
+.cadastro {
+  .form-label, h2, h3, h4, h5, h6 {
+    color: $color_4 !important;
+    background-color: $color_1;
+    padding: 0.1rem 0.5rem 0.1rem 0.5rem;
+    border-radius: 0.5rem;
+  }
+
+}
