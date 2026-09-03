@@ -17,6 +17,8 @@ use App\Http\Controllers\CategoriaFinanceiraController;
 use App\Http\Controllers\ContaReceberController;
 use App\Http\Controllers\FormaPagamentoController;
 use App\Http\Controllers\RecebimentoController;
+use App\Http\Controllers\CompraController;
+use App\Http\Controllers\FornecedorController;
 
 //use App\Http\Controllers\ChatController;
 
@@ -65,7 +67,16 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
             ->parameters(['contas-receber' => 'contaReceber']);
 
         Route::get('contas-receber/{contaReceber}/recebimentos/create', [RecebimentoController::class, 'create'])->name('recebimentos.create');
+
         Route::post('recebimentos', [RecebimentoController::class, 'store'])->name('recebimentos.store');
+
+        Route::resource('compras', CompraController::class)
+            ->middleware(['auth', 'check.blocked']);
+
+        Route::resource('fornecedores', FornecedorController::class)
+            ->parameters(['fornecedores' => 'fornecedor'])
+            ->middleware(['auth', 'check.blocked']);
+
     });
 });
 

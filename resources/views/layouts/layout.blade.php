@@ -68,6 +68,7 @@
     <div class="container-fluid">
 
         <h1>
+
             <a href="/">
 
                 <img
@@ -88,7 +89,9 @@
             aria-expanded="false"
             aria-label="Toggle navigation"
         >
+
             <span class="navbar-toggler-icon"></span>
+
         </button>
 
     </div>
@@ -111,8 +114,11 @@
                     >
 
                         <i class="bi bi-house-door-fill"></i>
+
                         Home
+
                     </a>
+
                 </li>
 
                 <li class="nav-item">
@@ -138,8 +144,11 @@
                     >
 
                         <i class="bi bi-people-fill"></i>
+
                         Equipe
+
                     </a>
+
                 </li>
 
                 <li class="nav-item">
@@ -205,9 +214,7 @@
 
                         <ul class="dropdown-menu">
 
-                            {{-- ================================================= --}}
                             {{-- CLIENTES --}}
-                            {{-- ================================================= --}}
 
                             <li>
 
@@ -224,10 +231,7 @@
 
                             </li>
 
-
-                            {{-- ================================================= --}}
                             {{-- VEÍCULOS DOS CLIENTES --}}
-                            {{-- ================================================= --}}
 
                             <li>
 
@@ -244,10 +248,7 @@
 
                             </li>
 
-
-                            {{-- ================================================= --}}
                             {{-- ORDEM DE SERVIÇO --}}
-                            {{-- ================================================= --}}
 
                             <li>
 
@@ -264,10 +265,7 @@
 
                             </li>
 
-
-                            {{-- ================================================= --}}
                             {{-- HISTÓRICO --}}
-                            {{-- ================================================= --}}
 
                             <li>
 
@@ -279,6 +277,67 @@
                                     <i class="bi bi-clock-history me-2"></i>
 
                                     Histórico
+
+                                </a>
+
+                            </li>
+
+                        </ul>
+
+                    </li>
+
+                @endif
+
+
+                {{-- ========================================================= --}}
+                {{-- COMPRAS --}}
+                {{-- ========================================================= --}}
+
+                @if(auth()->user()->permitions === 1)
+
+                    <li class="nav-item dropdown">
+
+                        <a
+                            class="btn btn-warning dropdown-toggle"
+                            href="#"
+                            role="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                        >
+
+                            <i class="bi bi-cart-check"></i>
+
+                            Compras
+
+                        </a>
+
+                        <ul class="dropdown-menu">
+
+                            <li>
+
+                                <a
+                                    href="{{ route('compras.index') }}"
+                                    class="dropdown-item"
+                                >
+
+                                    <i class="bi bi-cart-check me-2"></i>
+
+                                    Compras
+
+                                </a>
+
+                            </li>
+
+                            <li>
+
+                                <a
+                                    href="{{ route('compras.create') }}"
+                                    class="dropdown-item"
+                                >
+
+                                    <i class="bi bi-plus-circle me-2"></i>
+
+                                    Nova Compra
 
                                 </a>
 
@@ -377,6 +436,8 @@
                                 </a>
 
                             </li>
+
+                            {{-- NOVA CONTA A RECEBER --}}
 
                             <li>
 
@@ -512,9 +573,6 @@
 
                                 </a>
 
-
-                                {{-- SUBMENU ABRE PARA A ESQUERDA --}}
-
                                 <ul
                                     class="dropdown-menu"
                                     style="right: 100%; left: auto; top: 0; margin-right: 2px;"
@@ -575,9 +633,6 @@
                                     </span>
 
                                 </a>
-
-
-                                {{-- SUBMENU ABRE PARA A ESQUERDA --}}
 
                                 <ul
                                     class="dropdown-menu"
@@ -640,9 +695,6 @@
 
                                 </a>
 
-
-                                {{-- SUBMENU ABRE PARA A ESQUERDA --}}
-
                                 <ul
                                     class="dropdown-menu"
                                     style="right: 100%; left: auto; top: 0; margin-right: 2px;"
@@ -689,9 +741,6 @@
 
                                 </a>
 
-
-                                {{-- SUBMENU ABRE PARA A ESQUERDA --}}
-
                                 <ul
                                     class="dropdown-menu"
                                     style="right: 100%; left: auto; top: 0; margin-right: 2px;"
@@ -731,11 +780,73 @@
 
                             </li>
 
+
+                            {{-- ================================================= --}}
+                            {{-- FORNECEDORES --}}
+                            {{-- ================================================= --}}
+
+                            <li class="dropdown-hover-submenu">
+
+                                <a
+                                    class="dropdown-item dropdown-toggle d-flex align-items-center justify-content-between"
+                                    href="#"
+                                >
+
+                                    <span>
+
+                                        <i class="bi bi-building me-2"></i>
+
+                                        Fornecedores
+
+                                    </span>
+
+                                </a>
+
+                                <ul
+                                    class="dropdown-menu"
+                                    style="right: 100%; left: auto; top: 0; margin-right: 2px;"
+                                >
+
+                                    <li>
+
+                                        <a
+                                            href="{{ route('fornecedores.index') }}"
+                                            class="dropdown-item"
+                                        >
+
+                                            <i class="bi bi-building me-2"></i>
+
+                                            Fornecedores
+
+                                        </a>
+
+                                    </li>
+
+                                    <li>
+
+                                        <a
+                                            href="{{ route('fornecedores.create') }}"
+                                            class="dropdown-item"
+                                        >
+
+                                            <i class="bi bi-plus-circle me-2"></i>
+
+                                            Novo Fornecedor
+
+                                        </a>
+
+                                    </li>
+
+                                </ul>
+
+                            </li>
+
                         </ul>
 
                     </li>
 
                 @endif
+
 
                 {{-- ========================================================= --}}
                 {{-- ADMINISTRADOR / PERMISSÃO 2 --}}
@@ -773,6 +884,7 @@
                                     <i class="bi bi-list-ul me-2"></i>
 
                                     Veículos
+
                                 </a>
 
                             </li>
@@ -834,6 +946,7 @@
 
                 @endif
 
+
                 {{-- ========================================================= --}}
                 {{-- SAIR --}}
                 {{-- ========================================================= --}}
@@ -855,8 +968,11 @@
                                 this.closest('form').submit();
                             "
                         >
+
                             <i class="bi bi-box-arrow-right"></i>
+
                             Sair
+
                         </a>
 
                     </form>
@@ -875,6 +991,7 @@
 
 @yield('content')
 
+
 <!-- ======= Footer ======= -->
 
 <footer id="footer">
@@ -884,16 +1001,24 @@
         <div class="copyright">
 
             &copy; Copyright 2026
+
             <strong>
+
                 <span>Oficina SOS Mecânica</span>
+
             </strong>.
+
             All Rights Reserved
+
         </div>
+
     </div>
 
 </footer>
 
+
 <div id="preloader"></div>
+
 
 <!-- ======= Back To Top ======= -->
 
@@ -909,14 +1034,21 @@
 
 </a>
 
+
 <!-- Vendor JS Files -->
 
 <script src="{{ asset('/vendor/aos/aos.js') }}"></script>
+
 <script src="{{ asset('/vendor/glightbox/js/glightbox.min.js') }}"></script>
+
 <script src="{{ asset('/vendor/isotope-layout/isotope.pkgd.min.js') }}"></script>
+
 <script src="{{ asset('/vendor/php-email-form/validate.js') }}"></script>
+
 <script src="{{ asset('/vendor/swiper/swiper-bundle.min.js') }}"></script>
+
 <script src="{{ asset('/vendor/waypoints/noframework.waypoints.js') }}"></script>
+
 
 <!-- Template Main JS File -->
 
