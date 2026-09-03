@@ -53,6 +53,7 @@ jobs:
           echo ".git/" > .rsync-exclude
           echo "node_modules/" >> .rsync-exclude
           echo "storage/" >> .rsync-exclude
+          echo "public/storage/" >> .rsync-exclude
           echo ".env" >> .rsync-exclude
           echo "vendor/" >> .rsync-exclude
 
@@ -123,22 +124,34 @@ jobs:
           docker compose exec -T laravel.sosmecanica php artisan optimize:clear
 
           echo "========================================"
+          echo "REMOVING OLD STORAGE LINK"
+          echo "========================================"
+
+          docker compose exec -T laravel.sosmecanica sh -c '
+            if [ -e public/storage ] || [ -L public/storage ]; then
+              echo "Removendo public/storage existente..."
+              rm -rf public/storage
+            else
+              echo "Nenhum storage link existente encontrado."
+            fi
+          '
+
+          echo "========================================"
           echo "CREATING STORAGE LINK"
           echo "========================================"
 
-          docker compose exec -T laravel.sosmecanica php artisan storage:link --force
+          docker compose exec -T laravel.sosmecanica php artisan storage:link
 
           echo "========================================"
           echo "VALIDATING STORAGE LINK"
           echo "========================================"
 
           docker compose exec -T laravel.sosmecanica sh -c '
-            if [ ! -L public/storage ]; then
-              echo "ERROR: public/storage não é um link simbólico."
-              exit 1
-            fi
+            echo "Conteúdo de public:"
+            ls -la public
 
-            echo "Link encontrado:"
+            echo ""
+            echo "Storage link:"
             ls -la public/storage
 
             echo ""
@@ -146,13 +159,30 @@ jobs:
             readlink public/storage
 
             echo ""
-            echo "Verificando destino..."
+            echo "Verificando se public/storage é um link simbólico..."
+
+            if [ ! -L public/storage ]; then
+              echo "ERROR: public/storage não é um link simbólico."
+              exit 1
+            fi
+
+            echo ""
+            echo "Verificando se o destino do link existe..."
 
             if [ ! -d public/storage ]; then
               echo "ERROR: o destino de public/storage não existe."
               exit 1
             fi
 
+            echo ""
+            echo "Verificando storage/app/public..."
+
+            if [ ! -d storage/app/public ]; then
+              echo "ERROR: storage/app/public não existe."
+              exit 1
+            fi
+
+            echo ""
             echo "Storage link validado com sucesso."
           '
 
@@ -161,14 +191,14 @@ jobs:
           echo "========================================"
 
           docker compose exec -T laravel.sosmecanica sh -c '
-            if [ ! -d storage/app/public ]; then
-              echo "ERROR: storage/app/public não existe."
-              exit 1
-            fi
-
-            echo "storage/app/public encontrado."
+            echo "Diretório storage/app/public:"
 
             ls -la storage/app/public
+
+            echo ""
+
+            echo "Quantidade de arquivos:"
+            find storage/app/public -type f | wc -l
           '
 
           echo "========================================"
