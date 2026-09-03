@@ -22,15 +22,19 @@
 
 </div>
 
-<script>
-    window.compraProdutos = @json(
-        $produtos->map(fn ($produto) => [
+@php
+    $compraProdutos = $produtos->map(function ($produto) {
+        return [
             'id' => $produto->id,
             'nome' => $produto->nome,
             'codigo_fabricante' => $produto->codigo_fabricante,
             'preco_uni' => $produto->preco_uni,
-        ])->values()
-    );
+        ];
+    })->values()->all();
+@endphp
+
+<script>
+    window.compraProdutos = {{ Illuminate\Support\Js::from($compraProdutos) }};
 </script>
 
 @vite('resources/js/compra.js')

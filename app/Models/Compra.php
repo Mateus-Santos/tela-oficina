@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Compra extends Model
 {
@@ -47,5 +48,10 @@ class Compra extends Model
     public function itens(): HasMany
     {
         return $this->hasMany(CompraItem::class);
+    }
+
+    public function anexos(): MorphMany
+    {
+        return $this->morphMany(Anexo::class, 'anexavel');
     }
 }

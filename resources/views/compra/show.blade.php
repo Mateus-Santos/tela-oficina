@@ -24,70 +24,192 @@
     @endif
 
 
-    {{-- CABEÇALHO DA COMPRA --}}
+    {{-- ANEXOS --}}
     <div class="card shadow-sm mb-4">
-
         <div class="card-body">
-
-            <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
-
-                <div>
-
-                    <h2 class="h5 mb-1">
-                        <i class="bi bi-receipt"></i>
-                        Nota Fiscal #{{ $compra->numero_nf }}
-                    </h2>
-
-                    @if ($compra->serie_nf)
-                        <div class="text-muted">
-                            Série {{ $compra->serie_nf }}
-                        </div>
-                    @endif
-
-                </div>
-
-                @php
-                    $statusConfig = match ($compra->status) {
-                        'pendente' => [
-                            'class' => 'bg-warning text-dark',
-                            'icon' => 'bi-clock',
-                            'label' => 'Pendente',
-                        ],
-                        'conferindo' => [
-                            'class' => 'bg-info text-dark',
-                            'icon' => 'bi-search',
-                            'label' => 'Conferindo',
-                        ],
-                        'aprovada' => [
-                            'class' => 'bg-success',
-                            'icon' => 'bi-check-circle',
-                            'label' => 'Aprovada',
-                        ],
-                        'cancelada' => [
-                            'class' => 'bg-danger',
-                            'icon' => 'bi-x-circle',
-                            'label' => 'Cancelada',
-                        ],
-                        default => [
-                            'class' => 'bg-secondary',
-                            'icon' => 'bi-question-circle',
-                            'label' => ucfirst($compra->status),
-                        ],
-                    };
-                @endphp
-
-                <span class="badge {{ $statusConfig['class'] }} fs-6">
-
-                    <i class="bi {{ $statusConfig['icon'] }}"></i>
-
-                    {{ $statusConfig['label'] }}
-
+            <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap mb-3">
+                <h2 class="h5 mb-0">
+                    <i class="bi bi-paperclip"></i>
+                    Documentos e anexos
+                </h2>
+                <span class="badge bg-secondary">
+                    <i class="bi bi-files"></i>
+                    {{ $compra->anexos->count() }}
+                    {{ $compra->anexos->count() === 1 ? 'arquivo' : 'arquivos' }}
                 </span>
-
             </div>
 
-        </div>
+            <form
+                method="POST"
+                action="{{ route('compras.anexos.store', $compra) }}"
+                enctype="multipart/form-data"
+                class="mb-4"
+            >
+                @csrf
 
+                <div class="row g-3">
+                    <div class="col-12 col-md-4">
+                        <label for="tipo" class="form-label">
+                            Tipo do documento
+                        </label>
+                        <select
+                            name="tipo"
+                            id="tipo"
+                            class="form-select"
+                            required
+                        >
+                            <option value="">Selecione...</option>
+                            <option value="nf">Nota fiscal</option>
+                            <option value="nf_xml">NF-e XML</option>
+                            <option value="foto">Foto</option>
+                            <option value="comprovante">Comprovante</option>
+                            <option value="boleto">Boleto</option>
+                            <option value="contrato">Contrato</option>
+                            <option value="orcamento">Orçamento</option>
+                            <option value="conta_luz">Conta de luz</option>
+                            <option value="conta_agua">Conta de água</option>
+                            <option value="conta_telefone">Conta de telefone</option>
+                            <option value="recibo">Recibo</option>
+                            <option value="outro">Outro</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-md-5">
+                        <label for="arquivo" class="form-label">
+                            Arquivo
+                        </label>
+                        <input
+                            type="file"
+                            name="arquivo"
+                            id="arquivo"
+                            class="form-control"
+                            accept=".pdf,.jpg,.jpeg,.png,.webp,.xml"
+                            required
+                        >
+                        <small class="text-muted">
+                            PDF, JPG, JPEG, PNG, WEBP ou XML — máximo de 20 MB.
+                        </small>
+                    </div>
+
+                    <div class="col-12 col-md-3">
+                        <label for="observacoes" class="form-label">
+                            Observações
+                        </label>
+                        <input
+                            type="text"
+                            name="observacoes"
+                            id="observacoes"
+                            class="form-control"
+                            maxlength="1000"
+                        >
+                    </div>
+
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-cloud-arrow-up"></i>
+                            Enviar anexo
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            @if ($compra->anexos->isNotEmpty())
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>TIPO</th>
+                                <th>ARQUIVO</th>
+                                <th>TAMANHO</th>
+                                <th>OBSERVAÇÕES</th>
+                                <th>DATA</th>
+                                <th class="text-end">AÇÕES</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($compra->anexos as $anexo)
+                                @php
+                                    $tipoAnexo = match ($anexo->tipo) {
+                                        'nf' => ['label' => 'Nota fiscal', 'icon' => 'bi-receipt'],
+                                        'nf_xml' => ['label' => 'NF-e XML', 'icon' => 'bi-filetype-xml'],
+                                        'foto' => ['label' => 'Foto', 'icon' => 'bi-image'],
+                                        'comprovante' => ['label' => 'Comprovante', 'icon' => 'bi-file-earmark-check'],
+                                        'boleto' => ['label' => 'Boleto', 'icon' => 'bi-upc'],
+                                        'contrato' => ['label' => 'Contrato', 'icon' => 'bi-file-earmark-text'],
+                                        'orcamento' => ['label' => 'Orçamento', 'icon' => 'bi-file-earmark-spreadsheet'],
+                                        'conta_luz' => ['label' => 'Conta de luz', 'icon' => 'bi-lightbulb'],
+                                        'conta_agua' => ['label' => 'Conta de água', 'icon' => 'bi-droplet'],
+                                        'conta_telefone' => ['label' => 'Conta de telefone', 'icon' => 'bi-telephone'],
+                                        'recibo' => ['label' => 'Recibo', 'icon' => 'bi-file-earmark-check'],
+                                        default => ['label' => 'Outro', 'icon' => 'bi-file-earmark'],
+                                    };
+                                @endphp
+
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-secondary">
+                                            <i class="bi {{ $tipoAnexo['icon'] }}"></i>
+                                            {{ $tipoAnexo['label'] }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold text-break">
+                                            {{ $anexo->nome_original }}
+                                        </div>
+                                        <small class="text-muted">
+                                            {{ $anexo->mime_type }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        {{ number_format($anexo->tamanho / 1024 / 1024, 2, ',', '.') }} MB
+                                    </td>
+                                    <td>
+                                        {{ $anexo->observacoes ?: '-' }}
+                                    </td>
+                                    <td>
+                                        {{ $anexo->created_at?->format('d/m/Y H:i') }}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex justify-content-end gap-1">
+                                            <a
+                                                href="{{ route('anexos.download', $anexo) }}"
+                                                class="btn btn-sm btn-outline-primary"
+                                                title="Baixar arquivo"
+                                            >
+                                                <i class="bi bi-download"></i>
+                                            </a>
+
+                                            @if (!in_array($compra->status, ['aprovada', 'cancelada'], true))
+                                                <form
+                                                    method="POST"
+                                                    action="{{ route('anexos.destroy', $anexo) }}"
+                                                    onsubmit="return confirm('Tem certeza que deseja excluir este anexo?');"
+                                                >
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button
+                                                        type="submit"
+                                                        class="btn btn-sm btn-outline-danger"
+                                                        title="Excluir anexo"
+                                                    >
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <div class="alert alert-light border mb-0">
+                    <i class="bi bi-info-circle"></i>
+                    Nenhum documento ou anexo foi cadastrado para esta compra.
+                </div>
+            @endif
+        </div>
     </div>
 
 

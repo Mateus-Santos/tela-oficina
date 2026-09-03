@@ -2,26 +2,30 @@
 
 namespace App\Actions\Compra;
 
+use App\Actions\Anexo\CriarAnexo;
 use App\Models\Compra;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 
 class CriarCompra
 {
-    public function execute(array $dados): Compra
-    {
-        return DB::transaction(function () use ($dados) {
+    public function __construct(
+        private CriarAnexo $criarAnexo
+    ) {
+    }
 
+    public function execute(array $dados, array $anexos = []): Compra
+    {
+        return DB::transaction(function () use ($dados, $anexos) {
             $desconto = (float) ($dados['desconto'] ?? 0);
             $frete = (float) ($dados['frete'] ?? 0);
             $outrasDespesas = (float) ($dados['outras_despesas'] ?? 0);
-
             $valorProdutos = 0;
 
             foreach ($dados['itens'] as $item) {
                 $quantidade = (float) $item['quantidade'];
                 $valorUnitario = (float) $item['valor_unitario'];
                 $descontoItem = (float) ($item['desconto'] ?? 0);
-
                 $valorTotalItem = ($quantidade * $valorUnitario) - $descontoItem;
 
                 if ($valorTotalItem < 0) {
@@ -61,11 +65,9 @@ class CriarCompra
             ]);
 
             foreach ($dados['itens'] as $item) {
-
                 $quantidade = (float) $item['quantidade'];
                 $valorUnitario = (float) $item['valor_unitario'];
                 $descontoItem = (float) ($item['desconto'] ?? 0);
-
                 $valorTotalItem = ($quantidade * $valorUnitario) - $descontoItem;
 
                 $compra->itens()->create([
@@ -79,7 +81,20 @@ class CriarCompra
                 ]);
             }
 
-            return $compra->load('itens');
+            foreach ($anexos as $anexo) {
+                if (!isset($anexo['arquivo']) || !$anexo['arquivo'] instanceof UploadedFile) {
+                    continue;
+                }
+
+                $this->criarAnexo->execute(
+                    $compra,
+                    $anexo['arquivo'],
+                    $anexo['tipo'],
+                    $anexo['observacoes'] ?? null
+                );
+            }
+
+            return $compra->load(['itens', 'anexos']);
         });
     }
 }

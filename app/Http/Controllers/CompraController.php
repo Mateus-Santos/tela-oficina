@@ -95,16 +95,16 @@ class CompraController extends Controller
         StoreCompraRequest $request,
         CriarCompra $criarCompra
     ) {
-        $compra = $criarCompra->execute(
-            $request->validated()
-        );
+        $dados = $request->validated();
+        $anexos = $dados['anexos'] ?? [];
+
+        unset($dados['anexos']);
+
+        $compra = $criarCompra->execute($dados, $anexos);
 
         return redirect()
-            ->route('compra.show', $compra)
-            ->with(
-                'success',
-                'Compra cadastrada com sucesso!'
-            );
+            ->route('compras.show', $compra)
+            ->with('success', 'Compra cadastrada com sucesso!');
     }
 
     /**
@@ -175,7 +175,7 @@ class CompraController extends Controller
         );
 
         return redirect()
-            ->route('compra.show', $compraAtualizada)
+            ->route('compras.show', $compraAtualizada)
             ->with(
                 'success',
                 'Compra atualizada com sucesso!'
@@ -189,7 +189,7 @@ class CompraController extends Controller
     {
         if ($compra->status === 'aprovada') {
             return redirect()
-                ->route('compra.show', $compra)
+                ->route('compras.show', $compra)
                 ->with(
                     'error',
                     'Uma compra aprovada não pode ser excluída.'
@@ -208,10 +208,10 @@ class CompraController extends Controller
         $compra->delete();
 
         return redirect()
-            ->route('compra.index')
+            ->route('compras.show', $compra)
             ->with(
-                'success',
-                'Compra excluída com sucesso!'
+                'error',
+                'Uma compra aprovada não pode ser excluída.'
             );
     }
 }

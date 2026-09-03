@@ -19,6 +19,7 @@ use App\Http\Controllers\FormaPagamentoController;
 use App\Http\Controllers\RecebimentoController;
 use App\Http\Controllers\CompraController;
 use App\Http\Controllers\FornecedorController;
+use App\Http\Controllers\AnexoController;
 
 //use App\Http\Controllers\ChatController;
 
@@ -76,6 +77,15 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         Route::resource('fornecedores', FornecedorController::class)
             ->parameters(['fornecedores' => 'fornecedor'])
             ->middleware(['auth', 'check.blocked']);
+
+        Route::post('compras/{compra}/anexos', [AnexoController::class, 'storeCompra'])
+            ->name('compras.anexos.store');
+
+        Route::get('anexos/{anexo}/download', [AnexoController::class, 'download'])
+            ->name('anexos.download');
+
+        Route::delete('anexos/{anexo}', [AnexoController::class, 'destroy'])
+            ->name('anexos.destroy');
 
     });
 });
