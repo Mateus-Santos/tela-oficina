@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Actions\Compra\AtualizarCompra;
 use App\Actions\Compra\CriarCompra;
+use App\Actions\Compra\RegistrarEntradaCompra;
 use App\Http\Requests\Compra\StoreCompraRequest;
 use App\Http\Requests\Compra\UpdateCompraRequest;
 use App\Models\Compra;
 use App\Models\Fornecedor;
 use App\Models\Produto;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class CompraController extends Controller
@@ -21,37 +23,19 @@ class CompraController extends Controller
         $compras = Compra::query()
             ->with('fornecedor')
             ->when($request->filled('numero_nf'), function ($query) use ($request) {
-                $query->where(
-                    'numero_nf',
-                    'like',
-                    '%' . $request->numero_nf . '%'
-                );
+                $query->where('numero_nf', 'like', '%' . $request->numero_nf . '%');
             })
             ->when($request->filled('fornecedor_id'), function ($query) use ($request) {
-                $query->where(
-                    'fornecedor_id',
-                    $request->fornecedor_id
-                );
+                $query->where('fornecedor_id', $request->fornecedor_id);
             })
             ->when($request->filled('status'), function ($query) use ($request) {
-                $query->where(
-                    'status',
-                    $request->status
-                );
+                $query->where('status', $request->status);
             })
             ->when($request->filled('data_inicio'), function ($query) use ($request) {
-                $query->whereDate(
-                    'data_entrada',
-                    '>=',
-                    $request->data_inicio
-                );
+                $query->whereDate('data_entrada', '>=', $request->data_inicio);
             })
             ->when($request->filled('data_fim'), function ($query) use ($request) {
-                $query->whereDate(
-                    'data_entrada',
-                    '<=',
-                    $request->data_fim
-                );
+                $query->whereDate('data_entrada', '<=', $request->data_fim);
             })
             ->latest('data_entrada')
             ->latest('id')
@@ -97,7 +81,6 @@ class CompraController extends Controller
     ) {
         $dados = $request->validated();
         $anexos = $dados['anexos'] ?? [];
-
         unset($dados['anexos']);
 
         $compra = $criarCompra->execute($dados, $anexos);
@@ -115,6 +98,8 @@ class CompraController extends Controller
         $compra->load([
             'fornecedor',
             'itens.produto',
+            'itens.movimentacoesEstoque',
+            'anexos',
         ]);
 
         return view(
@@ -124,16 +109,60 @@ class CompraController extends Controller
     }
 
     /**
+     * Registra a entrada da compra no estoque.
+     */
+    public function registrarEstoque(
+        Compra $compra,
+        RegistrarEntradaCompra $registrarEntradaCompra
+    ): RedirectResponse {
+        try {
+            $registrarEntradaCompra->execute($compra);
+
+            return redirect()
+                ->route('compras.show', $compra)
+                ->with(
+                    'success',
+                    'Entrada da compra registrada no estoque com sucesso!'
+                );
+        } catch (\InvalidArgumentException $e) {
+            return redirect()
+                ->route('compras.show', $compra)
+                ->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Verifica se a compra possui algum item lançado no estoque.
+     */
+    private function estoqueLancado(Compra $compra): bool
+    {
+        return $compra->itens()
+            ->whereHas('movimentacoesEstoque', function ($query) {
+                $query->where('tipo', 'entrada');
+            })
+            ->exists();
+    }
+
+    /**
      * Exibe o formulário de edição.
      */
     public function edit(Compra $compra)
     {
         if (in_array($compra->status, ['aprovada', 'cancelada'], true)) {
             return redirect()
-                ->route('compra.show', $compra)
+                ->route('compras.show', $compra)
                 ->with(
                     'error',
                     'Uma compra aprovada ou cancelada não pode ser editada.'
+                );
+        }
+
+        if ($this->estoqueLancado($compra)) {
+            return redirect()
+                ->route('compras.show', $compra)
+                ->with(
+                    'error',
+                    'Uma compra que já possui entrada no estoque não pode ser editada.'
                 );
         }
 
@@ -169,6 +198,24 @@ class CompraController extends Controller
         Compra $compra,
         AtualizarCompra $atualizarCompra
     ) {
+        if (in_array($compra->status, ['aprovada', 'cancelada'], true)) {
+            return redirect()
+                ->route('compras.show', $compra)
+                ->with(
+                    'error',
+                    'Uma compra aprovada ou cancelada não pode ser alterada.'
+                );
+        }
+
+        if ($this->estoqueLancado($compra)) {
+            return redirect()
+                ->route('compras.show', $compra)
+                ->with(
+                    'error',
+                    'Uma compra que já possui entrada no estoque não pode ser alterada.'
+                );
+        }
+
         $compraAtualizada = $atualizarCompra->execute(
             $compra,
             $request->validated()
@@ -198,20 +245,29 @@ class CompraController extends Controller
 
         if ($compra->status === 'cancelada') {
             return redirect()
-                ->route('compra.index')
+                ->route('compras.index')
                 ->with(
                     'error',
                     'Uma compra cancelada não pode ser excluída.'
                 );
         }
 
+        if ($this->estoqueLancado($compra)) {
+            return redirect()
+                ->route('compras.show', $compra)
+                ->with(
+                    'error',
+                    'Uma compra que já possui entrada no estoque não pode ser excluída.'
+                );
+        }
+
         $compra->delete();
 
         return redirect()
-            ->route('compras.show', $compra)
+            ->route('compras.index')
             ->with(
-                'error',
-                'Uma compra aprovada não pode ser excluída.'
+                'success',
+                'Compra excluída com sucesso!'
             );
     }
 }

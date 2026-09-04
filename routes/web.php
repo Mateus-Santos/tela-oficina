@@ -71,6 +71,10 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
 
         Route::post('recebimentos', [RecebimentoController::class, 'store'])->name('recebimentos.store');
 
+        Route::post('compras/{compra}/estoque', [CompraController::class, 'registrarEstoque'])
+            ->name('compras.estoque')
+            ->middleware(['auth', 'check.blocked']);
+
         Route::resource('compras', CompraController::class)
             ->middleware(['auth', 'check.blocked']);
 
