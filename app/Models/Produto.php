@@ -42,13 +42,14 @@ class Produto extends Model
             );
     }
 
-    public function veiculos()
+    public function veiculos(): BelongsToMany
     {
         return $this->belongsToMany(Veiculo::class, 'produtos_veiculos');
     }
 
-    public function produtoVendas(): HasMany
+    public function movimentacoesEstoque(): HasMany
     {
-        return $this->hasMany(ProdutoVenda::class);
+        return $this->hasMany(MovimentacaoEstoque::class);
     }
+
 }

@@ -33,7 +33,9 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
+
           echo "${{ secrets.SERVER_SSH_HOST_KEY }}" > ~/.ssh/known_hosts
+
           chmod 600 ~/.ssh/known_hosts
 
       - name: Setup Node.js
@@ -51,10 +53,13 @@ jobs:
           echo ".git/" > .rsync-exclude
           echo "node_modules/" >> .rsync-exclude
           echo "storage/" >> .rsync-exclude
+          echo "public/storage/" >> .rsync-exclude
           echo ".env" >> .rsync-exclude
           echo "vendor/" >> .rsync-exclude
+
           git ls-files --ignored --exclude-standard -o >> .rsync-exclude
-          # Garante que public/build/ NUNCA seja ignorado pelo rsync
+
+          # Garante que public/build/ nunca seja ignorado pelo rsync
           sed -i '/public\/build/d' .rsync-exclude
 
       - name: Deploy files
@@ -79,30 +84,131 @@ jobs:
 
           cd ${{ vars.TARGET }}
 
-          echo "Building Docker images..."
+          echo "========================================"
+          echo "BUILDING DOCKER IMAGES"
+          echo "========================================"
+
           docker compose build
 
-          echo "Installing Composer dependencies..."
+          echo "========================================"
+          echo "INSTALLING COMPOSER DEPENDENCIES"
+          echo "========================================"
+
           docker compose run --rm laravel.sosmecanica composer install \
             --no-interaction \
             --prefer-dist \
             --optimize-autoloader
 
-          echo "Running database migrations..."
+          echo "========================================"
+          echo "RUNNING DATABASE MIGRATIONS"
+          echo "========================================"
+
           docker compose run --rm laravel.sosmecanica php artisan migrate --force
 
-          echo "Recreating containers..."
+          echo "========================================"
+          echo "RECREATING CONTAINERS"
+          echo "========================================"
+
           docker compose up -d --force-recreate
 
-          echo "Waiting for Laravel container..."
+          echo "========================================"
+          echo "DOCKER CONTAINERS"
+          echo "========================================"
+
           docker compose ps
 
-          echo "Linking storage..."
+          echo "========================================"
+          echo "CLEARING LARAVEL CACHE"
+          echo "========================================"
+
+          docker compose exec -T laravel.sosmecanica php artisan optimize:clear
+
+          echo "========================================"
+          echo "REMOVING OLD STORAGE LINK"
+          echo "========================================"
+
+          docker compose exec -T laravel.sosmecanica sh -c '
+            if [ -e public/storage ] || [ -L public/storage ]; then
+              echo "Removendo public/storage existente..."
+              rm -rf public/storage
+            else
+              echo "Nenhum storage link existente encontrado."
+            fi
+          '
+
+          echo "========================================"
+          echo "CREATING STORAGE LINK"
+          echo "========================================"
+
           docker compose exec -T laravel.sosmecanica php artisan storage:link
 
-          echo "Optimizing Laravel..."
-          docker compose exec -T laravel.sosmecanica php artisan optimize:clear
+          echo "========================================"
+          echo "VALIDATING STORAGE LINK"
+          echo "========================================"
+
+          docker compose exec -T laravel.sosmecanica sh -c '
+            echo "Conteúdo de public:"
+            ls -la public
+
+            echo ""
+            echo "Storage link:"
+            ls -la public/storage
+
+            echo ""
+            echo "Destino do link:"
+            readlink public/storage
+
+            echo ""
+            echo "Verificando se public/storage é um link simbólico..."
+
+            if [ ! -L public/storage ]; then
+              echo "ERROR: public/storage não é um link simbólico."
+              exit 1
+            fi
+
+            echo ""
+            echo "Verificando se o destino do link existe..."
+
+            if [ ! -d public/storage ]; then
+              echo "ERROR: o destino de public/storage não existe."
+              exit 1
+            fi
+
+            echo ""
+            echo "Verificando storage/app/public..."
+
+            if [ ! -d storage/app/public ]; then
+              echo "ERROR: storage/app/public não existe."
+              exit 1
+            fi
+
+            echo ""
+            echo "Storage link validado com sucesso."
+          '
+
+          echo "========================================"
+          echo "CHECKING STORAGE DIRECTORY"
+          echo "========================================"
+
+          docker compose exec -T laravel.sosmecanica sh -c '
+            echo "Diretório storage/app/public:"
+
+            ls -la storage/app/public
+
+            echo ""
+
+            echo "Quantidade de arquivos:"
+            find storage/app/public -type f | wc -l
+          '
+
+          echo "========================================"
+          echo "OPTIMIZING LARAVEL"
+          echo "========================================"
+
           docker compose exec -T laravel.sosmecanica php artisan optimize
 
-          echo "Deployment completed successfully."
+          echo "========================================"
+          echo "DEPLOYMENT COMPLETED SUCCESSFULLY"
+          echo "========================================"
+
           EOF

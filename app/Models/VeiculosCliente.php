@@ -14,6 +14,8 @@ class VeiculosCliente extends Model
         'ano',
         'placa',
         'cor',
+        'veiculo_id',
+        'cliente_id',
     ];
 
     public function veiculo(): BelongsTo

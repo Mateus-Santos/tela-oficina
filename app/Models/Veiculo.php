@@ -4,8 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Veiculo extends Model
 {
@@ -13,6 +14,7 @@ class Veiculo extends Model
 
     protected $fillable = [
         'nome',
+        'montadora_id',
     ];
 
     public function montadora(): BelongsTo
@@ -20,12 +22,12 @@ class Veiculo extends Model
         return $this->belongsTo(Montadora::class);
     }
 
-    public function VeiculosClientes(): HasMany
+    public function veiculosCliente(): HasMany
     {
-        return $this->hasMany(VeiculosClientes::class);
+        return $this->hasMany(VeiculosCliente::class);
     }
 
-    public function produtos()
+    public function produtos(): BelongsToMany
     {
         return $this->belongsToMany(Produto::class, 'produtos_veiculos');
     }

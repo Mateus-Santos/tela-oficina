@@ -24,6 +24,8 @@ export default defineConfig({
                 'resources/js/validateForm.js',
                 'resources/js/gerenciadorItensOs.js',
                 'resources/scss/_app.scss',
+                'resources/js/compra.js',
+                'resources/js/formsWizard.js',
             ],
             refresh: true,
         }),

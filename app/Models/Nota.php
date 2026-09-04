@@ -30,7 +30,7 @@ class Nota extends Model
         'km_proxima_troca_oleo' => 'int',
         'subtotal' => 'decimal:2',
         'desconto' => 'decimal:2',
-        'total'    => 'decimal:2',
+        'total' => 'decimal:2',
     ];
 
     public function itens()
@@ -50,12 +50,19 @@ class Nota extends Model
 
     public function scopeFiltro(Builder $query, array $filters)
     {
+        /*
+         * FILTRO POR CLIENTE
+         * Nota -> Cliente -> Pessoa -> nome
+         */
         if (!empty($filters['cliente'])) {
-            $query->whereHas('cliente', function ($q) use ($filters) {
+            $query->whereHas('cliente.pessoa', function ($q) use ($filters) {
                 $q->where('nome', 'like', '%' . $filters['cliente'] . '%');
             });
         }
 
+        /*
+         * FILTRO POR TIPO
+         */
         if (!empty($filters['tipo'])) {
             $query->where('tipo', $filters['tipo']);
         }

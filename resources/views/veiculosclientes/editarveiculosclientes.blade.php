@@ -5,7 +5,7 @@
 @section('content')
 <section class="container cadastro">
     <h1><i class="bi bi-gear"></i> EDITAR VEÍCULO</h1>
-    
+
     <div class="campos">
         @if ($errors->any())
             <div class="alert alert-danger">
@@ -16,7 +16,7 @@
                 </ul>
             </div>
         @endif
-        
+
         <form action="{{ route('veiculosclientes.update', $veiculoscliente->id) }}" method="POST" class="row g-3">
             @csrf
             @method('PATCH')
@@ -29,7 +29,7 @@
                         <select class="form-control" id="id_cliente" name="id_cliente" required>
                             <option value="">Selecione um cliente...</option>
                             @foreach($clientes as $cliente)
-                                <option 
+                                <option
                                     value="{{ $cliente->id }}"
                                     {{ $cliente->id == $veiculoscliente->cliente_id ? 'selected' : '' }}
                                 >
@@ -42,16 +42,16 @@
                     {{-- Visão de Usuário Comum --}}
                     <div class="col-md-6">
                         <label class="form-label" for="cliente_nome">Cliente:*</label>
-                        <input 
-                            class="form-control" 
-                            type="text" 
+                        <input
+                            class="form-control"
+                            type="text"
                             id="cliente_nome"
-                            value="{{ $veiculoscliente->cliente->pessoa->nome ?? auth()->user()->pessoa->nome ?? 'Cliente' }}" 
+                            value="{{ $veiculoscliente->cliente->pessoa->nome ?? auth()->user()->pessoa->nome ?? 'Cliente' }}"
                             disabled
                         >
-                        <input 
-                            type="hidden" 
-                            name="id_cliente" 
+                        <input
+                            type="hidden"
+                            name="id_cliente"
                             value="{{ $veiculoscliente->cliente_id }}"
                         >
                     </div>
@@ -65,7 +65,7 @@
                     <select class="form-control" id="montadora" name="montadora" required>
                         <option value="">Selecione...</option>
                         @foreach($montadoras as $montadora)
-                            <option 
+                            <option
                                 value="{{ $montadora->id }}"
                                 {{ $montadora->id == optional($veiculoscliente->veiculo)->montadora_id ? 'selected' : '' }}
                             >
@@ -86,43 +86,43 @@
             <div class="row mb-3">
                 <div class="col-md-4">
                     <label class="form-label" for="placa">Placa:*</label>
-                    <input 
-                        type="text" 
-                        class="form-control" 
-                        value="{{ old('placa', $veiculoscliente->placa) }}" 
-                        id="placa" 
-                        name="placa" 
-                        placeholder="Digite a placa do veículo" 
-                        maxlength="8" 
+                    <input
+                        type="text"
+                        class="form-control"
+                        value="{{ old('placa', $veiculoscliente->placa) }}"
+                        id="placa"
+                        name="placa"
+                        placeholder="Digite a placa do veículo"
+                        maxlength="8"
                         required
                     >
                 </div>
 
                 <div class="col-md-4">
                     <label class="form-label" for="ano">Ano:*</label>
-                    <input 
-                        type="number" 
-                        class="form-control" 
-                        value="{{ old('ano', $veiculoscliente->ano) }}" 
-                        id="ano" 
-                        name="ano" 
-                        placeholder="ex.: 2022" 
-                        min="1900" 
-                        max="{{ date('Y') + 1 }}" 
+                    <input
+                        type="number"
+                        class="form-control"
+                        value="{{ old('ano', $veiculoscliente->ano) }}"
+                        id="ano"
+                        name="ano"
+                        placeholder="ex.: 2022"
+                        min="1900"
+                        max="{{ date('Y') + 1 }}"
                         required
                     >
                 </div>
 
                 <div class="col-md-4">
                     <label class="form-label" for="cor">Cor:*</label>
-                    <input 
-                        type="text" 
-                        class="form-control" 
-                        value="{{ old('cor', $veiculoscliente->cor) }}" 
-                        id="cor" 
-                        name="cor" 
-                        placeholder="Digite a cor do veículo" 
-                        maxlength="30" 
+                    <input
+                        type="text"
+                        class="form-control"
+                        value="{{ old('cor', $veiculoscliente->cor) }}"
+                        id="cor"
+                        name="cor"
+                        placeholder="Digite a cor do veículo"
+                        maxlength="30"
                         required
                     >
                 </div>

@@ -1,0 +1,350 @@
+@extends('layouts.layout')
+
+@section('content')
+
+<section class="container cadastro">
+
+    <x-list-header
+        title="CONTAS A RECEBER"
+        icon="bi-cash-stack"
+        create-route="contas-receber.create"
+        create-text="Nova Conta"
+        create-icon="bi-plus-lg"
+    />
+
+    @if ($errors->any())
+        <div class="alert alert-danger mensseger_error_container">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    @if (session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+
+    @if (session('error'))
+        <div class="alert alert-danger">{{ session('error') }}</div>
+    @endif
+
+    <x-filtros-container
+        action="{{ route('contas-receber.index') }}"
+        id="filtros-contas-receber"
+        :collapsible="true"
+        :expanded="request()->hasAny(['data_inicio', 'data_fim'])"
+    >
+        <x-slot:primary>
+            <div class="row g-3 align-items-end">
+
+                <div class="col-12 col-md-4">
+                    <label for="cliente" class="form-label">
+                        <i class="bi bi-person"></i> Cliente
+                    </label>
+
+                    <input
+                        type="text"
+                        id="cliente"
+                        name="cliente"
+                        class="filtros-container__input"
+                        placeholder="Nome do cliente"
+                        value="{{ request('cliente') }}"
+                    >
+                </div>
+
+                <div class="col-12 col-md-3">
+                    <label for="status" class="form-label">
+                        <i class="bi bi-info-circle"></i> Status
+                    </label>
+
+                    <select
+                        id="status"
+                        name="status"
+                        class="filtros-container__select"
+                    >
+                        <option value="">Todos</option>
+
+                        <option value="aberta" @selected(request('status') === 'aberta')>
+                            Aberta
+                        </option>
+
+                        <option value="parcial" @selected(request('status') === 'parcial')>
+                            Parcial
+                        </option>
+
+                        <option value="quitada" @selected(request('status') === 'quitada')>
+                            Quitada
+                        </option>
+
+                        <option value="vencida" @selected(request('status') === 'vencida')>
+                            Vencida
+                        </option>
+
+                        <option value="cancelada" @selected(request('status') === 'cancelada')>
+                            Cancelada
+                        </option>
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-3">
+                    <label for="nota_id" class="form-label">
+                        <i class="bi bi-receipt"></i> Nota
+                    </label>
+
+                    <input
+                        type="number"
+                        id="nota_id"
+                        name="nota_id"
+                        class="filtros-container__input"
+                        placeholder="Nº da nota"
+                        value="{{ request('nota_id') }}"
+                        min="1"
+                    >
+                </div>
+
+                <div class="col-12 col-md-2">
+                    <div class="filtros-container__actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i>
+                            Filtrar
+                        </button>
+
+                        <a
+                            href="{{ route('contas-receber.index') }}"
+                            class="btn btn-secondary"
+                            title="Limpar filtros"
+                        >
+                            <i class="bi bi-x-lg"></i>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </x-slot:primary>
+
+        <x-slot:advanced>
+            <div class="row g-3">
+
+                <div class="col-12 col-md-6">
+                    <label for="data_inicio" class="form-label">
+                        <i class="bi bi-calendar-event"></i> Vencimento de
+                    </label>
+
+                    <input
+                        type="date"
+                        id="data_inicio"
+                        name="data_inicio"
+                        class="filtros-container__input"
+                        value="{{ request('data_inicio') }}"
+                    >
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label for="data_fim" class="form-label">
+                        <i class="bi bi-calendar-event"></i> Vencimento até
+                    </label>
+
+                    <input
+                        type="date"
+                        id="data_fim"
+                        name="data_fim"
+                        class="filtros-container__input"
+                        value="{{ request('data_fim') }}"
+                    >
+                </div>
+
+            </div>
+        </x-slot:advanced>
+    </x-filtros-container>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>CLIENTE</th>
+                    <th>DESCRIÇÃO</th>
+                    <th>NOTA</th>
+                    <th>VENCIMENTO</th>
+                    <th>VALOR</th>
+                    <th>RECEBIDO</th>
+                    <th>SALDO</th>
+                    <th>STATUS</th>
+                    <th>AÇÕES</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                @forelse ($contasReceber as $contaReceber)
+
+                    @php
+                        $valorDevido = (float) $contaReceber->valor_original
+                            - (float) $contaReceber->desconto
+                            + (float) $contaReceber->juros
+                            + (float) $contaReceber->multa;
+
+                        $valorRecebido = (float) ($contaReceber->recebimentos_sum_valor ?? 0);
+                        $saldo = $valorDevido - $valorRecebido;
+                    @endphp
+
+                    <tr>
+
+                        <td>
+                            {{ str_pad($contaReceber->id, 6, '0', STR_PAD_LEFT) }}
+                        </td>
+
+                        <td>
+                            {{ $contaReceber->cliente?->nome ?? 'Sem cliente' }}
+                        </td>
+
+                        <td>
+                            {{ $contaReceber->descricao }}
+                        </td>
+
+                        <td>
+                            @if ($contaReceber->nota)
+                                #{{ str_pad($contaReceber->nota->id, 6, '0', STR_PAD_LEFT) }}
+                            @else
+                                <span class="text-muted">Sem nota</span>
+                            @endif
+                        </td>
+
+                        <td>
+                            {{ $contaReceber->data_vencimento->format('d/m/Y') }}
+                        </td>
+
+                        <td>
+                            R$ {{ number_format($valorDevido, 2, ',', '.') }}
+                        </td>
+
+                        <td>
+                            R$ {{ number_format($valorRecebido, 2, ',', '.') }}
+                        </td>
+
+                        <td>
+                            R$ {{ number_format(max($saldo, 0), 2, ',', '.') }}
+                        </td>
+
+                        <td>
+                            @if ($contaReceber->estaVencida())
+                                <span class="badge bg-danger">
+                                    <i class="bi bi-exclamation-circle"></i>
+                                    Vencida
+                                </span>
+                            @elseif ($contaReceber->status === 'quitada')
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle"></i>
+                                    Quitada
+                                </span>
+                            @elseif ($contaReceber->status === 'parcial')
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-hourglass-split"></i>
+                                    Parcial
+                                </span>
+                            @elseif ($contaReceber->status === 'cancelada')
+                                <span class="badge bg-secondary">
+                                    <i class="bi bi-x-circle"></i>
+                                    Cancelada
+                                </span>
+                            @else
+                                <span class="badge bg-primary">
+                                    <i class="bi bi-clock"></i>
+                                    Aberta
+                                </span>
+                            @endif
+                        </td>
+
+                        <td>
+                            <div class="d-flex gap-1">
+
+                                <a
+                                    href="{{ route('contas-receber.show', $contaReceber) }}"
+                                    class="btn btn-primary btn-sm"
+                                    title="Visualizar"
+                                >
+                                    <i class="bi bi-eye"></i>
+                                </a>
+
+                                @if (!$contaReceber->recebimentos_exists && $contaReceber->status !== 'cancelada')
+                                    <a
+                                        href="{{ route('contas-receber.edit', $contaReceber) }}"
+                                        class="btn btn-warning btn-sm"
+                                        title="Editar"
+                                    >
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                @endif
+
+                                @if (
+                                    !$contaReceber->estaVencida()
+                                    && $contaReceber->status !== 'quitada'
+                                    && $contaReceber->status !== 'cancelada'
+                                )
+                                    <a
+                                        href="{{ route('recebimentos.create', $contaReceber) }}"
+                                        class="btn btn-success btn-sm"
+                                        title="Registrar recebimento"
+                                    >
+                                        <i class="bi bi-cash-coin"></i>
+                                    </a>
+                                @elseif ($contaReceber->estaVencida())
+                                    <a
+                                        href="{{ route('recebimentos.create', $contaReceber) }}"
+                                        class="btn btn-danger btn-sm"
+                                        title="Registrar recebimento de conta vencida"
+                                    >
+                                        <i class="bi bi-cash-coin"></i>
+                                    </a>
+                                @endif
+
+                                @if (!$contaReceber->recebimentos_exists)
+                                    <form
+                                        action="{{ route('contas-receber.destroy', $contaReceber) }}"
+                                        method="POST"
+                                        onsubmit="return confirm('Tem certeza que deseja excluir esta conta a receber?');"
+                                    >
+                                        @csrf
+                                        @method('DELETE')
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-danger btn-sm"
+                                            title="Excluir"
+                                        >
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                @endif
+
+                            </div>
+                        </td>
+
+                    </tr>
+
+                @empty
+
+                    <tr>
+                        <td colspan="10" class="text-center">
+                            <i class="bi bi-info-circle"></i>
+                            Nenhuma conta a receber encontrada.
+                        </td>
+                    </tr>
+
+                @endforelse
+
+            </tbody>
+
+        </table>
+    </div>
+
+    <div class="d-flex justify-content-center mt-4">
+        {{ $contasReceber->links() }}
+    </div>
+
+</section>
+
+@endsection

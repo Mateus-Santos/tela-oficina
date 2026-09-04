@@ -2,66 +2,102 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreVeiculoRequest;
+use App\Http\Requests\UpdateVeiculoRequest;
+use App\Models\Montadora;
 use App\Models\Veiculo;
-use App\Models\User;
+use Illuminate\Http\Request;
 
 class VeiculoController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        if(auth()->user()->permitions == 2){
-            $veiculos = Veiculo::where('id_user', auth()->user()->id)->get();
-            return view('veiculo.listarveiculo', compact('veiculos'));
+        $query = Veiculo::with('montadora');
+
+        if ($request->filled('veiculo')) {
+            $query->where(
+                'nome',
+                'like',
+                '%' . $request->input('veiculo') . '%'
+            );
         }
-        else{
-            $veiculos = Veiculo::all();
-            return view('veiculo.listarveiculo', compact('veiculos'));
+
+        if ($request->filled('montadora')) {
+            $query->where(
+                'montadora_id',
+                $request->input('montadora')
+            );
         }
+
+        $veiculos = $query
+            ->orderByDesc('id')
+            ->paginate(15)
+            ->withQueryString();
+
+        $montadoras = Montadora::orderBy('nome')->get();
+
+        return view(
+            'veiculo.listarveiculo',
+            compact('veiculos', 'montadoras')
+        );
     }
 
-    public function porMontadora($id)
+    public function porMontadora(int $id)
     {
         $veiculos = Veiculo::where('montadora_id', $id)
             ->select('id', 'nome')
             ->orderBy('nome')
             ->get();
+
         return response()->json($veiculos);
     }
 
-
     public function create()
     {
-        $veiculos = Veiculo::all();
-        $users = User::all();
-        return view('veiculo.cadastroveiculo', compact('veiculos', 'users'));
+        $montadoras = Montadora::orderBy('nome')->get();
+
+        return view(
+            'veiculo.cadastroveiculos',
+            compact('montadoras')
+        );
     }
 
-    public function store(Request $request)
+    public function store(StoreVeiculoRequest $request)
     {
-        $veiculo = new Veiculo();
-        $veiculo->placa = $request->input("placa");
-        $veiculo->ano = $request->input("ano");
-        $veiculo->marca = $request->input("marca");
-        $veiculo->cor = $request->input("cor");
-        $veiculo->id_user = $request->input("id_user");
-        $veiculo->save();
-        return redirect()->route('veiculos.index');
+        Veiculo::create($request->validated());
+
+        return redirect()
+            ->route('veiculos.index')
+            ->with('success', 'Veículo cadastrado com sucesso.');
     }
 
-    public function edit(string $id)
+    public function edit(Veiculo $veiculo)
     {
+        $montadoras = Montadora::orderBy('nome')->get();
 
+        return view(
+            'veiculo.editarveiculos',
+            compact('veiculo', 'montadoras')
+        );
     }
 
-    public function update(Request $request, string $id)
-    {
+    public function update(
+        UpdateVeiculoRequest $request,
+        Veiculo $veiculo
+    ) {
+        $veiculo->update($request->validated());
 
+        return redirect()
+            ->route('veiculos.index')
+            ->with('success', 'Veículo atualizado com sucesso.');
     }
 
-    public function destroy(string $id)
+    public function destroy(Veiculo $veiculo)
     {
-        $veiculo = Veiculo::where('id_veiculo', $id)->delete();
-        return redirect()->route('veiculos.index');
+        $veiculo->delete();
+
+        return redirect()
+            ->route('veiculos.index')
+            ->with('success', 'Veículo excluído com sucesso.');
     }
 }

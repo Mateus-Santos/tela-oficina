@@ -20,7 +20,7 @@ class EnderecoStoreRequest extends FormRequest
             'neighborhood' => 'required|string|max:255',
             'region' => 'required|string|max:255',
             'address' => 'required|string|max:255',
-            'numero' => 'required|integer',
+            'numero' => 'required|string|max:20',
             'ponto_referencia' => 'required|string|max:255',
             'pessoa_id' => 'required|integer|exists:pessoas,id',
         ];
@@ -36,7 +36,7 @@ class EnderecoStoreRequest extends FormRequest
             'neighborhood.required' => 'O campo bairro é obrigatório.',
             'region.required' => 'O campo estado é obrigatório.',
             'address.required' => 'O campo rua é obrigatório.',
-            'numero.integer' => 'O campo número deve ser um número inteiro.',
+            'numero.string' => 'O campo número deve ser uma string.',
             'pessoa_id.required' => 'O campo ID da usuário é obrigatório.',
             'pessoa_id.exists' => 'O ID da usuário fornecido não existe.',
         ];
