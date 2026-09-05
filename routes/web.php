@@ -99,9 +99,7 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    // Rotas autenticadas do sistema
 });
 
 Route::get('/erro-autenticacao', function () {
