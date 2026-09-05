@@ -19,7 +19,7 @@ class ProdutoController extends Controller
    public function index(Request $request)
     {
         $codigosFabricanteDisponiveis = Produto::select('codigo_fabricante')
-            ->distinct()    
+            ->distinct()
             ->orderBy('codigo_fabricante')
             ->pluck('codigo_fabricante');
 
@@ -47,7 +47,7 @@ class ProdutoController extends Controller
             $preco = str_replace(['.', ','], ['', '.'], $request->preco_uni);
             $request->merge(['preco_uni' => $preco]);
         }
-        
+
         $request->validate([
             'nome' => 'required|string|max:150',
             'descricao' => 'required|string',

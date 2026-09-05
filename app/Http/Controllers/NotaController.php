@@ -2,18 +2,57 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Actions\Notas\CancelarNota;
+use App\Actions\Notas\FinalizarNota;
 use App\Models\Nota;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
+use InvalidArgumentException;
 
 class NotaController extends Controller
 {
+    public function finalizar(string $id, FinalizarNota $finalizarNota)
+    {
+        $nota = Nota::findOrFail($id);
+
+        try {
+            $finalizarNota->execute($nota);
+        } catch (InvalidArgumentException $e) {
+            return back()
+                ->withErrors([
+                    'finalizacao' => $e->getMessage(),
+                ]);
+        }
+
+        return redirect()
+            ->route('notas.show', $nota->id)
+            ->with('success', "Nota #{$nota->id} finalizada com sucesso!");
+    }
+
+    public function cancelar(string $id, CancelarNota $cancelarNota)
+    {
+        $nota = Nota::findOrFail($id);
+
+        try {
+            $cancelarNota->execute($nota);
+        } catch (InvalidArgumentException $e) {
+            return back()
+                ->withErrors([
+                    'cancelamento' => $e->getMessage(),
+                ]);
+        }
+
+        return redirect()
+            ->route('notas.show', $nota->id)
+            ->with('success', "Nota #{$nota->id} cancelada com sucesso e estoque revertido!");
+    }
+
     public function gerarpdf(string $id)
     {
         $nota = Nota::with([
             'cliente.pessoa',
             'veiculosCliente',
-            'itens.itemable'
+            'itens.itemable',
         ])->findOrFail($id);
 
         $pdf = Pdf::loadView('pdf.nota', compact('nota'))
@@ -27,7 +66,7 @@ class NotaController extends Controller
         $notas = Nota::with([
             'cliente.pessoa',
             'veiculosCliente',
-            'itens'
+            'itens',
         ])
             ->filtro($request->all())
             ->orderBy('created_at', 'desc')
@@ -41,7 +80,17 @@ class NotaController extends Controller
 
     public function destroy(string $id)
     {
-        Nota::findOrFail($id)->delete();
+        $nota = Nota::findOrFail($id);
+
+        if ($nota->status !== 'Aberto') {
+            return redirect()
+                ->route('notas.show', $nota->id)
+                ->withErrors([
+                    'nota' => 'Notas finalizadas ou canceladas não podem ser excluídas.',
+                ]);
+        }
+
+        $nota->delete();
 
         return redirect()
             ->route('notasitem.index')
@@ -53,7 +102,7 @@ class NotaController extends Controller
         $nota = Nota::with([
             'cliente.pessoa',
             'veiculosCliente',
-            'itens.itemable'
+            'itens.itemable',
         ])->findOrFail($id);
 
         $itens = $nota->itens;
