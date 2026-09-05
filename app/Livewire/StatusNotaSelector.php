@@ -2,10 +2,14 @@
 
 namespace App\Livewire;
 
-use Livewire\Component;
+use App\Actions\Notas\CancelarNota;
+use App\Actions\Notas\FinalizarNota;
 use App\Models\Nota;
 use App\Models\OrdemServico;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
+use Livewire\Component;
+
 class StatusNotaSelector extends Component
 {
     public Nota $nota;
@@ -19,46 +23,51 @@ class StatusNotaSelector extends Component
 
     public function solicitarTrocaStatus(string $status)
     {
-        if (in_array($status, ['Concluido', 'Cancelado'])) {
-            $this->novoStatus = $status;
-            $this->confirmingStatusChange = true;
-        } else {
+        if (!in_array($status, ['Finalizado', 'Cancelado'])) {
             $this->atualizarStatus($status);
+            return;
         }
+
+        $this->novoStatus = $status;
+        $this->confirmingStatusChange = true;
     }
 
-    public function confirmarTrocaStatus()
+    public function confirmarTrocaStatus(FinalizarNota $finalizarNota, CancelarNota $cancelarNota)
     {
-        $this->atualizarStatus($this->novoStatus);
-        $this->confirmingStatusChange = false;
+        $this->nota->refresh();
+
+        try {
+            if ($this->novoStatus === 'Finalizado') {
+                $finalizarNota->execute($this->nota);
+            } elseif ($this->novoStatus === 'Cancelado') {
+                $cancelarNota->execute($this->nota);
+            }
+
+            $this->nota->refresh();
+            $this->confirmingStatusChange = false;
+            $this->novoStatus = '';
+            $this->dispatch('status-nota-atualizado');
+        } catch (InvalidArgumentException $e) {
+            $this->confirmingStatusChange = false;
+            $this->novoStatus = '';
+            $this->addError('status', $e->getMessage());
+        }
     }
 
     private function atualizarStatus(string $status)
     {
-        $statusOS = match ($status) {
-            'Concluido' => 'finalizada',
-            'Cancelado' => 'cancelada',
-            'Andamento' => 'em_andamento',
-            'Aberto'    => 'aberta',
-            default     => strtolower($status),
-        };
+        if (!in_array($status, ['Aberto'], true)) {
+            return;
+        }
 
-        DB::transaction(function () use ($status, $statusOS) {
-            $this->nota->update(['status' => $status]);
-
-            if (in_array($status, ['Concluido', 'Cancelado'])) {
-                $osIds = $this->nota->itens()
-                    ->where('itemable_type', OrdemServico::class)
-                    ->pluck('itemable_id');
-
-                if ($osIds->isNotEmpty()) {
-                    OrdemServico::whereIn('id', $osIds)->update([
-                        'status'          => $statusOS,
-                        'data_fechamento' => $status === 'Concluido' ? now() : null,
-                    ]);
-                }
-            }
+        DB::transaction(function () use ($status) {
+            $this->nota->update([
+                'status' => $status,
+            ]);
         });
+
+        $this->nota->refresh();
+        $this->dispatch('status-nota-atualizado');
     }
 
     public function render()

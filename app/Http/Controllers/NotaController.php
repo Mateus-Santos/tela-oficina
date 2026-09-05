@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Notas\CancelarNota;
 use App\Actions\Notas\FinalizarNota;
 use App\Models\Nota;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -26,6 +27,24 @@ class NotaController extends Controller
         return redirect()
             ->route('notas.show', $nota->id)
             ->with('success', "Nota #{$nota->id} finalizada com sucesso!");
+    }
+
+    public function cancelar(string $id, CancelarNota $cancelarNota)
+    {
+        $nota = Nota::findOrFail($id);
+
+        try {
+            $cancelarNota->execute($nota);
+        } catch (InvalidArgumentException $e) {
+            return back()
+                ->withErrors([
+                    'cancelamento' => $e->getMessage(),
+                ]);
+        }
+
+        return redirect()
+            ->route('notas.show', $nota->id)
+            ->with('success', "Nota #{$nota->id} cancelada com sucesso e estoque revertido!");
     }
 
     public function gerarpdf(string $id)
