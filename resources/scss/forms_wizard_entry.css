@@ -1,0 +1,26 @@
+.form-section {
+  display: none;
+}
+
+.form-section.current {
+  display: inline;
+}
+
+.parsley-errors-list {
+  color: #FF0000;
+}
+
+.step {
+  padding: 0.5rem 0.5rem 0.5rem 0.5rem;
+  border-radius: 2rem;
+}
+
+.step_selected {
+  background-color: #43da43;
+  color: #FFFFFF;
+}
+
+.next {
+  background-color: #43da43;
+  padding: 0.5rem 0.5rem 0.5rem 0.5rem;
+}/*# sourceMappingURL=forms_wizard_entry.css.map */
