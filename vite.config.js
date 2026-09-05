@@ -7,6 +7,7 @@ export default defineConfig({
             input: [
                 'resources/css/app.css',
                 'resources/scss/_app.scss',
+                'resources/scss/forms_wizard_entry.scss',
                 'resources/js/app.js',
                 'resources/js/cadColaborador.js',
                 'resources/js/cadError.js',
@@ -20,10 +21,8 @@ export default defineConfig({
                 'resources/js/cadOsItem.js',
                 'resources/js/cadProduto.js',
                 'resources/js/cadVeiculo.js',
-                'resources/js/calcOrcamento.js',
                 'resources/js/validateForm.js',
                 'resources/js/gerenciadorItensOs.js',
-                'resources/scss/_app.scss',
                 'resources/js/compra.js',
                 'resources/js/formsWizard.js',
             ],

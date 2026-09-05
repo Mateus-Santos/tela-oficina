@@ -1,6 +1,11 @@
 <x-imp-jquery />
 
-@vite(['resources/js/cadUser.js', 'resources/js/formsWizard.js', 'resources/scss/_forms_wizard.scss'])
+@vite([
+    'resources/js/cadUser.js',
+    'resources/js/formsWizard.js',
+    'resources/scss/forms_wizard_entry.scss'
+])
+
 <x-guest-layout>
     <x-authentication-card>
         <x-slot name="logo">
@@ -11,11 +16,11 @@
             <label class="step step1" >Etapa Dois</label>
             <label class="step step2" >Etapa Três</label>
         </div>
-        <x-validation-errors class="mb-4" />      
-        
+        <x-validation-errors class="mb-4" />
+
         <form class="employee-form mb-4" method="POST" action="{{ route('register') }}">
             @csrf
-            
+
             <div class="form-section">
                 @if (Laravel\Jetstream\Jetstream::hasTermsAndPrivacyPolicyFeature())
                     <div class="mt-4">
@@ -33,7 +38,7 @@
                         </x-label>
                     </div>
                 @endif
-                <div class="mt-4"> 
+                <div class="mt-4">
                     <x-label for="name" value="{{ __('Nome*') }}" />
                     <x-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name"  />
                 </div>
@@ -91,7 +96,7 @@
             </div>
             <div class="form-navigation mt-3">
                 <x-button type="button" class="arrow-left previous float-left">&lt; Previous</x-button>
-                <x-button type="button" class="arrow-right next float-right">Next &gt;</x-button>   
+                <x-button type="button" class="arrow-right next float-right">Next &gt;</x-button>
                 <x-button class="ms-4">
                     {{ __('Register') }}
                 </x-button>
