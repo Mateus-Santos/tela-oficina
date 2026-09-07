@@ -21,7 +21,9 @@ services:
         networks:
             - sail
         depends_on:
-            - mysql
+            mysql:
+                condition: service_healthy
+
     mysql:
         image: 'mysql:8.4'
         environment:
@@ -43,11 +45,15 @@ services:
                 - mysqladmin
                 - ping
                 - '-p${DB_PASSWORD}'
-            retries: 3
+            interval: 5s
             timeout: 5s
+            retries: 12
+            start_period: 10s
+
 networks:
     sail:
         driver: bridge
+
 volumes:
     sail-mysql:
         driver: local
