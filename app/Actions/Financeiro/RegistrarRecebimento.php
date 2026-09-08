@@ -3,6 +3,7 @@
 namespace App\Actions\Financeiro;
 
 use App\Models\ContaReceber;
+use App\Models\FormaPagamento;
 use App\Models\Recebimento;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -16,10 +17,6 @@ class RegistrarRecebimento
                 ->lockForUpdate()
                 ->findOrFail($dados['conta_receber_id']);
 
-            /*
-             * Validações de status
-             */
-
             if ($conta->status === 'cancelada') {
                 throw ValidationException::withMessages([
                     'conta_receber_id' => 'Não é possível receber uma conta cancelada.',
@@ -29,6 +26,27 @@ class RegistrarRecebimento
             if ($conta->status === 'quitada') {
                 throw ValidationException::withMessages([
                     'conta_receber_id' => 'Esta conta já está quitada.',
+                ]);
+            }
+
+            $valorCentavos = (int) round(
+                (float) ($dados['valor'] ?? 0) * 100
+            );
+
+            if ($valorCentavos <= 0) {
+                throw ValidationException::withMessages([
+                    'valor' => 'O valor do recebimento deve ser maior que zero.',
+                ]);
+            }
+
+            $formaPagamento = FormaPagamento::query()
+                ->whereKey($dados['forma_pagamento_id'])
+                ->where('ativo', true)
+                ->exists();
+
+            if (!$formaPagamento) {
+                throw ValidationException::withMessages([
+                    'forma_pagamento_id' => 'A forma de pagamento informada não existe ou está inativa.',
                 ]);
             }
 
@@ -48,48 +66,31 @@ class RegistrarRecebimento
                 (float) $conta->multa * 100
             );
 
-            /*
-             * Valor total devido:
-             *
-             * Valor original
-             * - desconto
-             * + juros
-             * + multa
-             */
-
             $valorDevidoCentavos =
                 $valorOriginalCentavos
                 - $descontoCentavos
                 + $jurosCentavos
                 + $multaCentavos;
 
-            /*
-             * Soma dos recebimentos já registrados.
-             */
+            if ($valorDevidoCentavos <= 0) {
+                throw ValidationException::withMessages([
+                    'conta_receber_id' => 'A conta possui um valor devido inválido.',
+                ]);
+            }
 
             $valorRecebidoCentavos = (int) round(
                 (float) $conta->recebimentos()->sum('valor') * 100
             );
 
-            /*
-             * Valor que está sendo recebido agora.
-             */
-
-            $valorCentavos = (int) round(
-                (float) $dados['valor'] * 100
-            );
-
-            /*
-             * Saldo atual da conta.
-             */
-
             $saldoCentavos =
                 $valorDevidoCentavos
                 - $valorRecebidoCentavos;
 
-            /*
-             * Impede recebimento acima do saldo.
-             */
+            if ($saldoCentavos <= 0) {
+                throw ValidationException::withMessages([
+                    'conta_receber_id' => 'Esta conta não possui saldo disponível para recebimento.',
+                ]);
+            }
 
             if ($valorCentavos > $saldoCentavos) {
                 throw ValidationException::withMessages([
@@ -105,10 +106,6 @@ class RegistrarRecebimento
                 ]);
             }
 
-            /*
-             * Registra o recebimento.
-             */
-
             $recebimento = Recebimento::create([
                 'conta_receber_id' => $conta->id,
                 'forma_pagamento_id' => $dados['forma_pagamento_id'],
@@ -118,20 +115,9 @@ class RegistrarRecebimento
                 'observacoes' => $dados['observacoes'] ?? null,
             ]);
 
-            /*
-             * Calcula o novo total recebido.
-             */
-
             $novoTotalRecebidoCentavos =
                 $valorRecebidoCentavos
                 + $valorCentavos;
-
-            /*
-             * Atualiza o status da conta.
-             *
-             * Se o total recebido atingir ou ultrapassar
-             * o valor devido, a conta será considerada quitada.
-             */
 
             if ($novoTotalRecebidoCentavos >= $valorDevidoCentavos) {
                 $conta->update([
