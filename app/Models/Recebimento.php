@@ -19,11 +19,14 @@ class Recebimento extends Model
         'data_pagamento',
         'usuario_id',
         'observacoes',
+        'estornado_em',
+        'motivo_estorno',
     ];
 
     protected $casts = [
         'valor' => 'decimal:2',
         'data_pagamento' => 'datetime',
+        'estornado_em' => 'datetime',
     ];
 
     public function contaReceber(): BelongsTo
@@ -48,5 +51,10 @@ class Recebimento extends Model
             User::class,
             'usuario_id'
         );
+    }
+
+    public function estaEstornado(): bool
+    {
+        return $this->estornado_em !== null;
     }
 }

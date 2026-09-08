@@ -79,7 +79,9 @@ class RegistrarRecebimento
             }
 
             $valorRecebidoCentavos = (int) round(
-                (float) $conta->recebimentos()->sum('valor') * 100
+                (float) $conta->recebimentos()
+                    ->whereNull('estornado_em')
+                    ->sum('valor') * 100
             );
 
             $saldoCentavos =
