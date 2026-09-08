@@ -1,22 +1,21 @@
 <?php
 
-namespace Tests\Feature\Financeiro;
+namespace Tests\Feature\Notas;
 
-use App\Actions\Financeiro\AtualizarContaReceber;
-use App\Actions\Financeiro\CriarContaReceber;
-use App\Actions\Financeiro\RegistrarRecebimento;
+use App\Actions\Notas\CancelarNota;
+use App\Actions\Notas\FinalizarNota;
 use App\Models\CategoriaFinanceira;
 use App\Models\Cliente;
 use App\Models\ContaReceber;
-use App\Models\FormaPagamento;
 use App\Models\Nota;
-use App\Models\Recebimento;
+use App\Models\NotasItem;
+use App\Models\Produto;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
 use Tests\TestCase;
 
-class ContasReceberTest extends TestCase
+class FinalizarNotaTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -39,738 +38,815 @@ class ContasReceberTest extends TestCase
         return Cliente::findOrFail($clienteId);
     }
 
-    private function criarCategoria(): CategoriaFinanceira
+    private function criarCategoriaVendasEServicos(): CategoriaFinanceira
     {
-        return CategoriaFinanceira::create([
-            'nome' => 'VENDAS E SERVIÇOS',
-            'tipo' => 'entrada',
+        return CategoriaFinanceira::updateOrCreate(
+            [
+                'nome' => 'VENDAS E SERVIÇOS',
+                'tipo' => 'entrada',
+            ],
+            [
+                'ativo' => true,
+            ]
+        );
+    }
+
+    private function criarFormaPagamento(): int
+    {
+        return DB::table('formas_pagamento')->insertGetId([
+            'nome' => 'PIX Teste ' . uniqid(),
             'ativo' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
     }
 
-    private function criarFormaPagamento(
-        string $nome = 'PIX Teste'
-    ): FormaPagamento {
-        return FormaPagamento::create([
-            'nome' => $nome . ' ' . uniqid(),
-            'ativo' => true,
+    private function criarProduto(
+        int $quantidade = 10,
+        float $preco = 100
+    ): Produto {
+        $produtoId = DB::table('produtos')->insertGetId([
+            'nome' => 'Produto Teste ' . uniqid(),
+            'descricao' => 'Produto utilizado nos testes.',
+            'quantidade' => $quantidade,
+            'estoque_minimo' => 1,
+            'preco_uni' => $preco,
+            'codigo_fabricante' => 'FAB-' . uniqid(),
+            'codigo_barras' => null,
+            'status' => true,
+            'fornecedor_id' => null,
+            'marca' => 'Marca Teste',
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
+
+        return Produto::findOrFail($produtoId);
     }
 
-    private function criarNota(Cliente $cliente): Nota
-    {
+    private function criarNota(
+        Cliente $cliente,
+        float $total = 100
+    ): Nota {
         return Nota::create([
             'cliente_id' => $cliente->id,
-            'tipo' => 'Servico',
+            'veiculo_cliente_id' => null,
+            'tipo' => 'Venda',
             'status' => 'Aberto',
-            'descricao' => 'Nota de teste',
-            'valor_total' => 100,
+            'subtotal' => $total,
+            'desconto' => 0,
+            'total' => $total,
+            'observacoes' => null,
+            'km' => null,
+            'km_proxima_troca_oleo' => null,
         ]);
     }
 
-    private function criarConta(
-        ?Cliente $cliente = null,
-        array $dados = []
-    ): ContaReceber {
-        $cliente ??= $this->criarCliente();
+    private function criarItemProduto(
+        Nota $nota,
+        Produto $produto,
+        int $quantidade = 1,
+        float $valorUnitario = 100
+    ): NotasItem {
+        return NotasItem::create([
+            'nota_id' => $nota->id,
+            'itemable_type' => $produto->getMorphClass(),
+            'itemable_id' => $produto->id,
+            'descricao' => $produto->nome,
+            'quantidade' => $quantidade,
+            'valor_unitario' => $valorUnitario,
+            'desconto' => 0,
+            'valor_total' => $quantidade * $valorUnitario,
+            'garantia_meses' => null,
+            'garantia_km' => null,
+        ]);
+    }
 
-        return app(CriarContaReceber::class)->execute(array_merge([
+    private function criarFinalizador(): FinalizarNota
+    {
+        return app(FinalizarNota::class);
+    }
+
+    public function test_finalizar_nota_baixa_estoque_do_produto(): void
+    {
+        $this->criarCategoriaVendasEServicos();
+
+        $cliente = $this->criarCliente();
+        $produto = $this->criarProduto(10);
+        $nota = $this->criarNota($cliente, 200);
+
+        $this->criarItemProduto(
+            $nota,
+            $produto,
+            2,
+            100
+        );
+
+        $this->criarFinalizador()->execute($nota);
+
+        $produto->refresh();
+
+        $this->assertSame(8, $produto->quantidade);
+
+        $this->assertDatabaseHas('movimentacao_estoques', [
+            'produto_id' => $produto->id,
+            'tipo' => 'saida',
+            'quantidade' => 2,
+            'origem_type' => NotasItem::class,
+        ]);
+    }
+
+    public function test_item_que_nao_e_produto_nao_movimenta_estoque(): void
+    {
+        $this->criarCategoriaVendasEServicos();
+
+        $cliente = $this->criarCliente();
+        $nota = $this->criarNota($cliente, 300);
+
+        $montadoraId = DB::table('montadoras')->insertGetId([
+            'nome' => 'Montadora Teste ' . uniqid(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $veiculoId = DB::table('veiculos')->insertGetId([
+            'nome' => 'Veículo Teste',
+            'montadora_id' => $montadoraId,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $pessoaId = DB::table('pessoas')->insertGetId([
+            'nome' => 'Cliente OS Teste',
+            'cpf' => '98765432109',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $clienteOsId = DB::table('clientes')->insertGetId([
+            'pessoa_id' => $pessoaId,
+            'pontos' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $veiculoClienteId = DB::table('veiculos_clientes')->insertGetId([
+            'cliente_id' => $clienteOsId,
+            'veiculo_id' => $veiculoId,
+            'placa' => 'ABC1234',
+            'ano' => 2020,
+            'cor' => 'Preto',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $setorServicoId = DB::table('setor_servicos')->insertGetId([
+            'setor' => 'Mecânica',
+            'nivel' => 'Normal',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $ordemServicoId = DB::table('ordem_servicos')->insertGetId([
+            'veiculo_cliente_id' => $veiculoClienteId,
+            'setor_servico_id' => $setorServicoId,
+            'descricao' => 'Serviço teste',
+            'valor' => 300,
+            'status' => 'finalizada',
+            'data_abertura' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $item = NotasItem::create([
+            'nota_id' => $nota->id,
+            'itemable_type' => 'App\\Models\\OrdemServico',
+            'itemable_id' => $ordemServicoId,
+            'descricao' => 'Serviço teste',
+            'quantidade' => 1,
+            'valor_unitario' => 300,
+            'desconto' => 0,
+            'valor_total' => 300,
+            'garantia_meses' => null,
+            'garantia_km' => null,
+        ]);
+
+        $this->criarFinalizador()->execute($nota);
+
+        $this->assertDatabaseMissing('movimentacao_estoques', [
+            'origem_type' => NotasItem::class,
+            'origem_id' => $item->id,
+            'tipo' => 'saida',
+        ]);
+
+        $this->assertDatabaseHas('contas_receber', [
+            'nota_id' => $nota->id,
             'cliente_id' => $cliente->id,
-            'descricao' => 'Conta a receber de teste',
+            'valor_original' => 300,
+            'status' => 'aberta',
+        ]);
+    }
+
+    public function test_finalizacao_cria_apenas_uma_saida_por_item(): void
+    {
+        $this->criarCategoriaVendasEServicos();
+
+        $cliente = $this->criarCliente();
+        $produto = $this->criarProduto(10);
+        $nota = $this->criarNota($cliente, 100);
+
+        $item = $this->criarItemProduto(
+            $nota,
+            $produto,
+            1,
+            100
+        );
+
+        $this->criarFinalizador()->execute($nota);
+
+        $this->assertDatabaseCount(
+            'movimentacao_estoques',
+            1
+        );
+
+        $this->assertDatabaseHas('movimentacao_estoques', [
+            'origem_type' => NotasItem::class,
+            'origem_id' => $item->id,
+            'tipo' => 'saida',
+        ]);
+    }
+
+    public function test_nao_permite_finalizar_nota_que_nao_esteja_aberta(): void
+    {
+        $cliente = $this->criarCliente();
+        $nota = $this->criarNota($cliente, 100);
+
+        $nota->update([
+            'status' => 'Finalizado',
+        ]);
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->criarFinalizador()->execute($nota);
+    }
+
+    public function test_nao_permite_finalizar_nota_sem_itens(): void
+    {
+        $cliente = $this->criarCliente();
+        $nota = $this->criarNota($cliente, 100);
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->criarFinalizador()->execute($nota);
+    }
+
+    public function test_nao_permite_saida_maior_que_o_estoque(): void
+    {
+        $this->criarCategoriaVendasEServicos();
+
+        $cliente = $this->criarCliente();
+        $produto = $this->criarProduto(1);
+        $nota = $this->criarNota($cliente, 200);
+
+        $this->criarItemProduto(
+            $nota,
+            $produto,
+            2,
+            100
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+
+        try {
+            $this->criarFinalizador()->execute($nota);
+        } finally {
+            $this->assertDatabaseCount(
+                'movimentacao_estoques',
+                0
+            );
+
+            $produto->refresh();
+
+            $this->assertSame(
+                1,
+                $produto->quantidade
+            );
+
+            $this->assertDatabaseCount(
+                'contas_receber',
+                0
+            );
+        }
+    }
+
+    public function test_falha_em_um_produto_faz_rollback_das_baixas_anteriores(): void
+    {
+        $this->criarCategoriaVendasEServicos();
+
+        $cliente = $this->criarCliente();
+        $produto1 = $this->criarProduto(10);
+        $produto2 = $this->criarProduto(1);
+        $nota = $this->criarNota($cliente, 300);
+
+        $this->criarItemProduto(
+            $nota,
+            $produto1,
+            2,
+            100
+        );
+
+        $this->criarItemProduto(
+            $nota,
+            $produto2,
+            2,
+            50
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+
+        try {
+            $this->criarFinalizador()->execute($nota);
+        } finally {
+            $produto1->refresh();
+
+            $this->assertSame(
+                10,
+                $produto1->quantidade
+            );
+
+            $produto2->refresh();
+
+            $this->assertSame(
+                1,
+                $produto2->quantidade
+            );
+
+            $this->assertDatabaseCount(
+                'movimentacao_estoques',
+                0
+            );
+
+            $this->assertDatabaseCount(
+                'contas_receber',
+                0
+            );
+
+            $nota->refresh();
+
+            $this->assertSame(
+                'Aberto',
+                $nota->status
+            );
+        }
+    }
+
+    public function test_nao_permite_item_com_referencia_invalida(): void
+    {
+        $cliente = $this->criarCliente();
+        $nota = $this->criarNota($cliente, 100);
+
+        NotasItem::create([
+            'nota_id' => $nota->id,
+            'itemable_type' => Produto::class,
+            'itemable_id' => 999999,
+            'descricao' => 'Item inválido',
+            'quantidade' => 1,
+            'valor_unitario' => 100,
+            'desconto' => 0,
+            'valor_total' => 100,
+            'garantia_meses' => null,
+            'garantia_km' => null,
+        ]);
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->criarFinalizador()->execute($nota);
+    }
+
+    public function test_nao_permite_finalizacao_quando_item_ja_possui_baixa(): void
+    {
+        $this->criarCategoriaVendasEServicos();
+
+        $cliente = $this->criarCliente();
+        $produto = $this->criarProduto(10);
+        $nota = $this->criarNota($cliente, 100);
+
+        $item = $this->criarItemProduto(
+            $nota,
+            $produto,
+            1,
+            100
+        );
+
+        DB::table('movimentacao_estoques')->insert([
+            'produto_id' => $produto->id,
+            'tipo' => 'saida',
+            'quantidade' => 1,
+            'saldo_anterior' => 10,
+            'saldo_posterior' => 9,
+            'valor_unitario' => 100,
+            'origem_type' => $item->getMorphClass(),
+            'origem_id' => $item->id,
+            'usuario_id' => null,
+            'observacoes' => 'Baixa pré-existente para teste.',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->criarFinalizador()->execute($nota);
+    }
+
+    public function test_finalizacao_cria_conta_a_receber(): void
+    {
+        $this->criarCategoriaVendasEServicos();
+
+        $cliente = $this->criarCliente();
+        $produto = $this->criarProduto(10);
+
+        $nota = $this->criarNota(
+            $cliente,
+            250
+        );
+
+        $this->criarItemProduto(
+            $nota,
+            $produto,
+            1,
+            250
+        );
+
+        $this->criarFinalizador()->execute($nota);
+
+        $this->assertDatabaseHas('contas_receber', [
+            'nota_id' => $nota->id,
+            'cliente_id' => $cliente->id,
+            'valor_original' => 250,
+            'desconto' => 0,
+            'juros' => 0,
+            'multa' => 0,
+            'status' => 'aberta',
+        ]);
+
+        $conta = ContaReceber::where(
+            'nota_id',
+            $nota->id
+        )->firstOrFail();
+
+        $categoria = CategoriaFinanceira::findOrFail(
+            $conta->categoria_financeira_id
+        );
+
+        $this->assertSame(
+            'VENDAS E SERVIÇOS',
+            $categoria->nome
+        );
+
+        $this->assertSame(
+            'entrada',
+            $categoria->tipo
+        );
+
+        $this->assertTrue(
+            $categoria->ativo
+        );
+    }
+
+    public function test_conta_a_receber_usa_o_total_da_nota(): void
+    {
+        $this->criarCategoriaVendasEServicos();
+
+        $cliente = $this->criarCliente();
+        $produto = $this->criarProduto(10);
+
+        $nota = $this->criarNota(
+            $cliente,
+            500
+        );
+
+        $nota->update([
+            'subtotal' => 600,
+            'desconto' => 100,
+            'total' => 500,
+        ]);
+
+        $this->criarItemProduto(
+            $nota,
+            $produto,
+            1,
+            600
+        );
+
+        $this->criarFinalizador()->execute($nota);
+
+        $this->assertDatabaseHas('contas_receber', [
+            'nota_id' => $nota->id,
+            'valor_original' => 500,
+        ]);
+    }
+
+    public function test_cliente_da_conta_a_receber_e_o_mesmo_da_nota(): void
+    {
+        $this->criarCategoriaVendasEServicos();
+
+        $cliente = $this->criarCliente();
+        $produto = $this->criarProduto(10);
+
+        $nota = $this->criarNota(
+            $cliente,
+            100
+        );
+
+        $this->criarItemProduto(
+            $nota,
+            $produto,
+            1,
+            100
+        );
+
+        $this->criarFinalizador()->execute($nota);
+
+        $conta = ContaReceber::where(
+            'nota_id',
+            $nota->id
+        )->firstOrFail();
+
+        $this->assertSame(
+            $nota->cliente_id,
+            $conta->cliente_id
+        );
+    }
+
+    public function test_nao_cria_conta_a_receber_duplicada(): void
+    {
+        $categoria = $this->criarCategoriaVendasEServicos();
+
+        $cliente = $this->criarCliente();
+        $produto = $this->criarProduto(10);
+
+        $nota = $this->criarNota(
+            $cliente,
+            100
+        );
+
+        $this->criarItemProduto(
+            $nota,
+            $produto,
+            1,
+            100
+        );
+
+        ContaReceber::create([
+            'cliente_id' => $cliente->id,
+            'nota_id' => $nota->id,
+            'categoria_financeira_id' => $categoria->id,
+            'descricao' => 'Conta existente',
             'valor_original' => 100,
             'desconto' => 0,
             'juros' => 0,
             'multa' => 0,
             'data_emissao' => now()->toDateString(),
-            'data_vencimento' => now()->addDays(30)->toDateString(),
-            'observacoes' => null,
-        ], $dados));
-    }
-
-    public function test_cria_conta_a_receber(): void
-    {
-        $cliente = $this->criarCliente();
-
-        $conta = $this->criarConta($cliente);
-
-        $this->assertDatabaseHas('contas_receber', [
-            'id' => $conta->id,
-            'cliente_id' => $cliente->id,
-            'descricao' => 'Conta a receber de teste',
-            'valor_original' => 100,
+            'data_vencimento' => now()->toDateString(),
             'status' => 'aberta',
         ]);
-    }
 
-    public function test_cria_conta_com_nota_e_define_cliente_pela_nota(): void
-    {
-        $cliente = $this->criarCliente();
-        $nota = $this->criarNota($cliente);
-
-        $conta = $this->criarConta(
-            $cliente,
-            [
-                'nota_id' => $nota->id,
-                'cliente_id' => null,
-            ]
-        );
-
-        $this->assertSame(
-            $cliente->id,
-            $conta->cliente_id
-        );
-
-        $this->assertSame(
-            $nota->id,
-            $conta->nota_id
-        );
-    }
-
-    public function test_nao_permite_cliente_diferente_da_nota(): void
-    {
-        $clienteNota = $this->criarCliente();
-        $outroCliente = $this->criarCliente();
-        $nota = $this->criarNota($clienteNota);
-
-        $this->expectException(ValidationException::class);
-
-        app(CriarContaReceber::class)->execute([
-            'nota_id' => $nota->id,
-            'cliente_id' => $outroCliente->id,
-            'descricao' => 'Conta inválida',
-            'valor_original' => 100,
-            'data_vencimento' => now()->addDays(30)->toDateString(),
-        ]);
-    }
-
-    public function test_nao_permite_conta_sem_cliente_e_sem_nota(): void
-    {
-        $this->expectException(ValidationException::class);
-
-        app(CriarContaReceber::class)->execute([
-            'descricao' => 'Conta sem cliente',
-            'valor_original' => 100,
-            'data_vencimento' => now()->addDays(30)->toDateString(),
-        ]);
-    }
-
-    public function test_nao_permite_valor_original_zero(): void
-    {
-        $this->expectException(ValidationException::class);
-
-        $this->criarConta(
-            null,
-            [
-                'valor_original' => 0,
-            ]
-        );
-    }
-
-    public function test_nao_permite_valor_original_negativo(): void
-    {
-        $this->expectException(ValidationException::class);
-
-        $this->criarConta(
-            null,
-            [
-                'valor_original' => -100,
-            ]
-        );
-    }
-
-    public function test_nao_permite_desconto_negativo(): void
-    {
-        $this->expectException(ValidationException::class);
-
-        $this->criarConta(
-            null,
-            [
-                'desconto' => -1,
-            ]
-        );
-    }
-
-    public function test_nao_permite_juros_negativos(): void
-    {
-        $this->expectException(ValidationException::class);
-
-        $this->criarConta(
-            null,
-            [
-                'juros' => -1,
-            ]
-        );
-    }
-
-    public function test_nao_permite_multa_negativa(): void
-    {
-        $this->expectException(ValidationException::class);
-
-        $this->criarConta(
-            null,
-            [
-                'multa' => -1,
-            ]
-        );
-    }
-
-    public function test_nao_permite_valor_final_zero_ou_negativo(): void
-    {
-        $this->expectException(ValidationException::class);
-
-        $this->criarConta(
-            null,
-            [
-                'valor_original' => 100,
-                'desconto' => 100,
-            ]
-        );
-    }
-
-    public function test_calcula_valor_devido_com_desconto_juros_e_multa(): void
-    {
-        $conta = $this->criarConta(
-            null,
-            [
-                'valor_original' => 100,
-                'desconto' => 10,
-                'juros' => 5,
-                'multa' => 2,
-            ]
-        );
-
-        $this->assertSame(
-            '100.00',
-            $conta->valor_original
-        );
-
-        $this->assertSame(
-            '10.00',
-            $conta->desconto
-        );
-
-        $this->assertSame(
-            '5.00',
-            $conta->juros
-        );
-
-        $this->assertSame(
-            '2.00',
-            $conta->multa
-        );
-    }
-
-    public function test_nao_cria_duas_contas_para_a_mesma_nota(): void
-    {
-        $cliente = $this->criarCliente();
-        $nota = $this->criarNota($cliente);
-
-        $this->criarConta(
-            $cliente,
-            [
-                'nota_id' => $nota->id,
-            ]
-        );
-
-        $this->expectException(ValidationException::class);
-
-        $this->criarConta(
-            $cliente,
-            [
-                'nota_id' => $nota->id,
-            ]
-        );
-    }
-
-    public function test_atualiza_conta_sem_recebimentos(): void
-    {
-        $conta = $this->criarConta();
-
-        $contaAtualizada = app(AtualizarContaReceber::class)->execute(
-            $conta,
-            [
-                'cliente_id' => $conta->cliente_id,
-                'descricao' => 'Descrição atualizada',
-                'valor_original' => 150,
-                'desconto' => 10,
-                'juros' => 5,
-                'multa' => 2,
-                'data_emissao' => now()->toDateString(),
-                'data_vencimento' => now()->addDays(45)->toDateString(),
-                'observacoes' => 'Atualização de teste.',
-            ]
-        );
-
-        $this->assertSame(
-            'Descrição atualizada',
-            $contaAtualizada->descricao
-        );
-
-        $this->assertSame(
-            '150.00',
-            $contaAtualizada->valor_original
-        );
-
-        $this->assertSame(
-            'aberta',
-            $contaAtualizada->status
-        );
-    }
-
-    public function test_atualizacao_rejeita_nota_com_outra_conta(): void
-    {
-        $cliente = $this->criarCliente();
-        $nota = $this->criarNota($cliente);
-
-        $primeira = $this->criarConta(
-            $cliente,
-            [
-                'nota_id' => $nota->id,
-            ]
-        );
-
-        $segunda = $this->criarConta($cliente);
-
-        $this->expectException(ValidationException::class);
-
-        app(AtualizarContaReceber::class)->execute(
-            $segunda,
-            [
-                'cliente_id' => $cliente->id,
-                'nota_id' => $nota->id,
-                'descricao' => 'Tentativa duplicada',
-                'valor_original' => 100,
-                'data_vencimento' => now()->addDays(30)->toDateString(),
-            ]
-        );
-
-        $this->assertNotNull($primeira->id);
-    }
-
-    public function test_nao_permite_atualizar_conta_com_recebimento(): void
-    {
-        $conta = $this->criarConta();
-        $formaPagamento = $this->criarFormaPagamento();
-
-        app(RegistrarRecebimento::class)->execute([
-            'conta_receber_id' => $conta->id,
-            'forma_pagamento_id' => $formaPagamento->id,
-            'valor' => 50,
-            'data_pagamento' => now(),
-        ]);
-
-        $this->expectException(ValidationException::class);
-
-        app(AtualizarContaReceber::class)->execute(
-            $conta,
-            [
-                'cliente_id' => $conta->cliente_id,
-                'descricao' => 'Não deveria alterar',
-                'valor_original' => 200,
-                'data_vencimento' => now()->addDays(30)->toDateString(),
-            ]
-        );
-    }
-
-    public function test_nao_permite_atualizar_conta_quitada(): void
-    {
-        $conta = $this->criarConta();
-        $formaPagamento = $this->criarFormaPagamento();
-
-        app(RegistrarRecebimento::class)->execute([
-            'conta_receber_id' => $conta->id,
-            'forma_pagamento_id' => $formaPagamento->id,
-            'valor' => 100,
-            'data_pagamento' => now(),
-        ]);
-
-        $this->assertSame(
-            'quitada',
-            $conta->fresh()->status
-        );
-
-        $this->expectException(ValidationException::class);
-
-        app(AtualizarContaReceber::class)->execute(
-            $conta,
-            [
-                'cliente_id' => $conta->cliente_id,
-                'descricao' => 'Não deveria alterar',
-                'valor_original' => 200,
-                'data_vencimento' => now()->addDays(30)->toDateString(),
-            ]
-        );
-    }
-
-    public function test_nao_permite_atualizar_conta_cancelada(): void
-    {
-        $conta = $this->criarConta();
-
-        $conta->update([
-            'status' => 'cancelada',
-        ]);
-
-        $this->expectException(ValidationException::class);
-
-        app(AtualizarContaReceber::class)->execute(
-            $conta,
-            [
-                'cliente_id' => $conta->cliente_id,
-                'descricao' => 'Não deveria alterar',
-                'valor_original' => 200,
-                'data_vencimento' => now()->addDays(30)->toDateString(),
-            ]
-        );
-    }
-
-    public function test_registra_recebimento_parcial(): void
-    {
-        $conta = $this->criarConta();
-        $formaPagamento = $this->criarFormaPagamento();
-
-        $recebimento = app(RegistrarRecebimento::class)->execute([
-            'conta_receber_id' => $conta->id,
-            'forma_pagamento_id' => $formaPagamento->id,
-            'valor' => 40,
-            'data_pagamento' => now(),
-        ]);
-
-        $this->assertInstanceOf(
-            Recebimento::class,
-            $recebimento
-        );
-
-        $this->assertDatabaseHas('recebimentos', [
-            'id' => $recebimento->id,
-            'conta_receber_id' => $conta->id,
-            'forma_pagamento_id' => $formaPagamento->id,
-            'valor' => 40,
-        ]);
-
-        $this->assertSame(
-            'parcial',
-            $conta->fresh()->status
-        );
-    }
-
-    public function test_recebimento_integral_quita_conta(): void
-    {
-        $conta = $this->criarConta();
-        $formaPagamento = $this->criarFormaPagamento();
-        $dataPagamento = now();
-
-        app(RegistrarRecebimento::class)->execute([
-            'conta_receber_id' => $conta->id,
-            'forma_pagamento_id' => $formaPagamento->id,
-            'valor' => 100,
-            'data_pagamento' => $dataPagamento,
-        ]);
-
-        $conta->refresh();
-
-        $this->assertSame(
-            'quitada',
-            $conta->status
-        );
-
-        $this->assertNotNull(
-            $conta->data_quitacao
-        );
-    }
-
-    public function test_multiplos_recebimentos_quitam_conta(): void
-    {
-        $conta = $this->criarConta();
-        $formaPagamento = $this->criarFormaPagamento();
-
-        app(RegistrarRecebimento::class)->execute([
-            'conta_receber_id' => $conta->id,
-            'forma_pagamento_id' => $formaPagamento->id,
-            'valor' => 30,
-            'data_pagamento' => now(),
-        ]);
-
-        app(RegistrarRecebimento::class)->execute([
-            'conta_receber_id' => $conta->id,
-            'forma_pagamento_id' => $formaPagamento->id,
-            'valor' => 70,
-            'data_pagamento' => now(),
-        ]);
-
-        $conta->refresh();
-
-        $this->assertSame(
-            'quitada',
-            $conta->status
-        );
-
-        $this->assertSame(
-            2,
-            $conta->recebimentos()->count()
-        );
-    }
-
-    public function test_nao_permite_recebimento_acima_do_saldo(): void
-    {
-        $conta = $this->criarConta();
-        $formaPagamento = $this->criarFormaPagamento();
-
-        $this->expectException(ValidationException::class);
-
-        app(RegistrarRecebimento::class)->execute([
-            'conta_receber_id' => $conta->id,
-            'forma_pagamento_id' => $formaPagamento->id,
-            'valor' => 100.01,
-            'data_pagamento' => now(),
-        ]);
-
-        $this->assertDatabaseCount(
-            'recebimentos',
-            0
-        );
-
-        $this->assertSame(
-            'aberta',
-            $conta->fresh()->status
-        );
-    }
-
-    public function test_nao_permite_recebimento_zero(): void
-    {
-        $conta = $this->criarConta();
-        $formaPagamento = $this->criarFormaPagamento();
-
-        $this->expectException(ValidationException::class);
-
-        app(RegistrarRecebimento::class)->execute([
-            'conta_receber_id' => $conta->id,
-            'forma_pagamento_id' => $formaPagamento->id,
-            'valor' => 0,
-            'data_pagamento' => now(),
-        ]);
-    }
-
-    public function test_nao_permite_recebimento_negativo(): void
-    {
-        $conta = $this->criarConta();
-        $formaPagamento = $this->criarFormaPagamento();
-
-        $this->expectException(ValidationException::class);
-
-        app(RegistrarRecebimento::class)->execute([
-            'conta_receber_id' => $conta->id,
-            'forma_pagamento_id' => $formaPagamento->id,
-            'valor' => -10,
-            'data_pagamento' => now(),
-        ]);
-    }
-
-    public function test_nao_permite_recebimento_em_conta_cancelada(): void
-    {
-        $conta = $this->criarConta();
-        $formaPagamento = $this->criarFormaPagamento();
-
-        $conta->update([
-            'status' => 'cancelada',
-        ]);
-
-        $this->expectException(ValidationException::class);
-
-        app(RegistrarRecebimento::class)->execute([
-            'conta_receber_id' => $conta->id,
-            'forma_pagamento_id' => $formaPagamento->id,
-            'valor' => 50,
-            'data_pagamento' => now(),
-        ]);
-    }
-
-    public function test_nao_permite_recebimento_em_conta_quitada(): void
-    {
-        $conta = $this->criarConta();
-        $formaPagamento = $this->criarFormaPagamento();
-
-        app(RegistrarRecebimento::class)->execute([
-            'conta_receber_id' => $conta->id,
-            'forma_pagamento_id' => $formaPagamento->id,
-            'valor' => 100,
-            'data_pagamento' => now(),
-        ]);
-
-        $this->expectException(ValidationException::class);
-
-        app(RegistrarRecebimento::class)->execute([
-            'conta_receber_id' => $conta->id,
-            'forma_pagamento_id' => $formaPagamento->id,
-            'valor' => 1,
-            'data_pagamento' => now(),
-        ]);
-    }
-
-    public function test_nao_permite_forma_de_pagamento_inexistente(): void
-    {
-        $conta = $this->criarConta();
-
-        $this->expectException(ValidationException::class);
-
-        app(RegistrarRecebimento::class)->execute([
-            'conta_receber_id' => $conta->id,
-            'forma_pagamento_id' => 999999,
-            'valor' => 50,
-            'data_pagamento' => now(),
-        ]);
-    }
-
-    public function test_nao_permite_forma_de_pagamento_inativa(): void
-    {
-        $conta = $this->criarConta();
-        $formaPagamento = $this->criarFormaPagamento();
-
-        $formaPagamento->update([
-            'ativo' => false,
-        ]);
-
-        $this->expectException(ValidationException::class);
-
-        app(RegistrarRecebimento::class)->execute([
-            'conta_receber_id' => $conta->id,
-            'forma_pagamento_id' => $formaPagamento->id,
-            'valor' => 50,
-            'data_pagamento' => now(),
-        ]);
-    }
-
-    public function test_recebimento_com_desconto_quita_pelo_valor_devido(): void
-    {
-        $conta = $this->criarConta(
-            null,
-            [
-                'valor_original' => 100,
-                'desconto' => 10,
-            ]
-        );
-
-        $formaPagamento = $this->criarFormaPagamento();
-
-        app(RegistrarRecebimento::class)->execute([
-            'conta_receber_id' => $conta->id,
-            'forma_pagamento_id' => $formaPagamento->id,
-            'valor' => 90,
-            'data_pagamento' => now(),
-        ]);
-
-        $this->assertSame(
-            'quitada',
-            $conta->fresh()->status
-        );
-    }
-
-    public function test_recebimento_considera_juros_e_multa(): void
-    {
-        $conta = $this->criarConta(
-            null,
-            [
-                'valor_original' => 100,
-                'juros' => 5,
-                'multa' => 2,
-            ]
-        );
-
-        $formaPagamento = $this->criarFormaPagamento();
-
-        app(RegistrarRecebimento::class)->execute([
-            'conta_receber_id' => $conta->id,
-            'forma_pagamento_id' => $formaPagamento->id,
-            'valor' => 106,
-            'data_pagamento' => now(),
-        ]);
-
-        $this->assertSame(
-            'parcial',
-            $conta->fresh()->status
-        );
-
-        app(RegistrarRecebimento::class)->execute([
-            'conta_receber_id' => $conta->id,
-            'forma_pagamento_id' => $formaPagamento->id,
-            'valor' => 1,
-            'data_pagamento' => now(),
-        ]);
-
-        $this->assertSame(
-            'quitada',
-            $conta->fresh()->status
-        );
-    }
-
-    public function test_recebimento_preserva_observacoes(): void
-    {
-        $conta = $this->criarConta();
-        $formaPagamento = $this->criarFormaPagamento();
-
-        $recebimento = app(RegistrarRecebimento::class)->execute([
-            'conta_receber_id' => $conta->id,
-            'forma_pagamento_id' => $formaPagamento->id,
-            'valor' => 50,
-            'data_pagamento' => now(),
-            'observacoes' => 'Pagamento realizado via teste.',
-        ]);
-
-        $this->assertSame(
-            'Pagamento realizado via teste.',
-            $recebimento->observacoes
-        );
-    }
-
-    public function test_recebimento_nao_e_criado_quando_falha_validacao(): void
-    {
-        $conta = $this->criarConta();
-        $formaPagamento = $this->criarFormaPagamento();
+        $this->expectException(InvalidArgumentException::class);
 
         try {
-            app(RegistrarRecebimento::class)->execute([
-                'conta_receber_id' => $conta->id,
-                'forma_pagamento_id' => $formaPagamento->id,
-                'valor' => 150,
-                'data_pagamento' => now(),
+            $this->criarFinalizador()->execute($nota);
+        } finally {
+            $this->assertDatabaseCount(
+                'contas_receber',
+                1
+            );
+
+            $this->assertDatabaseCount(
+                'movimentacao_estoques',
+                0
+            );
+
+            $produto->refresh();
+
+            $this->assertSame(
+                10,
+                $produto->quantidade
+            );
+        }
+    }
+
+    public function test_falha_na_finalizacao_faz_rollback_da_conta_a_receber(): void
+    {
+        $this->criarCategoriaVendasEServicos();
+
+        $cliente = $this->criarCliente();
+        $produto1 = $this->criarProduto(10);
+        $produto2 = $this->criarProduto(10);
+
+        $nota = $this->criarNota(
+            $cliente,
+            200
+        );
+
+        $this->criarItemProduto(
+            $nota,
+            $produto1,
+            1,
+            100
+        );
+
+        $this->criarItemProduto(
+            $nota,
+            $produto2,
+            1,
+            100
+        );
+
+        $item2 = $nota->itens()
+            ->orderByDesc('id')
+            ->firstOrFail();
+
+        DB::table('notas_itens')
+            ->where('id', $item2->id)
+            ->update([
+                'itemable_id' => 999999,
             ]);
 
-            $this->fail('Era esperado ValidationException.');
-        } catch (ValidationException) {
-            //
-        }
+        $this->expectException(InvalidArgumentException::class);
 
-        $this->assertDatabaseCount(
-            'recebimentos',
-            0
+        try {
+            $this->criarFinalizador()->execute($nota);
+        } finally {
+            $this->assertDatabaseCount(
+                'contas_receber',
+                0
+            );
+
+            $this->assertDatabaseCount(
+                'movimentacao_estoques',
+                0
+            );
+
+            $produto1->refresh();
+
+            $this->assertSame(
+                10,
+                $produto1->quantidade
+            );
+
+            $produto2->refresh();
+
+            $this->assertSame(
+                10,
+                $produto2->quantidade
+            );
+
+            $nota->refresh();
+
+            $this->assertSame(
+                'Aberto',
+                $nota->status
+            );
+        }
+    }
+
+    public function test_nao_permite_finalizar_nota_sem_cliente(): void
+    {
+        $produto = $this->criarProduto(10);
+
+        $nota = Nota::create([
+            'cliente_id' => null,
+            'veiculo_cliente_id' => null,
+            'tipo' => 'Venda',
+            'status' => 'Aberto',
+            'subtotal' => 100,
+            'desconto' => 0,
+            'total' => 100,
+            'observacoes' => null,
+            'km' => null,
+            'km_proxima_troca_oleo' => null,
+        ]);
+
+        $this->criarItemProduto(
+            $nota,
+            $produto,
+            1,
+            100
         );
+
+        $this->expectException(InvalidArgumentException::class);
+
+        try {
+            $this->criarFinalizador()->execute($nota);
+        } finally {
+            $this->assertDatabaseCount(
+                'contas_receber',
+                0
+            );
+
+            $this->assertDatabaseCount(
+                'movimentacao_estoques',
+                0
+            );
+
+            $produto->refresh();
+
+            $this->assertSame(
+                10,
+                $produto->quantidade
+            );
+        }
+    }
+
+    public function test_cancelamento_reverte_baixa_de_estoque(): void
+    {
+        $this->criarCategoriaVendasEServicos();
+
+        $cliente = $this->criarCliente();
+        $produto = $this->criarProduto(10);
+
+        $nota = $this->criarNota(
+            $cliente,
+            100
+        );
+
+        $this->criarItemProduto(
+            $nota,
+            $produto,
+            2,
+            50
+        );
+
+        $this->criarFinalizador()->execute($nota);
+
+        $nota->refresh();
+        $produto->refresh();
+
+        $this->assertSame(
+            'Finalizado',
+            $nota->status
+        );
+
+        $this->assertSame(
+            8,
+            $produto->quantidade
+        );
+
+        app(CancelarNota::class)->execute($nota);
+
+        $produto->refresh();
+
+        $this->assertSame(
+            10,
+            $produto->quantidade
+        );
+
+        $this->assertDatabaseHas('movimentacao_estoques', [
+            'produto_id' => $produto->id,
+            'tipo' => 'entrada',
+            'quantidade' => 2,
+        ]);
+    }
+
+    public function test_cancelamento_cancela_conta_a_receber(): void
+    {
+        $this->criarCategoriaVendasEServicos();
+
+        $cliente = $this->criarCliente();
+        $produto = $this->criarProduto(10);
+
+        $nota = $this->criarNota(
+            $cliente,
+            100
+        );
+
+        $this->criarItemProduto(
+            $nota,
+            $produto,
+            1,
+            100
+        );
+
+        $this->criarFinalizador()->execute($nota);
+
+        $conta = ContaReceber::where(
+            'nota_id',
+            $nota->id
+        )->firstOrFail();
 
         $this->assertSame(
             'aberta',
-            $conta->fresh()->status
+            $conta->status
         );
-    }
 
-    public function test_cancelamento_de_conta_preserva_historico(): void
-    {
-        $conta = $this->criarConta();
+        app(CancelarNota::class)->execute($nota);
 
-        $id = $conta->id;
-        $clienteId = $conta->cliente_id;
-
-        $conta->update([
-            'status' => 'cancelada',
-        ]);
-
+        $nota->refresh();
         $conta->refresh();
+        $produto->refresh();
 
         $this->assertSame(
-            $id,
-            $conta->id
-        );
-
-        $this->assertSame(
-            $clienteId,
-            $conta->cliente_id
+            'Cancelado',
+            $nota->status
         );
 
         $this->assertSame(
@@ -778,43 +854,259 @@ class ContasReceberTest extends TestCase
             $conta->status
         );
 
+        $this->assertSame(
+            10,
+            $produto->quantidade
+        );
+
+        $this->assertDatabaseCount(
+            'recebimentos',
+            0
+        );
+    }
+
+    public function test_cancelamento_preserva_conta_a_receber_como_historico(): void
+    {
+        $this->criarCategoriaVendasEServicos();
+
+        $cliente = $this->criarCliente();
+        $produto = $this->criarProduto(10);
+
+        $nota = $this->criarNota(
+            $cliente,
+            250
+        );
+
+        $this->criarItemProduto(
+            $nota,
+            $produto,
+            1,
+            250
+        );
+
+        $this->criarFinalizador()->execute($nota);
+
+        $conta = ContaReceber::where(
+            'nota_id',
+            $nota->id
+        )->firstOrFail();
+
+        $contaId = $conta->id;
+
+        app(CancelarNota::class)->execute($nota);
+
         $this->assertDatabaseHas('contas_receber', [
-            'id' => $id,
-            'cliente_id' => $clienteId,
+            'id' => $contaId,
+            'nota_id' => $nota->id,
+            'cliente_id' => $cliente->id,
+            'valor_original' => 250,
             'status' => 'cancelada',
         ]);
     }
 
-    public function test_conta_pode_ser_atualizada_quando_esta_vencida_e_nao_tem_recebimentos(): void
+    public function test_nao_permite_cancelar_nota_com_recebimento(): void
     {
-        $conta = $this->criarConta(
-            null,
-            [
-                'data_vencimento' => now()->subDay()->toDateString(),
-            ]
+        $this->criarCategoriaVendasEServicos();
+
+        $cliente = $this->criarCliente();
+        $produto = $this->criarProduto(10);
+
+        $nota = $this->criarNota(
+            $cliente,
+            100
         );
 
-        $conta->update([
-            'status' => 'vencida',
+        $this->criarItemProduto(
+            $nota,
+            $produto,
+            1,
+            100
+        );
+
+        $this->criarFinalizador()->execute($nota);
+
+        $conta = ContaReceber::where(
+            'nota_id',
+            $nota->id
+        )->firstOrFail();
+
+        $formaPagamentoId = $this->criarFormaPagamento();
+
+        DB::table('recebimentos')->insert([
+            'conta_receber_id' => $conta->id,
+            'forma_pagamento_id' => $formaPagamentoId,
+            'valor' => 50,
+            'data_pagamento' => now(),
+            'usuario_id' => null,
+            'observacoes' => 'Recebimento de teste.',
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
-        $atualizada = app(AtualizarContaReceber::class)->execute(
-            $conta,
-            [
-                'cliente_id' => $conta->cliente_id,
-                'descricao' => 'Conta vencida atualizada',
-                'valor_original' => 120,
-                'desconto' => 0,
-                'juros' => 0,
-                'multa' => 0,
-                'data_emissao' => now()->toDateString(),
-                'data_vencimento' => now()->addDays(15)->toDateString(),
-            ]
+        $this->expectException(InvalidArgumentException::class);
+
+        try {
+            app(CancelarNota::class)->execute($nota);
+        } finally {
+            $nota->refresh();
+            $conta->refresh();
+            $produto->refresh();
+
+            $this->assertSame(
+                'Finalizado',
+                $nota->status
+            );
+
+            $this->assertSame(
+                'aberta',
+                $conta->status
+            );
+
+            $this->assertSame(
+                9,
+                $produto->quantidade
+            );
+
+            $this->assertDatabaseCount(
+                'movimentacao_estoques',
+                1
+            );
+
+            $this->assertDatabaseCount(
+                'recebimentos',
+                1
+            );
+        }
+    }
+
+    public function test_cancelamento_funciona_sem_conta_a_receber(): void
+    {
+        $cliente = $this->criarCliente();
+        $produto = $this->criarProduto(10);
+
+        $nota = $this->criarNota(
+            $cliente,
+            100
+        );
+
+        $item = $this->criarItemProduto(
+            $nota,
+            $produto,
+            1,
+            100
+        );
+
+        $nota->update([
+            'status' => 'Finalizado',
+        ]);
+
+        $produto->update([
+            'quantidade' => 9,
+        ]);
+
+        DB::table('movimentacao_estoques')->insert([
+            'produto_id' => $produto->id,
+            'tipo' => 'saida',
+            'quantidade' => 1,
+            'saldo_anterior' => 10,
+            'saldo_posterior' => 9,
+            'valor_unitario' => 100,
+            'origem_type' => NotasItem::class,
+            'origem_id' => $item->id,
+            'usuario_id' => null,
+            'observacoes' => 'Baixa de teste.',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $produto->refresh();
+
+        $this->assertSame(
+            9,
+            $produto->quantidade
+        );
+
+        app(CancelarNota::class)->execute($nota);
+
+        $nota->refresh();
+        $produto->refresh();
+
+        $this->assertSame(
+            'Cancelado',
+            $nota->status
         );
 
         $this->assertSame(
-            'aberta',
-            $atualizada->status
+            10,
+            $produto->quantidade
         );
+
+        $this->assertDatabaseCount(
+            'contas_receber',
+            0
+        );
+
+        $this->assertDatabaseCount(
+            'movimentacao_estoques',
+            2
+        );
+    }
+
+    public function test_nao_permite_cancelar_nota_aberta(): void
+    {
+        $cliente = $this->criarCliente();
+        $nota = $this->criarNota(
+            $cliente,
+            100
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+
+        app(CancelarNota::class)->execute($nota);
+    }
+
+    public function test_nao_permite_cancelar_nota_duas_vezes(): void
+    {
+        $this->criarCategoriaVendasEServicos();
+
+        $cliente = $this->criarCliente();
+        $produto = $this->criarProduto(10);
+
+        $nota = $this->criarNota(
+            $cliente,
+            100
+        );
+
+        $this->criarItemProduto(
+            $nota,
+            $produto,
+            1,
+            100
+        );
+
+        $this->criarFinalizador()->execute($nota);
+
+        app(CancelarNota::class)->execute($nota);
+
+        $nota->refresh();
+
+        $this->assertSame(
+            'Cancelado',
+            $nota->status
+        );
+
+        $conta = ContaReceber::where(
+            'nota_id',
+            $nota->id
+        )->firstOrFail();
+
+        $this->assertSame(
+            'cancelada',
+            $conta->status
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+
+        app(CancelarNota::class)->execute($nota);
     }
 }
