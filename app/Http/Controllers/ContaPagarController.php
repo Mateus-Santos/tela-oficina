@@ -109,6 +109,7 @@ class ContaPagarController extends Controller
         $conta->load([
             'fornecedor',
             'nota',
+            'anexos' => fn ($query) => $query->latest(),
             'pagamentos' => fn ($query) => $query->latest('data_pagamento'),
         ]);
 
