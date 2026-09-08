@@ -6,18 +6,18 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Recebimento extends Model
+class PagamentoContaPagar extends Model
 {
     use HasFactory;
 
-    protected $table = 'recebimentos';
+    protected $table = 'pagamentos_contas_pagar';
 
     protected $fillable = [
-        'conta_receber_id',
-        'forma_pagamento_id',
+        'conta_pagar_id',
         'valor',
         'data_pagamento',
-        'usuario_id',
+        'forma_pagamento',
+        'forma_pagamento_id',
         'observacoes',
         'estornado_em',
         'motivo_estorno',
@@ -25,16 +25,13 @@ class Recebimento extends Model
 
     protected $casts = [
         'valor' => 'decimal:2',
-        'data_pagamento' => 'datetime',
+        'data_pagamento' => 'date',
         'estornado_em' => 'datetime',
     ];
 
-    public function contaReceber(): BelongsTo
+    public function contaPagar(): BelongsTo
     {
-        return $this->belongsTo(
-            ContaReceber::class,
-            'conta_receber_id'
-        );
+        return $this->belongsTo(ContaPagar::class);
     }
 
     public function formaPagamento(): BelongsTo
@@ -42,14 +39,6 @@ class Recebimento extends Model
         return $this->belongsTo(
             FormaPagamento::class,
             'forma_pagamento_id'
-        );
-    }
-
-    public function usuario(): BelongsTo
-    {
-        return $this->belongsTo(
-            User::class,
-            'usuario_id'
         );
     }
 

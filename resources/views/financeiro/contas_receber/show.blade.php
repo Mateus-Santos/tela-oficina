@@ -4,355 +4,536 @@
 
 <section class="container cadastro">
 
+    <h1>
+        <i class="bi bi-cash-stack"></i>
+        CONTA A RECEBER #{{ str_pad($contaReceber->id, 6, '0', STR_PAD_LEFT) }}
+    </h1>
 
-<h1>
-    <i class="bi bi-cash-stack"></i>
-    CONTA A RECEBER #{{ str_pad($contaReceber->id, 6, '0', STR_PAD_LEFT) }}
-</h1>
-
-{{-- Mensagens --}}
-@if (session('success'))
-    <div class="alert alert-success">
-        {{ session('success') }}
-    </div>
-@endif
-
-@if (session('error'))
-    <div class="alert alert-danger">
-        {{ session('error') }}
-    </div>
-@endif
-
-{{-- Resumo financeiro --}}
-<div class="row mb-4">
-
-    <div class="col-md-3 mb-3">
-        <div class="card h-100">
-            <div class="card-body">
-                <small class="text-muted">
-                    Valor Original
-                </small>
-
-                <h4 class="mb-0">
-                    R$ {{ number_format($contaReceber->valor_original, 2, ',', '.') }}
-                </h4>
-            </div>
+    @if (session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
         </div>
-    </div>
+    @endif
 
-    <div class="col-md-3 mb-3">
-        <div class="card h-100">
-            <div class="card-body">
-                <small class="text-muted">
-                    Valor Devido
-                </small>
-
-                <h4 class="mb-0">
-                    R$ {{ number_format($valorDevido, 2, ',', '.') }}
-                </h4>
-            </div>
+    @if (session('error'))
+        <div class="alert alert-danger">
+            {{ session('error') }}
         </div>
-    </div>
+    @endif
 
-    <div class="col-md-3 mb-3">
-        <div class="card h-100">
-            <div class="card-body">
-                <small class="text-muted">
-                    Total Recebido
-                </small>
+    {{-- Resumo financeiro --}}
 
-                <h4 class="mb-0">
-                    R$ {{ number_format($valorRecebido, 2, ',', '.') }}
-                </h4>
+    <div class="row mb-4">
+
+        <div class="col-md-3 mb-3">
+
+            <div class="card h-100">
+
+                <div class="card-body">
+
+                    <small class="text-muted">
+                        Valor Original
+                    </small>
+
+                    <h4 class="mb-0">
+                        R$ {{ number_format($contaReceber->valor_original, 2, ',', '.') }}
+                    </h4>
+
+                </div>
+
             </div>
+
         </div>
-    </div>
 
-    <div class="col-md-3 mb-3">
-        <div class="card h-100">
-            <div class="card-body">
-                <small class="text-muted">
-                    Saldo
-                </small>
+        <div class="col-md-3 mb-3">
 
-                <h4 class="mb-0">
-                    R$ {{ number_format(max($saldo, 0), 2, ',', '.') }}
-                </h4>
+            <div class="card h-100">
+
+                <div class="card-body">
+
+                    <small class="text-muted">
+                        Valor Devido
+                    </small>
+
+                    <h4 class="mb-0">
+                        R$ {{ number_format($valorDevido, 2, ',', '.') }}
+                    </h4>
+
+                </div>
+
             </div>
+
         </div>
+
+        <div class="col-md-3 mb-3">
+
+            <div class="card h-100">
+
+                <div class="card-body">
+
+                    <small class="text-muted">
+                        Total Recebido
+                    </small>
+
+                    <h4 class="mb-0">
+                        R$ {{ number_format($valorRecebido, 2, ',', '.') }}
+                    </h4>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-3 mb-3">
+
+            <div class="card h-100">
+
+                <div class="card-body">
+
+                    <small class="text-muted">
+                        Saldo
+                    </small>
+
+                    <h4 class="mb-0">
+                        R$ {{ number_format(max($saldo, 0), 2, ',', '.') }}
+                    </h4>
+
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
 
-</div>
+    {{-- Dados da conta --}}
 
-{{-- Dados da conta --}}
-<div class="card mb-4">
+    <div class="card mb-4">
 
-    <div class="card-header">
-        <i class="bi bi-info-circle"></i>
-        Dados da Conta
-    </div>
+        <div class="card-header">
+            <i class="bi bi-info-circle"></i>
+            Dados da Conta
+        </div>
 
-    <div class="card-body">
+        <div class="card-body">
 
-        <div class="row">
+            <div class="row">
 
-            <div class="col-md-6 mb-3">
-                <strong>Cliente:</strong><br>
+                <div class="col-md-6 mb-3">
 
-                {{ $contaReceber->cliente?->pessoa?->nome
-                    ?? $contaReceber->nota?->cliente?->pessoa?->nome
-                    ?? 'Sem cliente' }}
-            </div>
+                    <strong>Cliente:</strong><br>
 
-            <div class="col-md-6 mb-3">
-                <strong>Nota:</strong><br>
+                    {{ $contaReceber->cliente?->pessoa?->nome
+                        ?? $contaReceber->nota?->cliente?->pessoa?->nome
+                        ?? 'Sem cliente' }}
 
-                @if ($contaReceber->nota)
-                    #{{ str_pad($contaReceber->nota->id, 6, '0', STR_PAD_LEFT) }}
-                @else
-                    Sem nota vinculada
-                @endif
-            </div>
+                </div>
 
-            <div class="col-md-6 mb-3">
-                <strong>Categoria Financeira:</strong><br>
+                <div class="col-md-6 mb-3">
 
-                {{ $contaReceber->categoriaFinanceira?->nome ?? 'Não informada' }}
-            </div>
+                    <strong>Nota:</strong><br>
 
-            <div class="col-md-6 mb-3">
-                <strong>Descrição:</strong><br>
+                    @if ($contaReceber->nota)
 
-                {{ $contaReceber->descricao }}
-            </div>
+                        #{{ str_pad($contaReceber->nota->id, 6, '0', STR_PAD_LEFT) }}
 
-            <div class="col-md-3 mb-3">
-                <strong>Emissão:</strong><br>
+                    @else
 
-                {{ $contaReceber->data_emissao?->format('d/m/Y') ?? '-' }}
-            </div>
+                        Sem nota vinculada
 
-            <div class="col-md-3 mb-3">
-                <strong>Vencimento:</strong><br>
+                    @endif
 
-                {{ $contaReceber->data_vencimento?->format('d/m/Y') ?? '-' }}
-            </div>
+                </div>
 
-            <div class="col-md-3 mb-3">
-                <strong>Desconto:</strong><br>
+                <div class="col-md-6 mb-3">
 
-                R$ {{ number_format($contaReceber->desconto, 2, ',', '.') }}
-            </div>
+                    <strong>Categoria Financeira:</strong><br>
 
-            <div class="col-md-3 mb-3">
-                <strong>Juros + Multa:</strong><br>
+                    {{ $contaReceber->categoriaFinanceira?->nome ?? 'Não informada' }}
 
-                R$ {{ number_format(
-                    $contaReceber->juros + $contaReceber->multa,
-                    2,
-                    ',',
-                    '.'
-                ) }}
-            </div>
+                </div>
 
-            <div class="col-12 mb-3">
-                <strong>Status:</strong><br>
+                <div class="col-md-6 mb-3">
 
-                @if ($contaReceber->status === 'quitada')
-                    <span class="badge bg-success">
-                        Quitada
-                    </span>
-                @elseif ($contaReceber->status === 'parcial')
-                    <span class="badge bg-warning text-dark">
-                        Parcial
-                    </span>
-                @elseif ($vencida)
-                    <span class="badge bg-danger">
-                        Vencida
-                    </span>
-                @elseif ($contaReceber->status === 'cancelada')
-                    <span class="badge bg-secondary">
-                        Cancelada
-                    </span>
-                @else
-                    <span class="badge bg-primary">
-                        Aberta
-                    </span>
-                @endif
-            </div>
+                    <strong>Descrição:</strong><br>
 
-            @if ($contaReceber->data_quitacao)
+                    {{ $contaReceber->descricao }}
+
+                </div>
+
                 <div class="col-md-3 mb-3">
-                    <strong>Data de Quitação:</strong><br>
 
-                    {{ $contaReceber->data_quitacao->format('d/m/Y') }}
+                    <strong>Emissão:</strong><br>
+
+                    {{ $contaReceber->data_emissao?->format('d/m/Y') ?? '-' }}
+
                 </div>
-            @endif
 
-            @if ($contaReceber->observacoes)
-                <div class="col-12">
-                    <strong>Observações:</strong><br>
+                <div class="col-md-3 mb-3">
 
-                    {!! nl2br(e($contaReceber->observacoes)) !!}
+                    <strong>Vencimento:</strong><br>
+
+                    {{ $contaReceber->data_vencimento?->format('d/m/Y') ?? '-' }}
+
                 </div>
-            @endif
+
+                <div class="col-md-3 mb-3">
+
+                    <strong>Desconto:</strong><br>
+
+                    R$ {{ number_format($contaReceber->desconto, 2, ',', '.') }}
+
+                </div>
+
+                <div class="col-md-3 mb-3">
+
+                    <strong>Juros + Multa:</strong><br>
+
+                    R$ {{ number_format(
+                        $contaReceber->juros + $contaReceber->multa,
+                        2,
+                        ',',
+                        '.'
+                    ) }}
+
+                </div>
+
+                <div class="col-12 mb-3">
+
+                    <strong>Status:</strong><br>
+
+                    @if ($contaReceber->status === 'quitada')
+
+                        <span class="badge bg-success">
+                            <i class="bi bi-check-circle"></i>
+                            Quitada
+                        </span>
+
+                    @elseif ($contaReceber->status === 'parcial')
+
+                        <span class="badge bg-warning text-dark">
+                            <i class="bi bi-hourglass-split"></i>
+                            Parcial
+                        </span>
+
+                    @elseif ($vencida)
+
+                        <span class="badge bg-danger">
+                            <i class="bi bi-exclamation-circle"></i>
+                            Vencida
+                        </span>
+
+                    @elseif ($contaReceber->status === 'cancelada')
+
+                        <span class="badge bg-secondary">
+                            <i class="bi bi-x-circle"></i>
+                            Cancelada
+                        </span>
+
+                    @else
+
+                        <span class="badge bg-primary">
+                            <i class="bi bi-clock"></i>
+                            Aberta
+                        </span>
+
+                    @endif
+
+                </div>
+
+                @if ($contaReceber->data_quitacao)
+
+                    <div class="col-md-3 mb-3">
+
+                        <strong>Data de Quitação:</strong><br>
+
+                        {{ $contaReceber->data_quitacao->format('d/m/Y') }}
+
+                    </div>
+
+                @endif
+
+                @if ($contaReceber->observacoes)
+
+                    <div class="col-12">
+
+                        <strong>Observações:</strong><br>
+
+                        {!! nl2br(e($contaReceber->observacoes)) !!}
+
+                    </div>
+
+                @endif
+
+            </div>
 
         </div>
 
     </div>
 
-</div>
+    {{-- Recebimentos --}}
 
-{{-- Recebimentos --}}
-<div class="card mb-4">
+    <div class="card mb-4">
 
-    <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="card-header d-flex justify-content-between align-items-center">
 
-        <span>
-            <i class="bi bi-wallet2"></i>
-            Recebimentos
-        </span>
+            <span>
+                <i class="bi bi-wallet2"></i>
+                Recebimentos
+            </span>
 
-        @if (!in_array($contaReceber->status, ['quitada', 'cancelada']) && $saldo > 0)
-            <a
-                href="{{ route('recebimentos.create', $contaReceber) }}"
-                class="btn btn-success btn-sm"
-            >
-                <i class="bi bi-plus-circle"></i>
-                Registrar Recebimento
-            </a>
-        @endif
+            @if (
+                !in_array($contaReceber->status, ['quitada', 'cancelada'])
+                && $saldo > 0
+            )
 
-    </div>
+                <a
+                    href="{{ route('recebimentos.create', $contaReceber) }}"
+                    class="btn btn-success btn-sm"
+                >
+                    <i class="bi bi-plus-circle"></i>
+                    Registrar Recebimento
+                </a>
 
-    <div class="card-body p-0">
+            @endif
 
-        @if ($contaReceber->recebimentos->isEmpty())
+        </div>
 
-            <div class="p-3 text-center text-muted">
-                Nenhum recebimento registrado.
-            </div>
+        <div class="card-body p-0">
 
-        @else
+            @if ($contaReceber->recebimentos->isEmpty())
 
-            <div class="table-responsive">
+                <div class="p-3 text-center text-muted">
 
-                <table class="table table-striped table-hover mb-0">
+                    <i class="bi bi-info-circle"></i>
+                    Nenhum recebimento registrado.
 
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Data</th>
-                            <th>Forma de Pagamento</th>
-                            <th>Valor</th>
-                            <th>Usuário</th>
-                            <th>Observações</th>
-                        </tr>
-                    </thead>
+                </div>
 
-                    <tbody>
+            @else
 
-                        @foreach ($contaReceber->recebimentos as $recebimento)
+                <div class="table-responsive">
+
+                    <table class="table table-striped table-hover mb-0 align-middle">
+
+                        <thead>
+
+                            <tr>
+                                <th>ID</th>
+                                <th>Data</th>
+                                <th>Forma de Pagamento</th>
+                                <th>Valor</th>
+                                <th>Usuário</th>
+                                <th>Observações</th>
+                                <th>STATUS</th>
+                                <th>AÇÕES</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            @foreach ($contaReceber->recebimentos as $recebimento)
+
+                                <tr
+                                    @if ($recebimento->estaEstornado())
+                                        class="table-secondary"
+                                    @endif
+                                >
+
+                                    <td>
+                                        #{{ str_pad($recebimento->id, 6, '0', STR_PAD_LEFT) }}
+                                    </td>
+
+                                    <td>
+                                        {{ $recebimento->data_pagamento?->format('d/m/Y H:i') }}
+                                    </td>
+
+                                    <td>
+                                        {{ $recebimento->formaPagamento?->nome ?? '-' }}
+                                    </td>
+
+                                    <td>
+                                        R$ {{ number_format($recebimento->valor, 2, ',', '.') }}
+                                    </td>
+
+                                    <td>
+                                        {{ $recebimento->usuario?->name ?? '-' }}
+                                    </td>
+
+                                    <td>
+                                        {{ $recebimento->observacoes ?? '-' }}
+                                    </td>
+
+                                    <td>
+
+                                        @if ($recebimento->estaEstornado())
+
+                                            <span class="badge bg-secondary">
+                                                <i class="bi bi-arrow-counterclockwise"></i>
+                                                Estornado
+                                            </span>
+
+                                            <div class="small text-muted mt-1">
+                                                {{ $recebimento->estornado_em?->format('d/m/Y H:i') }}
+                                            </div>
+
+                                        @else
+
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle"></i>
+                                                Ativo
+                                            </span>
+
+                                        @endif
+
+                                    </td>
+
+                                    <td>
+
+                                        @if (
+                                            !$recebimento->estaEstornado()
+                                            && $contaReceber->status !== 'cancelada'
+                                        )
+
+                                            <form
+                                                action="{{ route(
+                                                    'recebimentos.estornar',
+                                                    [
+                                                        'contaReceber' => $contaReceber,
+                                                        'recebimento' => $recebimento,
+                                                    ]
+                                                ) }}"
+                                                method="POST"
+                                                class="d-inline"
+                                            >
+
+                                                @csrf
+
+                                                <div class="mb-2">
+
+                                                    <textarea
+                                                        name="motivo"
+                                                        class="form-control form-control-sm"
+                                                        rows="2"
+                                                        placeholder="Motivo do estorno"
+                                                        minlength="3"
+                                                        maxlength="1000"
+                                                        required
+                                                    ></textarea>
+
+                                                </div>
+
+                                                <button
+                                                    type="submit"
+                                                    class="btn btn-outline-danger btn-sm"
+                                                    onclick="return confirm('Tem certeza que deseja estornar este recebimento? Esta operação ficará registrada no histórico financeiro.');"
+                                                    title="Estornar recebimento"
+                                                >
+                                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                                    Estornar
+                                                </button>
+
+                                            </form>
+
+                                        @else
+
+                                            @if ($recebimento->estaEstornado())
+
+                                                <div class="small text-muted">
+
+                                                    <strong>Motivo:</strong><br>
+
+                                                    {!! nl2br(e($recebimento->motivo_estorno)) !!}
+
+                                                </div>
+
+                                            @endif
+
+                                        @endif
+
+                                    </td>
+
+                                </tr>
+
+                            @endforeach
+
+                        </tbody>
+
+                        <tfoot>
 
                             <tr>
 
-                                <td>
-                                    #{{ str_pad($recebimento->id, 6, '0', STR_PAD_LEFT) }}
-                                </td>
+                                <th colspan="3" class="text-end">
+                                    Total recebido:
+                                </th>
 
-                                <td>
-                                    {{ $recebimento->data_pagamento?->format('d/m/Y H:i') }}
-                                </td>
+                                <th>
+                                    R$ {{ number_format($valorRecebido, 2, ',', '.') }}
+                                </th>
 
-                                <td>
-                                    {{ $recebimento->formaPagamento?->nome ?? '-' }}
-                                </td>
-
-                                <td>
-                                    R$ {{ number_format($recebimento->valor, 2, ',', '.') }}
-                                </td>
-
-                                <td>
-                                    {{ $recebimento->usuario?->name ?? '-' }}
-                                </td>
-
-                                <td>
-                                    {{ $recebimento->observacoes ?? '-' }}
-                                </td>
+                                <th colspan="4"></th>
 
                             </tr>
 
-                        @endforeach
+                        </tfoot>
 
-                    </tbody>
+                    </table>
 
-                    <tfoot>
+                </div>
 
-                        <tr>
-                            <th colspan="3" class="text-end">
-                                Total recebido:
-                            </th>
+            @endif
 
-                            <th>
-                                R$ {{ number_format($valorRecebido, 2, ',', '.') }}
-                            </th>
+        </div>
 
-                            <th colspan="2"></th>
-                        </tr>
+    </div>
 
-                    </tfoot>
+    {{-- Botões --}}
 
-                </table>
+    <div class="col text-center">
 
-            </div>
+        <a
+            href="{{ route('contas-receber.index') }}"
+            class="btn btn-secondary"
+        >
+            <i class="bi bi-arrow-left"></i>
+            Voltar
+        </a>
+
+        @if (!$contaReceber->recebimentos->count())
+
+            <a
+                href="{{ route('contas-receber.edit', $contaReceber) }}"
+                class="btn btn-primary"
+            >
+                <i class="bi bi-pencil-square"></i>
+                Editar
+            </a>
+
+            <form
+                action="{{ route('contas-receber.destroy', $contaReceber) }}"
+                method="POST"
+                class="d-inline"
+                onsubmit="return confirm('Tem certeza que deseja excluir esta conta a receber?');"
+            >
+
+                @csrf
+                @method('DELETE')
+
+                <button
+                    type="submit"
+                    class="btn btn-danger"
+                >
+                    <i class="bi bi-trash"></i>
+                    Excluir
+                </button>
+
+            </form>
 
         @endif
 
     </div>
-
-</div>
-
-{{-- Botões --}}
-<div class="col text-center">
-
-    <a
-        href="{{ route('contas-receber.index') }}"
-        class="btn btn-secondary"
-    >
-        <i class="bi bi-arrow-left"></i>
-        Voltar
-    </a>
-
-    @if (!$contaReceber->recebimentos->count())
-        <a
-            href="{{ route('contas-receber.edit', $contaReceber) }}"
-            class="btn btn-primary"
-        >
-            <i class="bi bi-pencil-square"></i>
-            Editar
-        </a>
-
-        <form
-            action="{{ route('contas-receber.destroy', $contaReceber) }}"
-            method="POST"
-            class="d-inline"
-            onsubmit="return confirm('Tem certeza que deseja excluir esta conta a receber?');"
-        >
-            @csrf
-            @method('DELETE')
-
-            <button
-                type="submit"
-                class="btn btn-danger"
-            >
-                <i class="bi bi-trash"></i>
-                Excluir
-            </button>
-        </form>
-    @endif
-
-</div>
-
 
 </section>
 

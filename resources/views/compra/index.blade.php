@@ -33,9 +33,15 @@
         :expanded="request()->filled('data_inicio') || request()->filled('data_fim')"
     >
 
+        {{-- ========================================================= --}}
+        {{-- FILTROS PRINCIPAIS - SEMPRE VISÍVEIS --}}
+        {{-- ========================================================= --}}
+
         <x-slot name="primary">
 
             <div class="row g-3 align-items-end">
+
+                {{-- NÚMERO DA NF --}}
 
                 <div class="col-12 col-md-4">
 
@@ -55,6 +61,9 @@
 
                 </div>
 
+
+                {{-- FORNECEDOR --}}
+
                 <div class="col-12 col-md-4">
 
                     <label for="fornecedor_id" class="form-label">
@@ -67,20 +76,28 @@
                         id="fornecedor_id"
                         class="filtros-container__select"
                     >
-                        <option value="">Todos os fornecedores</option>
+
+                        <option value="">
+                            Todos os fornecedores
+                        </option>
 
                         @foreach ($fornecedores as $fornecedor)
+
                             <option
                                 value="{{ $fornecedor->id }}"
                                 @selected((string) request('fornecedor_id') === (string) $fornecedor->id)
                             >
                                 {{ $fornecedor->nome }}
                             </option>
+
                         @endforeach
 
                     </select>
 
                 </div>
+
+
+                {{-- STATUS --}}
 
                 <div class="col-12 col-md-4">
 
@@ -94,7 +111,10 @@
                         id="status"
                         class="filtros-container__select"
                     >
-                        <option value="">Todos os status</option>
+
+                        <option value="">
+                            Todos os status
+                        </option>
 
                         <option
                             value="pendente"
@@ -128,51 +148,14 @@
 
                 </div>
 
-            </div>
 
-        </x-slot>
+                {{-- ================================================= --}}
+                {{-- AÇÕES - SEMPRE VISÍVEIS --}}
+                {{-- ================================================= --}}
 
-        <x-slot name="advanced">
+                <div class="col-12">
 
-            <div class="row g-3 align-items-end">
-
-                <div class="col-12 col-md-5">
-
-                    <label for="data_inicio" class="form-label">
-                        <i class="bi bi-calendar-event"></i>
-                        Data inicial
-                    </label>
-
-                    <input
-                        type="date"
-                        name="data_inicio"
-                        id="data_inicio"
-                        class="filtros-container__input"
-                        value="{{ request('data_inicio') }}"
-                    >
-
-                </div>
-
-                <div class="col-12 col-md-5">
-
-                    <label for="data_fim" class="form-label">
-                        <i class="bi bi-calendar-check"></i>
-                        Data final
-                    </label>
-
-                    <input
-                        type="date"
-                        name="data_fim"
-                        id="data_fim"
-                        class="filtros-container__input"
-                        value="{{ request('data_fim') }}"
-                    >
-
-                </div>
-
-                <div class="col-12 col-md-2">
-
-                    <div class="filtros-container__actions">
+                    <div class="filtros-container__actions d-flex gap-2">
 
                         <button
                             type="submit"
@@ -189,6 +172,7 @@
                             title="Limpar filtros"
                         >
                             <i class="bi bi-x-lg"></i>
+                            Limpar
                         </a>
 
                     </div>
@@ -199,16 +183,72 @@
 
         </x-slot>
 
+
+        {{-- ========================================================= --}}
+        {{-- FILTROS AVANÇADOS - RECOLHÍVEIS --}}
+        {{-- ========================================================= --}}
+
+        <x-slot name="advanced">
+
+            <div class="row g-3 align-items-end">
+
+                {{-- DATA INICIAL --}}
+
+                <div class="col-12 col-md-6">
+
+                    <label for="data_inicio" class="form-label">
+                        <i class="bi bi-calendar-event"></i>
+                        Data inicial
+                    </label>
+
+                    <input
+                        type="date"
+                        name="data_inicio"
+                        id="data_inicio"
+                        class="filtros-container__input"
+                        value="{{ request('data_inicio') }}"
+                    >
+
+                </div>
+
+
+                {{-- DATA FINAL --}}
+
+                <div class="col-12 col-md-6">
+
+                    <label for="data_fim" class="form-label">
+                        <i class="bi bi-calendar-check"></i>
+                        Data final
+                    </label>
+
+                    <input
+                        type="date"
+                        name="data_fim"
+                        id="data_fim"
+                        class="filtros-container__input"
+                        value="{{ request('data_fim') }}"
+                    >
+
+                </div>
+
+            </div>
+
+        </x-slot>
+
     </x-filtros-container>
 
+
     @php
+
         $possuiFiltros =
             request()->filled('numero_nf') ||
             request()->filled('fornecedor_id') ||
             request()->filled('status') ||
             request()->filled('data_inicio') ||
             request()->filled('data_fim');
+
     @endphp
+
 
     @if ($compras->isEmpty())
 
@@ -224,6 +264,7 @@
 
     @endif
 
+
     @if ($compras->isNotEmpty())
 
         <div class="table-responsive">
@@ -233,13 +274,35 @@
                 <thead>
 
                     <tr>
-                        <th scope="col">ID</th>
-                        <th scope="col">NF</th>
-                        <th scope="col">FORNECEDOR</th>
-                        <th scope="col">DATA DE ENTRADA</th>
-                        <th scope="col">VALOR TOTAL</th>
-                        <th scope="col">STATUS</th>
-                        <th scope="col">AÇÕES</th>
+
+                        <th scope="col">
+                            ID
+                        </th>
+
+                        <th scope="col">
+                            NF
+                        </th>
+
+                        <th scope="col">
+                            FORNECEDOR
+                        </th>
+
+                        <th scope="col">
+                            DATA DE ENTRADA
+                        </th>
+
+                        <th scope="col">
+                            VALOR TOTAL
+                        </th>
+
+                        <th scope="col">
+                            STATUS
+                        </th>
+
+                        <th scope="col">
+                            AÇÕES
+                        </th>
+
                     </tr>
 
                 </thead>
@@ -249,67 +312,101 @@
                     @foreach ($compras as $compra)
 
                         @php
+
                             $statusConfig = match ($compra->status) {
+
                                 'pendente' => [
                                     'class' => 'bg-warning text-dark',
                                     'icon' => 'bi-clock',
                                     'label' => 'Pendente',
                                 ],
+
                                 'conferindo' => [
                                     'class' => 'bg-info text-dark',
                                     'icon' => 'bi-search',
                                     'label' => 'Conferindo',
                                 ],
+
                                 'aprovada' => [
                                     'class' => 'bg-success',
                                     'icon' => 'bi-check-circle',
                                     'label' => 'Aprovada',
                                 ],
+
                                 'cancelada' => [
                                     'class' => 'bg-danger',
                                     'icon' => 'bi-x-circle',
                                     'label' => 'Cancelada',
                                 ],
+
                                 default => [
                                     'class' => 'bg-secondary',
                                     'icon' => 'bi-question-circle',
                                     'label' => ucfirst($compra->status),
                                 ],
+
                             };
+
                         @endphp
 
+
                         <tr>
+
+                            {{-- ID --}}
 
                             <td>
                                 {{ $compra->id }}
                             </td>
 
+
+                            {{-- NF --}}
+
                             <td>
+
                                 <strong>
                                     {{ $compra->numero_nf }}
                                 </strong>
 
                                 @if ($compra->serie_nf)
+
                                     <br>
+
                                     <small class="text-muted">
                                         Série {{ $compra->serie_nf }}
                                     </small>
+
                                 @endif
+
                             </td>
+
+
+                            {{-- FORNECEDOR --}}
 
                             <td>
                                 {{ $compra->fornecedor->nome ?? 'Não informado' }}
                             </td>
 
+
+                            {{-- DATA --}}
+
                             <td>
                                 {{ $compra->data_entrada?->format('d/m/Y') ?? '-' }}
                             </td>
 
+
+                            {{-- VALOR --}}
+
                             <td>
+
                                 <strong>
-                                    R$ {{ number_format($compra->valor_total, 2, ',', '.') }}
+                                    R$
+                                    {{ number_format($compra->valor_total, 2, ',', '.') }}
                                 </strong>
+
                             </td>
+
+
+                            {{-- STATUS --}}
 
                             <td>
 
@@ -323,9 +420,14 @@
 
                             </td>
 
+
+                            {{-- AÇÕES --}}
+
                             <td>
 
                                 <div class="d-flex gap-1">
+
+                                    {{-- VISUALIZAR --}}
 
                                     <a
                                         href="{{ route('compras.show', $compra) }}"
@@ -335,7 +437,10 @@
                                         <i class="bi bi-eye"></i>
                                     </a>
 
+
                                     @if (in_array($compra->status, ['pendente', 'conferindo'], true))
+
+                                        {{-- EDITAR --}}
 
                                         <a
                                             href="{{ route('compras.edit', $compra) }}"
@@ -345,11 +450,15 @@
                                             <i class="bi bi-pencil"></i>
                                         </a>
 
+
+                                        {{-- EXCLUIR --}}
+
                                         <form
                                             action="{{ route('compras.destroy', $compra) }}"
                                             method="POST"
                                             onsubmit="return confirm('Tem certeza que deseja excluir esta compra?');"
                                         >
+
                                             @csrf
                                             @method('DELETE')
 
@@ -379,10 +488,13 @@
 
         </div>
 
+
         @if ($compras->hasPages())
 
             <div class="d-flex justify-content-center mt-4">
+
                 {{ $compras->links() }}
+
             </div>
 
         @endif

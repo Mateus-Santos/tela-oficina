@@ -22,6 +22,7 @@ use App\Http\Controllers\FornecedorController;
 use App\Http\Controllers\AnexoController;
 use App\Http\Controllers\EstoqueController;
 use App\Http\Controllers\MovimentacaoEstoqueController;
+use App\Http\Controllers\ContaPagarController;
 
 // use App\Http\Controllers\ChatController;
 
@@ -40,7 +41,9 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
     })->name('perfil');
 
     Route::put('/perfil/{id_user}/update', [UserController::class, 'update']);
+
     Route::resource('veiculosclientes', VeiculosClientesController::class);
+
     Route::get('/veiculos/montadora/{id}', [VeiculoController::class, 'porMontadora']);
 
     // Rotas para administradores.
@@ -122,8 +125,31 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
 
         // Anexos de Compras
         Route::post('compras/{compra}/anexos', [AnexoController::class, 'storeCompra'])->name('compras.anexos.store');
+
+        // Anexos de Contas a Pagar
+        Route::post('contas-pagar/{conta}/anexos', [AnexoController::class, 'storeContaPagar'])->name('contas-pagar.anexos.store');
+
+        // Anexos
         Route::get('anexos/{anexo}/download', [AnexoController::class, 'download'])->name('anexos.download');
         Route::delete('anexos/{anexo}', [AnexoController::class, 'destroy'])->name('anexos.destroy');
+
+        // Contas a Pagar
+        Route::resource('contas-pagar', ContaPagarController::class)
+            ->parameters([
+                'contas-pagar' => 'conta',
+            ])
+            ->except(['destroy']);
+
+        Route::post('contas-pagar/{conta}/pagamentos', [ContaPagarController::class, 'registrarPagamento'])
+            ->name('contas-pagar.pagamentos.store');
+
+        Route::post('contas-pagar/{conta}/pagamentos/{pagamento}/estornar', [ContaPagarController::class, 'estornarPagamento'])
+            ->name('contas-pagar.pagamentos.estornar');
+
+        Route::post('contas-pagar/{conta}/cancelar', [ContaPagarController::class, 'cancelar'])
+            ->name('contas-pagar.cancelar');
+
+        Route::post('contas-receber/{contaReceber}/recebimentos/{recebimento}/estornar', [RecebimentoController::class, 'estornar'])->name('recebimentos.estornar');
     });
 });
 
@@ -145,4 +171,3 @@ Route::patch('/users/{id}/block', [UserController::class, 'toggleBlock'])->name(
 Route::get('/termos-de-uso', function () {
     return view('termos/termosdeuso');
 })->name('termos');
-

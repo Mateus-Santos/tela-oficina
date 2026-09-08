@@ -23,11 +23,15 @@
     @endif
 
     @if (session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
     @endif
 
     @if (session('error'))
-        <div class="alert alert-danger">{{ session('error') }}</div>
+        <div class="alert alert-danger">
+            {{ session('error') }}
+        </div>
     @endif
 
     <x-filtros-container
@@ -37,11 +41,13 @@
         :expanded="request()->hasAny(['data_inicio', 'data_fim'])"
     >
         <x-slot:primary>
+
             <div class="row g-3 align-items-end">
 
                 <div class="col-12 col-md-4">
                     <label for="cliente" class="form-label">
-                        <i class="bi bi-person"></i> Cliente
+                        <i class="bi bi-person"></i>
+                        Cliente
                     </label>
 
                     <input
@@ -56,7 +62,8 @@
 
                 <div class="col-12 col-md-3">
                     <label for="status" class="form-label">
-                        <i class="bi bi-info-circle"></i> Status
+                        <i class="bi bi-info-circle"></i>
+                        Status
                     </label>
 
                     <select
@@ -66,23 +73,38 @@
                     >
                         <option value="">Todos</option>
 
-                        <option value="aberta" @selected(request('status') === 'aberta')>
+                        <option
+                            value="aberta"
+                            @selected(request('status') === 'aberta')
+                        >
                             Aberta
                         </option>
 
-                        <option value="parcial" @selected(request('status') === 'parcial')>
+                        <option
+                            value="parcial"
+                            @selected(request('status') === 'parcial')
+                        >
                             Parcial
                         </option>
 
-                        <option value="quitada" @selected(request('status') === 'quitada')>
+                        <option
+                            value="quitada"
+                            @selected(request('status') === 'quitada')
+                        >
                             Quitada
                         </option>
 
-                        <option value="vencida" @selected(request('status') === 'vencida')>
+                        <option
+                            value="vencida"
+                            @selected(request('status') === 'vencida')
+                        >
                             Vencida
                         </option>
 
-                        <option value="cancelada" @selected(request('status') === 'cancelada')>
+                        <option
+                            value="cancelada"
+                            @selected(request('status') === 'cancelada')
+                        >
                             Cancelada
                         </option>
                     </select>
@@ -90,7 +112,8 @@
 
                 <div class="col-12 col-md-3">
                     <label for="nota_id" class="form-label">
-                        <i class="bi bi-receipt"></i> Nota
+                        <i class="bi bi-receipt"></i>
+                        Nota
                     </label>
 
                     <input
@@ -106,7 +129,11 @@
 
                 <div class="col-12 col-md-2">
                     <div class="filtros-container__actions">
-                        <button type="submit" class="btn btn-primary">
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                        >
                             <i class="bi bi-search"></i>
                             Filtrar
                         </button>
@@ -118,18 +145,22 @@
                         >
                             <i class="bi bi-x-lg"></i>
                         </a>
+
                     </div>
                 </div>
 
             </div>
+
         </x-slot:primary>
 
         <x-slot:advanced>
+
             <div class="row g-3">
 
                 <div class="col-12 col-md-6">
                     <label for="data_inicio" class="form-label">
-                        <i class="bi bi-calendar-event"></i> Vencimento de
+                        <i class="bi bi-calendar-event"></i>
+                        Vencimento de
                     </label>
 
                     <input
@@ -143,7 +174,8 @@
 
                 <div class="col-12 col-md-6">
                     <label for="data_fim" class="form-label">
-                        <i class="bi bi-calendar-event"></i> Vencimento até
+                        <i class="bi bi-calendar-event"></i>
+                        Vencimento até
                     </label>
 
                     <input
@@ -156,10 +188,13 @@
                 </div>
 
             </div>
+
         </x-slot:advanced>
+
     </x-filtros-container>
 
     <div class="table-responsive">
+
         <table class="table table-striped table-hover align-middle">
 
             <thead>
@@ -182,13 +217,24 @@
                 @forelse ($contasReceber as $contaReceber)
 
                     @php
-                        $valorDevido = (float) $contaReceber->valor_original
+                        $valorDevido =
+                            (float) $contaReceber->valor_original
                             - (float) $contaReceber->desconto
                             + (float) $contaReceber->juros
                             + (float) $contaReceber->multa;
 
-                        $valorRecebido = (float) ($contaReceber->recebimentos_sum_valor ?? 0);
-                        $saldo = $valorDevido - $valorRecebido;
+                        $valorRecebido =
+                            (float) ($contaReceber->valor_recebido ?? 0);
+
+                        $saldo = max(
+                            0,
+                            $valorDevido - $valorRecebido
+                        );
+
+                        $nomeCliente =
+                            $contaReceber->cliente?->pessoa?->nome
+                            ?? $contaReceber->nota?->cliente?->pessoa?->nome
+                            ?? 'Sem cliente';
                     @endphp
 
                     <tr>
@@ -198,7 +244,7 @@
                         </td>
 
                         <td>
-                            {{ $contaReceber->cliente?->nome ?? 'Sem cliente' }}
+                            {{ $nomeCliente }}
                         </td>
 
                         <td>
@@ -209,7 +255,9 @@
                             @if ($contaReceber->nota)
                                 #{{ str_pad($contaReceber->nota->id, 6, '0', STR_PAD_LEFT) }}
                             @else
-                                <span class="text-muted">Sem nota</span>
+                                <span class="text-muted">
+                                    Sem nota
+                                </span>
                             @endif
                         </td>
 
@@ -226,39 +274,52 @@
                         </td>
 
                         <td>
-                            R$ {{ number_format(max($saldo, 0), 2, ',', '.') }}
+                            R$ {{ number_format($saldo, 2, ',', '.') }}
                         </td>
 
                         <td>
+
                             @if ($contaReceber->estaVencida())
+
                                 <span class="badge bg-danger">
                                     <i class="bi bi-exclamation-circle"></i>
                                     Vencida
                                 </span>
+
                             @elseif ($contaReceber->status === 'quitada')
+
                                 <span class="badge bg-success">
                                     <i class="bi bi-check-circle"></i>
                                     Quitada
                                 </span>
+
                             @elseif ($contaReceber->status === 'parcial')
+
                                 <span class="badge bg-warning text-dark">
                                     <i class="bi bi-hourglass-split"></i>
                                     Parcial
                                 </span>
+
                             @elseif ($contaReceber->status === 'cancelada')
+
                                 <span class="badge bg-secondary">
                                     <i class="bi bi-x-circle"></i>
                                     Cancelada
                                 </span>
+
                             @else
+
                                 <span class="badge bg-primary">
                                     <i class="bi bi-clock"></i>
                                     Aberta
                                 </span>
+
                             @endif
+
                         </td>
 
                         <td>
+
                             <div class="d-flex gap-1">
 
                                 <a
@@ -269,7 +330,11 @@
                                     <i class="bi bi-eye"></i>
                                 </a>
 
-                                @if (!$contaReceber->recebimentos_exists && $contaReceber->status !== 'cancelada')
+                                @if (
+                                    !$contaReceber->recebimentos_exists
+                                    && $contaReceber->status !== 'cancelada'
+                                )
+
                                     <a
                                         href="{{ route('contas-receber.edit', $contaReceber) }}"
                                         class="btn btn-warning btn-sm"
@@ -277,13 +342,16 @@
                                     >
                                         <i class="bi bi-pencil"></i>
                                     </a>
+
                                 @endif
 
                                 @if (
                                     !$contaReceber->estaVencida()
                                     && $contaReceber->status !== 'quitada'
                                     && $contaReceber->status !== 'cancelada'
+                                    && $saldo > 0
                                 )
+
                                     <a
                                         href="{{ route('recebimentos.create', $contaReceber) }}"
                                         class="btn btn-success btn-sm"
@@ -291,7 +359,13 @@
                                     >
                                         <i class="bi bi-cash-coin"></i>
                                     </a>
-                                @elseif ($contaReceber->estaVencida())
+
+                                @elseif (
+                                    $contaReceber->estaVencida()
+                                    && $contaReceber->status !== 'cancelada'
+                                    && $saldo > 0
+                                )
+
                                     <a
                                         href="{{ route('recebimentos.create', $contaReceber) }}"
                                         class="btn btn-danger btn-sm"
@@ -299,9 +373,11 @@
                                     >
                                         <i class="bi bi-cash-coin"></i>
                                     </a>
+
                                 @endif
 
                                 @if (!$contaReceber->recebimentos_exists)
+
                                     <form
                                         action="{{ route('contas-receber.destroy', $contaReceber) }}"
                                         method="POST"
@@ -318,9 +394,11 @@
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
+
                                 @endif
 
                             </div>
+
                         </td>
 
                     </tr>
@@ -328,10 +406,15 @@
                 @empty
 
                     <tr>
-                        <td colspan="10" class="text-center">
+
+                        <td
+                            colspan="10"
+                            class="text-center"
+                        >
                             <i class="bi bi-info-circle"></i>
                             Nenhuma conta a receber encontrada.
                         </td>
+
                     </tr>
 
                 @endforelse
@@ -339,6 +422,7 @@
             </tbody>
 
         </table>
+
     </div>
 
     <div class="d-flex justify-content-center mt-4">
