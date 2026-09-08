@@ -7,6 +7,7 @@ use App\Actions\Anexo\ExcluirAnexo;
 use App\Http\Requests\Anexo\StoreAnexoRequest;
 use App\Models\Anexo;
 use App\Models\Compra;
+use App\Models\ContaPagar;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -30,9 +31,29 @@ class AnexoController extends Controller
             ->with('success', 'Anexo enviado com sucesso!');
     }
 
+    public function storeContaPagar(
+        StoreAnexoRequest $request,
+        ContaPagar $conta,
+        CriarAnexo $criarAnexo
+    ): RedirectResponse {
+        $criarAnexo->execute(
+            $conta,
+            $request->file('arquivo'),
+            $request->validated('tipo'),
+            $request->validated('observacoes')
+        );
+
+        return redirect()
+            ->route('contas-pagar.show', $conta)
+            ->with('success', 'Anexo enviado com sucesso!');
+    }
+
     public function download(Anexo $anexo): StreamedResponse
     {
-        abort_unless(Storage::disk('public')->exists($anexo->arquivo), 404);
+        abort_unless(
+            Storage::disk('public')->exists($anexo->arquivo),
+            404
+        );
 
         return Storage::disk('public')->download(
             $anexo->arquivo,
@@ -44,21 +65,37 @@ class AnexoController extends Controller
         Anexo $anexo,
         ExcluirAnexo $excluirAnexo
     ): RedirectResponse {
-        $compra = $anexo->anexavel;
+        $anexavel = $anexo->anexavel;
 
-        if ($compra instanceof Compra && in_array($compra->status, ['aprovada', 'cancelada'], true)) {
+        if ($anexavel instanceof Compra) {
+            if (in_array($anexavel->status, ['aprovada', 'cancelada'], true)) {
+                return redirect()
+                    ->route('compras.show', $anexavel)
+                    ->with('error', 'Anexos de uma compra aprovada ou cancelada não podem ser excluídos.');
+            }
+
+            $excluirAnexo->execute($anexo);
+
             return redirect()
-                ->route('compras.show', $compra)
-                ->with('error', 'Anexos de uma compra aprovada ou cancelada não podem ser excluídos.');
+                ->route('compras.show', $anexavel)
+                ->with('success', 'Anexo excluído com sucesso!');
+        }
+
+        if ($anexavel instanceof ContaPagar) {
+            if (in_array($anexavel->status, ['paga', 'cancelada'], true)) {
+                return redirect()
+                    ->route('contas-pagar.show', $anexavel)
+                    ->with('error', 'Anexos de uma conta a pagar paga ou cancelada não podem ser excluídos.');
+            }
+
+            $excluirAnexo->execute($anexo);
+
+            return redirect()
+                ->route('contas-pagar.show', $anexavel)
+                ->with('success', 'Anexo excluído com sucesso!');
         }
 
         $excluirAnexo->execute($anexo);
-
-        if ($compra instanceof Compra) {
-            return redirect()
-                ->route('compras.show', $compra)
-                ->with('success', 'Anexo excluído com sucesso!');
-        }
 
         return redirect()
             ->route('compras.index')
