@@ -2,10 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Financeiro\EstornarRecebimento;
 use App\Actions\Financeiro\RegistrarRecebimento;
+use App\Http\Requests\EstornarRecebimentoRequest;
 use App\Http\Requests\StoreRecebimentoRequest;
 use App\Models\ContaReceber;
 use App\Models\FormaPagamento;
+use App\Models\Recebimento;
+use Illuminate\Http\RedirectResponse;
+use InvalidArgumentException;
 
 class RecebimentoController extends Controller
 {
@@ -43,9 +48,13 @@ class RecebimentoController extends Controller
 
         $valorRecebido = (float) $contaReceber
             ->recebimentos()
+            ->whereNull('estornado_em')
             ->sum('valor');
 
-        $saldo = $valorDevido - $valorRecebido;
+        $saldo = max(
+            0,
+            $valorDevido - $valorRecebido
+        );
 
         $formasPagamento = FormaPagamento::query()
             ->where('ativo', true)
@@ -65,7 +74,7 @@ class RecebimentoController extends Controller
     public function store(
         StoreRecebimentoRequest $request,
         RegistrarRecebimento $registrarRecebimento
-    ) {
+    ): RedirectResponse {
         $recebimento = $registrarRecebimento->execute(
             $request->validated()
         );
@@ -80,4 +89,40 @@ class RecebimentoController extends Controller
                 'Recebimento registrado com sucesso.'
             );
     }
+
+    public function estornar(
+        EstornarRecebimentoRequest $request,
+        ContaReceber $contaReceber,
+        Recebimento $recebimento,
+        EstornarRecebimento $estornarRecebimento
+    ): RedirectResponse {
+        try {
+            $estornarRecebimento->execute(
+                $contaReceber,
+                $recebimento,
+                $request->validated()['motivo']
+            );
+        } catch (InvalidArgumentException $e) {
+            return redirect()
+                ->route(
+                    'contas-receber.show',
+                    $contaReceber
+                )
+                ->with(
+                    'error',
+                    $e->getMessage()
+                );
+        }
+
+        return redirect()
+            ->route(
+                'contas-receber.show',
+                $contaReceber
+            )
+            ->with(
+                'success',
+                'Recebimento estornado com sucesso.'
+            );
+    }
 }
+

@@ -22,49 +22,58 @@ class ContaReceberController extends Controller
                 'nota.cliente.pessoa',
                 'categoriaFinanceira',
             ])
-            ->withSum('recebimentos', 'valor')
+            ->withSum([
+                'recebimentos as valor_recebido' => function ($query) {
+                    $query->whereNull('estornado_em');
+                },
+            ], 'valor')
             ->withExists('recebimentos');
-
-        /*
-        |--------------------------------------------------------------------------
-        | Filtro por cliente
-        |--------------------------------------------------------------------------
-        */
 
         if ($request->filled('cliente')) {
             $cliente = $request->input('cliente');
 
-            $query->whereHas('cliente.pessoa', function ($q) use ($cliente) {
-                $q->where('nome', 'like', "%{$cliente}%");
+            $query->where(function ($query) use ($cliente) {
+                $query->whereHas(
+                    'cliente.pessoa',
+                    function ($q) use ($cliente) {
+                        $q->where(
+                            'nome',
+                            'like',
+                            "%{$cliente}%"
+                        );
+                    }
+                )->orWhereHas(
+                    'nota.cliente.pessoa',
+                    function ($q) use ($cliente) {
+                        $q->where(
+                            'nome',
+                            'like',
+                            "%{$cliente}%"
+                        );
+                    }
+                );
             });
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Filtro por status
-        |--------------------------------------------------------------------------
-        */
 
         if ($request->filled('status')) {
             $status = $request->input('status');
 
             if ($status === 'vencida') {
-                $query->whereIn('status', ['aberta', 'parcial'])
-                    ->whereDate(
-                        'data_vencimento',
-                        '<',
-                        now()->toDateString()
-                    );
+                $query->whereIn(
+                    'status',
+                    ['aberta', 'parcial']
+                )->whereDate(
+                    'data_vencimento',
+                    '<',
+                    now()->toDateString()
+                );
             } else {
-                $query->where('status', $status);
+                $query->where(
+                    'status',
+                    $status
+                );
             }
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Filtro por período
-        |--------------------------------------------------------------------------
-        */
 
         if ($request->filled('data_inicio')) {
             $query->whereDate(
@@ -81,12 +90,6 @@ class ContaReceberController extends Controller
                 $request->input('data_fim')
             );
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Filtro por nota
-        |--------------------------------------------------------------------------
-        */
 
         if ($request->filled('nota_id')) {
             $query->where(
@@ -169,9 +172,13 @@ class ContaReceberController extends Controller
 
         $valorRecebido = (float) $contaReceber
             ->recebimentos
+            ->whereNull('estornado_em')
             ->sum('valor');
 
-        $saldo = $valorDevido - $valorRecebido;
+        $saldo = max(
+            0,
+            $valorDevido - $valorRecebido
+        );
 
         $vencida =
             in_array(
@@ -279,3 +286,4 @@ class ContaReceberController extends Controller
             );
     }
 }
+

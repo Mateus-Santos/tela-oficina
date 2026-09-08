@@ -148,6 +148,8 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
 
         Route::post('contas-pagar/{conta}/cancelar', [ContaPagarController::class, 'cancelar'])
             ->name('contas-pagar.cancelar');
+
+        Route::post('contas-receber/{contaReceber}/recebimentos/{recebimento}/estornar', [RecebimentoController::class, 'estornar'])->name('recebimentos.estornar');
     });
 });
 
