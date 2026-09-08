@@ -3,8 +3,10 @@ name: sosmecanica deployment
 on:
     push:
         branches: [master]
+
     pull_request:
         branches: [master]
+
     workflow_dispatch:
 
 permissions:
@@ -21,13 +23,28 @@ jobs:
             url: ${{ vars.URL }}
 
         steps:
+
+            # ========================================
+            # CHECKOUT
+            # ========================================
+
             - name: Repo Checkout
               uses: actions/checkout@v5
+
+
+            # ========================================
+            # SSH AGENT
+            # ========================================
 
             - name: Start SSH Agent
               uses: webfactory/ssh-agent@v0.10.0
               with:
                   ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
+
+
+            # ========================================
+            # SSH KNOWN HOSTS
+            # ========================================
 
             - name: Configure known_hosts
               run: |
@@ -38,16 +55,31 @@ jobs:
 
                   chmod 600 ~/.ssh/known_hosts
 
+
+            # ========================================
+            # NODE.JS
+            # ========================================
+
             - name: Setup Node.js
               uses: actions/setup-node@v5
               with:
                   node-version: 24
                   cache: npm
 
+
+            # ========================================
+            # FRONTEND
+            # ========================================
+
             - name: Install Frontend Dependencies & Build
               run: |
                   npm ci
                   npm run build
+
+
+            # ========================================
+            # RSYNC EXCLUDE
+            # ========================================
 
             - name: Create Exclude File
               run: |
@@ -62,6 +94,11 @@ jobs:
 
                   sed -i '/public\/build/d' .rsync-exclude
 
+
+            # ========================================
+            # DEPLOY FILES
+            # ========================================
+
             - name: Deploy files
               run: |
                   rsync -avz \
@@ -72,17 +109,28 @@ jobs:
                     ./ \
                     ${{ vars.REMOTE_USER }}@${{ vars.REMOTE_HOST }}:${{ vars.TARGET }}/
 
+
+            # ========================================
+            # DEPLOY APPLICATION
+            # ========================================
+
             - name: Deploy application
               run: |
                   ssh \
                     -p ${{ vars.REMOTE_PORT }} \
                     -o UserKnownHostsFile=~/.ssh/known_hosts \
                     -o StrictHostKeyChecking=yes \
-                    ${{ vars.REMOTE_USER }}@${{ vars.REMOTE_HOST }} << 'EOF'
+                    ${{ vars.REMOTE_USER }}@${{ vars.REMOTE_HOST }} \
+                    'bash -se' << 'EOF'
 
                   set -e
 
                   cd ${{ vars.TARGET }}
+
+
+                  # ========================================
+                  # DOCKER
+                  # ========================================
 
                   echo "========================================"
                   echo "STARTING DOCKER CONTAINERS"
@@ -90,11 +138,17 @@ jobs:
 
                   docker compose up -d --build --force-recreate
 
+
                   echo "========================================"
                   echo "DOCKER CONTAINERS"
                   echo "========================================"
 
                   docker compose ps
+
+
+                  # ========================================
+                  # WAIT FOR MYSQL
+                  # ========================================
 
                   echo "========================================"
                   echo "WAITING FOR MYSQL"
@@ -103,138 +157,234 @@ jobs:
                   MYSQL_READY=0
 
                   for i in $(seq 1 30); do
+
                       MYSQL_STATUS=$(docker compose ps --format '{{.Name}} {{.Health}}' mysql 2>/dev/null || true)
 
                       echo "Tentativa $i/30: $MYSQL_STATUS"
 
-                      if docker compose exec -T mysql mysqladmin ping -p"${DB_PASSWORD}" --silent 2>/dev/null; then
+                      if docker compose exec \
+                          -T \
+                          --interactive=false \
+                          mysql \
+                          mysqladmin ping \
+                          -p"${DB_PASSWORD}" \
+                          --silent \
+                          2>/dev/null </dev/null; then
+
                           MYSQL_READY=1
+
                           echo "MySQL está pronto."
+
                           break
                       fi
 
                       sleep 2
                   done
 
+
                   if [ "$MYSQL_READY" -ne 1 ]; then
+
                       echo "ERROR: MySQL não ficou disponível dentro do tempo esperado."
 
                       docker compose ps
+
                       docker compose logs --tail=100 mysql
 
                       exit 1
                   fi
 
+
+                  # ========================================
+                  # COMPOSER
+                  # ========================================
+
                   echo "========================================"
                   echo "INSTALLING COMPOSER DEPENDENCIES"
                   echo "========================================"
 
-                  docker compose exec -T laravel.sosmecanica composer install \
+                  docker compose exec \
+                      -T \
+                      --interactive=false \
+                      laravel.sosmecanica \
+                      composer install \
                       --no-interaction \
                       --no-dev \
                       --prefer-dist \
-                      --optimize-autoloader
+                      --optimize-autoloader </dev/null
+
+
+                  # ========================================
+                  # DATABASE MIGRATIONS
+                  # ========================================
 
                   echo "========================================"
                   echo "RUNNING DATABASE MIGRATIONS"
                   echo "========================================"
 
-                  docker compose exec -T laravel.sosmecanica php artisan migrate --force
+                  docker compose exec \
+                      -T \
+                      --interactive=false \
+                      laravel.sosmecanica \
+                      php artisan migrate --force </dev/null
+
+
+                  # ========================================
+                  # CLEAR LARAVEL CACHE
+                  # ========================================
 
                   echo "========================================"
                   echo "CLEARING LARAVEL CACHE"
                   echo "========================================"
 
-                  docker compose exec -T laravel.sosmecanica php artisan optimize:clear
+                  docker compose exec \
+                      -T \
+                      --interactive=false \
+                      laravel.sosmecanica \
+                      php artisan optimize:clear </dev/null
+
+
+                  # ========================================
+                  # REMOVE OLD STORAGE LINK
+                  # ========================================
 
                   echo "========================================"
                   echo "REMOVING OLD STORAGE LINK"
                   echo "========================================"
 
-                  docker compose exec -T laravel.sosmecanica sh -c '
-                      if [ -e public/storage ] || [ -L public/storage ]; then
-                          echo "Removendo public/storage existente..."
-                          rm -rf public/storage
-                      else
-                          echo "Nenhum storage link existente encontrado."
-                      fi
-                  '
+                  docker compose exec \
+                      -T \
+                      --interactive=false \
+                      laravel.sosmecanica \
+                      sh -c '
+                          if [ -e public/storage ] || [ -L public/storage ]; then
+                              echo "Removendo public/storage existente..."
+                              rm -rf public/storage
+                          else
+                              echo "Nenhum storage link existente encontrado."
+                          fi
+                      ' </dev/null
+
+
+                  # ========================================
+                  # CREATE STORAGE LINK
+                  # ========================================
 
                   echo "========================================"
                   echo "CREATING STORAGE LINK"
                   echo "========================================"
 
-                  docker compose exec -T laravel.sosmecanica php artisan storage:link
+                  docker compose exec \
+                      -T \
+                      --interactive=false \
+                      laravel.sosmecanica \
+                      php artisan storage:link </dev/null
+
+
+                  # ========================================
+                  # VALIDATE STORAGE LINK
+                  # ========================================
 
                   echo "========================================"
                   echo "VALIDATING STORAGE LINK"
                   echo "========================================"
 
-                  docker compose exec -T laravel.sosmecanica sh -c '
-                      echo "Conteúdo de public:"
-                      ls -la public
+                  docker compose exec \
+                      -T \
+                      --interactive=false \
+                      laravel.sosmecanica \
+                      sh -c '
+                          echo "Conteúdo de public:"
+                          ls -la public
 
-                      echo ""
-                      echo "Storage link:"
-                      ls -la public/storage
+                          echo ""
+                          echo "Storage link:"
+                          ls -la public/storage
 
-                      echo ""
-                      echo "Destino do link:"
-                      readlink public/storage
+                          echo ""
+                          echo "Destino do link:"
+                          readlink public/storage
 
-                      echo ""
-                      echo "Verificando se public/storage é um link simbólico..."
+                          echo ""
+                          echo "Verificando se public/storage é um link simbólico..."
 
-                      if [ ! -L public/storage ]; then
-                          echo "ERROR: public/storage não é um link simbólico."
-                          exit 1
-                      fi
+                          if [ ! -L public/storage ]; then
+                              echo "ERROR: public/storage não é um link simbólico."
+                              exit 1
+                          fi
 
-                      echo ""
-                      echo "Verificando se o destino do link existe..."
+                          echo ""
+                          echo "Verificando se o destino do link existe..."
 
-                      if [ ! -d public/storage ]; then
-                          echo "ERROR: o destino de public/storage não existe."
-                          exit 1
-                      fi
+                          if [ ! -d public/storage ]; then
+                              echo "ERROR: o destino de public/storage não existe."
+                              exit 1
+                          fi
 
-                      echo ""
-                      echo "Verificando storage/app/public..."
+                          echo ""
+                          echo "Verificando storage/app/public..."
 
-                      if [ ! -d storage/app/public ]; then
-                          echo "ERROR: storage/app/public não existe."
-                          exit 1
-                      fi
+                          if [ ! -d storage/app/public ]; then
+                              echo "ERROR: storage/app/public não existe."
+                              exit 1
+                          fi
 
-                      echo ""
-                      echo "Storage link validado com sucesso."
-                  '
+                          echo ""
+                          echo "Storage link validado com sucesso."
+                      ' </dev/null
+
+
+                  # ========================================
+                  # CHECK STORAGE DIRECTORY
+                  # ========================================
 
                   echo "========================================"
                   echo "CHECKING STORAGE DIRECTORY"
                   echo "========================================"
 
-                  docker compose exec -T laravel.sosmecanica sh -c '
-                      echo "Diretório storage/app/public:"
-                      ls -la storage/app/public
+                  docker compose exec \
+                      -T \
+                      --interactive=false \
+                      laravel.sosmecanica \
+                      sh -c '
+                          echo "Diretório storage/app/public:"
+                          ls -la storage/app/public
 
-                      echo ""
+                          echo ""
 
-                      echo "Quantidade de arquivos:"
-                      find storage/app/public -type f | wc -l
-                  '
+                          echo "Quantidade de arquivos:"
+                          find storage/app/public -type f | wc -l
+                      ' </dev/null
+
+
+                  # ========================================
+                  # OPTIMIZE LARAVEL
+                  # ========================================
 
                   echo "========================================"
                   echo "OPTIMIZING LARAVEL"
                   echo "========================================"
 
-                  docker compose exec -T laravel.sosmecanica php artisan optimize
+                  docker compose exec \
+                      -T \
+                      --interactive=false \
+                      laravel.sosmecanica \
+                      php artisan optimize </dev/null
+
+
+                  # ========================================
+                  # FINAL STATUS
+                  # ========================================
 
                   echo "========================================"
                   echo "FINAL CONTAINER STATUS"
                   echo "========================================"
 
                   docker compose ps
+
+
+                  # ========================================
+                  # SUCCESS
+                  # ========================================
 
                   echo "========================================"
                   echo "DEPLOYMENT COMPLETED SUCCESSFULLY"
