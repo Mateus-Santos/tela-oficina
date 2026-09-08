@@ -35,17 +35,22 @@ class FinalizarNota
                 );
             }
 
-            foreach ($nota->itens as $item) {
-                if (!$item->itemable) {
-                    throw new InvalidArgumentException(
-                        "O item #{$item->id} possui um produto ou serviço inválido."
-                    );
-                }
+            $itensProdutos = $nota->itens
+                ->filter(function ($item) {
+                    if (!$item->itemable) {
+                        throw new InvalidArgumentException(
+                            "O item #{$item->id} possui um produto ou serviço inválido."
+                        );
+                    }
 
-                if (!$item->itemable instanceof Produto) {
-                    continue;
-                }
+                    return $item->itemable instanceof Produto;
+                })
+                ->sortBy(function ($item) {
+                    return $item->itemable->id;
+                })
+                ->values();
 
+            foreach ($itensProdutos as $item) {
                 $movimentacaoExistente = DB::table('movimentacao_estoques')
                     ->where('origem_type', $item->getMorphClass())
                     ->where('origem_id', $item->id)
