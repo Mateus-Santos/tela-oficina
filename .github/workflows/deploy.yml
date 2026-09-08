@@ -22,10 +22,10 @@ jobs:
 
         steps:
             - name: Repo Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v5
 
             - name: Start SSH Agent
-              uses: webfactory/ssh-agent@v0.9.0
+              uses: webfactory/ssh-agent@v0.10.0
               with:
                   ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
 
@@ -39,9 +39,10 @@ jobs:
                   chmod 600 ~/.ssh/known_hosts
 
             - name: Setup Node.js
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@v5
               with:
-                  node-version: 20
+                  node-version: 24
+                  cache: npm
 
             - name: Install Frontend Dependencies & Build
               run: |
@@ -130,6 +131,7 @@ jobs:
 
                   docker compose exec -T laravel.sosmecanica composer install \
                       --no-interaction \
+                      --no-dev \
                       --prefer-dist \
                       --optimize-autoloader
 
