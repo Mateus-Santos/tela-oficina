@@ -25,4 +25,20 @@ class FormaPagamento extends Model
     {
         return $this->hasMany(Recebimento::class);
     }
+
+    public function pagamentosContasPagar(): HasMany
+    {
+        return $this->hasMany(
+            PagamentoContaPagar::class,
+            'forma_pagamento_id'
+        );
+    }
+
+    public function contasPagar(): HasMany
+    {
+        return $this->hasMany(
+            ContaPagar::class,
+            'forma_pagamento_id'
+        );
+    }
 }

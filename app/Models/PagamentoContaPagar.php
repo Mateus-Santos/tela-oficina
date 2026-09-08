@@ -17,6 +17,7 @@ class PagamentoContaPagar extends Model
         'valor',
         'data_pagamento',
         'forma_pagamento',
+        'forma_pagamento_id',
         'observacoes',
         'estornado_em',
         'motivo_estorno',
@@ -31,6 +32,14 @@ class PagamentoContaPagar extends Model
     public function contaPagar(): BelongsTo
     {
         return $this->belongsTo(ContaPagar::class);
+    }
+
+    public function formaPagamento(): BelongsTo
+    {
+        return $this->belongsTo(
+            FormaPagamento::class,
+            'forma_pagamento_id'
+        );
     }
 
     public function estaEstornado(): bool

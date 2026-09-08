@@ -29,4 +29,12 @@ class CategoriaFinanceira extends Model
             'categoria_financeira_id'
         );
     }
+
+    public function contasPagar(): HasMany
+    {
+        return $this->hasMany(
+            ContaPagar::class,
+            'categoria_financeira_id'
+        );
+    }
 }

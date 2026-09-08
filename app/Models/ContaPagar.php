@@ -17,6 +17,8 @@ class ContaPagar extends Model
     protected $fillable = [
         'fornecedor_id',
         'nota_id',
+        'categoria_financeira_id',
+        'forma_pagamento_id',
         'descricao',
         'valor',
         'data_emissao',
@@ -39,6 +41,22 @@ class ContaPagar extends Model
     public function nota(): BelongsTo
     {
         return $this->belongsTo(Nota::class);
+    }
+
+    public function categoriaFinanceira(): BelongsTo
+    {
+        return $this->belongsTo(
+            CategoriaFinanceira::class,
+            'categoria_financeira_id'
+        );
+    }
+
+    public function formaPagamento(): BelongsTo
+    {
+        return $this->belongsTo(
+            FormaPagamento::class,
+            'forma_pagamento_id'
+        );
     }
 
     public function pagamentos(): HasMany
