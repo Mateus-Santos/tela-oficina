@@ -3,6 +3,7 @@
 namespace App\Actions\Notas;
 
 use App\Actions\Estoque\RegistrarEntrada;
+use App\Models\ContaReceber;
 use App\Models\MovimentacaoEstoque;
 use App\Models\Nota;
 use App\Models\Produto;
@@ -21,13 +22,32 @@ class CancelarNota
         return DB::transaction(function () use ($nota) {
             $nota = Nota::query()
                 ->lockForUpdate()
-                ->with('itens.itemable')
+                ->with([
+                    'itens.itemable',
+                    'contaReceber.recebimentos',
+                ])
                 ->findOrFail($nota->id);
 
             if ($nota->status !== 'Finalizado') {
                 throw new InvalidArgumentException(
                     'Somente notas finalizadas podem ser canceladas.'
                 );
+            }
+
+            $contaReceber = $nota->contaReceber;
+
+            if ($contaReceber) {
+                if ($contaReceber->status === 'cancelada') {
+                    throw new InvalidArgumentException(
+                        "A conta a receber da Nota #{$nota->id} já está cancelada."
+                    );
+                }
+
+                if ($contaReceber->recebimentos->isNotEmpty()) {
+                    throw new InvalidArgumentException(
+                        "Não é possível cancelar a Nota #{$nota->id} porque sua conta a receber possui recebimentos registrados."
+                    );
+                }
             }
 
             foreach ($nota->itens as $item) {
@@ -75,6 +95,12 @@ class CancelarNota
                     origem: $item,
                     observacoes: "Reversão do cancelamento da Nota #{$nota->id}, item #{$item->id}."
                 );
+            }
+
+            if ($contaReceber) {
+                $contaReceber->update([
+                    'status' => 'cancelada',
+                ]);
             }
 
             $nota->update([

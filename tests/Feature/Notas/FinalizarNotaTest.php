@@ -51,6 +51,16 @@ class FinalizarNotaTest extends TestCase
         );
     }
 
+    private function criarFormaPagamento(): int
+    {
+        return DB::table('formas_pagamento')->insertGetId([
+            'nome' => 'PIX Teste ' . uniqid(),
+            'ativo' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
     private function criarProduto(
         int $quantidade = 10,
         float $preco = 100
@@ -135,10 +145,7 @@ class FinalizarNotaTest extends TestCase
 
         $produto->refresh();
 
-        $this->assertSame(
-            8,
-            $produto->quantidade
-        );
+        $this->assertSame(8, $produto->quantidade);
 
         $this->assertDatabaseHas('movimentacao_estoques', [
             'produto_id' => $produto->id,
@@ -336,10 +343,8 @@ class FinalizarNotaTest extends TestCase
         $this->criarCategoriaVendasEServicos();
 
         $cliente = $this->criarCliente();
-
         $produto1 = $this->criarProduto(10);
         $produto2 = $this->criarProduto(1);
-
         $nota = $this->criarNota($cliente, 300);
 
         $this->criarItemProduto(
@@ -634,7 +639,6 @@ class FinalizarNotaTest extends TestCase
         $this->criarCategoriaVendasEServicos();
 
         $cliente = $this->criarCliente();
-
         $produto1 = $this->criarProduto(10);
         $produto2 = $this->criarProduto(10);
 
@@ -759,7 +763,11 @@ class FinalizarNotaTest extends TestCase
 
         $cliente = $this->criarCliente();
         $produto = $this->criarProduto(10);
-        $nota = $this->criarNota($cliente, 100);
+
+        $nota = $this->criarNota(
+            $cliente,
+            100
+        );
 
         $this->criarItemProduto(
             $nota,
@@ -799,10 +807,258 @@ class FinalizarNotaTest extends TestCase
         ]);
     }
 
+    public function test_cancelamento_cancela_conta_a_receber(): void
+    {
+        $this->criarCategoriaVendasEServicos();
+
+        $cliente = $this->criarCliente();
+        $produto = $this->criarProduto(10);
+
+        $nota = $this->criarNota(
+            $cliente,
+            100
+        );
+
+        $this->criarItemProduto(
+            $nota,
+            $produto,
+            1,
+            100
+        );
+
+        $this->criarFinalizador()->execute($nota);
+
+        $conta = ContaReceber::where(
+            'nota_id',
+            $nota->id
+        )->firstOrFail();
+
+        $this->assertSame(
+            'aberta',
+            $conta->status
+        );
+
+        app(CancelarNota::class)->execute($nota);
+
+        $nota->refresh();
+        $conta->refresh();
+        $produto->refresh();
+
+        $this->assertSame(
+            'Cancelado',
+            $nota->status
+        );
+
+        $this->assertSame(
+            'cancelada',
+            $conta->status
+        );
+
+        $this->assertSame(
+            10,
+            $produto->quantidade
+        );
+
+        $this->assertDatabaseCount(
+            'recebimentos',
+            0
+        );
+    }
+
+    public function test_cancelamento_preserva_conta_a_receber_como_historico(): void
+    {
+        $this->criarCategoriaVendasEServicos();
+
+        $cliente = $this->criarCliente();
+        $produto = $this->criarProduto(10);
+
+        $nota = $this->criarNota(
+            $cliente,
+            250
+        );
+
+        $this->criarItemProduto(
+            $nota,
+            $produto,
+            1,
+            250
+        );
+
+        $this->criarFinalizador()->execute($nota);
+
+        $conta = ContaReceber::where(
+            'nota_id',
+            $nota->id
+        )->firstOrFail();
+
+        $contaId = $conta->id;
+
+        app(CancelarNota::class)->execute($nota);
+
+        $this->assertDatabaseHas('contas_receber', [
+            'id' => $contaId,
+            'nota_id' => $nota->id,
+            'cliente_id' => $cliente->id,
+            'valor_original' => 250,
+            'status' => 'cancelada',
+        ]);
+    }
+
+    public function test_nao_permite_cancelar_nota_com_recebimento(): void
+    {
+        $this->criarCategoriaVendasEServicos();
+
+        $cliente = $this->criarCliente();
+        $produto = $this->criarProduto(10);
+
+        $nota = $this->criarNota(
+            $cliente,
+            100
+        );
+
+        $this->criarItemProduto(
+            $nota,
+            $produto,
+            1,
+            100
+        );
+
+        $this->criarFinalizador()->execute($nota);
+
+        $conta = ContaReceber::where(
+            'nota_id',
+            $nota->id
+        )->firstOrFail();
+
+        $formaPagamentoId = $this->criarFormaPagamento();
+
+        DB::table('recebimentos')->insert([
+            'conta_receber_id' => $conta->id,
+            'forma_pagamento_id' => $formaPagamentoId,
+            'valor' => 50,
+            'data_pagamento' => now(),
+            'usuario_id' => null,
+            'observacoes' => 'Recebimento de teste.',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->expectException(InvalidArgumentException::class);
+
+        try {
+            app(CancelarNota::class)->execute($nota);
+        } finally {
+            $nota->refresh();
+            $conta->refresh();
+            $produto->refresh();
+
+            $this->assertSame(
+                'Finalizado',
+                $nota->status
+            );
+
+            $this->assertSame(
+                'aberta',
+                $conta->status
+            );
+
+            $this->assertSame(
+                9,
+                $produto->quantidade
+            );
+
+            $this->assertDatabaseCount(
+                'movimentacao_estoques',
+                1
+            );
+
+            $this->assertDatabaseCount(
+                'recebimentos',
+                1
+            );
+        }
+    }
+
+    public function test_cancelamento_funciona_sem_conta_a_receber(): void
+    {
+        $cliente = $this->criarCliente();
+        $produto = $this->criarProduto(10);
+
+        $nota = $this->criarNota(
+            $cliente,
+            100
+        );
+
+        $item = $this->criarItemProduto(
+            $nota,
+            $produto,
+            1,
+            100
+        );
+
+        $nota->update([
+            'status' => 'Finalizado',
+        ]);
+
+        $produto->update([
+            'quantidade' => 9,
+        ]);
+
+        DB::table('movimentacao_estoques')->insert([
+            'produto_id' => $produto->id,
+            'tipo' => 'saida',
+            'quantidade' => 1,
+            'saldo_anterior' => 10,
+            'saldo_posterior' => 9,
+            'valor_unitario' => 100,
+            'origem_type' => NotasItem::class,
+            'origem_id' => $item->id,
+            'usuario_id' => null,
+            'observacoes' => 'Baixa de teste.',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $produto->refresh();
+
+        $this->assertSame(
+            9,
+            $produto->quantidade
+        );
+
+        app(CancelarNota::class)->execute($nota);
+
+        $nota->refresh();
+        $produto->refresh();
+
+        $this->assertSame(
+            'Cancelado',
+            $nota->status
+        );
+
+        $this->assertSame(
+            10,
+            $produto->quantidade
+        );
+
+        $this->assertDatabaseCount(
+            'contas_receber',
+            0
+        );
+
+        $this->assertDatabaseCount(
+            'movimentacao_estoques',
+            2
+        );
+    }
+
     public function test_nao_permite_cancelar_nota_aberta(): void
     {
         $cliente = $this->criarCliente();
-        $nota = $this->criarNota($cliente, 100);
+        $nota = $this->criarNota(
+            $cliente,
+            100
+        );
 
         $this->expectException(InvalidArgumentException::class);
 
@@ -815,7 +1071,11 @@ class FinalizarNotaTest extends TestCase
 
         $cliente = $this->criarCliente();
         $produto = $this->criarProduto(10);
-        $nota = $this->criarNota($cliente, 100);
+
+        $nota = $this->criarNota(
+            $cliente,
+            100
+        );
 
         $this->criarItemProduto(
             $nota,
@@ -833,6 +1093,16 @@ class FinalizarNotaTest extends TestCase
         $this->assertSame(
             'Cancelado',
             $nota->status
+        );
+
+        $conta = ContaReceber::where(
+            'nota_id',
+            $nota->id
+        )->firstOrFail();
+
+        $this->assertSame(
+            'cancelada',
+            $conta->status
         );
 
         $this->expectException(InvalidArgumentException::class);
