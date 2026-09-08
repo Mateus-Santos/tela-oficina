@@ -60,7 +60,7 @@ $espacamento: 1rem;
 		.dropdown-item:hover{
 			background-color: $color_1;
 		}
-		
+
 		a {
 			font-family: $font-family_2;
 			color: $color_4;
@@ -70,4 +70,15 @@ $espacamento: 1rem;
 			color: $color_2;
 		}
 	}
+
+    .btn-sair {
+    background-color: #fff !important;
+    color: #212529 !important;
+}
+
+.btn-sair:hover,
+.btn-sair:focus {
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+}
 }

@@ -22,6 +22,7 @@ use App\Http\Controllers\FornecedorController;
 use App\Http\Controllers\AnexoController;
 use App\Http\Controllers\EstoqueController;
 use App\Http\Controllers\MovimentacaoEstoqueController;
+use App\Http\Controllers\ContaPagarController;
 
 // use App\Http\Controllers\ChatController;
 
@@ -124,6 +125,24 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         Route::post('compras/{compra}/anexos', [AnexoController::class, 'storeCompra'])->name('compras.anexos.store');
         Route::get('anexos/{anexo}/download', [AnexoController::class, 'download'])->name('anexos.download');
         Route::delete('anexos/{anexo}', [AnexoController::class, 'destroy'])->name('anexos.destroy');
+
+        // Contas a Pagar
+
+        Route::resource('contas-pagar', ContaPagarController::class)
+            ->parameters([
+                'contas-pagar' => 'conta',
+            ])
+            ->except(['destroy']);
+
+        Route::post('contas-pagar/{conta}/pagamentos', [ContaPagarController::class, 'registrarPagamento'])
+            ->name('contas-pagar.pagamentos.store');
+
+        Route::post('contas-pagar/{conta}/pagamentos/{pagamento}/estornar', [ContaPagarController::class, 'estornarPagamento'])
+            ->name('contas-pagar.pagamentos.estornar');
+
+        Route::post('contas-pagar/{conta}/cancelar', [ContaPagarController::class, 'cancelar'])
+            ->name('contas-pagar.cancelar');
+
     });
 });
 
