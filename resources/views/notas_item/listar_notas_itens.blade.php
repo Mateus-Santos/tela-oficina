@@ -7,6 +7,9 @@
     <x-list-header
         title="LISTAR NOTAS"
         icon="bi-receipt"
+        create-route="notas.create"
+        create-text="Nova Nota"
+        create-icon="bi-plus-lg"
     />
 
     <x-filtros-container
@@ -47,19 +50,31 @@
                         Status (Ativos por padrão)
                     </option>
 
-                    <option value="Aberto" @selected(request('status') === 'Aberto')>
+                    <option
+                        value="Aberto"
+                        @selected(request('status') === 'Aberto')
+                    >
                         Aberto
                     </option>
 
-                    <option value="Andamento" @selected(request('status') === 'Andamento')>
+                    <option
+                        value="Andamento"
+                        @selected(request('status') === 'Andamento')
+                    >
                         Em Andamento
                     </option>
 
-                    <option value="Concluido" @selected(request('status') === 'Concluido')>
+                    <option
+                        value="Concluido"
+                        @selected(request('status') === 'Concluido')
+                    >
                         Concluído
                     </option>
 
-                    <option value="Cancelado" @selected(request('status') === 'Cancelado')>
+                    <option
+                        value="Cancelado"
+                        @selected(request('status') === 'Cancelado')
+                    >
                         Cancelado
                     </option>
                 </select>
@@ -156,6 +171,7 @@
                             </td>
 
                             <td>
+
                                 <a
                                     href="{{ route('notas.pdf', $nota->id) }}"
                                     target="_blank"
@@ -165,9 +181,11 @@
                                     <i class="bi bi-printer"></i>
                                     PDF
                                 </a>
+
                             </td>
 
                             <td>
+
                                 <a
                                     href="{{ route('notas.show', $nota->id) }}"
                                     class="btn btn-success"
@@ -175,14 +193,17 @@
                                 >
                                     <i class="bi bi-list-task"></i>
                                 </a>
+
                             </td>
 
                             <td>
+
                                 <form
                                     action="{{ route('notas.destroy', $nota->id) }}"
                                     method="POST"
                                     onsubmit="return confirm('Deseja realmente excluir esta nota?');"
                                 >
+
                                     @csrf
                                     @method('DELETE')
 
@@ -193,7 +214,9 @@
                                     >
                                         <i class="bi bi-trash3"></i>
                                     </button>
+
                                 </form>
+
                             </td>
 
                         </tr>
