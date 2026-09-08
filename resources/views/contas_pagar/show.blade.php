@@ -3,6 +3,7 @@
 @section('content')
 
 <div class="container cadastro">
+
     <x-list-header
         title="DETALHES DA CONTA A PAGAR"
         icon="bi-wallet2"
@@ -87,6 +88,7 @@
     </div>
 
     <div class="row g-3 mb-4">
+
         <div class="col-12 col-md-4">
             <div class="card h-100">
                 <div class="card-body">
@@ -128,6 +130,7 @@
                 </div>
             </div>
         </div>
+
     </div>
 
     <div class="card mb-4">
@@ -137,7 +140,9 @@
         </div>
 
         <div class="card-body">
+
             <div class="row g-3">
+
                 <div class="col-12 col-md-6">
                     <strong>Descrição</strong>
                     <div>{{ $conta->descricao }}</div>
@@ -156,6 +161,30 @@
                 <div class="col-12 col-md-4">
                     <strong>Fornecedor</strong>
                     <div>{{ $conta->fornecedor->nome ?? 'Não informado' }}</div>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <strong>Categoria financeira</strong>
+                    <div>
+                        @if ($conta->categoriaFinanceira)
+                            <i class="bi bi-tags"></i>
+                            {{ $conta->categoriaFinanceira->nome }}
+                        @else
+                            Não definida
+                        @endif
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <strong>Forma de pagamento planejada</strong>
+                    <div>
+                        @if ($conta->formaPagamento)
+                            <i class="bi bi-credit-card"></i>
+                            {{ $conta->formaPagamento->nome }}
+                        @else
+                            Não definida
+                        @endif
+                    </div>
                 </div>
 
                 <div class="col-12 col-md-4">
@@ -197,13 +226,16 @@
                         </div>
                     </div>
                 @endif
+
             </div>
+
         </div>
     </div>
 
     {{-- ANEXOS --}}
     <div class="card mb-4">
         <div class="card-body">
+
             <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap mb-3">
                 <h2 class="h5 mb-0">
                     <i class="bi bi-paperclip"></i>
@@ -218,6 +250,7 @@
             </div>
 
             @if ($conta->status !== 'cancelada')
+
                 <form
                     method="POST"
                     action="{{ route('contas-pagar.anexos.store', $conta) }}"
@@ -227,6 +260,7 @@
                     @csrf
 
                     <div class="row g-3">
+
                         <div class="col-12 col-md-4">
                             <label for="tipo_anexo_conta" class="form-label">
                                 Tipo do documento
@@ -239,24 +273,31 @@
                                 required
                             >
                                 <option value="">Selecione...</option>
+
                                 <option value="boleto" @selected(old('tipo') === 'boleto')>
                                     Boleto
                                 </option>
+
                                 <option value="comprovante" @selected(old('tipo') === 'comprovante')>
                                     Comprovante de pagamento
                                 </option>
+
                                 <option value="nf" @selected(old('tipo') === 'nf')>
                                     Nota fiscal
                                 </option>
+
                                 <option value="nf_xml" @selected(old('tipo') === 'nf_xml')>
                                     NF-e XML
                                 </option>
+
                                 <option value="recibo" @selected(old('tipo') === 'recibo')>
                                     Recibo
                                 </option>
+
                                 <option value="contrato" @selected(old('tipo') === 'contrato')>
                                     Contrato
                                 </option>
+
                                 <option value="outro" @selected(old('tipo') === 'outro')>
                                     Outro
                                 </option>
@@ -303,18 +344,25 @@
                                 Enviar anexo
                             </button>
                         </div>
+
                     </div>
                 </form>
+
             @else
+
                 <div class="alert alert-warning">
                     <i class="bi bi-lock"></i>
                     Esta conta está cancelada. Novos anexos não podem ser adicionados.
                 </div>
+
             @endif
 
             @if ($conta->anexos->isNotEmpty())
+
                 <div class="table-responsive">
+
                     <table class="table table-striped table-hover align-middle mb-0">
+
                         <thead>
                             <tr>
                                 <th>TIPO</th>
@@ -327,7 +375,9 @@
                         </thead>
 
                         <tbody>
+
                             @foreach ($conta->anexos as $anexo)
+
                                 @php
                                     $tipoAnexo = match ($anexo->tipo) {
                                         'nf' => ['label' => 'Nota fiscal', 'icon' => 'bi-receipt'],
@@ -346,6 +396,7 @@
                                 @endphp
 
                                 <tr>
+
                                     <td>
                                         <span class="badge bg-secondary">
                                             <i class="bi {{ $tipoAnexo['icon'] }}"></i>
@@ -377,6 +428,7 @@
 
                                     <td>
                                         <div class="d-flex justify-content-end gap-1">
+
                                             <a
                                                 href="{{ route('anexos.download', $anexo) }}"
                                                 class="btn btn-sm btn-outline-primary"
@@ -386,6 +438,7 @@
                                             </a>
 
                                             @if (!in_array($conta->status, ['paga', 'cancelada'], true))
+
                                                 <form
                                                     method="POST"
                                                     action="{{ route('anexos.destroy', $anexo) }}"
@@ -402,31 +455,45 @@
                                                         <i class="bi bi-trash"></i>
                                                     </button>
                                                 </form>
+
                                             @endif
+
                                         </div>
                                     </td>
+
                                 </tr>
+
                             @endforeach
+
                         </tbody>
+
                     </table>
+
                 </div>
+
             @else
+
                 <div class="alert alert-light border mb-0">
                     <i class="bi bi-info-circle"></i>
                     Nenhum documento ou anexo foi cadastrado para esta conta.
                 </div>
+
             @endif
+
         </div>
     </div>
 
     @if ($conta->status !== 'cancelada' && $saldo > 0)
+
         <div class="card mb-4" id="registrar-pagamento">
+
             <div class="card-header">
                 <i class="bi bi-cash-coin"></i>
                 Registrar pagamento
             </div>
 
             <div class="card-body">
+
                 <form
                     method="POST"
                     action="{{ route('contas-pagar.pagamentos.store', $conta) }}"
@@ -434,6 +501,7 @@
                     @csrf
 
                     <div class="row g-3">
+
                         <div class="col-12 col-md-4">
                             <label for="valor_pagamento" class="form-label">
                                 Valor do pagamento
@@ -443,13 +511,17 @@
                                 type="number"
                                 name="valor"
                                 id="valor_pagamento"
-                                class="form-control"
+                                class="form-control @error('valor') is-invalid @enderror"
                                 min="0.01"
                                 max="{{ number_format($saldo, 2, '.', '') }}"
                                 step="0.01"
                                 value="{{ old('valor', number_format($saldo, 2, '.', '')) }}"
                                 required
                             >
+
+                            @error('valor')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
 
                             <small class="text-muted">
                                 Saldo disponível:
@@ -466,27 +538,52 @@
                                 type="date"
                                 name="data_pagamento"
                                 id="data_pagamento"
-                                class="form-control"
+                                class="form-control @error('data_pagamento') is-invalid @enderror"
                                 value="{{ old('data_pagamento', today()->format('Y-m-d')) }}"
                                 required
                             >
+
+                            @error('data_pagamento')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="col-12 col-md-4">
-                            <label for="forma_pagamento" class="form-label">
+                            <label for="forma_pagamento_id" class="form-label">
                                 Forma de pagamento
                             </label>
 
-                            <input
-                                type="text"
-                                name="forma_pagamento"
-                                id="forma_pagamento"
-                                class="form-control"
-                                maxlength="100"
-                                value="{{ old('forma_pagamento') }}"
-                                placeholder="PIX, boleto, transferência..."
+                            <select
+                                name="forma_pagamento_id"
+                                id="forma_pagamento_id"
+                                class="form-select @error('forma_pagamento_id') is-invalid @enderror"
                                 required
                             >
+                                <option value="">Selecione...</option>
+
+                                @foreach ($formasPagamento as $formaPagamento)
+                                    <option
+                                        value="{{ $formaPagamento->id }}"
+                                        @selected(
+                                            (string) old(
+                                                'forma_pagamento_id',
+                                                $conta->forma_pagamento_id ?? ''
+                                            ) === (string) $formaPagamento->id
+                                        )
+                                    >
+                                        {{ $formaPagamento->nome }}
+                                    </option>
+                                @endforeach
+
+                            </select>
+
+                            @error('forma_pagamento_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+
+                            <small class="text-muted">
+                                A forma utilizada neste pagamento pode ser diferente da planejada.
+                            </small>
                         </div>
 
                         <div class="col-12">
@@ -497,9 +594,13 @@
                             <textarea
                                 name="observacoes"
                                 id="observacoes_pagamento"
-                                class="form-control"
+                                class="form-control @error('observacoes') is-invalid @enderror"
                                 rows="3"
                             >{{ old('observacoes') }}</textarea>
+
+                            @error('observacoes')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="col-12">
@@ -508,27 +609,39 @@
                                 Registrar pagamento
                             </button>
                         </div>
+
                     </div>
+
                 </form>
+
             </div>
+
         </div>
+
     @endif
 
     <div class="card mb-4">
+
         <div class="card-header">
             <i class="bi bi-clock-history"></i>
             Histórico de pagamentos
         </div>
 
         <div class="card-body">
+
             @if ($conta->pagamentos->isEmpty())
+
                 <div class="alert alert-info mb-0">
                     <i class="bi bi-info-circle"></i>
                     Nenhum pagamento registrado para esta conta.
                 </div>
+
             @else
+
                 <div class="table-responsive">
+
                     <table class="table table-striped table-hover align-middle mb-0">
+
                         <thead>
                             <tr>
                                 <th>ID</th>
@@ -542,8 +655,11 @@
                         </thead>
 
                         <tbody>
+
                             @foreach ($conta->pagamentos as $pagamento)
+
                                 <tr>
+
                                     <td>{{ $pagamento->id }}</td>
 
                                     <td>
@@ -557,11 +673,13 @@
                                     </td>
 
                                     <td>
-                                        {{ $pagamento->forma_pagamento }}
+                                        {{ $pagamento->formaPagamento?->nome ?? $pagamento->forma_pagamento ?? '-' }}
                                     </td>
 
                                     <td>
+
                                         @if ($pagamento->estaEstornado())
+
                                             <span class="badge bg-danger">
                                                 <i class="bi bi-arrow-counterclockwise"></i>
                                                 Estornado
@@ -573,15 +691,20 @@
                                                     {{ $pagamento->estornado_em->format('d/m/Y H:i') }}
                                                 </small>
                                             @endif
+
                                         @else
+
                                             <span class="badge bg-success">
                                                 <i class="bi bi-check-circle"></i>
                                                 Ativo
                                             </span>
+
                                         @endif
+
                                     </td>
 
                                     <td>
+
                                         @if ($pagamento->observacoes)
                                             {{ $pagamento->observacoes }}
                                         @else
@@ -595,10 +718,13 @@
                                                 {{ $pagamento->motivo_estorno }}
                                             </small>
                                         @endif
+
                                     </td>
 
                                     <td>
+
                                         @if (!$pagamento->estaEstornado() && $conta->status !== 'cancelada')
+
                                             <button
                                                 type="button"
                                                 class="btn btn-danger btn-sm"
@@ -608,32 +734,48 @@
                                             >
                                                 <i class="bi bi-arrow-counterclockwise"></i>
                                             </button>
+
                                         @endif
+
                                     </td>
+
                                 </tr>
+
                             @endforeach
+
                         </tbody>
+
                     </table>
+
                 </div>
+
             @endif
+
         </div>
+
     </div>
 
     @if ($conta->status !== 'cancelada')
+
         <div class="card border-danger">
+
             <div class="card-header text-danger">
                 <i class="bi bi-exclamation-triangle"></i>
                 Cancelar conta
             </div>
 
             <div class="card-body">
+
                 @if ($valorPago > 0)
+
                     <div class="alert alert-warning">
                         <i class="bi bi-info-circle"></i>
                         Esta conta possui pagamentos ativos. Para cancelá-la,
                         primeiro estorne todos os pagamentos.
                     </div>
+
                 @else
+
                     <p>
                         O cancelamento não excluirá a conta nem seu histórico.
                         Informe o motivo para registrar a operação.
@@ -647,6 +789,7 @@
                         @csrf
 
                         <div class="mb-3">
+
                             <label for="motivo_cancelamento" class="form-label">
                                 Motivo do cancelamento
                             </label>
@@ -659,21 +802,30 @@
                                 maxlength="1000"
                                 required
                             ></textarea>
+
                         </div>
 
                         <button type="submit" class="btn btn-danger">
                             <i class="bi bi-x-circle"></i>
                             Cancelar conta
                         </button>
+
                     </form>
+
                 @endif
+
             </div>
+
         </div>
+
     @endif
+
 </div>
 
 @foreach ($conta->pagamentos as $pagamento)
+
     @if (!$pagamento->estaEstornado() && $conta->status !== 'cancelada')
+
         <div
             class="modal fade"
             id="modalEstorno{{ $pagamento->id }}"
@@ -681,9 +833,13 @@
             aria-labelledby="modalEstornoLabel{{ $pagamento->id }}"
             aria-hidden="true"
         >
+
             <div class="modal-dialog">
+
                 <div class="modal-content">
+
                     <div class="modal-header">
+
                         <h5
                             class="modal-title"
                             id="modalEstornoLabel{{ $pagamento->id }}"
@@ -698,6 +854,7 @@
                             data-bs-dismiss="modal"
                             aria-label="Fechar"
                         ></button>
+
                     </div>
 
                     <form
@@ -707,6 +864,7 @@
                         @csrf
 
                         <div class="modal-body">
+
                             <p>
                                 Pagamento:
                                 <strong>
@@ -715,6 +873,7 @@
                             </p>
 
                             <div class="mb-3">
+
                                 <label
                                     for="motivo_estorno_{{ $pagamento->id }}"
                                     class="form-label"
@@ -730,10 +889,13 @@
                                     maxlength="1000"
                                     required
                                 ></textarea>
+
                             </div>
+
                         </div>
 
                         <div class="modal-footer">
+
                             <button
                                 type="button"
                                 class="btn btn-secondary"
@@ -747,12 +909,19 @@
                                 <i class="bi bi-arrow-counterclockwise"></i>
                                 Confirmar estorno
                             </button>
+
                         </div>
+
                     </form>
+
                 </div>
+
             </div>
+
         </div>
+
     @endif
+
 @endforeach
 
 @endsection

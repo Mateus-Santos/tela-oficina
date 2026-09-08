@@ -12,7 +12,9 @@ use App\Http\Requests\ContasPagar\EstornarPagamentoContaPagarRequest;
 use App\Http\Requests\ContasPagar\RegistrarPagamentoContaPagarRequest;
 use App\Http\Requests\ContasPagar\StoreContaPagarRequest;
 use App\Http\Requests\ContasPagar\UpdateContaPagarRequest;
+use App\Models\CategoriaFinanceira;
 use App\Models\ContaPagar;
+use App\Models\FormaPagamento;
 use App\Models\Fornecedor;
 use App\Models\Nota;
 use App\Models\PagamentoContaPagar;
@@ -24,18 +26,30 @@ class ContaPagarController extends Controller
     public function index(): View
     {
         $query = ContaPagar::query()
-            ->with('fornecedor')
+            ->with([
+                'fornecedor',
+                'categoriaFinanceira',
+                'formaPagamento',
+            ])
             ->withSum([
                 'pagamentos as valor_pago' => fn ($query) => $query->whereNull('estornado_em'),
             ], 'valor');
 
         if (request()->filled('descricao')) {
             $descricao = trim(request('descricao'));
-            $query->where('descricao', 'like', '%' . $descricao . '%');
+
+            $query->where(
+                'descricao',
+                'like',
+                '%' . $descricao . '%'
+            );
         }
 
         if (request()->filled('fornecedor_id')) {
-            $query->where('fornecedor_id', request('fornecedor_id'));
+            $query->where(
+                'fornecedor_id',
+                request('fornecedor_id')
+            );
         }
 
         if (request()->filled('status')) {
@@ -48,22 +62,40 @@ class ContaPagarController extends Controller
             } else {
                 $query->where('status', $status);
             }
+        } else {
+            $query->where('status', '!=', 'cancelada');
         }
 
         if (request()->filled('data_emissao_inicio')) {
-            $query->whereDate('data_emissao', '>=', request('data_emissao_inicio'));
+            $query->whereDate(
+                'data_emissao',
+                '>=',
+                request('data_emissao_inicio')
+            );
         }
 
         if (request()->filled('data_emissao_fim')) {
-            $query->whereDate('data_emissao', '<=', request('data_emissao_fim'));
+            $query->whereDate(
+                'data_emissao',
+                '<=',
+                request('data_emissao_fim')
+            );
         }
 
         if (request()->filled('data_vencimento_inicio')) {
-            $query->whereDate('data_vencimento', '>=', request('data_vencimento_inicio'));
+            $query->whereDate(
+                'data_vencimento',
+                '>=',
+                request('data_vencimento_inicio')
+            );
         }
 
         if (request()->filled('data_vencimento_fim')) {
-            $query->whereDate('data_vencimento', '<=', request('data_vencimento_fim'));
+            $query->whereDate(
+                'data_vencimento',
+                '<=',
+                request('data_vencimento_fim')
+            );
         }
 
         $contas = $query
@@ -75,7 +107,10 @@ class ContaPagarController extends Controller
             ->orderBy('nome')
             ->get();
 
-        return view('contas_pagar.index', compact('contas', 'fornecedores'));
+        return view('contas_pagar.index', compact(
+            'contas',
+            'fornecedores'
+        ));
     }
 
     public function create(): View
@@ -90,7 +125,23 @@ class ContaPagarController extends Controller
             ->latest()
             ->get();
 
-        return view('contas_pagar.create', compact('fornecedores', 'notas'));
+        $categoriasFinanceiras = CategoriaFinanceira::query()
+            ->where('tipo', 'saida')
+            ->where('ativo', true)
+            ->orderBy('nome')
+            ->get();
+
+        $formasPagamento = FormaPagamento::query()
+            ->where('ativo', true)
+            ->orderBy('nome')
+            ->get();
+
+        return view('contas_pagar.create', compact(
+            'fornecedores',
+            'notas',
+            'categoriasFinanceiras',
+            'formasPagamento'
+        ));
     }
 
     public function store(
@@ -109,11 +160,23 @@ class ContaPagarController extends Controller
         $conta->load([
             'fornecedor',
             'nota',
+            'categoriaFinanceira',
+            'formaPagamento',
             'anexos' => fn ($query) => $query->latest(),
-            'pagamentos' => fn ($query) => $query->latest('data_pagamento'),
+            'pagamentos' => fn ($query) => $query
+                ->with('formaPagamento')
+                ->latest('data_pagamento'),
         ]);
 
-        return view('contas_pagar.show', compact('conta'));
+        $formasPagamento = FormaPagamento::query()
+            ->where('ativo', true)
+            ->orderBy('nome')
+            ->get();
+
+        return view('contas_pagar.show', compact(
+            'conta',
+            'formasPagamento'
+        ));
     }
 
     public function edit(ContaPagar $conta): View
@@ -131,7 +194,30 @@ class ContaPagarController extends Controller
             ->latest()
             ->get();
 
-        return view('contas_pagar.edit', compact('conta', 'fornecedores', 'notas'));
+        $categoriasFinanceiras = CategoriaFinanceira::query()
+            ->where('tipo', 'saida')
+            ->where(function ($query) use ($conta) {
+                $query->where('ativo', true)
+                    ->orWhere('id', $conta->categoria_financeira_id);
+            })
+            ->orderBy('nome')
+            ->get();
+
+        $formasPagamento = FormaPagamento::query()
+            ->where(function ($query) use ($conta) {
+                $query->where('ativo', true)
+                    ->orWhere('id', $conta->forma_pagamento_id);
+            })
+            ->orderBy('nome')
+            ->get();
+
+        return view('contas_pagar.edit', compact(
+            'conta',
+            'fornecedores',
+            'notas',
+            'categoriasFinanceiras',
+            'formasPagamento'
+        ));
     }
 
     public function update(

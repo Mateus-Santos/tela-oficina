@@ -1,4 +1,5 @@
 <div class="row g-3">
+
     <div class="col-12 col-md-8">
         <label for="descricao" class="form-label">
             <i class="bi bi-card-text"></i>
@@ -50,7 +51,6 @@
             class="form-select @error('fornecedor_id') is-invalid @enderror"
         >
             <option value="">Não informado</option>
-
             @foreach ($fornecedores as $fornecedor)
                 <option
                     value="{{ $fornecedor->id }}"
@@ -79,7 +79,6 @@
             class="form-select @error('nota_id') is-invalid @enderror"
         >
             <option value="">Nenhuma nota vinculada</option>
-
             @foreach ($notas as $nota)
                 <option
                     value="{{ $nota->id }}"
@@ -96,6 +95,62 @@
         @enderror
         <small class="text-muted">
             A vinculação é opcional.
+        </small>
+    </div>
+
+    <div class="col-12 col-md-6">
+        <label for="categoria_financeira_id" class="form-label">
+            <i class="bi bi-tags"></i>
+            Categoria financeira
+        </label>
+        <select
+            name="categoria_financeira_id"
+            id="categoria_financeira_id"
+            class="form-select @error('categoria_financeira_id') is-invalid @enderror"
+        >
+            <option value="">Nenhuma categoria</option>
+            @foreach ($categoriasFinanceiras as $categoria)
+                <option
+                    value="{{ $categoria->id }}"
+                    @selected((string) old('categoria_financeira_id', $conta->categoria_financeira_id ?? '') === (string) $categoria->id)
+                >
+                    {{ $categoria->nome }}
+                </option>
+            @endforeach
+        </select>
+        @error('categoria_financeira_id')
+            <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+        <small class="text-muted">
+            Classificação da despesa no financeiro.
+        </small>
+    </div>
+
+    <div class="col-12 col-md-6">
+        <label for="forma_pagamento_id" class="form-label">
+            <i class="bi bi-credit-card"></i>
+            Forma de pagamento planejada
+        </label>
+        <select
+            name="forma_pagamento_id"
+            id="forma_pagamento_id"
+            class="form-select @error('forma_pagamento_id') is-invalid @enderror"
+        >
+            <option value="">Nenhuma forma definida</option>
+            @foreach ($formasPagamento as $formaPagamento)
+                <option
+                    value="{{ $formaPagamento->id }}"
+                    @selected((string) old('forma_pagamento_id', $conta->forma_pagamento_id ?? '') === (string) $formaPagamento->id)
+                >
+                    {{ $formaPagamento->nome }}
+                </option>
+            @endforeach
+        </select>
+        @error('forma_pagamento_id')
+            <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+        <small class="text-muted">
+            Forma preferencial. A forma realmente utilizada pode ser diferente no pagamento.
         </small>
     </div>
 
@@ -171,4 +226,5 @@
             </a>
         </div>
     </div>
+
 </div>

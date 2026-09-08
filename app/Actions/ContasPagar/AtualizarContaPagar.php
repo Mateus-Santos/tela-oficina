@@ -16,7 +16,9 @@ class AtualizarContaPagar
                 ->findOrFail($conta->id);
 
             if ($conta->status === 'cancelada') {
-                throw new InvalidArgumentException('Não é possível alterar uma conta cancelada.');
+                throw new InvalidArgumentException(
+                    'Não é possível alterar uma conta cancelada.'
+                );
             }
 
             $valorPago = (float) $conta->pagamentosAtivos()->sum('valor');
@@ -25,7 +27,9 @@ class AtualizarContaPagar
                 $novoValor = round((float) $dados['valor'], 2);
 
                 if ($novoValor <= 0) {
-                    throw new InvalidArgumentException('O valor da conta deve ser maior que zero.');
+                    throw new InvalidArgumentException(
+                        'O valor da conta deve ser maior que zero.'
+                    );
                 }
 
                 if ($valorPago > 0 && $novoValor <= $valorPago) {
