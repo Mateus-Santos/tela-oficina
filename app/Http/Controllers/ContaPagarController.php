@@ -32,7 +32,8 @@ class ContaPagarController extends Controller
                 'formaPagamento',
             ])
             ->withSum([
-                'pagamentos as valor_pago' => fn ($query) => $query->whereNull('estornado_em'),
+                'pagamentos as valor_pago' => fn ($query) => $query
+                    ->whereNull('estornado_em'),
             ], 'valor');
 
         if (request()->filled('descricao')) {
@@ -58,7 +59,11 @@ class ContaPagarController extends Controller
             if ($status === 'vencida') {
                 $query->where('status', '!=', 'cancelada')
                     ->where('status', '!=', 'paga')
-                    ->whereDate('data_vencimento', '<', today());
+                    ->whereDate(
+                        'data_vencimento',
+                        '<',
+                        today()
+                    );
             } else {
                 $query->where('status', $status);
             }
@@ -107,10 +112,13 @@ class ContaPagarController extends Controller
             ->orderBy('nome')
             ->get();
 
-        return view('contas_pagar.index', compact(
-            'contas',
-            'fornecedores'
-        ));
+        return view(
+            'contas_pagar.index',
+            compact(
+                'contas',
+                'fornecedores'
+            )
+        );
     }
 
     public function create(): View
@@ -136,23 +144,34 @@ class ContaPagarController extends Controller
             ->orderBy('nome')
             ->get();
 
-        return view('contas_pagar.create', compact(
-            'fornecedores',
-            'notas',
-            'categoriasFinanceiras',
-            'formasPagamento'
-        ));
+        return view(
+            'contas_pagar.create',
+            compact(
+                'fornecedores',
+                'notas',
+                'categoriasFinanceiras',
+                'formasPagamento'
+            )
+        );
     }
 
     public function store(
         StoreContaPagarRequest $request,
         CriarContaPagar $action
     ): RedirectResponse {
-        $conta = $action->execute($request->validated());
+        $conta = $action->execute(
+            $request->validated()
+        );
 
         return redirect()
-            ->route('contas-pagar.show', $conta)
-            ->with('success', 'Conta a pagar criada com sucesso.');
+            ->route(
+                'contas-pagar.show',
+                $conta
+            )
+            ->with(
+                'success',
+                'Conta a pagar criada com sucesso.'
+            );
     }
 
     public function show(ContaPagar $conta): View
@@ -168,15 +187,27 @@ class ContaPagarController extends Controller
                 ->latest('data_pagamento'),
         ]);
 
+        $valorPago = (float) $conta
+            ->pagamentosAtivos()
+            ->sum('valor');
+
+        $conta->setAttribute(
+            'valor_pago',
+            $valorPago
+        );
+
         $formasPagamento = FormaPagamento::query()
             ->where('ativo', true)
             ->orderBy('nome')
             ->get();
 
-        return view('contas_pagar.show', compact(
-            'conta',
-            'formasPagamento'
-        ));
+        return view(
+            'contas_pagar.show',
+            compact(
+                'conta',
+                'formasPagamento'
+            )
+        );
     }
 
     public function edit(ContaPagar $conta): View
@@ -198,7 +229,10 @@ class ContaPagarController extends Controller
             ->where('tipo', 'saida')
             ->where(function ($query) use ($conta) {
                 $query->where('ativo', true)
-                    ->orWhere('id', $conta->categoria_financeira_id);
+                    ->orWhere(
+                        'id',
+                        $conta->categoria_financeira_id
+                    );
             })
             ->orderBy('nome')
             ->get();
@@ -206,18 +240,24 @@ class ContaPagarController extends Controller
         $formasPagamento = FormaPagamento::query()
             ->where(function ($query) use ($conta) {
                 $query->where('ativo', true)
-                    ->orWhere('id', $conta->forma_pagamento_id);
+                    ->orWhere(
+                        'id',
+                        $conta->forma_pagamento_id
+                    );
             })
             ->orderBy('nome')
             ->get();
 
-        return view('contas_pagar.edit', compact(
-            'conta',
-            'fornecedores',
-            'notas',
-            'categoriasFinanceiras',
-            'formasPagamento'
-        ));
+        return view(
+            'contas_pagar.edit',
+            compact(
+                'conta',
+                'fornecedores',
+                'notas',
+                'categoriasFinanceiras',
+                'formasPagamento'
+            )
+        );
     }
 
     public function update(
@@ -225,11 +265,20 @@ class ContaPagarController extends Controller
         ContaPagar $conta,
         AtualizarContaPagar $action
     ): RedirectResponse {
-        $action->execute($conta, $request->validated());
+        $action->execute(
+            $conta,
+            $request->validated()
+        );
 
         return redirect()
-            ->route('contas-pagar.show', $conta)
-            ->with('success', 'Conta a pagar atualizada com sucesso.');
+            ->route(
+                'contas-pagar.show',
+                $conta
+            )
+            ->with(
+                'success',
+                'Conta a pagar atualizada com sucesso.'
+            );
     }
 
     public function registrarPagamento(
@@ -237,11 +286,20 @@ class ContaPagarController extends Controller
         ContaPagar $conta,
         RegistrarPagamentoContaPagar $action
     ): RedirectResponse {
-        $action->execute($conta, $request->validated());
+        $action->execute(
+            $conta,
+            $request->validated()
+        );
 
         return redirect()
-            ->route('contas-pagar.show', $conta)
-            ->with('success', 'Pagamento registrado com sucesso.');
+            ->route(
+                'contas-pagar.show',
+                $conta
+            )
+            ->with(
+                'success',
+                'Pagamento registrado com sucesso.'
+            );
     }
 
     public function estornarPagamento(
@@ -257,8 +315,14 @@ class ContaPagarController extends Controller
         );
 
         return redirect()
-            ->route('contas-pagar.show', $conta)
-            ->with('success', 'Pagamento estornado com sucesso.');
+            ->route(
+                'contas-pagar.show',
+                $conta
+            )
+            ->with(
+                'success',
+                'Pagamento estornado com sucesso.'
+            );
     }
 
     public function cancelar(
@@ -272,7 +336,13 @@ class ContaPagarController extends Controller
         );
 
         return redirect()
-            ->route('contas-pagar.show', $conta)
-            ->with('success', 'Conta a pagar cancelada com sucesso.');
+            ->route(
+                'contas-pagar.show',
+                $conta
+            )
+            ->with(
+                'success',
+                'Conta a pagar cancelada com sucesso.'
+            );
     }
 }
