@@ -16,25 +16,35 @@
         // ============================================================
 
         const kmAtual = document.getElementById('km');
+
         const diferenca = document.getElementById(
             'km_diferenca_troca_oleo'
         );
+
         const kmProximaTroca = document.getElementById(
             'km_proxima_troca_oleo'
         );
+
         const mensagem = document.getElementById(
             'km_diferenca_troca_oleo_mensagem'
         );
 
         // ============================================================
-        // BUSCA DE PLACA
+        // CONTROLE DA BUSCA DA PLACA
         // ============================================================
 
         let buscaPlacaController = null;
+        let ultimaPlacaBuscada = '';
 
         // ============================================================
         // UTILITÁRIOS
         // ============================================================
+
+        function normalizarPlaca(valor) {
+            return String(valor || '')
+                .toUpperCase()
+                .replace(/[^A-Z0-9]/g, '');
+        }
 
         function limparDadosVeiculo() {
             if (clienteNome) {
@@ -48,12 +58,6 @@
             if (idVeiculo) {
                 idVeiculo.value = '';
             }
-        }
-
-        function normalizarPlaca(valor) {
-            return String(valor || '')
-                .toUpperCase()
-                .replace(/[-\s]/g, '');
         }
 
         // ============================================================
@@ -133,6 +137,75 @@
         }
 
         // ============================================================
+        // COLOCA O VEÍCULO ENCONTRADO NO SELECT
+        // ============================================================
+
+        function selecionarVeiculo(data) {
+            if (
+                !idVeiculo ||
+                !data ||
+                !data.veiculo_id
+            ) {
+                return;
+            }
+
+            const veiculoId = String(data.veiculo_id);
+
+            // --------------------------------------------------------
+            // Procura uma option já existente
+            // --------------------------------------------------------
+
+            let option = Array.from(idVeiculo.options).find(
+                (item) => item.value === veiculoId
+            );
+
+            // --------------------------------------------------------
+            // Se não existir, cria a option
+            // --------------------------------------------------------
+
+            if (!option) {
+                option = document.createElement('option');
+
+                option.value = veiculoId;
+
+                option.textContent =
+                    data.placa || `Veículo #${veiculoId}`;
+
+                idVeiculo.appendChild(option);
+            }
+
+            // --------------------------------------------------------
+            // Seleciona o veículo
+            // --------------------------------------------------------
+
+            idVeiculo.value = veiculoId;
+
+            // --------------------------------------------------------
+            // Confirma que o navegador realmente selecionou
+            // --------------------------------------------------------
+
+            if (idVeiculo.value !== veiculoId) {
+                console.error(
+                    '[SOS Mecânica] Não foi possível selecionar o veículo.',
+                    {
+                        veiculoId: veiculoId,
+                        valorAtual: idVeiculo.value
+                    }
+                );
+
+                return;
+            }
+
+            console.log(
+                '[SOS Mecânica] Veículo selecionado:',
+                {
+                    id: data.veiculo_id,
+                    placa: data.placa
+                }
+            );
+        }
+
+        // ============================================================
         // BUSCA OS DADOS DO VEÍCULO PELA PLACA
         // ============================================================
 
@@ -145,18 +218,45 @@
 
             placaInput.value = placa;
 
+            // --------------------------------------------------------
+            // PLACA VAZIA
+            // --------------------------------------------------------
+
             if (!placa) {
                 if (buscaPlacaController) {
                     buscaPlacaController.abort();
                     buscaPlacaController = null;
                 }
 
+                ultimaPlacaBuscada = '';
+
                 limparDadosVeiculo();
 
                 return;
             }
 
-            // Cancela uma busca anterior ainda em andamento.
+            // --------------------------------------------------------
+            // NÃO BUSCA PLACA INCOMPLETA
+            // --------------------------------------------------------
+
+            if (placa.length < 7) {
+                return;
+            }
+
+            // --------------------------------------------------------
+            // EVITA BUSCAR A MESMA PLACA NOVAMENTE
+            // --------------------------------------------------------
+
+            if (placa === ultimaPlacaBuscada) {
+                return;
+            }
+
+            ultimaPlacaBuscada = placa;
+
+            // --------------------------------------------------------
+            // CANCELA BUSCA ANTERIOR
+            // --------------------------------------------------------
+
             if (buscaPlacaController) {
                 buscaPlacaController.abort();
             }
@@ -176,32 +276,61 @@
                     }
                 );
 
+                // ----------------------------------------------------
+                // VEÍCULO NÃO ENCONTRADO / ERRO HTTP
+                // ----------------------------------------------------
+
                 if (!response.ok) {
+                    console.warn(
+                        '[SOS Mecânica] Veículo não encontrado para a placa:',
+                        placa
+                    );
+
                     limparDadosVeiculo();
+
                     return;
                 }
 
                 const data = await response.json();
 
                 // ----------------------------------------------------
+                // VALIDA RESPOSTA
+                // ----------------------------------------------------
+
+                if (
+                    !data ||
+                    !data.veiculo_id
+                ) {
+                    console.warn(
+                        '[SOS Mecânica] API retornou dados inválidos:',
+                        data
+                    );
+
+                    limparDadosVeiculo();
+
+                    return;
+                }
+
+                // ----------------------------------------------------
                 // CLIENTE
                 // ----------------------------------------------------
 
                 if (clienteNome) {
-                    clienteNome.value = data.cliente_nome || '';
+                    clienteNome.value =
+                        data.cliente_nome || '';
                 }
 
                 if (clienteId) {
-                    clienteId.value = data.cliente_id || '';
+                    clienteId.value =
+                        data.cliente_id || '';
                 }
 
                 // ----------------------------------------------------
                 // VEÍCULO
                 // ----------------------------------------------------
 
-                if (idVeiculo) {
-                    idVeiculo.value = data.veiculo_id || '';
-                }
+                selecionarVeiculo(data);
+
             } catch (error) {
                 if (error.name === 'AbortError') {
                     return;
@@ -213,6 +342,7 @@
                 );
 
                 limparDadosVeiculo();
+
             } finally {
                 buscaPlacaController = null;
             }
@@ -247,7 +377,7 @@
         }
 
         // ============================================================
-        // BUSCAR PLACA AO SAIR DO CAMPO
+        // BUSCA DA PLACA
         // ============================================================
 
         if (placaInput) {
@@ -256,16 +386,38 @@
                 buscarDadosPlaca
             );
 
-            // --------------------------------------------------------
-            // BUSCAR PLACA AO PRESSIONAR ENTER
-            // --------------------------------------------------------
-
             placaInput.addEventListener(
                 'keydown',
                 function (event) {
                     if (event.key === 'Enter') {
                         event.preventDefault();
+
                         buscarDadosPlaca();
+                    }
+                }
+            );
+
+            placaInput.addEventListener(
+                'input',
+                function () {
+                    const placa = normalizarPlaca(
+                        placaInput.value
+                    );
+
+                    placaInput.value = placa;
+
+                    // Se o usuário alterou a placa,
+                    // permite uma nova consulta.
+
+                    if (placa !== ultimaPlacaBuscada) {
+                        ultimaPlacaBuscada = '';
+                    }
+
+                    // Quando a placa ficou vazia,
+                    // limpa os dados vinculados.
+
+                    if (!placa) {
+                        limparDadosVeiculo();
                     }
                 }
             );
