@@ -7,7 +7,7 @@
     <x-list-header
         title="LISTAR NOTAS"
         icon="bi-receipt"
-        create-route="notas.create"
+        create-route="notasitem.create"
         create-text="Nova Nota"
         create-icon="bi-plus-lg"
     />

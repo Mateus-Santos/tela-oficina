@@ -60,7 +60,7 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         Route::get('/notas/{id}/pdf', [NotaController::class, 'gerarpdf'])->name('notas.pdf');
         Route::post('/notas/{nota}/finalizar', [NotaController::class, 'finalizar'])->name('notas.finalizar');
         Route::post('/notas/{nota}/cancelar', [NotaController::class, 'cancelar'])->name('notas.cancelar');
-        Route::resource('notas', NotaController::class);
+        Route::resource('notas', NotaController::class)->only(['index','show','destroy',]);
 
         // Ordens de Serviço
         Route::resource('ordemservicos', OrdemServicoController::class);
