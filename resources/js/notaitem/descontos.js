@@ -1,7 +1,9 @@
 (function () {
+
     'use strict';
 
     function iniciarDescontos() {
+
         // ============================================================
         // ELEMENTOS PRINCIPAIS
         // ============================================================
@@ -66,10 +68,33 @@
             );
 
         // ============================================================
+        // CONTROLE DA FONTE DO DESCONTO
+        // ============================================================
+        //
+        // 'valor'      = R$ é a fonte da verdade.
+        // 'percentual' = % é a fonte da verdade.
+        //
+        // Isso evita:
+        //
+        // R$ 50,00
+        //     ↓
+        // 5,88%
+        //     ↓
+        // R$ 49,98
+        //
+        // Se o usuário digitou R$ 50,00, continuaremos usando
+        // R$ 50,00 na hora de aplicar.
+        // ============================================================
+
+        let fonteDescontoPecas = 'valor';
+        let fonteDescontoServicos = 'valor';
+
+        // ============================================================
         // AUXILIARES
         // ============================================================
 
         function converterNumero(valor) {
+
             if (
                 valor === null ||
                 typeof valor === 'undefined'
@@ -84,13 +109,17 @@
             }
 
             if (texto.indexOf(',') !== -1) {
+
                 texto = texto
                     .replace(/\./g, '')
                     .replace(',', '.');
+
             } else if (
                 (texto.match(/\./g) || []).length > 1
             ) {
+
                 texto = texto.replace(/\./g, '');
+
             }
 
             const numero =
@@ -104,6 +133,7 @@
         }
 
         function formatarMoeda(valor) {
+
             const numero = Number(valor);
 
             if (!Number.isFinite(numero)) {
@@ -120,6 +150,7 @@
         }
 
         function formatarNumero(valor) {
+
             const numero = Number(valor);
 
             if (!Number.isFinite(numero)) {
@@ -132,6 +163,7 @@
         }
 
         function limitarPercentual(valor) {
+
             const numero =
                 converterNumero(valor);
 
@@ -146,11 +178,13 @@
         // ============================================================
 
         function obterModuloItens() {
+
             if (
                 !window.NotaItens ||
                 typeof window.NotaItens.obterDadosFinanceiros !==
                     'function'
             ) {
+
                 console.warn(
                     '[SOS Mecânica] NotaItens ainda não está disponível.'
                 );
@@ -162,10 +196,12 @@
         }
 
         function obterDadosFinanceiros() {
+
             const moduloItens =
                 obterModuloItens();
 
             if (!moduloItens) {
+
                 return {
                     produto: {
                         bruto: 0,
@@ -189,6 +225,7 @@
         }
 
         function obterSubtotalCategoria(tipo) {
+
             const dados =
                 obterDadosFinanceiros();
 
@@ -208,12 +245,14 @@
         // ============================================================
 
         function obterLinhas() {
+
             return tabelaItens.querySelectorAll(
                 'tr[data-item-index]'
             );
         }
 
         function obterTipoLinha(linha) {
+
             const tipoInput =
                 linha.querySelector(
                     'input[name*="[itemable_type]"], input[name*="[tipo]"]'
@@ -248,6 +287,7 @@
         }
 
         function obterDadosLinha(linha) {
+
             const quantidadeInput =
                 linha.querySelector(
                     '.input-qtd, .item-quantidade'
@@ -307,6 +347,7 @@
         // ============================================================
 
         function aplicarMascaraPercentual(input) {
+
             if (!input) {
                 return;
             }
@@ -314,6 +355,7 @@
             input.addEventListener(
                 'input',
                 function () {
+
                     let valor =
                         input.value;
 
@@ -336,6 +378,7 @@
                     if (
                         primeiraVirgula !== -1
                     ) {
+
                         valor =
                             valor.substring(
                                 0,
@@ -358,6 +401,7 @@
                     if (
                         valor.indexOf(',') !== -1
                     ) {
+
                         const partes =
                             valor.split(',');
 
@@ -384,6 +428,7 @@
                     if (
                         valor.indexOf(',') !== -1
                     ) {
+
                         const partes =
                             valor.split(',');
 
@@ -399,7 +444,9 @@
 
                         valor =
                             `${inteiro},${partes[1]}`;
+
                     } else {
+
                         valor =
                             valor.replace(
                                 /^0+(?=\d)/,
@@ -413,11 +460,6 @@
 
                     // ------------------------------------------------
                     // Limita a 100%.
-                    //
-                    // IMPORTANTE:
-                    // não interromper aqui.
-                    // O valor corrigido precisa sincronizar
-                    // o campo em R$.
                     // ------------------------------------------------
 
                     const numero =
@@ -444,6 +486,27 @@
                             ? pecasValorInput
                             : servicosValorInput;
 
+                    // ------------------------------------------------
+                    // IMPORTANTE:
+                    //
+                    // O usuário alterou o percentual.
+                    // Agora o percentual passa a ser a fonte
+                    // da verdade.
+                    // ------------------------------------------------
+
+                    if (
+                        input === pecasPorcentInput
+                    ) {
+
+                        fonteDescontoPecas =
+                            'percentual';
+
+                    } else {
+
+                        fonteDescontoServicos =
+                            'percentual';
+                    }
+
                     sincronizarPercentualParaValor(
                         input,
                         campoValor,
@@ -457,11 +520,15 @@
             input.addEventListener(
                 'blur',
                 function () {
+
                     if (
                         input.value.trim() === ''
                     ) {
+
                         input.value = '0,00';
+
                     } else {
+
                         input.value =
                             formatarNumero(
                                 limitarPercentual(
@@ -485,6 +552,24 @@
                             ? pecasValorInput
                             : servicosValorInput;
 
+                    /*
+                     * O usuário está trabalhando no campo de
+                     * percentual, então ele continua sendo a
+                     * fonte da verdade.
+                     */
+                    if (
+                        input === pecasPorcentInput
+                    ) {
+
+                        fonteDescontoPecas =
+                            'percentual';
+
+                    } else {
+
+                        fonteDescontoServicos =
+                            'percentual';
+                    }
+
                     sincronizarPercentualParaValor(
                         input,
                         campoValor,
@@ -505,6 +590,7 @@
             porcentInput,
             subtotal
         ) {
+
             if (
                 !valorInput ||
                 !porcentInput
@@ -521,6 +607,7 @@
                 );
 
             if (subtotal <= 0) {
+
                 porcentInput.value =
                     '0,00';
 
@@ -548,6 +635,7 @@
             valorInput,
             subtotal
         ) {
+
             if (
                 !porcentInput ||
                 !valorInput
@@ -561,6 +649,7 @@
                 );
 
             if (subtotal <= 0) {
+
                 valorInput.value =
                     '0,00';
 
@@ -582,6 +671,7 @@
         // ============================================================
 
         function atualizarResumoModal() {
+
             const dados =
                 obterDadosFinanceiros();
 
@@ -618,6 +708,7 @@
                 );
 
             if (resumoPecas) {
+
                 resumoPecas.textContent =
                     formatarMoeda(
                         descontoPecasLimitado
@@ -625,6 +716,7 @@
             }
 
             if (resumoServicos) {
+
                 resumoServicos.textContent =
                     formatarMoeda(
                         descontoServicosLimitado
@@ -632,6 +724,7 @@
             }
 
             if (resumoTotal) {
+
                 resumoTotal.textContent =
                     formatarMoeda(
                         descontoPecasLimitado +
@@ -645,6 +738,7 @@
         // ============================================================
 
         function prepararModal() {
+
             const dados =
                 obterDadosFinanceiros();
 
@@ -665,6 +759,7 @@
                     : 0;
 
             if (pecasValorInput) {
+
                 pecasValorInput.value =
                     formatarNumero(
                         dados.produto.desconto
@@ -672,6 +767,7 @@
             }
 
             if (pecasPorcentInput) {
+
                 pecasPorcentInput.value =
                     formatarNumero(
                         limitarPercentual(
@@ -681,6 +777,7 @@
             }
 
             if (servicosValorInput) {
+
                 servicosValorInput.value =
                     formatarNumero(
                         dados.os.desconto
@@ -688,6 +785,7 @@
             }
 
             if (servicosPorcentInput) {
+
                 servicosPorcentInput.value =
                     formatarNumero(
                         limitarPercentual(
@@ -696,30 +794,155 @@
                     );
             }
 
+            /*
+             * Ao abrir o modal, o valor monetário existente
+             * representa o estado real da nota.
+             *
+             * Portanto, inicialmente R$ é a fonte da verdade.
+             */
+            fonteDescontoPecas = 'valor';
+            fonteDescontoServicos = 'valor';
+
             atualizarResumoModal();
         }
 
         // ============================================================
         // APLICAR DESCONTO EM UMA CATEGORIA
+        // ============================================================
         //
-        // REGRA ANTIGA:
+        // Agora a função recebe a fonte do desconto:
         //
-        // desconto = subtotal BRUTO do item * percentual / 100
+        // - valor:
+        //     usa exatamente o valor em R$
         //
-        // O desconto existente é substituído pelo resultado.
+        // - percentual:
+        //     calcula o desconto através do percentual
+        //
         // ============================================================
 
         function aplicarDescontoCategoria(
             tipo,
+            valorDesconto,
             percentual
         ) {
-            const percentualAplicado =
-                limitarPercentual(
-                    percentual
+
+            let descontoCategoria = 0;
+
+            /*
+             * Se o desconto foi informado em R$,
+             * NÃO fazemos conversão novamente através
+             * do percentual arredondado.
+             */
+            if (
+                typeof valorDesconto !== 'undefined' &&
+                valorDesconto !== null
+            ) {
+
+                descontoCategoria =
+                    Math.max(
+                        0,
+                        converterNumero(
+                            valorDesconto
+                        )
+                    );
+
+            } else {
+
+                const percentualAplicado =
+                    limitarPercentual(
+                        percentual
+                    );
+
+                obterLinhas().forEach(
+                    function (linha) {
+
+                        if (
+                            obterTipoLinha(linha) !==
+                            tipo
+                        ) {
+                            return;
+                        }
+
+                        const dados =
+                            obterDadosLinha(linha);
+
+                        if (!dados) {
+                            return;
+                        }
+
+                        const descontoProporcional =
+                            (
+                                dados.subtotalBruto *
+                                percentualAplicado
+                            ) / 100;
+
+                        const descontoFinal =
+                            Math.min(
+                                dados.subtotalBruto,
+                                descontoProporcional
+                            );
+
+                        const descontoInput =
+                            linha.querySelector(
+                                '.input-desconto, .item-desconto'
+                            );
+
+                        if (descontoInput) {
+
+                            descontoInput.value =
+                                formatarNumero(
+                                    descontoFinal
+                                );
+                        }
+                    }
                 );
+
+                return;
+            }
+
+            /*
+             * Limita o desconto ao subtotal bruto da categoria.
+             */
+            const subtotalCategoria =
+                obterSubtotalCategoria(
+                    tipo
+                );
+
+            descontoCategoria =
+                Math.min(
+                    subtotalCategoria,
+                    descontoCategoria
+                );
+
+            /*
+             * Calculamos a proporção exata do desconto monetário
+             * em relação ao subtotal.
+             *
+             * IMPORTANTE:
+             *
+             * Não arredondamos o percentual antes de distribuir.
+             *
+             * Assim:
+             *
+             * R$ 50 / R$ 850 = 5,882352...
+             *
+             * e não:
+             *
+             * 5,88%
+             *
+             * para depois voltar para R$ 49,98.
+             */
+            const percentualExato =
+                subtotalCategoria > 0
+                    ? (
+                        descontoCategoria /
+                        subtotalCategoria
+                    ) * 100
+                    : 0;
 
             obterLinhas().forEach(
                 function (linha) {
+
                     if (
                         obterTipoLinha(linha) !==
                         tipo
@@ -737,7 +960,7 @@
                     const descontoProporcional =
                         (
                             dados.subtotalBruto *
-                            percentualAplicado
+                            percentualExato
                         ) / 100;
 
                     const descontoFinal =
@@ -752,6 +975,7 @@
                         );
 
                     if (descontoInput) {
+
                         descontoInput.value =
                             formatarNumero(
                                 descontoFinal
@@ -766,43 +990,106 @@
         // ============================================================
 
         function aplicarDescontos() {
+
             const dados =
                 obterDadosFinanceiros();
 
-            const percentualPecas =
-                pecasPorcentInput
-                    ? limitarPercentual(
-                        pecasPorcentInput.value
-                    )
-                    : 0;
-
-            const percentualServicos =
-                servicosPorcentInput
-                    ? limitarPercentual(
-                        servicosPorcentInput.value
-                    )
-                    : 0;
-
-            // --------------------------------------------------------
-            // PEÇAS
-            // --------------------------------------------------------
+            /*
+             * --------------------------------------------------------
+             * PEÇAS
+             * --------------------------------------------------------
+             */
 
             if (dados.produto.bruto > 0) {
-                aplicarDescontoCategoria(
-                    'produto',
-                    percentualPecas
-                );
+
+                if (
+                    fonteDescontoPecas ===
+                    'valor'
+                ) {
+
+                    const valorDesconto =
+                        pecasValorInput
+                            ? Math.min(
+                                dados.produto.bruto,
+                                Math.max(
+                                    0,
+                                    converterNumero(
+                                        pecasValorInput.value
+                                    )
+                                )
+                            )
+                            : 0;
+
+                    aplicarDescontoCategoria(
+                        'produto',
+                        valorDesconto,
+                        null
+                    );
+
+                } else {
+
+                    const percentualPecas =
+                        pecasPorcentInput
+                            ? limitarPercentual(
+                                pecasPorcentInput.value
+                            )
+                            : 0;
+
+                    aplicarDescontoCategoria(
+                        'produto',
+                        null,
+                        percentualPecas
+                    );
+                }
             }
 
-            // --------------------------------------------------------
-            // SERVIÇOS
-            // --------------------------------------------------------
+            /*
+             * --------------------------------------------------------
+             * SERVIÇOS
+             * --------------------------------------------------------
+             */
 
             if (dados.os.bruto > 0) {
-                aplicarDescontoCategoria(
-                    'os',
-                    percentualServicos
-                );
+
+                if (
+                    fonteDescontoServicos ===
+                    'valor'
+                ) {
+
+                    const valorDesconto =
+                        servicosValorInput
+                            ? Math.min(
+                                dados.os.bruto,
+                                Math.max(
+                                    0,
+                                    converterNumero(
+                                        servicosValorInput.value
+                                    )
+                                )
+                            )
+                            : 0;
+
+                    aplicarDescontoCategoria(
+                        'os',
+                        valorDesconto,
+                        null
+                    );
+
+                } else {
+
+                    const percentualServicos =
+                        servicosPorcentInput
+                            ? limitarPercentual(
+                                servicosPorcentInput.value
+                            )
+                            : 0;
+
+                    aplicarDescontoCategoria(
+                        'os',
+                        null,
+                        percentualServicos
+                    );
+                }
             }
 
             // --------------------------------------------------------
@@ -814,6 +1101,7 @@
                 typeof window.NotaItens.recalcular ===
                     'function'
             ) {
+
                 window.NotaItens.recalcular();
             }
 
@@ -831,6 +1119,7 @@
                 modalDescontos &&
                 typeof bootstrap !== 'undefined'
             ) {
+
                 const modal =
                     bootstrap.Modal.getInstance(
                         modalDescontos
@@ -847,6 +1136,7 @@
         // ============================================================
 
         if (modalDescontos) {
+
             modalDescontos.addEventListener(
                 'show.bs.modal',
                 prepararModal
@@ -854,6 +1144,7 @@
         }
 
         if (botaoAplicar) {
+
             botaoAplicar.addEventListener(
                 'click',
                 aplicarDescontos
@@ -877,9 +1168,19 @@
         // ============================================================
 
         if (pecasValorInput) {
+
             pecasValorInput.addEventListener(
                 'input',
                 function () {
+
+                    /*
+                     * O usuário alterou R$.
+                     *
+                     * R$ passa a ser a fonte da verdade.
+                     */
+                    fonteDescontoPecas =
+                        'valor';
+
                     const subtotal =
                         obterSubtotalCategoria(
                             'produto'
@@ -901,9 +1202,19 @@
         // ============================================================
 
         if (servicosValorInput) {
+
             servicosValorInput.addEventListener(
                 'input',
                 function () {
+
+                    /*
+                     * O usuário alterou R$.
+                     *
+                     * R$ passa a ser a fonte da verdade.
+                     */
+                    fonteDescontoServicos =
+                        'valor';
+
                     const subtotal =
                         obterSubtotalCategoria(
                             'os'
@@ -936,6 +1247,7 @@
     // ================================================================
 
     if (document.readyState === 'loading') {
+
         document.addEventListener(
             'DOMContentLoaded',
             iniciarDescontos,
@@ -943,7 +1255,10 @@
                 once: true
             }
         );
+
     } else {
+
         iniciarDescontos();
     }
+
 })();
