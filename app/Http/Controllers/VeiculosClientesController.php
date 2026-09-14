@@ -115,8 +115,8 @@ class VeiculosClientesController extends Controller
                 ->orderBy('id', 'desc')
                 ->get();
         } else {
-            $clientes = Cliente::whereHas('pessoa', function ($query) use ($userLogado) {
-                $query->where('user_id', $userLogado->id);
+            $clientes = Cliente::whereHas('pessoa.user', function ($query) use ($userLogado) {
+                $query->where('id', $userLogado->id);
             })
                 ->with('pessoa')
                 ->get();
