@@ -35,11 +35,34 @@ class Produto extends Model
                 $q->where('codigo_barras', $v)
             )
             ->when($filtros['codigo_fabricante'] ?? null, fn ($q, $v) =>
-                $q->where('codigo_fabricante', 'like', "%{$v}%")
+                $q->where('codigo_fabricante', $v)
+            )
+            ->when($filtros['marca'] ?? null, fn ($q, $v) =>
+                $q->where('marca', 'like', "%{$v}%")
             )
             ->when($filtros['fornecedor_id'] ?? null, fn ($q, $v) =>
                 $q->where('fornecedor_id', $v)
-            );
+            )
+            ->when(
+                isset($filtros['status']) && $filtros['status'] !== '',
+                fn ($q) =>
+                    $q->where('status', (bool) $filtros['status'])
+            )
+            ->when($filtros['estoque'] ?? null, function ($q, $v) {
+                return match ($v) {
+                    'com_estoque' => $q->where('quantidade', '>', 0),
+
+                    'sem_estoque' => $q->where('quantidade', 0),
+
+                    'estoque_baixo' => $q->whereColumn(
+                        'quantidade',
+                        '<=',
+                        'estoque_minimo'
+                    ),
+
+                    default => $q,
+                };
+            });
     }
 
     public function veiculos(): BelongsToMany

@@ -11,7 +11,6 @@ $larguras: 1rem;
   margin-bottom: 5rem;
   padding: $larguras;
   overflow-x: auto;
-  overflow-y: auto;
   box-shadow: $background-color_2 1rem 1rem 3rem;
 
   &::before {
@@ -116,4 +115,16 @@ $larguras: 1rem;
 .tag .remove-tag {
     cursor: pointer;
     font-weight: bold;
+}
+
+/* ==========================================================
+   MODAIS - HIERARQUIA DE CAMADAS
+   ========================================================== */
+
+.modal {
+    z-index: 10050 !important;
+}
+
+.modal-backdrop {
+    z-index: 10040 !important;
 }
