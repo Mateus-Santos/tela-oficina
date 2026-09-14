@@ -28,7 +28,8 @@ class ProdutoController extends Controller
         $produtos = Produto::with(['veiculos'])
             ->filtro($request->all())
             ->orderBy('nome')
-            ->get();
+            ->paginate(20)
+            ->withQueryString();
 
         return view('produto.listarproduto', compact(
             'produtos',
