@@ -18,11 +18,14 @@ class RegistrarEntradaCompra
     public function execute(Compra $compra): void
     {
         DB::transaction(function () use ($compra) {
-            $compra->loadMissing('itens.produto');
+            $compra = Compra::query()
+                ->lockForUpdate()
+                ->with('itens.produto')
+                ->findOrFail($compra->id);
 
-            if ($compra->status === 'cancelada') {
+            if (!$compra->estaAprovada()) {
                 throw new InvalidArgumentException(
-                    'Uma compra cancelada não pode ser lançada no estoque.'
+                    'Somente compras aprovadas podem ser lançadas no estoque.'
                 );
             }
 
@@ -45,25 +48,31 @@ class RegistrarEntradaCompra
                     );
                 }
 
-                $quantidade = $item->quantidade_conferida !== null
-                    ? (float) $item->quantidade_conferida
-                    : (float) $item->quantidade;
+                if ($item->quantidade_conferida === null) {
+                    throw new InvalidArgumentException(
+                        "O item '{$item->descricao}' ainda não foi conferido."
+                    );
+                }
+
+                $quantidade = (float) $item->quantidade_conferida;
 
                 if ($quantidade <= 0) {
                     throw new InvalidArgumentException(
-                        "A quantidade do produto {$item->descricao} deve ser maior que zero."
+                        "A quantidade conferida do item '{$item->descricao}' deve ser maior que zero."
+                    );
+                }
+
+                if (!$item->produto) {
+                    throw new InvalidArgumentException(
+                        "O produto do item '{$item->descricao}' não foi encontrado."
                     );
                 }
             }
 
             foreach ($compra->itens as $item) {
-                $quantidade = $item->quantidade_conferida !== null
-                    ? (float) $item->quantidade_conferida
-                    : (float) $item->quantidade;
-
                 $this->registrarEntrada->execute(
                     $item->produto,
-                    $quantidade,
+                    (float) $item->quantidade_conferida,
                     (float) $item->valor_unitario,
                     $item,
                     "Entrada referente à compra #{$compra->id}."

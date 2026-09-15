@@ -1,17 +1,15 @@
 @extends('layouts.layout')
 
 @section('content')
+
 <div class="container cadastro">
     @php
-        $estoqueLancado = $compra->itens->isNotEmpty() && $compra->itens->every(
-            fn ($item) => $item->movimentacoesEstoque->contains('tipo', 'entrada')
-        );
+        $estoqueLancado = $compra->itens->isNotEmpty() && $compra->itens->every(fn ($item) => $item->movimentacoesEstoque->contains('tipo', 'entrada'));
+        $algumEstoqueLancado = $compra->itens->contains(fn ($item) => $item->movimentacoesEstoque->contains('tipo', 'entrada'));
+        $todosItensConferidos = $compra->itens->isNotEmpty() && $compra->itens->every(fn ($item) => $item->quantidade_conferida !== null && (float) $item->quantidade_conferida > 0);
     @endphp
 
-    <x-list-header
-        title="VISUALIZAR COMPRA"
-        icon="bi-cart-check"
-    />
+    <x-list-header title="VISUALIZAR COMPRA" icon="bi-cart-check" />
 
     @if (session('success'))
         <div class="alert alert-success">
@@ -26,6 +24,67 @@
             {{ session('error') }}
         </div>
     @endif
+
+    {{-- STATUS DA COMPRA --}}
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
+                <div>
+                    <h2 class="h5 mb-1">
+                        <i class="bi bi-cart-check"></i>
+                        Situação da compra
+                    </h2>
+                    <p class="text-muted mb-0">
+                        Acompanhe o andamento da compra desde o cadastro até a entrada no estoque.
+                    </p>
+                </div>
+
+                @if ($compra->status === 'pendente')
+                    <span class="badge bg-warning text-dark fs-6">
+                        <i class="bi bi-clock"></i>
+                        Pendente
+                    </span>
+                @elseif ($compra->status === 'conferindo')
+                    <span class="badge bg-info text-dark fs-6">
+                        <i class="bi bi-clipboard-check"></i>
+                        Em conferência
+                    </span>
+                @elseif ($compra->status === 'aprovada')
+                    <span class="badge bg-success fs-6">
+                        <i class="bi bi-check-circle"></i>
+                        Aprovada
+                    </span>
+                @elseif ($compra->status === 'cancelada')
+                    <span class="badge bg-danger fs-6">
+                        <i class="bi bi-x-circle"></i>
+                        Cancelada
+                    </span>
+                @endif
+            </div>
+
+            @if ($compra->status === 'pendente')
+                <div class="alert alert-warning mt-3 mb-0">
+                    <i class="bi bi-info-circle"></i>
+                    Esta compra está pendente e ainda não iniciou a conferência dos produtos.
+                </div>
+            @elseif ($compra->status === 'conferindo')
+                <div class="alert alert-info mt-3 mb-0">
+                    <i class="bi bi-clipboard-check"></i>
+                    A compra está em conferência. Informe a quantidade realmente recebida de cada item antes de aprovar.
+                </div>
+            @elseif ($compra->status === 'aprovada')
+                <div class="alert alert-success mt-3 mb-0">
+                    <i class="bi bi-check-circle"></i>
+                    A compra foi aprovada. A entrada dos produtos no estoque ainda precisa ser registrada.
+                </div>
+            @elseif ($compra->status === 'cancelada')
+                <div class="alert alert-danger mt-3 mb-0">
+                    <i class="bi bi-x-circle"></i>
+                    Esta compra foi cancelada e não pode mais ser alterada.
+                </div>
+            @endif
+        </div>
+    </div>
 
     {{-- STATUS DO ESTOQUE --}}
     <div class="card shadow-sm mb-4">
@@ -46,28 +105,29 @@
                         <i class="bi bi-check-circle"></i>
                         Estoque lançado
                     </span>
+                @elseif ($algumEstoqueLancado)
+                    <span class="badge bg-warning text-dark fs-6">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Entrada parcial
+                    </span>
                 @elseif ($compra->status === 'cancelada')
                     <span class="badge bg-danger fs-6">
                         <i class="bi bi-x-circle"></i>
                         Compra cancelada
                     </span>
-                @elseif ($compra->itens->isEmpty())
-                    <span class="badge bg-warning text-dark fs-6">
-                        <i class="bi bi-exclamation-triangle"></i>
-                        Sem itens
-                    </span>
-                @else
-                    <form
-                        method="POST"
-                        action="{{ route('compras.estoque', $compra) }}"
-                        onsubmit="return confirm('Tem certeza que deseja lançar esta compra no estoque? Essa operação não poderá ser desfeita automaticamente.');"
-                    >
+                @elseif ($compra->status === 'aprovada')
+                    <form method="POST" action="{{ route('compras.estoque', $compra) }}" onsubmit="return confirm('Tem certeza que deseja lançar esta compra no estoque? Após o lançamento, o estoque poderá ser revertido posteriormente pela opção de estorno.');">
                         @csrf
                         <button type="submit" class="btn btn-success">
                             <i class="bi bi-box-arrow-in-down"></i>
                             Lançar no estoque
                         </button>
                     </form>
+                @else
+                    <span class="badge bg-secondary fs-6">
+                        <i class="bi bi-clock"></i>
+                        Aguardando aprovação
+                    </span>
                 @endif
             </div>
 
@@ -76,12 +136,20 @@
                     <i class="bi bi-check-circle"></i>
                     Todos os itens desta compra já possuem entrada registrada no estoque.
                 </div>
-            @elseif ($compra->status !== 'cancelada' && $compra->itens->isNotEmpty())
+            @elseif ($algumEstoqueLancado)
                 <div class="alert alert-warning mt-3 mb-0">
                     <i class="bi bi-exclamation-triangle"></i>
-                    A entrada ainda não foi registrada no estoque.
-                    A quantidade conferida será utilizada quando estiver preenchida;
-                    caso contrário, será utilizada a quantidade da compra.
+                    Existem itens com entrada registrada no estoque. Para desfazer essas movimentações, utilize a opção de estorno da compra.
+                </div>
+            @elseif ($compra->status === 'aprovada')
+                <div class="alert alert-info mt-3 mb-0">
+                    <i class="bi bi-info-circle"></i>
+                    A compra está aprovada e pronta para entrada no estoque.
+                </div>
+            @elseif ($compra->status !== 'cancelada')
+                <div class="alert alert-warning mt-3 mb-0">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    A entrada no estoque somente estará disponível após a aprovação da compra.
                 </div>
             @endif
         </div>
@@ -102,24 +170,12 @@
                 </span>
             </div>
 
-            <form
-                method="POST"
-                action="{{ route('compras.anexos.store', $compra) }}"
-                enctype="multipart/form-data"
-                class="mb-4"
-            >
+            <form method="POST" action="{{ route('compras.anexos.store', $compra) }}" enctype="multipart/form-data" class="mb-4">
                 @csrf
                 <div class="row g-3">
                     <div class="col-12 col-md-4">
-                        <label for="tipo" class="form-label">
-                            Tipo do documento
-                        </label>
-                        <select
-                            name="tipo"
-                            id="tipo"
-                            class="form-select"
-                            required
-                        >
+                        <label for="tipo" class="form-label">Tipo do documento</label>
+                        <select name="tipo" id="tipo" class="form-select" required>
                             <option value="">Selecione...</option>
                             <option value="nf">Nota fiscal</option>
                             <option value="nf_xml">NF-e XML</option>
@@ -137,33 +193,14 @@
                     </div>
 
                     <div class="col-12 col-md-5">
-                        <label for="arquivo" class="form-label">
-                            Arquivo
-                        </label>
-                        <input
-                            type="file"
-                            name="arquivo"
-                            id="arquivo"
-                            class="form-control"
-                            accept=".pdf,.jpg,.jpeg,.png,.webp,.xml"
-                            required
-                        >
-                        <small class="text-muted">
-                            PDF, JPG, JPEG, PNG, WEBP ou XML — máximo de 20 MB.
-                        </small>
+                        <label for="arquivo" class="form-label">Arquivo</label>
+                        <input type="file" name="arquivo" id="arquivo" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.webp,.xml" required>
+                        <small class="text-muted">PDF, JPG, JPEG, PNG, WEBP ou XML — máximo de 20 MB.</small>
                     </div>
 
                     <div class="col-12 col-md-3">
-                        <label for="observacoes" class="form-label">
-                            Observações
-                        </label>
-                        <input
-                            type="text"
-                            name="observacoes"
-                            id="observacoes"
-                            class="form-control"
-                            maxlength="1000"
-                        >
+                        <label for="observacoes" class="form-label">Observações</label>
+                        <input type="text" name="observacoes" id="observacoes" class="form-control" maxlength="1000">
                     </div>
 
                     <div class="col-12">
@@ -215,45 +252,23 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <div class="fw-semibold text-break">
-                                            {{ $anexo->nome_original }}
-                                        </div>
-                                        <small class="text-muted">
-                                            {{ $anexo->mime_type }}
-                                        </small>
+                                        <div class="fw-semibold text-break">{{ $anexo->nome_original }}</div>
+                                        <small class="text-muted">{{ $anexo->mime_type }}</small>
                                     </td>
-                                    <td>
-                                        {{ number_format($anexo->tamanho / 1024 / 1024, 2, ',', '.') }} MB
-                                    </td>
-                                    <td>
-                                        {{ $anexo->observacoes ?: '-' }}
-                                    </td>
-                                    <td>
-                                        {{ $anexo->created_at?->format('d/m/Y H:i') }}
-                                    </td>
+                                    <td>{{ number_format($anexo->tamanho / 1024 / 1024, 2, ',', '.') }} MB</td>
+                                    <td>{{ $anexo->observacoes ?: '-' }}</td>
+                                    <td>{{ $anexo->created_at?->format('d/m/Y H:i') }}</td>
                                     <td>
                                         <div class="d-flex justify-content-end gap-1">
-                                            <a
-                                                href="{{ route('anexos.download', $anexo) }}"
-                                                class="btn btn-sm btn-outline-primary"
-                                                title="Baixar arquivo"
-                                            >
+                                            <a href="{{ route('anexos.download', $anexo) }}" class="btn btn-sm btn-outline-primary" title="Baixar arquivo">
                                                 <i class="bi bi-download"></i>
                                             </a>
 
-                                            @if (!in_array($compra->status, ['aprovada', 'cancelada'], true))
-                                                <form
-                                                    method="POST"
-                                                    action="{{ route('anexos.destroy', $anexo) }}"
-                                                    onsubmit="return confirm('Tem certeza que deseja excluir este anexo?');"
-                                                >
+                                            @if ($compra->status !== 'cancelada')
+                                                <form method="POST" action="{{ route('anexos.destroy', $anexo) }}" onsubmit="return confirm('Tem certeza que deseja excluir este anexo?');">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button
-                                                        type="submit"
-                                                        class="btn btn-sm btn-outline-danger"
-                                                        title="Excluir anexo"
-                                                    >
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir anexo">
                                                         <i class="bi bi-trash"></i>
                                                     </button>
                                                 </form>
@@ -284,9 +299,7 @@
 
             <div class="row g-3">
                 <div class="col-12 col-md-4">
-                    <div class="text-muted small">
-                        Fornecedor
-                    </div>
+                    <div class="text-muted small">Fornecedor</div>
                     <div class="fw-semibold">
                         <i class="bi bi-truck"></i>
                         {{ $compra->fornecedor->nome ?? 'Não informado' }}
@@ -294,46 +307,28 @@
                 </div>
 
                 <div class="col-12 col-md-2">
-                    <div class="text-muted small">
-                        Número
-                    </div>
-                    <div class="fw-semibold">
-                        {{ $compra->numero_nf }}
-                    </div>
+                    <div class="text-muted small">Número</div>
+                    <div class="fw-semibold">{{ $compra->numero_nf }}</div>
                 </div>
 
                 <div class="col-12 col-md-2">
-                    <div class="text-muted small">
-                        Série
-                    </div>
-                    <div class="fw-semibold">
-                        {{ $compra->serie_nf ?: '-' }}
-                    </div>
+                    <div class="text-muted small">Série</div>
+                    <div class="fw-semibold">{{ $compra->serie_nf ?: '-' }}</div>
                 </div>
 
                 <div class="col-12 col-md-2">
-                    <div class="text-muted small">
-                        Emissão
-                    </div>
-                    <div class="fw-semibold">
-                        {{ $compra->data_emissao?->format('d/m/Y') ?? '-' }}
-                    </div>
+                    <div class="text-muted small">Emissão</div>
+                    <div class="fw-semibold">{{ $compra->data_emissao?->format('d/m/Y') ?? '-' }}</div>
                 </div>
 
                 <div class="col-12 col-md-2">
-                    <div class="text-muted small">
-                        Entrada
-                    </div>
-                    <div class="fw-semibold">
-                        {{ $compra->data_entrada?->format('d/m/Y') ?? '-' }}
-                    </div>
+                    <div class="text-muted small">Entrada</div>
+                    <div class="fw-semibold">{{ $compra->data_entrada?->format('d/m/Y') ?? '-' }}</div>
                 </div>
 
                 @if ($compra->chave_nf)
                     <div class="col-12">
-                        <div class="text-muted small">
-                            Chave de acesso
-                        </div>
+                        <div class="text-muted small">Chave de acesso</div>
                         <div class="fw-semibold text-break">
                             <i class="bi bi-upc-scan"></i>
                             {{ $compra->chave_nf }}
@@ -348,10 +343,18 @@
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
-                <h2 class="h5 mb-0">
-                    <i class="bi bi-box-seam"></i>
-                    Produtos da compra
-                </h2>
+                <div>
+                    <h2 class="h5 mb-0">
+                        <i class="bi bi-box-seam"></i>
+                        Produtos da compra
+                    </h2>
+
+                    @if ($compra->status === 'conferindo')
+                        <small class="text-muted">
+                            Informe abaixo a quantidade realmente recebida de cada produto.
+                        </small>
+                    @endif
+                </div>
 
                 <span class="badge bg-secondary">
                     <i class="bi bi-boxes"></i>
@@ -361,14 +364,19 @@
             </div>
 
             @if ($compra->itens->isNotEmpty())
+                @if ($compra->status === 'conferindo')
+                    <form method="POST" action="{{ route('compras.conferir', $compra) }}">
+                        @csrf
+                @endif
+
                 <div class="table-responsive">
                     <table class="table table-striped table-hover align-middle mb-0">
                         <thead>
                             <tr>
                                 <th scope="col">PRODUTO</th>
                                 <th scope="col">DESCRIÇÃO</th>
-                                <th scope="col">QUANTIDADE</th>
-                                <th scope="col">CONFERIDA</th>
+                                <th scope="col">QUANTIDADE NF</th>
+                                <th scope="col">RECEBIDA</th>
                                 <th scope="col">VALOR UNITÁRIO</th>
                                 <th scope="col">DESCONTO</th>
                                 <th scope="col">TOTAL</th>
@@ -380,39 +388,47 @@
                             @foreach ($compra->itens as $item)
                                 @php
                                     $quantidade = (float) $item->quantidade;
-                                    $conferida = $item->quantidade_conferida !== null
-                                        ? (float) $item->quantidade_conferida
-                                        : null;
-                                    $conferenteIgual = $conferida !== null
-                                        && abs($quantidade - $conferida) < 0.0001;
+                                    $conferida = $item->quantidade_conferida !== null ? (float) $item->quantidade_conferida : null;
+                                    $conferenteIgual = $conferida !== null && abs($quantidade - $conferida) < 0.0001;
                                     $itemEstoqueLancado = $item->movimentacoesEstoque->contains('tipo', 'entrada');
                                 @endphp
 
                                 <tr>
                                     <td>
-                                        <strong>
-                                            {{ $item->produto->nome ?? 'Produto não encontrado' }}
-                                        </strong>
+                                        <strong>{{ $item->produto->nome ?? 'Produto não encontrado' }}</strong>
 
                                         @if ($item->produto?->codigo_fabricante)
                                             <br>
                                             <small class="text-muted">
-                                                Código:
-                                                {{ $item->produto->codigo_fabricante }}
+                                                Código: {{ $item->produto->codigo_fabricante }}
                                             </small>
                                         @endif
                                     </td>
 
+                                    <td>{{ $item->descricao }}</td>
+
                                     <td>
-                                        {{ $item->descricao }}
+                                        <strong>{{ number_format($quantidade, 3, ',', '.') }}</strong>
                                     </td>
 
                                     <td>
-                                        {{ number_format($quantidade, 3, ',', '.') }}
-                                    </td>
+                                        @if ($compra->status === 'conferindo')
+                                            <input
+                                                type="number"
+                                                name="itens[{{ $item->id }}][quantidade_conferida]"
+                                                class="form-control"
+                                                value="{{ old('itens.' . $item->id . '.quantidade_conferida', $conferida) }}"
+                                                min="0.001"
+                                                step="0.001"
+                                                required
+                                            >
 
-                                    <td>
-                                        @if ($conferida !== null)
+                                            @if ($conferida !== null)
+                                                <small class="text-muted">
+                                                    Atual: {{ number_format($conferida, 3, ',', '.') }}
+                                                </small>
+                                            @endif
+                                        @elseif ($conferida !== null)
                                             <span class="badge {{ $conferenteIgual ? 'bg-success' : 'bg-warning text-dark' }}">
                                                 <i class="bi {{ $conferenteIgual ? 'bi-check-circle' : 'bi-exclamation-triangle' }}"></i>
                                                 {{ number_format($conferida, 3, ',', '.') }}
@@ -426,19 +442,16 @@
                                     </td>
 
                                     <td>
-                                        R$
-                                        {{ number_format((float) $item->valor_unitario, 2, ',', '.') }}
+                                        R$ {{ number_format((float) $item->valor_unitario, 2, ',', '.') }}
                                     </td>
 
                                     <td>
-                                        R$
-                                        {{ number_format((float) $item->desconto, 2, ',', '.') }}
+                                        R$ {{ number_format((float) $item->desconto, 2, ',', '.') }}
                                     </td>
 
                                     <td>
                                         <strong>
-                                            R$
-                                            {{ number_format((float) $item->valor_total, 2, ',', '.') }}
+                                            R$ {{ number_format((float) $item->valor_total, 2, ',', '.') }}
                                         </strong>
                                     </td>
 
@@ -460,6 +473,19 @@
                         </tbody>
                     </table>
                 </div>
+
+                @if ($compra->status === 'conferindo')
+                    <div class="d-flex justify-content-end mt-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i>
+                            Salvar conferência
+                        </button>
+                    </div>
+                @endif
+
+                @if ($compra->status === 'conferindo')
+                    </form>
+                @endif
             @else
                 <div class="alert alert-warning mb-0">
                     <i class="bi bi-exclamation-triangle"></i>
@@ -479,42 +505,30 @@
 
             <div class="row g-3">
                 <div class="col-12 col-md-3">
-                    <div class="text-muted small">
-                        Produtos
-                    </div>
+                    <div class="text-muted small">Produtos</div>
                     <div class="fw-semibold">
-                        R$
-                        {{ number_format((float) $compra->valor_produtos, 2, ',', '.') }}
+                        R$ {{ number_format((float) $compra->valor_produtos, 2, ',', '.') }}
                     </div>
                 </div>
 
                 <div class="col-12 col-md-3">
-                    <div class="text-muted small">
-                        Desconto
-                    </div>
+                    <div class="text-muted small">Desconto</div>
                     <div class="fw-semibold">
-                        R$
-                        {{ number_format((float) $compra->desconto, 2, ',', '.') }}
+                        R$ {{ number_format((float) $compra->desconto, 2, ',', '.') }}
                     </div>
                 </div>
 
                 <div class="col-12 col-md-3">
-                    <div class="text-muted small">
-                        Frete
-                    </div>
+                    <div class="text-muted small">Frete</div>
                     <div class="fw-semibold">
-                        R$
-                        {{ number_format((float) $compra->frete, 2, ',', '.') }}
+                        R$ {{ number_format((float) $compra->frete, 2, ',', '.') }}
                     </div>
                 </div>
 
                 <div class="col-12 col-md-3">
-                    <div class="text-muted small">
-                        Outras despesas
-                    </div>
+                    <div class="text-muted small">Outras despesas</div>
                     <div class="fw-semibold">
-                        R$
-                        {{ number_format((float) $compra->outras_despesas, 2, ',', '.') }}
+                        R$ {{ number_format((float) $compra->outras_despesas, 2, ',', '.') }}
                     </div>
                 </div>
 
@@ -522,13 +536,9 @@
                     <hr>
 
                     <div class="d-flex justify-content-end align-items-center gap-3">
-                        <span class="text-muted">
-                            Valor total:
-                        </span>
-
+                        <span class="text-muted">Valor total:</span>
                         <strong class="fs-4">
-                            R$
-                            {{ number_format((float) $compra->valor_total, 2, ',', '.') }}
+                            R$ {{ number_format((float) $compra->valor_total, 2, ',', '.') }}
                         </strong>
                     </div>
                 </div>
@@ -554,41 +564,86 @@
 
     {{-- AÇÕES --}}
     <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mt-4">
-        <a
-            href="{{ route('compras.index') }}"
-            class="btn btn-secondary"
-        >
+        <a href="{{ route('compras.index') }}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i>
             Voltar
         </a>
 
         <div class="d-flex gap-2 flex-wrap">
-            @if (in_array($compra->status, ['pendente', 'conferindo'], true) && !$estoqueLancado)
-                <a
-                    href="{{ route('compras.edit', $compra) }}"
-                    class="btn btn-primary"
-                >
+            @if ($compra->status === 'pendente')
+                <a href="{{ route('compras.edit', $compra) }}" class="btn btn-primary">
                     <i class="bi bi-pencil"></i>
                     Editar
                 </a>
-            @endif
 
-            @if ($compra->status === 'pendente')
-                <button
-                    type="button"
-                    class="btn btn-success"
-                    disabled
-                    title="A aprovação será disponibilizada após a implementação da conferência"
-                >
-                    <i class="bi bi-check-circle"></i>
-                    Aprovar
-                </button>
-            @endif
+                <form method="POST" action="{{ route('compras.iniciar-conferencia', $compra) }}" onsubmit="return confirm('Deseja iniciar a conferência desta compra? Após iniciar, a compra não poderá mais ser editada.');">
+                    @csrf
+                    <button type="submit" class="btn btn-info">
+                        <i class="bi bi-clipboard-check"></i>
+                        Iniciar conferência
+                    </button>
+                </form>
 
-            @if ($compra->status === 'aprovada')
+                <form method="POST" action="{{ route('compras.cancelar', $compra) }}" onsubmit="return confirm('Tem certeza que deseja cancelar esta compra?');">
+                    @csrf
+                    <button type="submit" class="btn btn-outline-danger">
+                        <i class="bi bi-x-circle"></i>
+                        Cancelar
+                    </button>
+                </form>
+
+            @elseif ($compra->status === 'conferindo')
+                @if ($todosItensConferidos)
+                    <form method="POST" action="{{ route('compras.aprovar', $compra) }}" onsubmit="return confirm('Tem certeza que deseja aprovar esta compra?');">
+                        @csrf
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle"></i>
+                            Aprovar compra
+                        </button>
+                    </form>
+                @else
+                    <button type="button" class="btn btn-success" disabled title="Todos os itens precisam ser conferidos com quantidade maior que zero antes da aprovação.">
+                        <i class="bi bi-check-circle"></i>
+                        Aprovar compra
+                    </button>
+                @endif
+
+                <form method="POST" action="{{ route('compras.cancelar', $compra) }}" onsubmit="return confirm('Tem certeza que deseja cancelar esta compra?');">
+                    @csrf
+                    <button type="submit" class="btn btn-outline-danger">
+                        <i class="bi bi-x-circle"></i>
+                        Cancelar
+                    </button>
+                </form>
+
+            @elseif ($compra->status === 'aprovada')
                 <span class="text-success d-flex align-items-center">
                     <i class="bi bi-check-circle me-1"></i>
                     Compra aprovada
+                </span>
+
+                @if ($algumEstoqueLancado)
+                    <form method="POST" action="{{ route('compras.estornar', $compra) }}" onsubmit="return confirm('Tem certeza que deseja estornar o estoque e cancelar esta compra? As entradas de estoque serão revertidas e uma movimentação de saída será registrada.');">
+                        @csrf
+                        <button type="submit" class="btn btn-outline-danger">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                            Estornar e cancelar
+                        </button>
+                    </form>
+                @else
+                    <form method="POST" action="{{ route('compras.cancelar', $compra) }}" onsubmit="return confirm('Tem certeza que deseja cancelar esta compra?');">
+                        @csrf
+                        <button type="submit" class="btn btn-outline-danger">
+                            <i class="bi bi-x-circle"></i>
+                            Cancelar
+                        </button>
+                    </form>
+                @endif
+
+            @elseif ($compra->status === 'cancelada')
+                <span class="text-danger d-flex align-items-center">
+                    <i class="bi bi-x-circle me-1"></i>
+                    Compra cancelada
                 </span>
             @endif
 
@@ -601,4 +656,5 @@
         </div>
     </div>
 </div>
+
 @endsection

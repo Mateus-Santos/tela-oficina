@@ -10,23 +10,15 @@ class AtualizarCompra
     public function execute(Compra $compra, array $dados): Compra
     {
         return DB::transaction(function () use ($compra, $dados) {
-
-            if ($compra->status === 'aprovada') {
+            if ($compra->status !== Compra::STATUS_PENDENTE) {
                 throw new \DomainException(
-                    'Uma compra aprovada não pode ser alterada.'
-                );
-            }
-
-            if ($compra->status === 'cancelada') {
-                throw new \DomainException(
-                    'Uma compra cancelada não pode ser alterada.'
+                    'Somente compras pendentes podem ser alteradas.'
                 );
             }
 
             $desconto = (float) ($dados['desconto'] ?? 0);
             $frete = (float) ($dados['frete'] ?? 0);
             $outrasDespesas = (float) ($dados['outras_despesas'] ?? 0);
-
             $valorProdutos = 0;
 
             foreach ($dados['itens'] as $item) {
@@ -34,7 +26,8 @@ class AtualizarCompra
                 $valorUnitario = (float) $item['valor_unitario'];
                 $descontoItem = (float) ($item['desconto'] ?? 0);
 
-                $valorTotalItem = ($quantidade * $valorUnitario) - $descontoItem;
+                $valorTotalItem = ($quantidade * $valorUnitario)
+                    - $descontoItem;
 
                 if ($valorTotalItem < 0) {
                     throw new \InvalidArgumentException(
@@ -72,8 +65,10 @@ class AtualizarCompra
             ]);
 
             /*
-             * Como a compra ainda não foi aprovada,
-             * seus itens podem ser substituídos.
+             * A compra ainda está pendente, portanto
+             * a conferência ainda não começou.
+             *
+             * Neste ponto é seguro substituir os itens.
              */
             $compra->itens()->delete();
 
@@ -82,13 +77,14 @@ class AtualizarCompra
                 $valorUnitario = (float) $item['valor_unitario'];
                 $descontoItem = (float) ($item['desconto'] ?? 0);
 
-                $valorTotalItem = ($quantidade * $valorUnitario) - $descontoItem;
+                $valorTotalItem = ($quantidade * $valorUnitario)
+                    - $descontoItem;
 
                 $compra->itens()->create([
                     'produto_id' => $item['produto_id'],
                     'descricao' => $item['descricao'],
                     'quantidade' => $quantidade,
-                    'quantidade_conferida' => $item['quantidade_conferida'] ?? null,
+                    'quantidade_conferida' => null,
                     'valor_unitario' => $valorUnitario,
                     'desconto' => $descontoItem,
                     'valor_total' => $valorTotalItem,

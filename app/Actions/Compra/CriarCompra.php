@@ -26,7 +26,9 @@ class CriarCompra
                 $quantidade = (float) $item['quantidade'];
                 $valorUnitario = (float) $item['valor_unitario'];
                 $descontoItem = (float) ($item['desconto'] ?? 0);
-                $valorTotalItem = ($quantidade * $valorUnitario) - $descontoItem;
+
+                $valorTotalItem = ($quantidade * $valorUnitario)
+                    - $descontoItem;
 
                 if ($valorTotalItem < 0) {
                     throw new \InvalidArgumentException(
@@ -60,7 +62,7 @@ class CriarCompra
                 'frete' => $frete,
                 'outras_despesas' => $outrasDespesas,
                 'valor_total' => $valorTotal,
-                'status' => 'pendente',
+                'status' => Compra::STATUS_PENDENTE,
                 'observacoes' => $dados['observacoes'] ?? null,
             ]);
 
@@ -68,13 +70,15 @@ class CriarCompra
                 $quantidade = (float) $item['quantidade'];
                 $valorUnitario = (float) $item['valor_unitario'];
                 $descontoItem = (float) ($item['desconto'] ?? 0);
-                $valorTotalItem = ($quantidade * $valorUnitario) - $descontoItem;
+
+                $valorTotalItem = ($quantidade * $valorUnitario)
+                    - $descontoItem;
 
                 $compra->itens()->create([
                     'produto_id' => $item['produto_id'],
                     'descricao' => $item['descricao'],
                     'quantidade' => $quantidade,
-                    'quantidade_conferida' => $item['quantidade_conferida'] ?? null,
+                    'quantidade_conferida' => null,
                     'valor_unitario' => $valorUnitario,
                     'desconto' => $descontoItem,
                     'valor_total' => $valorTotalItem,
@@ -82,7 +86,10 @@ class CriarCompra
             }
 
             foreach ($anexos as $anexo) {
-                if (!isset($anexo['arquivo']) || !$anexo['arquivo'] instanceof UploadedFile) {
+                if (
+                    !isset($anexo['arquivo'])
+                    || !$anexo['arquivo'] instanceof UploadedFile
+                ) {
                     continue;
                 }
 

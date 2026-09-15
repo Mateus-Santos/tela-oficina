@@ -2,8 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Compra\AprovarCompra;
+use App\Actions\Compra\EstornarCompra;
 use App\Actions\Compra\AtualizarCompra;
+use App\Actions\Compra\CancelarCompra;
 use App\Actions\Compra\CriarCompra;
+use App\Actions\Compra\ConferirCompra;
+use App\Http\Requests\Compra\ConferirCompraRequest;
+use App\Actions\Compra\IniciarConferenciaCompra;
 use App\Actions\Compra\RegistrarEntradaCompra;
 use App\Http\Requests\Compra\StoreCompraRequest;
 use App\Http\Requests\Compra\UpdateCompraRequest;
@@ -46,10 +52,7 @@ class CompraController extends Controller
             ->orderBy('nome')
             ->get();
 
-        return view(
-            'compra.index',
-            compact('compras', 'fornecedores')
-        );
+        return view('compra.index', compact('compras', 'fornecedores'));
     }
 
     /**
@@ -66,19 +69,14 @@ class CompraController extends Controller
             ->orderBy('nome')
             ->get();
 
-        return view(
-            'compra.create',
-            compact('fornecedores', 'produtos')
-        );
+        return view('compra.create', compact('fornecedores', 'produtos'));
     }
 
     /**
      * Salva uma nova compra.
      */
-    public function store(
-        StoreCompraRequest $request,
-        CriarCompra $criarCompra
-    ) {
+    public function store(StoreCompraRequest $request, CriarCompra $criarCompra)
+    {
         $dados = $request->validated();
         $anexos = $dados['anexos'] ?? [];
         unset($dados['anexos']);
@@ -102,10 +100,104 @@ class CompraController extends Controller
             'anexos',
         ]);
 
-        return view(
-            'compra.show',
-            compact('compra')
-        );
+        return view('compra.show', compact('compra'));
+    }
+
+    /**
+     * Inicia a conferência da compra.
+     */
+    public function iniciarConferencia(
+        Compra $compra,
+        IniciarConferenciaCompra $iniciarConferenciaCompra
+    ): RedirectResponse {
+        try {
+            $iniciarConferenciaCompra->execute($compra);
+
+            return redirect()
+                ->route('compras.show', $compra)
+                ->with('success', 'Conferência da compra iniciada com sucesso!');
+        } catch (\InvalidArgumentException $e) {
+            return redirect()
+                ->route('compras.show', $compra)
+                ->with('error', $e->getMessage());
+        }
+    }
+    /**
+     * Registra as quantidades recebidas na conferência da compra.
+     */
+    public function conferir(
+        ConferirCompraRequest $request,
+        Compra $compra,
+        ConferirCompra $conferirCompra
+    ): RedirectResponse {
+        try {
+            $conferirCompra->execute($compra, $request->validated());
+
+            return redirect()
+                ->route('compras.show', $compra)
+                ->with('success', 'Conferência da compra salva com sucesso!');
+        } catch (\InvalidArgumentException $e) {
+            return redirect()
+                ->route('compras.show', $compra)
+                ->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Aprova uma compra após a conferência.
+     */
+    public function aprovar(
+        Compra $compra,
+        AprovarCompra $aprovarCompra
+    ): RedirectResponse {
+        try {
+            $aprovarCompra->execute($compra);
+
+            return redirect()
+                ->route('compras.show', $compra)
+                ->with('success', 'Compra aprovada com sucesso!');
+        } catch (\InvalidArgumentException $e) {
+            return redirect()
+                ->route('compras.show', $compra)
+                ->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Cancela uma compra.
+     */
+    public function cancelar(
+        Compra $compra,
+        CancelarCompra $cancelarCompra
+    ): RedirectResponse {
+        try {
+            $cancelarCompra->execute($compra);
+
+            return redirect()
+                ->route('compras.show', $compra)
+                ->with('success', 'Compra cancelada com sucesso!');
+        } catch (\InvalidArgumentException $e) {
+            return redirect()
+                ->route('compras.show', $compra)
+                ->with('error', $e->getMessage());
+        }
+    }
+
+    public function estornar(
+        Compra $compra,
+        EstornarCompra $estornarCompra
+    ): RedirectResponse {
+        try {
+            $estornarCompra->execute($compra);
+
+            return redirect()
+                ->route('compras.show', $compra)
+                ->with('success', 'Compra estornada e cancelada com sucesso!');
+        } catch (\InvalidArgumentException $e) {
+            return redirect()
+                ->route('compras.show', $compra)
+                ->with('error', $e->getMessage());
+        }
     }
 
     /**
@@ -120,10 +212,7 @@ class CompraController extends Controller
 
             return redirect()
                 ->route('compras.show', $compra)
-                ->with(
-                    'success',
-                    'Entrada da compra registrada no estoque com sucesso!'
-                );
+                ->with('success', 'Entrada da compra registrada no estoque com sucesso!');
         } catch (\InvalidArgumentException $e) {
             return redirect()
                 ->route('compras.show', $compra)
@@ -148,22 +237,16 @@ class CompraController extends Controller
      */
     public function edit(Compra $compra)
     {
-        if (in_array($compra->status, ['aprovada', 'cancelada'], true)) {
+        if (!$compra->estaPendente()) {
             return redirect()
                 ->route('compras.show', $compra)
-                ->with(
-                    'error',
-                    'Uma compra aprovada ou cancelada não pode ser editada.'
-                );
+                ->with('error', 'Somente compras pendentes podem ser editadas.');
         }
 
         if ($this->estoqueLancado($compra)) {
             return redirect()
                 ->route('compras.show', $compra)
-                ->with(
-                    'error',
-                    'Uma compra que já possui entrada no estoque não pode ser editada.'
-                );
+                ->with('error', 'Uma compra que já possui entrada no estoque não pode ser editada.');
         }
 
         $compra->load([
@@ -180,14 +263,7 @@ class CompraController extends Controller
             ->orderBy('nome')
             ->get();
 
-        return view(
-            'compra.edit',
-            compact(
-                'compra',
-                'fornecedores',
-                'produtos'
-            )
-        );
+        return view('compra.edit', compact('compra', 'fornecedores', 'produtos'));
     }
 
     /**
@@ -198,35 +274,23 @@ class CompraController extends Controller
         Compra $compra,
         AtualizarCompra $atualizarCompra
     ) {
-        if (in_array($compra->status, ['aprovada', 'cancelada'], true)) {
+        if (!$compra->estaPendente()) {
             return redirect()
                 ->route('compras.show', $compra)
-                ->with(
-                    'error',
-                    'Uma compra aprovada ou cancelada não pode ser alterada.'
-                );
+                ->with('error', 'Somente compras pendentes podem ser alteradas.');
         }
 
         if ($this->estoqueLancado($compra)) {
             return redirect()
                 ->route('compras.show', $compra)
-                ->with(
-                    'error',
-                    'Uma compra que já possui entrada no estoque não pode ser alterada.'
-                );
+                ->with('error', 'Uma compra que já possui entrada no estoque não pode ser alterada.');
         }
 
-        $compraAtualizada = $atualizarCompra->execute(
-            $compra,
-            $request->validated()
-        );
+        $compraAtualizada = $atualizarCompra->execute($compra, $request->validated());
 
         return redirect()
             ->route('compras.show', $compraAtualizada)
-            ->with(
-                'success',
-                'Compra atualizada com sucesso!'
-            );
+            ->with('success', 'Compra atualizada com sucesso!');
     }
 
     /**
@@ -234,40 +298,22 @@ class CompraController extends Controller
      */
     public function destroy(Compra $compra)
     {
-        if ($compra->status === 'aprovada') {
+        if (!$compra->estaPendente()) {
             return redirect()
                 ->route('compras.show', $compra)
-                ->with(
-                    'error',
-                    'Uma compra aprovada não pode ser excluída.'
-                );
-        }
-
-        if ($compra->status === 'cancelada') {
-            return redirect()
-                ->route('compras.index')
-                ->with(
-                    'error',
-                    'Uma compra cancelada não pode ser excluída.'
-                );
+                ->with('error', 'Somente compras pendentes podem ser excluídas.');
         }
 
         if ($this->estoqueLancado($compra)) {
             return redirect()
                 ->route('compras.show', $compra)
-                ->with(
-                    'error',
-                    'Uma compra que já possui entrada no estoque não pode ser excluída.'
-                );
+                ->with('error', 'Uma compra que já possui entrada no estoque não pode ser excluída.');
         }
 
         $compra->delete();
 
         return redirect()
             ->route('compras.index')
-            ->with(
-                'success',
-                'Compra excluída com sucesso!'
-            );
+            ->with('success', 'Compra excluída com sucesso!');
     }
 }

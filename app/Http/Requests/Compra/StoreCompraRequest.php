@@ -115,11 +115,6 @@ class StoreCompraRequest extends FormRequest
                 'numeric',
                 'gt:0',
             ],
-            'itens.*.quantidade_conferida' => [
-                'nullable',
-                'numeric',
-                'gte:0',
-            ],
             'itens.*.valor_unitario' => [
                 'required',
                 'numeric',
@@ -214,8 +209,6 @@ class StoreCompraRequest extends FormRequest
             'itens.*.quantidade.required' => 'A quantidade do item é obrigatória.',
             'itens.*.quantidade.numeric' => 'A quantidade deve ser numérica.',
             'itens.*.quantidade.gt' => 'A quantidade deve ser maior que zero.',
-            'itens.*.quantidade_conferida.numeric' => 'A quantidade conferida deve ser numérica.',
-            'itens.*.quantidade_conferida.gte' => 'A quantidade conferida não pode ser negativa.',
             'itens.*.valor_unitario.required' => 'O valor unitário é obrigatório.',
             'itens.*.valor_unitario.numeric' => 'O valor unitário deve ser numérico.',
             'itens.*.valor_unitario.min' => 'O valor unitário não pode ser negativo.',
@@ -236,4 +229,3 @@ class StoreCompraRequest extends FormRequest
         ];
     }
 }
-
