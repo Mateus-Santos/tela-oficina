@@ -38,7 +38,6 @@ class ContaPagarController extends Controller
 
         if (request()->filled('descricao')) {
             $descricao = trim(request('descricao'));
-
             $query->where(
                 'descricao',
                 'like',
@@ -103,8 +102,52 @@ class ContaPagarController extends Controller
             );
         }
 
+        $contasResumo = (clone $query)
+            ->withSum([
+                'pagamentos as valor_pago' => fn ($query) => $query
+                    ->whereNull('estornado_em'),
+            ], 'valor')
+            ->get();
+
+        $total = (float) $contasResumo->sum(
+            fn ($conta) => (float) $conta->valor
+        );
+
+        $totalPago = (float) $contasResumo->sum(
+            fn ($conta) => (float) ($conta->valor_pago ?? 0)
+        );
+
+        $totalEmAberto = max(
+            0,
+            round($total - $totalPago, 2)
+        );
+
+        $totalVencido = (float) $contasResumo
+            ->filter(
+                fn ($conta) => $conta->status !== 'cancelada'
+                    && (float) ($conta->valor_pago ?? 0) < (float) $conta->valor
+                    && $conta->data_vencimento->isBefore(today())
+            )
+            ->sum(
+                fn ($conta) => max(
+                    0,
+                    round(
+                        (float) $conta->valor - (float) ($conta->valor_pago ?? 0),
+                        2
+                    )
+                )
+            );
+
+        $resumo = [
+            'total' => $total,
+            'total_pago' => $totalPago,
+            'total_em_aberto' => $totalEmAberto,
+            'total_vencido' => $totalVencido,
+        ];
+
         $contas = $query
-            ->latest()
+            ->orderBy('data_vencimento')
+            ->orderBy('id')
             ->paginate(15)
             ->withQueryString();
 
@@ -116,7 +159,8 @@ class ContaPagarController extends Controller
             'contas_pagar.index',
             compact(
                 'contas',
-                'fornecedores'
+                'fornecedores',
+                'resumo'
             )
         );
     }

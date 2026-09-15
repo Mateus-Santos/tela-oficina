@@ -10,366 +10,451 @@
         create-icon="bi-plus-lg"
     />
 
-    @if (session('success'))
-        <div class="alert alert-success">
-            <i class="bi bi-check-circle"></i>
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>
             {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
 
-    @if (session('error'))
-        <div class="alert alert-danger">
-            <i class="bi bi-exclamation-triangle"></i>
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
             {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
 
-    @if ($errors->any())
-        <div class="alert alert-danger">
-            <i class="bi bi-exclamation-triangle"></i>
-            <strong>Não foi possível realizar a operação.</strong>
-            <ul class="mb-0 mt-2">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
-    <x-filtros-container
-        action="{{ route('contas-pagar.index') }}"
-        id="filtros-contas-pagar"
-        :collapsible="true"
-        :expanded="request()->filled('data_emissao_inicio') || request()->filled('data_emissao_fim') || request()->filled('data_vencimento_inicio') || request()->filled('data_vencimento_fim')"
-    >
-        <x-slot name="primary">
-            <div class="row g-3 align-items-end">
-                <div class="col-12 col-md-4">
-                    <label for="descricao" class="form-label">
-                        <i class="bi bi-search"></i>
-                        Descrição
-                    </label>
-                    <input
-                        type="text"
-                        name="descricao"
-                        id="descricao"
-                        class="filtros-container__input"
-                        value="{{ request('descricao') }}"
-                        placeholder="Descrição da conta"
-                    >
-                </div>
-
-                <div class="col-12 col-md-4">
-                    <label for="fornecedor_id" class="form-label">
-                        <i class="bi bi-building"></i>
-                        Fornecedor
-                    </label>
-                    <select
-                        name="fornecedor_id"
-                        id="fornecedor_id"
-                        class="filtros-container__select"
-                    >
-                        <option value="">Todos os fornecedores</option>
-                        @foreach ($fornecedores as $fornecedor)
-                            <option
-                                value="{{ $fornecedor->id }}"
-                                @selected((string) request('fornecedor_id') === (string) $fornecedor->id)
-                            >
-                                {{ $fornecedor->nome }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="col-12 col-md-4">
-                    <label for="status" class="form-label">
-                        <i class="bi bi-filter-circle"></i>
-                        Status
-                    </label>
-                    <select
-                        name="status"
-                        id="status"
-                        class="filtros-container__select"
-                    >
-                        <option value="">Todos os status</option>
-                        <option value="aberta" @selected(request('status') === 'aberta')>
-                            Aberta
-                        </option>
-                        <option value="parcialmente_paga" @selected(request('status') === 'parcialmente_paga')>
-                            Parcialmente paga
-                        </option>
-                        <option value="paga" @selected(request('status') === 'paga')>
-                            Paga
-                        </option>
-                        <option value="vencida" @selected(request('status') === 'vencida')>
-                            Vencida
-                        </option>
-                        <option value="cancelada" @selected(request('status') === 'cancelada')>
-                            Cancelada
-                        </option>
-                    </select>
-                </div>
-
-                <div class="col-12">
-                    <div class="filtros-container__actions">
-                        <button
-                            type="submit"
-                            class="btn btn-primary"
-                            title="Filtrar contas"
-                        >
-                            <i class="bi bi-search"></i>
-                            Filtrar
-                        </button>
-
-                        <a
-                            href="{{ route('contas-pagar.index') }}"
-                            class="btn btn-secondary"
-                            title="Limpar filtros"
-                        >
-                            <i class="bi bi-x-lg"></i>
-                        </a>
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-muted small text-uppercase">Total</div>
+                            <div class="fs-4 fw-bold">
+                                R$ {{ number_format($resumo['total'], 2, ',', '.') }}
+                            </div>
+                        </div>
+                        <i class="bi bi-cash-stack fs-2 text-muted"></i>
                     </div>
                 </div>
             </div>
-        </x-slot>
+        </div>
 
-        <x-slot name="advanced">
-            <div class="row g-3 align-items-end">
-                <div class="col-12 col-md-3">
-                    <label for="data_emissao_inicio" class="form-label">
-                        <i class="bi bi-calendar-event"></i>
-                        Emissão inicial
-                    </label>
-                    <input
-                        type="date"
-                        name="data_emissao_inicio"
-                        id="data_emissao_inicio"
-                        class="filtros-container__input"
-                        value="{{ request('data_emissao_inicio') }}"
-                    >
-                </div>
-
-                <div class="col-12 col-md-3">
-                    <label for="data_emissao_fim" class="form-label">
-                        <i class="bi bi-calendar-check"></i>
-                        Emissão final
-                    </label>
-                    <input
-                        type="date"
-                        name="data_emissao_fim"
-                        id="data_emissao_fim"
-                        class="filtros-container__input"
-                        value="{{ request('data_emissao_fim') }}"
-                    >
-                </div>
-
-                <div class="col-12 col-md-3">
-                    <label for="data_vencimento_inicio" class="form-label">
-                        <i class="bi bi-calendar-event"></i>
-                        Vencimento inicial
-                    </label>
-                    <input
-                        type="date"
-                        name="data_vencimento_inicio"
-                        id="data_vencimento_inicio"
-                        class="filtros-container__input"
-                        value="{{ request('data_vencimento_inicio') }}"
-                    >
-                </div>
-
-                <div class="col-12 col-md-3">
-                    <label for="data_vencimento_fim" class="form-label">
-                        <i class="bi bi-calendar-check"></i>
-                        Vencimento final
-                    </label>
-                    <input
-                        type="date"
-                        name="data_vencimento_fim"
-                        id="data_vencimento_fim"
-                        class="filtros-container__input"
-                        value="{{ request('data_vencimento_fim') }}"
-                    >
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-muted small text-uppercase">Pago</div>
+                            <div class="fs-4 fw-bold text-success">
+                                R$ {{ number_format($resumo['total_pago'], 2, ',', '.') }}
+                            </div>
+                        </div>
+                        <i class="bi bi-check-circle fs-2 text-success"></i>
+                    </div>
                 </div>
             </div>
-        </x-slot>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-muted small text-uppercase">Em aberto</div>
+                            <div class="fs-4 fw-bold">
+                                R$ {{ number_format($resumo['total_em_aberto'], 2, ',', '.') }}
+                            </div>
+                        </div>
+                        <i class="bi bi-hourglass-split fs-2 text-muted"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-muted small text-uppercase">Vencido</div>
+                            <div class="fs-4 fw-bold text-danger">
+                                R$ {{ number_format($resumo['total_vencido'], 2, ',', '.') }}
+                            </div>
+                        </div>
+                        <i class="bi bi-exclamation-circle fs-2 text-danger"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <x-filtros-container action="{{ route('contas-pagar.index') }}">
+        <div class="row g-3">
+            <div class="col-12 col-md-4">
+                <label for="descricao" class="form-label">Descrição</label>
+                <input
+                    type="text"
+                    name="descricao"
+                    id="descricao"
+                    class="form-control"
+                    value="{{ request('descricao') }}"
+                    placeholder="Buscar por descrição..."
+                >
+            </div>
+
+            <div class="col-12 col-md-4">
+                <label for="fornecedor_id" class="form-label">Fornecedor</label>
+                <select name="fornecedor_id" id="fornecedor_id" class="form-select">
+                    <option value="">Todos os fornecedores</option>
+                    @foreach($fornecedores as $fornecedor)
+                        <option
+                            value="{{ $fornecedor->id }}"
+                            @selected(request('fornecedor_id') == $fornecedor->id)
+                        >
+                            {{ $fornecedor->nome }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <label for="status" class="form-label">Status</label>
+                <select name="status" id="status" class="form-select">
+                    <option value="">Todas em aberto</option>
+                    <option value="aberta" @selected(request('status') === 'aberta')>Aberta</option>
+                    <option value="parcialmente_paga" @selected(request('status') === 'parcialmente_paga')>Parcialmente paga</option>
+                    <option value="paga" @selected(request('status') === 'paga')>Paga</option>
+                    <option value="vencida" @selected(request('status') === 'vencida')>Vencida</option>
+                    <option value="cancelada" @selected(request('status') === 'cancelada')>Cancelada</option>
+                </select>
+            </div>
+
+            <div class="col-12 col-md-6">
+                <label for="data_emissao_inicio" class="form-label">Emissão inicial</label>
+                <input
+                    type="date"
+                    name="data_emissao_inicio"
+                    id="data_emissao_inicio"
+                    class="form-control"
+                    value="{{ request('data_emissao_inicio') }}"
+                >
+            </div>
+
+            <div class="col-12 col-md-6">
+                <label for="data_emissao_fim" class="form-label">Emissão final</label>
+                <input
+                    type="date"
+                    name="data_emissao_fim"
+                    id="data_emissao_fim"
+                    class="form-control"
+                    value="{{ request('data_emissao_fim') }}"
+                >
+            </div>
+
+            <div class="col-12 col-md-6">
+                <label for="data_vencimento_inicio" class="form-label">Vencimento inicial</label>
+                <input
+                    type="date"
+                    name="data_vencimento_inicio"
+                    id="data_vencimento_inicio"
+                    class="form-control"
+                    value="{{ request('data_vencimento_inicio') }}"
+                >
+            </div>
+
+            <div class="col-12 col-md-6">
+                <label for="data_vencimento_fim" class="form-label">Vencimento final</label>
+                <input
+                    type="date"
+                    name="data_vencimento_fim"
+                    id="data_vencimento_fim"
+                    class="form-control"
+                    value="{{ request('data_vencimento_fim') }}"
+                >
+            </div>
+
+            <div class="col-12 d-flex justify-content-end gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search me-1"></i>
+                    Filtrar
+                </button>
+
+                <a href="{{ route('contas-pagar.index') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-lg me-1"></i>
+                    Limpar
+                </a>
+            </div>
+        </div>
     </x-filtros-container>
 
-    @php
-        $possuiFiltros =
-            request()->filled('descricao') ||
-            request()->filled('fornecedor_id') ||
-            request()->filled('status') ||
-            request()->filled('data_emissao_inicio') ||
-            request()->filled('data_emissao_fim') ||
-            request()->filled('data_vencimento_inicio') ||
-            request()->filled('data_vencimento_fim');
-    @endphp
+    @if($contas->isEmpty())
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-wallet2 fs-1 text-muted"></i>
+                <h5 class="mt-3">Nenhuma conta encontrada</h5>
 
-    @if ($contas->isEmpty())
-        <div class="alert alert-{{ $possuiFiltros ? 'warning' : 'info' }}">
-            <i class="bi {{ $possuiFiltros ? 'bi-exclamation-triangle' : 'bi-info-circle' }}"></i>
-            {{ $possuiFiltros
-                ? 'Nenhuma conta a pagar encontrada com os filtros informados.'
-                : 'Nenhuma conta a pagar cadastrada.' }}
-        </div>
-    @endif
+                @if(request()->hasAny([
+                    'descricao',
+                    'fornecedor_id',
+                    'status',
+                    'data_emissao_inicio',
+                    'data_emissao_fim',
+                    'data_vencimento_inicio',
+                    'data_vencimento_fim'
+                ]))
+                    <p class="text-muted mb-3">
+                        Nenhuma conta corresponde aos filtros informados.
+                    </p>
 
-    @if ($contas->isNotEmpty())
-        <div class="table-responsive">
-            <table class="table table-striped table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th scope="col">ID</th>
-                        <th scope="col">DESCRIÇÃO</th>
-                        <th scope="col">FORNECEDOR</th>
-                        <th scope="col">VENCIMENTO</th>
-                        <th scope="col">VALOR</th>
-                        <th scope="col">PAGO</th>
-                        <th scope="col">SALDO</th>
-                        <th scope="col">STATUS</th>
-                        <th scope="col">AÇÕES</th>
-                    </tr>
-                </thead>
+                    <a href="{{ route('contas-pagar.index') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-lg me-1"></i>
+                        Limpar filtros
+                    </a>
+                @else
+                    <p class="text-muted mb-3">
+                        Ainda não existem contas a pagar cadastradas.
+                    </p>
 
-                <tbody>
-                    @foreach ($contas as $conta)
-                        @php
-                            $valorPago = (float) ($conta->valor_pago ?? 0);
-                            $saldo = max(0, round((float) $conta->valor - $valorPago, 2));
-
-                            if ($conta->status === 'cancelada') {
-                                $statusConfig = [
-                                    'class' => 'bg-danger',
-                                    'icon' => 'bi-x-circle',
-                                    'label' => 'Cancelada',
-                                ];
-                            } elseif ($saldo <= 0) {
-                                $statusConfig = [
-                                    'class' => 'bg-success',
-                                    'icon' => 'bi-check-circle',
-                                    'label' => 'Paga',
-                                ];
-                            } elseif ($conta->data_vencimento->isBefore(today())) {
-                                $statusConfig = [
-                                    'class' => 'bg-danger',
-                                    'icon' => 'bi-exclamation-circle',
-                                    'label' => 'Vencida',
-                                ];
-                            } elseif ($valorPago > 0) {
-                                $statusConfig = [
-                                    'class' => 'bg-info text-dark',
-                                    'icon' => 'bi-hourglass-split',
-                                    'label' => 'Parcialmente paga',
-                                ];
-                            } else {
-                                $statusConfig = [
-                                    'class' => 'bg-warning text-dark',
-                                    'icon' => 'bi-clock',
-                                    'label' => 'Aberta',
-                                ];
-                            }
-                        @endphp
-
-                        <tr>
-                            <td>{{ $conta->id }}</td>
-
-                            <td>
-                                <strong>{{ $conta->descricao }}</strong>
-
-                                @if ($conta->nota_id)
-                                    <br>
-                                    <small class="text-muted">
-                                        <i class="bi bi-receipt"></i>
-                                        Nota #{{ $conta->nota_id }}
-                                    </small>
-                                @endif
-                            </td>
-
-                            <td>
-                                {{ $conta->fornecedor->nome ?? 'Não informado' }}
-                            </td>
-
-                            <td>
-                                {{ $conta->data_vencimento?->format('d/m/Y') ?? '-' }}
-
-                                @if (
-                                    $conta->status !== 'cancelada' &&
-                                    $saldo > 0 &&
-                                    $conta->data_vencimento->isBefore(today())
-                                )
-                                    <br>
-                                    <small class="text-danger">
-                                        <i class="bi bi-exclamation-triangle"></i>
-                                        Em atraso
-                                    </small>
-                                @endif
-                            </td>
-
-                            <td>
-                                <strong>
-                                    R$ {{ number_format((float) $conta->valor, 2, ',', '.') }}
-                                </strong>
-                            </td>
-
-                            <td>
-                                R$ {{ number_format($valorPago, 2, ',', '.') }}
-                            </td>
-
-                            <td>
-                                <strong>
-                                    R$ {{ number_format($saldo, 2, ',', '.') }}
-                                </strong>
-                            </td>
-
-                            <td>
-                                <span class="badge {{ $statusConfig['class'] }}">
-                                    <i class="bi {{ $statusConfig['icon'] }}"></i>
-                                    {{ $statusConfig['label'] }}
-                                </span>
-                            </td>
-
-                            <td>
-                                <div class="d-flex gap-1">
-                                    <a
-                                        href="{{ route('contas-pagar.show', $conta) }}"
-                                        class="btn btn-success btn-sm"
-                                        title="Visualizar conta"
-                                    >
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-
-                                    @if ($conta->status !== 'cancelada')
-                                        <a
-                                            href="{{ route('contas-pagar.edit', $conta) }}"
-                                            class="btn btn-primary btn-sm"
-                                            title="Editar conta"
-                                        >
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                    @endif
-
-                                    @if ($conta->status !== 'cancelada' && $saldo > 0)
-                                        <a
-                                            href="{{ route('contas-pagar.show', $conta) }}#registrar-pagamento"
-                                            class="btn btn-warning btn-sm"
-                                            title="Registrar pagamento"
-                                        >
-                                            <i class="bi bi-cash-coin"></i>
-                                        </a>
-                                    @endif
-                                </div>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-
-        @if ($contas->hasPages())
-            <div class="d-flex justify-content-center mt-4">
-                {{ $contas->links() }}
+                    <a href="{{ route('contas-pagar.create') }}" class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-1"></i>
+                        Nova Conta
+                    </a>
+                @endif
             </div>
-        @endif
+        </div>
+    @else
+        @php
+            $gruposPorVencimento = $contas->getCollection()->groupBy(
+                fn ($conta) => $conta->data_vencimento->format('Y-m-d')
+            );
+        @endphp
+
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <div>
+                <h5 class="mb-1">Agenda de vencimentos</h5>
+                <div class="text-muted small">
+                    {{ $contas->total() }} {{ $contas->total() === 1 ? 'conta encontrada' : 'contas encontradas' }}
+                </div>
+            </div>
+        </div>
+
+        @foreach($gruposPorVencimento as $data => $contasDoDia)
+            @php
+                $dataVencimento = $contasDoDia->first()->data_vencimento;
+                $totalGrupo = 0;
+                $pagoGrupo = 0;
+                $saldoGrupo = 0;
+
+                foreach ($contasDoDia as $conta) {
+                    $valorPago = (float) ($conta->valor_pago ?? 0);
+                    $saldo = max(0, round((float) $conta->valor - $valorPago, 2));
+
+                    $totalGrupo += (float) $conta->valor;
+                    $pagoGrupo += $valorPago;
+                    $saldoGrupo += $saldo;
+                }
+
+                $estaVencido = $dataVencimento->isBefore(today()) && $saldoGrupo > 0;
+                $venceHoje = $dataVencimento->isToday();
+            @endphp
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-bottom py-3">
+                    <div class="row align-items-center g-3">
+                        <div class="col-12 col-lg-4">
+                            <div class="d-flex align-items-center gap-2">
+                                @if($estaVencido)
+                                    <i class="bi bi-exclamation-circle-fill text-danger fs-4"></i>
+                                @elseif($venceHoje)
+                                    <i class="bi bi-calendar-event-fill text-warning fs-4"></i>
+                                @else
+                                    <i class="bi bi-calendar3 text-primary fs-4"></i>
+                                @endif
+
+                                <div>
+                                    <div class="fw-bold fs-5">
+                                        {{ $dataVencimento->format('d/m/Y') }}
+                                    </div>
+
+                                    <div class="small text-muted">
+                                        {{ $contasDoDia->count() }}
+                                        {{ $contasDoDia->count() === 1 ? 'conta' : 'contas' }}
+
+                                        @if($estaVencido)
+                                            <span class="badge bg-danger ms-1">VENCIDO</span>
+                                        @elseif($venceHoje)
+                                            <span class="badge bg-warning text-dark ms-1">VENCE HOJE</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-lg-8">
+                            <div class="row g-2 text-lg-end">
+                                <div class="col-4">
+                                    <div class="small text-muted">Total</div>
+                                    <div class="fw-bold">
+                                        R$ {{ number_format($totalGrupo, 2, ',', '.') }}
+                                    </div>
+                                </div>
+
+                                <div class="col-4">
+                                    <div class="small text-muted">Pago</div>
+                                    <div class="fw-bold text-success">
+                                        R$ {{ number_format($pagoGrupo, 2, ',', '.') }}
+                                    </div>
+                                </div>
+
+                                <div class="col-4">
+                                    <div class="small text-muted">Saldo</div>
+                                    <div class="fw-bold {{ $saldoGrupo > 0 && $estaVencido ? 'text-danger' : '' }}">
+                                        R$ {{ number_format($saldoGrupo, 2, ',', '.') }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th class="ps-3">ID</th>
+                                <th>Descrição</th>
+                                <th>Fornecedor</th>
+                                <th>Valor</th>
+                                <th>Pago</th>
+                                <th>Saldo</th>
+                                <th>Status</th>
+                                <th class="text-end pe-3">Ações</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach($contasDoDia as $conta)
+                                @php
+                                    $valorPago = (float) ($conta->valor_pago ?? 0);
+                                    $saldo = max(0, round((float) $conta->valor - $valorPago, 2));
+
+                                    $estaCancelada = $conta->status === 'cancelada';
+                                    $estaPaga = $saldo <= 0;
+                                    $estaVencida = !$estaCancelada
+                                        && !$estaPaga
+                                        && $conta->data_vencimento->isBefore(today());
+                                    $estaParcial = !$estaCancelada
+                                        && !$estaPaga
+                                        && $valorPago > 0;
+                                @endphp
+
+                                <tr>
+                                    <td class="ps-3">
+                                        #{{ $conta->id }}
+                                    </td>
+
+                                    <td>
+                                        <div class="fw-semibold">
+                                            {{ $conta->descricao }}
+                                        </div>
+
+                                        @if($conta->categoriaFinanceira)
+                                            <div class="small text-muted">
+                                                {{ $conta->categoriaFinanceira->nome }}
+                                            </div>
+                                        @endif
+                                    </td>
+
+                                    <td>
+                                        @if($conta->fornecedor)
+                                            {{ $conta->fornecedor->nome }}
+                                        @else
+                                            <span class="text-muted">Não informado</span>
+                                        @endif
+                                    </td>
+
+                                    <td class="fw-semibold">
+                                        R$ {{ number_format($conta->valor, 2, ',', '.') }}
+                                    </td>
+
+                                    <td class="text-success">
+                                        R$ {{ number_format($valorPago, 2, ',', '.') }}
+                                    </td>
+
+                                    <td class="fw-semibold {{ $estaVencida ? 'text-danger' : '' }}">
+                                        R$ {{ number_format($saldo, 2, ',', '.') }}
+                                    </td>
+
+                                    <td>
+                                        @if($estaCancelada)
+                                            <span class="badge bg-secondary">
+                                                Cancelada
+                                            </span>
+                                        @elseif($estaPaga)
+                                            <span class="badge bg-success">
+                                                Paga
+                                            </span>
+                                        @elseif($estaVencida)
+                                            <span class="badge bg-danger">
+                                                Vencida
+                                            </span>
+                                        @elseif($estaParcial)
+                                            <span class="badge bg-warning text-dark">
+                                                Parcialmente paga
+                                            </span>
+                                        @else
+                                            <span class="badge bg-primary">
+                                                Aberta
+                                            </span>
+                                        @endif
+                                    </td>
+
+                                    <td class="text-end pe-3">
+                                        <div class="btn-group" role="group">
+                                            <a
+                                                href="{{ route('contas-pagar.show', $conta) }}"
+                                                class="btn btn-sm btn-outline-primary"
+                                                title="Visualizar"
+                                            >
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+
+                                            @if(!$estaCancelada)
+                                                <a
+                                                    href="{{ route('contas-pagar.edit', $conta) }}"
+                                                    class="btn btn-sm btn-outline-secondary"
+                                                    title="Editar"
+                                                >
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+
+                                                @if($saldo > 0)
+                                                    <a
+                                                        href="{{ route('contas-pagar.show', $conta) }}"
+                                                        class="btn btn-sm btn-outline-success"
+                                                        title="Registrar pagamento"
+                                                    >
+                                                        <i class="bi bi-cash-coin"></i>
+                                                    </a>
+                                                @endif
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        @endforeach
+
+        <div class="mt-4">
+            {{ $contas->links() }}
+        </div>
     @endif
 </div>
 @endsection
