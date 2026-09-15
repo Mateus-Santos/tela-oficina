@@ -26,18 +26,10 @@
             <i class="bi bi-truck"></i>
             Fornecedor *
         </label>
-        <select
-            name="fornecedor_id"
-            id="fornecedor_id"
-            class="form-select"
-            required
-        >
+        <select name="fornecedor_id" id="fornecedor_id" class="form-select" required>
             <option value="">Selecione o fornecedor</option>
             @foreach ($fornecedores as $fornecedor)
-                <option
-                    value="{{ $fornecedor->id }}"
-                    @selected((string) old('fornecedor_id', $compra->fornecedor_id ?? '') === (string) $fornecedor->id)
-                >
+                <option value="{{ $fornecedor->id }}" @selected((string) old('fornecedor_id', $compra->fornecedor_id ?? '') === (string) $fornecedor->id)>
                     {{ $fornecedor->nome }}
                 </option>
             @endforeach
@@ -50,15 +42,7 @@
             <i class="bi bi-receipt"></i>
             Número da NF *
         </label>
-        <input
-            type="text"
-            name="numero_nf"
-            id="numero_nf"
-            class="form-control"
-            value="{{ old('numero_nf', $compra->numero_nf ?? '') }}"
-            maxlength="255"
-            required
-        >
+        <input type="text" name="numero_nf" id="numero_nf" class="form-control" value="{{ old('numero_nf', $compra->numero_nf ?? '') }}" maxlength="255" required>
     </div>
 
     {{-- SÉRIE --}}
@@ -67,14 +51,7 @@
             <i class="bi bi-hash"></i>
             Série da NF
         </label>
-        <input
-            type="text"
-            name="serie_nf"
-            id="serie_nf"
-            class="form-control"
-            value="{{ old('serie_nf', $compra->serie_nf ?? '') }}"
-            maxlength="50"
-        >
+        <input type="text" name="serie_nf" id="serie_nf" class="form-control" value="{{ old('serie_nf', $compra->serie_nf ?? '') }}" maxlength="50">
     </div>
 
     {{-- CHAVE NF --}}
@@ -83,20 +60,8 @@
             <i class="bi bi-upc-scan"></i>
             Chave de acesso
         </label>
-        <input
-            type="text"
-            name="chave_nf"
-            id="chave_nf"
-            class="form-control"
-            value="{{ old('chave_nf', $compra->chave_nf ?? '') }}"
-            maxlength="44"
-            minlength="44"
-            inputmode="numeric"
-            placeholder="44 dígitos"
-        >
-        <small class="text-muted">
-            Informe os 44 dígitos da chave da NF-e, quando disponível.
-        </small>
+        <input type="text" name="chave_nf" id="chave_nf" class="form-control" value="{{ old('chave_nf', $compra->chave_nf ?? '') }}" maxlength="44" minlength="44" inputmode="numeric" placeholder="44 dígitos">
+        <small class="text-muted">Informe os 44 dígitos da chave da NF-e, quando disponível.</small>
     </div>
 
     {{-- DATA EMISSÃO --}}
@@ -105,13 +70,7 @@
             <i class="bi bi-calendar-event"></i>
             Data de emissão
         </label>
-        <input
-            type="date"
-            name="data_emissao"
-            id="data_emissao"
-            class="form-control"
-            value="{{ old('data_emissao', isset($compra->data_emissao) ? $compra->data_emissao->format('Y-m-d') : '') }}"
-        >
+        <input type="date" name="data_emissao" id="data_emissao" class="form-control" value="{{ old('data_emissao', isset($compra->data_emissao) ? $compra->data_emissao->format('Y-m-d') : '') }}">
     </div>
 
     {{-- DATA ENTRADA --}}
@@ -120,14 +79,7 @@
             <i class="bi bi-calendar-check"></i>
             Data de entrada *
         </label>
-        <input
-            type="date"
-            name="data_entrada"
-            id="data_entrada"
-            class="form-control"
-            value="{{ old('data_entrada', isset($compra->data_entrada) ? $compra->data_entrada->format('Y-m-d') : now()->format('Y-m-d')) }}"
-            required
-        >
+        <input type="date" name="data_entrada" id="data_entrada" class="form-control" value="{{ old('data_entrada', isset($compra->data_entrada) ? $compra->data_entrada->format('Y-m-d') : now()->format('Y-m-d')) }}" required>
     </div>
 </div>
 
@@ -140,10 +92,7 @@
         </h2>
     </div>
 
-    <div
-        id="itens-container"
-        class="d-flex flex-column gap-3"
-    >
+    <div id="itens-container" class="d-flex flex-column gap-3">
         @php
             $itens = old('itens');
 
@@ -153,7 +102,6 @@
                         'produto_id' => $item->produto_id,
                         'descricao' => $item->descricao,
                         'quantidade' => $item->quantidade,
-                        'quantidade_conferida' => $item->quantidade_conferida,
                         'valor_unitario' => $item->valor_unitario,
                         'desconto' => $item->desconto,
                         'valor_total' => $item->valor_total,
@@ -165,10 +113,7 @@
         @endphp
 
         @foreach ($itens as $index => $item)
-            <div
-                class="card shadow-sm compra-item"
-                data-item-index="{{ $index }}"
-            >
+            <div class="card shadow-sm compra-item" data-item-index="{{ $index }}">
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
                         <h3 class="h6 mb-0">
@@ -176,11 +121,7 @@
                             Item <span class="item-numero">{{ $index + 1 }}</span>
                         </h3>
 
-                        <button
-                            type="button"
-                            class="btn btn-danger btn-sm btn-remover-item"
-                            title="Remover item"
-                        >
+                        <button type="button" class="btn btn-danger btn-sm btn-remover-item" title="Remover item">
                             <i class="bi bi-trash"></i>
                         </button>
                     </div>
@@ -192,20 +133,10 @@
                                 <i class="bi bi-box-seam"></i>
                                 Produto *
                             </label>
-                            <select
-                                name="itens[{{ $index }}][produto_id]"
-                                class="form-select item-produto"
-                                required
-                            >
+                            <select name="itens[{{ $index }}][produto_id]" class="form-select item-produto" required>
                                 <option value="">Selecione o produto</option>
-
                                 @foreach ($produtos as $produto)
-                                    <option
-                                        value="{{ $produto->id }}"
-                                        data-descricao="{{ $produto->nome }}"
-                                        data-preco="{{ $produto->preco_uni }}"
-                                        @selected((string) ($item['produto_id'] ?? '') === (string) $produto->id)
-                                    >
+                                    <option value="{{ $produto->id }}" data-descricao="{{ $produto->nome }}" data-preco="{{ $produto->preco_uni }}" @selected((string) ($item['produto_id'] ?? '') === (string) $produto->id)>
                                         {{ $produto->nome }}
                                         @if ($produto->codigo_fabricante)
                                             — {{ $produto->codigo_fabricante }}
@@ -221,103 +152,48 @@
                                 <i class="bi bi-card-text"></i>
                                 Descrição *
                             </label>
-                            <input
-                                type="text"
-                                name="itens[{{ $index }}][descricao]"
-                                class="form-control item-descricao"
-                                value="{{ $item['descricao'] ?? '' }}"
-                                maxlength="255"
-                                required
-                            >
+                            <input type="text" name="itens[{{ $index }}][descricao]" class="form-control item-descricao" value="{{ $item['descricao'] ?? '' }}" maxlength="255" required>
                         </div>
 
                         {{-- QUANTIDADE --}}
-                        <div class="col-12 col-md-3">
+                        <div class="col-12 col-md-4">
                             <label class="form-label">
                                 <i class="bi bi-boxes"></i>
                                 Quantidade *
                             </label>
-                            <input
-                                type="number"
-                                name="itens[{{ $index }}][quantidade]"
-                                class="form-control item-quantidade"
-                                value="{{ $item['quantidade'] ?? 1 }}"
-                                min="0.001"
-                                step="0.001"
-                                required
-                            >
-                        </div>
-
-                        {{-- QUANTIDADE CONFERIDA --}}
-                        <div class="col-12 col-md-3">
-                            <label class="form-label">
-                                <i class="bi bi-check2-square"></i>
-                                Quantidade conferida
-                            </label>
-                            <input
-                                type="number"
-                                name="itens[{{ $index }}][quantidade_conferida]"
-                                class="form-control"
-                                value="{{ $item['quantidade_conferida'] ?? '' }}"
-                                min="0"
-                                step="0.001"
-                            >
+                            <input type="number" name="itens[{{ $index }}][quantidade]" class="form-control item-quantidade" value="{{ $item['quantidade'] ?? 1 }}" min="0.001" step="0.001" required>
                         </div>
 
                         {{-- VALOR UNITÁRIO --}}
-                        <div class="col-12 col-md-3">
+                        <div class="col-12 col-md-4">
                             <label class="form-label">
                                 <i class="bi bi-currency-dollar"></i>
                                 Valor unitário *
                             </label>
-                            <input
-                                type="number"
-                                name="itens[{{ $index }}][valor_unitario]"
-                                class="form-control item-valor-unitario"
-                                value="{{ $item['valor_unitario'] ?? '' }}"
-                                min="0"
-                                step="0.01"
-                                required
-                            >
+                            <input type="number" name="itens[{{ $index }}][valor_unitario]" class="form-control item-valor-unitario" value="{{ $item['valor_unitario'] ?? '' }}" min="0" step="0.01" required>
                         </div>
 
                         {{-- DESCONTO --}}
-                        <div class="col-12 col-md-3">
+                        <div class="col-12 col-md-4">
                             <label class="form-label">
                                 <i class="bi bi-percent"></i>
                                 Desconto
                             </label>
-                            <input
-                                type="number"
-                                name="itens[{{ $index }}][desconto]"
-                                class="form-control item-desconto"
-                                value="{{ $item['desconto'] ?? 0 }}"
-                                min="0"
-                                step="0.01"
-                            >
+                            <input type="number" name="itens[{{ $index }}][desconto]" class="form-control item-desconto" value="{{ $item['desconto'] ?? 0 }}" min="0" step="0.01">
                         </div>
 
                         {{-- TOTAL ITEM --}}
                         <div class="col-12">
                             <div class="d-flex justify-content-end">
                                 <div class="text-end">
-                                    <small class="text-muted">
-                                        Total do item
-                                    </small>
-
+                                    <small class="text-muted">Total do item</small>
                                     <div class="fw-bold item-valor-total">
-                                        R$
-                                        {{ number_format((float) ($item['valor_total'] ?? 0), 2, ',', '.') }}
+                                        R$ {{ number_format((float) ($item['valor_total'] ?? 0), 2, ',', '.') }}
                                     </div>
                                 </div>
                             </div>
 
-                            <input
-                                type="hidden"
-                                name="itens[{{ $index }}][valor_total]"
-                                class="item-valor-total-input"
-                                value="{{ $item['valor_total'] ?? 0 }}"
-                            >
+                            <input type="hidden" name="itens[{{ $index }}][valor_total]" class="item-valor-total-input" value="{{ $item['valor_total'] ?? 0 }}">
                         </div>
                     </div>
                 </div>
@@ -326,11 +202,7 @@
     </div>
 
     <div class="mt-3">
-        <button
-            type="button"
-            id="btn-adicionar-item"
-            class="btn btn-outline-primary"
-        >
+        <button type="button" id="btn-adicionar-item" class="btn btn-outline-primary">
             <i class="bi bi-plus-lg"></i>
             Adicionar produto
         </button>
@@ -352,16 +224,7 @@
                     <i class="bi bi-box-seam"></i>
                     Valor dos produtos
                 </label>
-                <input
-                    type="number"
-                    name="valor_produtos"
-                    id="valor_produtos"
-                    class="form-control"
-                    value="{{ old('valor_produtos', $compra->valor_produtos ?? 0) }}"
-                    min="0"
-                    step="0.01"
-                    readonly
-                >
+                <input type="number" name="valor_produtos" id="valor_produtos" class="form-control" value="{{ old('valor_produtos', $compra->valor_produtos ?? 0) }}" min="0" step="0.01" readonly>
             </div>
 
             {{-- DESCONTO --}}
@@ -370,15 +233,7 @@
                     <i class="bi bi-tag"></i>
                     Desconto
                 </label>
-                <input
-                    type="number"
-                    name="desconto"
-                    id="desconto"
-                    class="form-control"
-                    value="{{ old('desconto', $compra->desconto ?? 0) }}"
-                    min="0"
-                    step="0.01"
-                >
+                <input type="number" name="desconto" id="desconto" class="form-control" value="{{ old('desconto', $compra->desconto ?? 0) }}" min="0" step="0.01">
             </div>
 
             {{-- FRETE --}}
@@ -387,15 +242,7 @@
                     <i class="bi bi-truck"></i>
                     Frete
                 </label>
-                <input
-                    type="number"
-                    name="frete"
-                    id="frete"
-                    class="form-control"
-                    value="{{ old('frete', $compra->frete ?? 0) }}"
-                    min="0"
-                    step="0.01"
-                >
+                <input type="number" name="frete" id="frete" class="form-control" value="{{ old('frete', $compra->frete ?? 0) }}" min="0" step="0.01">
             </div>
 
             {{-- OUTRAS DESPESAS --}}
@@ -404,41 +251,21 @@
                     <i class="bi bi-plus-circle"></i>
                     Outras despesas
                 </label>
-                <input
-                    type="number"
-                    name="outras_despesas"
-                    id="outras_despesas"
-                    class="form-control"
-                    value="{{ old('outras_despesas', $compra->outras_despesas ?? 0) }}"
-                    min="0"
-                    step="0.01"
-                >
+                <input type="number" name="outras_despesas" id="outras_despesas" class="form-control" value="{{ old('outras_despesas', $compra->outras_despesas ?? 0) }}" min="0" step="0.01">
             </div>
 
             {{-- TOTAL --}}
             <div class="col-12">
                 <div class="d-flex justify-content-end">
                     <div class="text-end">
-                        <span class="text-muted">
-                            Valor total da compra
-                        </span>
-
-                        <div
-                            id="valor-total-exibicao"
-                            class="fs-4 fw-bold"
-                        >
-                            R$
-                            {{ number_format((float) old('valor_total', $compra->valor_total ?? 0), 2, ',', '.') }}
+                        <span class="text-muted">Valor total da compra</span>
+                        <div id="valor-total-exibicao" class="fs-4 fw-bold">
+                            R$ {{ number_format((float) old('valor_total', $compra->valor_total ?? 0), 2, ',', '.') }}
                         </div>
                     </div>
                 </div>
 
-                <input
-                    type="hidden"
-                    name="valor_total"
-                    id="valor_total"
-                    value="{{ old('valor_total', $compra->valor_total ?? 0) }}"
-                >
+                <input type="hidden" name="valor_total" id="valor_total" value="{{ old('valor_total', $compra->valor_total ?? 0) }}">
             </div>
         </div>
     </div>
@@ -451,13 +278,7 @@
         Observações
     </label>
 
-    <textarea
-        name="observacoes"
-        id="observacoes"
-        class="form-control"
-        rows="4"
-        placeholder="Observações sobre a compra..."
-    >{{ old('observacoes', $compra->observacoes ?? '') }}</textarea>
+    <textarea name="observacoes" id="observacoes" class="form-control" rows="4" placeholder="Observações sobre a compra...">{{ old('observacoes', $compra->observacoes ?? '') }}</textarea>
 </div>
 
 {{-- ANEXOS --}}
@@ -476,24 +297,14 @@
                     </small>
                 </div>
 
-                <button
-                    type="button"
-                    class="btn btn-outline-primary"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#anexos-compra"
-                    aria-expanded="false"
-                    aria-controls="anexos-compra"
-                >
+                <button type="button" class="btn btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#anexos-compra" aria-expanded="false" aria-controls="anexos-compra">
                     <i class="bi bi-paperclip"></i>
                     Adicionar anexos
                     <i class="bi bi-chevron-down ms-1"></i>
                 </button>
             </div>
 
-            <div
-                id="anexos-compra"
-                class="collapse mt-4"
-            >
+            <div id="anexos-compra" class="collapse mt-4">
                 <div id="anexos-container">
                     <div class="anexo-item border rounded p-3 mb-3">
                         <div class="row g-3 align-items-end">
@@ -504,10 +315,7 @@
                                     Tipo do documento
                                 </label>
 
-                                <select
-                                    name="anexos[0][tipo]"
-                                    class="form-select"
-                                >
+                                <select name="anexos[0][tipo]" class="form-select">
                                     <option value="">Selecione...</option>
                                     <option value="nf">Nota fiscal</option>
                                     <option value="nf_xml">NF-e XML</option>
@@ -531,20 +339,12 @@
                                     Arquivo
                                 </label>
 
-                                <input
-                                    type="file"
-                                    name="anexos[0][arquivo]"
-                                    class="form-control"
-                                    accept=".pdf,.jpg,.jpeg,.png,.webp,.xml"
-                                >
+                                <input type="file" name="anexos[0][arquivo]" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.webp,.xml">
                             </div>
 
                             {{-- REMOVER --}}
                             <div class="col-12 col-md-3">
-                                <button
-                                    type="button"
-                                    class="btn btn-outline-danger btn-remover-anexo"
-                                >
+                                <button type="button" class="btn btn-outline-danger btn-remover-anexo">
                                     <i class="bi bi-trash"></i>
                                     Remover
                                 </button>
@@ -557,24 +357,14 @@
                                     Observações
                                 </label>
 
-                                <input
-                                    type="text"
-                                    name="anexos[0][observacoes]"
-                                    class="form-control"
-                                    maxlength="1000"
-                                    placeholder="Observações sobre o documento..."
-                                >
+                                <input type="text" name="anexos[0][observacoes]" class="form-control" maxlength="1000" placeholder="Observações sobre o documento...">
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="d-flex align-items-center gap-2 flex-wrap">
-                    <button
-                        type="button"
-                        id="btn-adicionar-anexo"
-                        class="btn btn-outline-secondary"
-                    >
+                    <button type="button" id="btn-adicionar-anexo" class="btn btn-outline-secondary">
                         <i class="bi bi-plus-lg"></i>
                         Adicionar outro arquivo
                     </button>
@@ -582,7 +372,7 @@
 
                 <div class="alert alert-light border mt-3 mb-0">
                     <i class="bi bi-info-circle"></i>
-                    PDF, XML, JPG, JPEG, PNG ou WEBP — máximo de 20 MB por arquivo.
+                    PDF, XML, JPG, JPEG ou WEBP — máximo de 20 MB por arquivo.
                 </div>
             </div>
         </div>
@@ -591,18 +381,12 @@
 
 {{-- AÇÕES --}}
 <div class="d-flex justify-content-end gap-2 mt-4">
-    <a
-        href="{{ $isEdit ? route('compras.show', $compra) : route('compras.index') }}"
-        class="btn btn-secondary"
-    >
+    <a href="{{ $isEdit ? route('compras.show', $compra) : route('compras.index') }}" class="btn btn-secondary">
         <i class="bi bi-x-lg"></i>
         Cancelar
     </a>
 
-    <button
-        type="submit"
-        class="btn btn-primary"
-    >
+    <button type="submit" class="btn btn-primary">
         <i class="bi bi-check-lg"></i>
         {{ $isEdit ? 'Atualizar Compra' : 'Cadastrar Compra' }}
     </button>

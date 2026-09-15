@@ -12,6 +12,14 @@ class Compra extends Model
 {
     use HasFactory;
 
+    public const STATUS_PENDENTE = 'pendente';
+
+    public const STATUS_CONFERINDO = 'conferindo';
+
+    public const STATUS_APROVADA = 'aprovada';
+
+    public const STATUS_CANCELADA = 'cancelada';
+
     protected $table = 'compras';
 
     protected $fillable = [
@@ -54,4 +62,47 @@ class Compra extends Model
     {
         return $this->morphMany(Anexo::class, 'anexavel');
     }
+
+    public function estaPendente(): bool
+    {
+        return $this->status === self::STATUS_PENDENTE;
+    }
+
+    public function estaEmConferencia(): bool
+    {
+        return $this->status === self::STATUS_CONFERINDO;
+    }
+
+    public function estaAprovada(): bool
+    {
+        return $this->status === self::STATUS_APROVADA;
+    }
+
+    public function estaCancelada(): bool
+    {
+        return $this->status === self::STATUS_CANCELADA;
+    }
+
+    public function podeSerEditada(): bool
+    {
+        return in_array(
+            $this->status,
+            [
+                self::STATUS_PENDENTE,
+                self::STATUS_CONFERINDO,
+            ],
+            true
+        );
+    }
+
+    public function podeIniciarConferencia(): bool
+    {
+        return $this->estaPendente();
+    }
+
+    public function podeSerAprovada(): bool
+    {
+        return $this->estaEmConferencia();
+    }
 }
+
