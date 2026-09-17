@@ -68,6 +68,7 @@ class NotaItemBuscaController extends Controller
                 'preco_uni',
                 'codigo_fabricante',
                 'codigo_barras',
+                'marca',
             ])
             ->where(function ($query) use ($busca) {
                 $query
@@ -103,6 +104,7 @@ class NotaItemBuscaController extends Controller
                         $produto->codigo_fabricante,
                     'codigo_barras' =>
                         $produto->codigo_barras,
+                    'marca' => $produto->marca,
                 ];
             })->values(),
         ]);

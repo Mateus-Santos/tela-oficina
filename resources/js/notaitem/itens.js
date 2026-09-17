@@ -5,93 +5,42 @@
         // ============================================================
         // CONFIGURAÇÕES
         // ============================================================
-
         const API_BUSCA = '/api/notas-itens/buscar';
-
         const PRODUTO_TYPE = 'App\\Models\\Produto';
         const ORDEM_SERVICO_TYPE = 'App\\Models\\OrdemServico';
 
         // ============================================================
         // ELEMENTOS DO EDITOR
         // ============================================================
-
-        const tipoInput = document.getElementById(
-            'builder_type'
-        );
-
-        const buscaInput = document.getElementById(
-            'builder_item_busca'
-        );
-
-        const resultadosContainer = document.getElementById(
-            'builder_resultados'
-        );
-
-        const buscaStatus = document.getElementById(
-            'builder_busca_status'
-        );
-
-        const itemIdInput = document.getElementById(
-            'builder_item_id'
-        );
-
-        const descricaoInput = document.getElementById(
-            'builder_descricao'
-        );
-
-        const quantidadeInput = document.getElementById(
-            'builder_quantidade'
-        );
-
-        const valorInput = document.getElementById(
-            'builder_valor_unitario'
-        );
-
-        const descontoInput = document.getElementById(
-            'builder_desconto'
-        );
-
-        const garantiaInput = document.getElementById(
-            'builder_garantia_dias'
-        );
-
-        const botaoAdicionar = document.getElementById(
-            'btn-adicionar-item'
-        );
+        const tipoInput = document.getElementById('builder_type');
+        const buscaInput = document.getElementById('builder_item_busca');
+        const resultadosContainer = document.getElementById('builder_resultados');
+        const buscaStatus = document.getElementById('builder_busca_status');
+        const itemIdInput = document.getElementById('builder_item_id');
+        const descricaoInput = document.getElementById('builder_descricao');
+        const quantidadeInput = document.getElementById('builder_quantidade');
+        const valorInput = document.getElementById('builder_valor_unitario');
+        const descontoInput = document.getElementById('builder_desconto');
+        const garantiaInput = document.getElementById('builder_garantia_dias');
+        const botaoAdicionar = document.getElementById('btn-adicionar-item');
 
         // ============================================================
         // TABELA
         // ============================================================
-
-        const tabelaItens = document.getElementById(
-            'container-itens-dinamicos'
-        );
-
-        const linhaVazia = document.getElementById(
-            'linha-vazia'
-        );
+        const tabelaItens = document.getElementById('container-itens-dinamicos');
+        const linhaVazia = document.getElementById('linha-vazia');
 
         // ============================================================
         // VALIDAÇÃO BÁSICA
         // ============================================================
-
-        if (
-            !tipoInput ||
-            !buscaInput ||
-            !resultadosContainer ||
-            !tabelaItens
-        ) {
-            console.warn(
-                '[SOS Mecânica] Elementos do gerenciador de itens não encontrados.'
-            );
-
+        if (!tipoInput || !buscaInput || !resultadosContainer || !tabelaItens) {
+            console.warn('[SOS Mecânica] Elementos do gerenciador de itens não encontrados.');
             return;
         }
 
         // ============================================================
         // ESTADO
         // ============================================================
-
         let buscaTimeout = null;
         let buscaController = null;
         let indiceItem = 0;
@@ -106,12 +55,8 @@
         // ============================================================
         // UTILITÁRIOS
         // ============================================================
-
         function escaparHtml(valor) {
-            if (
-                valor === null ||
-                typeof valor === 'undefined'
-            ) {
+            if (valor === null || typeof valor === 'undefined') {
                 return '';
             }
 
@@ -124,10 +69,7 @@
         }
 
         function converterNumero(valor) {
-            if (
-                valor === null ||
-                typeof valor === 'undefined'
-            ) {
+            if (valor === null || typeof valor === 'undefined') {
                 return 0;
             }
 
@@ -145,14 +87,11 @@
              * 10,50
              * 1.250,50
              */
-
             if (texto.indexOf(',') !== -1) {
                 texto = texto
                     .replace(/\./g, '')
                     .replace(',', '.');
-            } else if (
-                (texto.match(/\./g) || []).length > 1
-            ) {
+            } else if ((texto.match(/\./g) || []).length > 1) {
                 texto = texto.replace(/\./g, '');
             }
 
@@ -185,9 +124,7 @@
                 return '0,00';
             }
 
-            return numero
-                .toFixed(2)
-                .replace('.', ',');
+            return numero.toFixed(2).replace('.', ',');
         }
 
         function obterTipoSelecionado() {
@@ -195,9 +132,7 @@
         }
 
         function obterVeiculoClienteId() {
-            const veiculoInput = document.getElementById(
-                'veiculo_cliente_id'
-            );
+            const veiculoInput = document.getElementById('veiculo_cliente_id');
 
             if (!veiculoInput) {
                 return '';
@@ -209,7 +144,6 @@
         // ============================================================
         // TIPOS
         // ============================================================
-
         function normalizarTipo(tipo) {
             const valor = String(tipo || '');
 
@@ -245,9 +179,7 @@
                 return '';
             }
 
-            return normalizarTipo(
-                tipoInputLinha.value
-            );
+            return normalizarTipo(tipoInputLinha.value);
         }
 
         function obterItemableType(tipo) {
@@ -265,7 +197,6 @@
         // ============================================================
         // CAMPOS DAS LINHAS
         // ============================================================
-
         function obterCampoLinha(linha, seletor) {
             if (!linha) {
                 return null;
@@ -280,9 +211,7 @@
                 '.input-qtd, .item-quantidade'
             );
 
-            return input
-                ? converterNumero(input.value)
-                : 0;
+            return input ? converterNumero(input.value) : 0;
         }
 
         function obterValorUnitarioLinha(linha) {
@@ -291,9 +220,7 @@
                 '.input-valor, .item-valor-unitario'
             );
 
-            return input
-                ? converterNumero(input.value)
-                : 0;
+            return input ? converterNumero(input.value) : 0;
         }
 
         function obterDescontoLinha(linha) {
@@ -303,24 +230,19 @@
             );
 
             return input
-                ? Math.max(
-                    0,
-                    converterNumero(input.value)
-                )
+                ? Math.max(0, converterNumero(input.value))
                 : 0;
         }
 
         // ============================================================
         // CÁLCULOS
         // ============================================================
-
         function calcularValorTotalItem(
             quantidade,
             valorUnitario,
             desconto
         ) {
-            const subtotal =
-                quantidade * valorUnitario;
+            const subtotal = quantidade * valorUnitario;
 
             return Math.max(
                 0,
@@ -329,24 +251,16 @@
         }
 
         function calcularDadosLinha(linha) {
-            const quantidade =
-                obterQuantidadeLinha(linha);
+            const quantidade = obterQuantidadeLinha(linha);
+            const valorUnitario = obterValorUnitarioLinha(linha);
+            const desconto = obterDescontoLinha(linha);
+            const subtotal = quantidade * valorUnitario;
 
-            const valorUnitario =
-                obterValorUnitarioLinha(linha);
-
-            const desconto =
-                obterDescontoLinha(linha);
-
-            const subtotal =
-                quantidade * valorUnitario;
-
-            const total =
-                calcularValorTotalItem(
-                    quantidade,
-                    valorUnitario,
-                    desconto
-                );
+            const total = calcularValorTotalItem(
+                quantidade,
+                valorUnitario,
+                desconto
+            );
 
             return {
                 tipo: obterTipoLinha(linha),
@@ -370,8 +284,9 @@
             );
 
             if (totalElemento) {
-                totalElemento.textContent =
-                    formatarMoeda(dados.total);
+                totalElemento.textContent = formatarMoeda(
+                    dados.total
+                );
             }
         }
 
@@ -380,7 +295,6 @@
         //
         // ESTE É O ÚNICO LOCAL QUE CALCULA O FINANCEIRO.
         // ============================================================
-
         function obterDadosFinanceiros() {
             const dados = {
                 produto: {
@@ -388,13 +302,11 @@
                     desconto: 0,
                     liquido: 0
                 },
-
                 os: {
                     bruto: 0,
                     desconto: 0,
                     liquido: 0
                 },
-
                 subtotal: 0,
                 desconto: 0,
                 total: 0
@@ -417,14 +329,12 @@
 
             dados.produto.liquido = Math.max(
                 0,
-                dados.produto.bruto -
-                dados.produto.desconto
+                dados.produto.bruto - dados.produto.desconto
             );
 
             dados.os.liquido = Math.max(
                 0,
-                dados.os.bruto -
-                dados.os.desconto
+                dados.os.bruto - dados.os.desconto
             );
 
             dados.subtotal =
@@ -445,7 +355,6 @@
         // ============================================================
         // ATUALIZA RESUMO FINANCEIRO
         // ============================================================
-
         function atualizarResumoFinanceiro() {
             const linhas = tabelaItens.querySelectorAll(
                 'tr[data-item-index]'
@@ -458,101 +367,70 @@
             const dados = obterDadosFinanceiros();
 
             const elementos = {
-                pecasBruto:
-                    document.getElementById(
-                        'resumo-pecas-bruto'
-                    ),
-
-                pecasDesconto:
-                    document.getElementById(
-                        'resumo-pecas-desconto'
-                    ),
-
-                pecasLiquido:
-                    document.getElementById(
-                        'resumo-pecas-liquido'
-                    ),
-
-                servicosBruto:
-                    document.getElementById(
-                        'resumo-servicos-bruto'
-                    ),
-
-                servicosDesconto:
-                    document.getElementById(
-                        'resumo-servicos-desconto'
-                    ),
-
-                servicosLiquido:
-                    document.getElementById(
-                        'resumo-servicos-liquido'
-                    ),
-
-                totalDescontos:
-                    document.getElementById(
-                        'resumo-total-descontos'
-                    ),
-
-                totalGeral:
-                    document.getElementById(
-                        'valor-geral-os'
-                    )
+                pecasBruto: document.getElementById(
+                    'resumo-pecas-bruto'
+                ),
+                pecasDesconto: document.getElementById(
+                    'resumo-pecas-desconto'
+                ),
+                pecasLiquido: document.getElementById(
+                    'resumo-pecas-liquido'
+                ),
+                servicosBruto: document.getElementById(
+                    'resumo-servicos-bruto'
+                ),
+                servicosDesconto: document.getElementById(
+                    'resumo-servicos-desconto'
+                ),
+                servicosLiquido: document.getElementById(
+                    'resumo-servicos-liquido'
+                ),
+                totalDescontos: document.getElementById(
+                    'resumo-total-descontos'
+                ),
+                totalGeral: document.getElementById(
+                    'valor-geral-os'
+                )
             };
 
             if (elementos.pecasBruto) {
                 elementos.pecasBruto.textContent =
-                    formatarMoeda(
-                        dados.produto.bruto
-                    );
+                    formatarMoeda(dados.produto.bruto);
             }
 
             if (elementos.pecasDesconto) {
                 elementos.pecasDesconto.textContent =
-                    formatarMoeda(
-                        dados.produto.desconto
-                    );
+                    formatarMoeda(dados.produto.desconto);
             }
 
             if (elementos.pecasLiquido) {
                 elementos.pecasLiquido.textContent =
-                    formatarMoeda(
-                        dados.produto.liquido
-                    );
+                    formatarMoeda(dados.produto.liquido);
             }
 
             if (elementos.servicosBruto) {
                 elementos.servicosBruto.textContent =
-                    formatarMoeda(
-                        dados.os.bruto
-                    );
+                    formatarMoeda(dados.os.bruto);
             }
 
             if (elementos.servicosDesconto) {
                 elementos.servicosDesconto.textContent =
-                    formatarMoeda(
-                        dados.os.desconto
-                    );
+                    formatarMoeda(dados.os.desconto);
             }
 
             if (elementos.servicosLiquido) {
                 elementos.servicosLiquido.textContent =
-                    formatarMoeda(
-                        dados.os.liquido
-                    );
+                    formatarMoeda(dados.os.liquido);
             }
 
             if (elementos.totalDescontos) {
                 elementos.totalDescontos.textContent =
-                    formatarMoeda(
-                        dados.desconto
-                    );
+                    formatarMoeda(dados.desconto);
             }
 
             if (elementos.totalGeral) {
                 elementos.totalGeral.textContent =
-                    formatarMoeda(
-                        dados.total
-                    );
+                    formatarMoeda(dados.total);
             }
 
             return dados;
@@ -561,15 +439,11 @@
         // ============================================================
         // API PÚBLICA PARA OUTROS MÓDULOS
         // ============================================================
-
         window.NotaItens = {
             recalcular: atualizarResumoFinanceiro,
-
             obterDadosFinanceiros: obterDadosFinanceiros,
-
             obterSubtotalCategoria: function (tipo) {
-                const dados =
-                    obterDadosFinanceiros();
+                const dados = obterDadosFinanceiros();
 
                 if (tipo === 'produto') {
                     return dados.produto.bruto;
@@ -586,7 +460,6 @@
         // ============================================================
         // RESULTADOS DA BUSCA
         // ============================================================
-
         function limparResultados() {
             resultadosContainer.innerHTML = '';
         }
@@ -610,7 +483,6 @@
             if (!tipo) {
                 buscaInput.disabled = true;
                 buscaInput.value = '';
-
                 limparResultados();
                 limparSelecao();
 
@@ -682,8 +554,7 @@
 
             if (buscaInput) {
                 if (tipo === 'produto') {
-                    buscaInput.value =
-                        item.nome || '';
+                    buscaInput.value = item.nome || '';
                 } else {
                     buscaInput.value =
                         'O.S. #' +
@@ -706,12 +577,10 @@
         function renderizarResultados(itens, tipo) {
             resultadosContainer.innerHTML = '';
 
-            if (
-                !Array.isArray(itens) ||
-                itens.length === 0
-            ) {
+            if (!Array.isArray(itens) || itens.length === 0) {
                 resultadosContainer.innerHTML = `
                     <div class="list-group-item text-muted">
+                        <i class="bi bi-search"></i>
                         Nenhum item encontrado.
                     </div>
                 `;
@@ -720,59 +589,138 @@
             }
 
             itens.forEach(function (item) {
-                const botao =
-                    document.createElement('button');
+                const botao = document.createElement('button');
 
                 botao.type = 'button';
-
                 botao.className =
                     'list-group-item list-group-item-action';
 
                 if (tipo === 'produto') {
                     const nome =
                         item.nome ||
-                        'Produto';
+                        'Produto sem nome';
 
                     const descricao =
                         item.descricao ||
                         '';
 
-                    const codigo =
-                        item.codigo_barras ||
+                    /*
+                     * Compatibilidade com diferentes formatos
+                     * retornados pela API:
+                     *
+                     * marca: { nome: '...' }
+                     * marca: '...'
+                     * marca_nome: '...'
+                     *
+                     * Não usamos optional chaining aqui porque
+                     * o Babel atual do projeto não suporta ?. .
+                     */
+                    const marca =
+                        typeof item.marca === 'object'
+                            ? (item.marca && item.marca.nome) || ''
+                            : item.marca ||
+                              item.marca_nome ||
+                              '';
+
+                    const codigoFabricante =
                         item.codigo_fabricante ||
                         '';
 
+                    const codigoBarras =
+                        item.codigo_barras ||
+                        '';
+
+                    const preco =
+                        converterNumero(item.preco);
+
                     botao.innerHTML = `
-                        <div class="d-flex justify-content-between align-items-start gap-2">
-                            <div>
-                                <strong>
-                                    ${escaparHtml(nome)}
-                                </strong>
+                        <div class="d-flex align-items-start gap-3">
+                            <div
+                                class="d-flex align-items-center justify-content-center rounded bg-light text-primary flex-shrink-0"
+                                style="width: 42px; height: 42px;"
+                            >
+                                <i class="bi bi-box-seam fs-5"></i>
+                            </div>
+
+                            <div class="flex-grow-1 min-width-0">
+                                <div class="d-flex justify-content-between align-items-start gap-3">
+                                    <strong class="d-block text-dark">
+                                        ${escaparHtml(nome)}
+                                    </strong>
+
+                                    <strong class="text-primary text-nowrap">
+                                        ${formatarMoeda(preco)}
+                                    </strong>
+                                </div>
 
                                 ${
-                                    descricao
+                                    marca
                                         ? `
-                                            <div class="small text-muted">
-                                                ${escaparHtml(descricao)}
+                                            <div class="small text-muted mt-1">
+                                                <i class="bi bi-bookmark"></i>
+                                                <span class="fw-semibold">
+                                                    Marca:
+                                                </span>
+                                                ${escaparHtml(marca)}
                                             </div>
                                         `
                                         : ''
                                 }
 
                                 ${
-                                    codigo
+                                    codigoFabricante
                                         ? `
-                                            <div class="small text-muted">
-                                                Código: ${escaparHtml(codigo)}
+                                            <div class="small text-muted mt-1">
+                                                <i class="bi bi-tag"></i>
+                                                <span class="fw-semibold">
+                                                    Fabricante:
+                                                </span>
+                                                ${escaparHtml(codigoFabricante)}
+                                            </div>
+                                        `
+                                        : ''
+                                }
+
+                                ${
+                                    codigoBarras
+                                        ? `
+                                            <div class="small text-muted mt-1">
+                                                <i class="bi bi-upc-scan"></i>
+                                                <span class="fw-semibold">
+                                                    Código de barras:
+                                                </span>
+                                                ${escaparHtml(codigoBarras)}
+                                            </div>
+                                        `
+                                        : ''
+                                }
+
+                                ${
+                                    descricao
+                                        ? `
+                                            <div
+                                                class="small text-muted mt-2"
+                                                style="
+                                                    display: -webkit-box;
+                                                    -webkit-box-orient: vertical;
+                                                    -webkit-line-clamp: 3;
+                                                    overflow: hidden;
+                                                    line-height: 1.4;
+                                                "
+                                            >
+                                                ${escaparHtml(descricao)}
                                             </div>
                                         `
                                         : ''
                                 }
                             </div>
 
-                            <strong>
-                                ${formatarMoeda(item.preco)}
-                            </strong>
+                            <div
+                                class="d-flex align-items-center justify-content-center text-muted flex-shrink-0"
+                                style="width: 20px;"
+                            >
+                                <i class="bi bi-chevron-right"></i>
+                            </div>
                         </div>
                     `;
                 } else {
@@ -780,31 +728,61 @@
                         item.descricao ||
                         'Ordem de Serviço';
 
-                    botao.innerHTML = `
-                        <div class="d-flex justify-content-between align-items-start gap-2">
-                            <div>
-                                <strong>
-                                    O.S. #${escaparHtml(item.id)}
-                                </strong>
+                    const valor =
+                        converterNumero(item.valor);
 
-                                <div class="small text-muted">
+                    botao.innerHTML = `
+                        <div class="d-flex align-items-start gap-3">
+                            <div
+                                class="d-flex align-items-center justify-content-center rounded bg-light text-warning flex-shrink-0"
+                                style="width: 42px; height: 42px;"
+                            >
+                                <i class="bi bi-tools fs-5"></i>
+                            </div>
+
+                            <div class="flex-grow-1 min-width-0">
+                                <div class="d-flex justify-content-between align-items-start gap-3">
+                                    <strong class="d-block text-dark">
+                                        O.S. #${escaparHtml(item.id)}
+                                    </strong>
+
+                                    <strong class="text-primary text-nowrap">
+                                        ${formatarMoeda(valor)}
+                                    </strong>
+                                </div>
+
+                                <div
+                                    class="small text-muted mt-2"
+                                    style="
+                                        display: -webkit-box;
+                                        -webkit-box-orient: vertical;
+                                        -webkit-line-clamp: 3;
+                                        overflow: hidden;
+                                        line-height: 1.4;
+                                    "
+                                >
                                     ${escaparHtml(descricao)}
                                 </div>
 
                                 ${
                                     item.status
                                         ? `
-                                            <div class="small text-muted">
-                                                Status: ${escaparHtml(item.status)}
+                                            <div class="mt-2">
+                                                <span class="badge bg-secondary">
+                                                    ${escaparHtml(item.status)}
+                                                </span>
                                             </div>
                                         `
                                         : ''
                                 }
                             </div>
 
-                            <strong>
-                                ${formatarMoeda(item.valor)}
-                            </strong>
+                            <div
+                                class="d-flex align-items-center justify-content-center text-muted flex-shrink-0"
+                                style="width: 20px;"
+                            >
+                                <i class="bi bi-chevron-right"></i>
+                            </div>
                         </div>
                     `;
                 }
@@ -823,7 +801,6 @@
         // ============================================================
         // BUSCA API
         // ============================================================
-
         async function buscarItens() {
             const tipo = obterTipoSelecionado();
             const busca = buscaInput.value.trim();
@@ -861,8 +838,7 @@
                     'Buscando...';
             }
 
-            const parametros =
-                new URLSearchParams();
+            const parametros = new URLSearchParams();
 
             parametros.set('tipo', tipo);
             parametros.set('q', busca);
@@ -885,14 +861,13 @@
                 parametros.toString();
 
             try {
-                const response =
-                    await fetch(url, {
-                        method: 'GET',
-                        headers: {
-                            Accept: 'application/json'
-                        },
-                        signal: buscaController.signal
-                    });
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        Accept: 'application/json'
+                    },
+                    signal: buscaController.signal
+                });
 
                 if (!response.ok) {
                     throw new Error(
@@ -901,8 +876,7 @@
                     );
                 }
 
-                const data =
-                    await response.json();
+                const data = await response.json();
 
                 const itens =
                     Array.isArray(data.data)
@@ -952,7 +926,6 @@
         // ============================================================
         // PREVIEW DO ITEM
         // ============================================================
-
         function atualizarPreviaItem() {
             const totalElemento =
                 document.getElementById(
@@ -998,7 +971,6 @@
         // ============================================================
         // VALIDAÇÃO
         // ============================================================
-
         function validarItem() {
             if (!obterTipoSelecionado()) {
                 alert(
@@ -1102,7 +1074,6 @@
         // ============================================================
         // ADICIONAR ITEM
         // ============================================================
-
         function adicionarItem() {
             if (!validarItem()) {
                 return;
@@ -1266,16 +1237,13 @@
             tabelaItens.appendChild(linha);
 
             atualizarResumoFinanceiro();
-
             limparEditorItem();
-
             fecharModalAdicionarItem();
         }
 
         // ============================================================
         // REMOVER ITEM
         // ============================================================
-
         function removerItem(linha) {
             if (!linha) {
                 return;
@@ -1290,7 +1258,6 @@
         // ============================================================
         // TABELA VAZIA
         // ============================================================
-
         function verificarTabelaVazia() {
             if (!linhaVazia) {
                 return;
@@ -1310,7 +1277,6 @@
         // ============================================================
         // LIMPAR EDITOR
         // ============================================================
-
         function limparEditorItem() {
             limparSelecao();
             limparResultados();
@@ -1345,7 +1311,6 @@
              * Permite adicionar vários produtos
              * consecutivamente.
              */
-
             atualizarEstadoBusca();
             atualizarPreviaItem();
 
@@ -1358,7 +1323,6 @@
         // ============================================================
         // FECHAR MODAL DE ADIÇÃO
         // ============================================================
-
         function fecharModalAdicionarItem() {
             const modalElement =
                 document.getElementById(
@@ -1383,13 +1347,11 @@
         // ============================================================
         // EVENTO DO TIPO
         // ============================================================
-
         tipoInput.addEventListener(
             'change',
             function () {
                 limparSelecao();
                 limparResultados();
-
                 buscaInput.value = '';
 
                 if (descricaoInput) {
@@ -1412,7 +1374,6 @@
         // ============================================================
         // EVENTO DA BUSCA
         // ============================================================
-
         buscaInput.addEventListener(
             'input',
             function () {
@@ -1441,7 +1402,6 @@
         // ============================================================
         // CAMPOS DO EDITOR
         // ============================================================
-
         if (quantidadeInput) {
             quantidadeInput.addEventListener(
                 'input',
@@ -1466,7 +1426,6 @@
         // ============================================================
         // BOTÃO ADICIONAR
         // ============================================================
-
         if (botaoAdicionar) {
             botaoAdicionar.addEventListener(
                 'click',
@@ -1479,7 +1438,6 @@
         //
         // UM ÚNICO LISTENER DELEGADO.
         // ============================================================
-
         tabelaItens.addEventListener(
             'input',
             function (event) {
@@ -1494,9 +1452,7 @@
                         );
 
                     if (linha) {
-                        atualizarTotalLinha(
-                            linha
-                        );
+                        atualizarTotalLinha(linha);
                     }
 
                     atualizarResumoFinanceiro();
@@ -1518,9 +1474,7 @@
                         );
 
                     if (linha) {
-                        atualizarTotalLinha(
-                            linha
-                        );
+                        atualizarTotalLinha(linha);
                     }
 
                     atualizarResumoFinanceiro();
@@ -1552,7 +1506,6 @@
         // ============================================================
         // LINHAS EXISTENTES
         // ============================================================
-
         const linhasExistentes =
             tabelaItens.querySelectorAll(
                 'tr[data-item-index]'
@@ -1587,7 +1540,6 @@
         // ============================================================
         // MODAL DE ADIÇÃO
         // ============================================================
-
         const modalAdicionarItem =
             document.getElementById(
                 'modalAdicionarItem'
@@ -1612,7 +1564,6 @@
         // ============================================================
         // INICIALIZAÇÃO
         // ============================================================
-
         verificarTabelaVazia();
         atualizarEstadoBusca();
         atualizarPreviaItem();
@@ -1626,7 +1577,6 @@
     // ================================================================
     // INICIALIZAÇÃO ROBUSTA
     // ================================================================
-
     if (document.readyState === 'loading') {
         document.addEventListener(
             'DOMContentLoaded',
