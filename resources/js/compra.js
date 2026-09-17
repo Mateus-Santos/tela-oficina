@@ -21,11 +21,23 @@ document.addEventListener('DOMContentLoaded', function () {
         const campoValorUnitario = item.querySelector('.item-valor-unitario');
         const campoDesconto = item.querySelector('.item-desconto');
 
-        const quantidade = campoQuantidade ? parseFloat(campoQuantidade.value) || 0 : 0;
-        const valorUnitario = campoValorUnitario ? parseFloat(campoValorUnitario.value) || 0 : 0;
-        const desconto = campoDesconto ? parseFloat(campoDesconto.value) || 0 : 0;
+        const quantidade = campoQuantidade
+            ? parseFloat(campoQuantidade.value) || 0
+            : 0;
 
-        const total = Math.max(0, (quantidade * valorUnitario) - desconto);
+        const valorUnitario = campoValorUnitario
+            ? parseFloat(campoValorUnitario.value) || 0
+            : 0;
+
+        const desconto = campoDesconto
+            ? parseFloat(campoDesconto.value) || 0
+            : 0;
+
+        const total = Math.max(
+            0,
+            (quantidade * valorUnitario) - desconto
+        );
+
         const exibicao = item.querySelector('.item-valor-total');
         const input = item.querySelector('.item-valor-total-input');
 
@@ -51,9 +63,17 @@ document.addEventListener('DOMContentLoaded', function () {
         const campoFrete = document.getElementById('frete');
         const campoOutrasDespesas = document.getElementById('outras_despesas');
 
-        const desconto = campoDesconto ? parseFloat(campoDesconto.value) || 0 : 0;
-        const frete = campoFrete ? parseFloat(campoFrete.value) || 0 : 0;
-        const outrasDespesas = campoOutrasDespesas ? parseFloat(campoOutrasDespesas.value) || 0 : 0;
+        const desconto = campoDesconto
+            ? parseFloat(campoDesconto.value) || 0
+            : 0;
+
+        const frete = campoFrete
+            ? parseFloat(campoFrete.value) || 0
+            : 0;
+
+        const outrasDespesas = campoOutrasDespesas
+            ? parseFloat(campoOutrasDespesas.value) || 0
+            : 0;
 
         const valorTotal = Math.max(
             0,
@@ -142,6 +162,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    function escapeHtml(value) {
+        const div = document.createElement('div');
+        div.textContent = value || '';
+        return div.innerHTML;
+    }
+
     function criarItem() {
         const index = proximoIndice++;
         const item = document.createElement('div');
@@ -175,6 +201,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         <i class="bi bi-box"></i>
                         Item <span class="item-numero">1</span>
                     </h3>
+
                     <button
                         type="button"
                         class="btn btn-danger btn-sm btn-remover-item"
@@ -190,6 +217,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             <i class="bi bi-box-seam"></i>
                             Produto *
                         </label>
+
                         <select
                             name="itens[${index}][produto_id]"
                             class="form-select item-produto"
@@ -204,6 +232,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             <i class="bi bi-card-text"></i>
                             Descrição *
                         </label>
+
                         <input
                             type="text"
                             name="itens[${index}][descricao]"
@@ -213,11 +242,12 @@ document.addEventListener('DOMContentLoaded', function () {
                         >
                     </div>
 
-                    <div class="col-12 col-md-3">
+                    <div class="col-12 col-md-4">
                         <label class="form-label">
                             <i class="bi bi-boxes"></i>
                             Quantidade *
                         </label>
+
                         <input
                             type="number"
                             name="itens[${index}][quantidade]"
@@ -229,25 +259,12 @@ document.addEventListener('DOMContentLoaded', function () {
                         >
                     </div>
 
-                    <div class="col-12 col-md-3">
-                        <label class="form-label">
-                            <i class="bi bi-check2-square"></i>
-                            Quantidade conferida
-                        </label>
-                        <input
-                            type="number"
-                            name="itens[${index}][quantidade_conferida]"
-                            class="form-control"
-                            min="0"
-                            step="0.001"
-                        >
-                    </div>
-
-                    <div class="col-12 col-md-3">
+                    <div class="col-12 col-md-4">
                         <label class="form-label">
                             <i class="bi bi-currency-dollar"></i>
                             Valor unitário *
                         </label>
+
                         <input
                             type="number"
                             name="itens[${index}][valor_unitario]"
@@ -258,11 +275,12 @@ document.addEventListener('DOMContentLoaded', function () {
                         >
                     </div>
 
-                    <div class="col-12 col-md-3">
+                    <div class="col-12 col-md-4">
                         <label class="form-label">
                             <i class="bi bi-percent"></i>
                             Desconto
                         </label>
+
                         <input
                             type="number"
                             name="itens[${index}][desconto]"
@@ -279,6 +297,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 <small class="text-muted">
                                     Total do item
                                 </small>
+
                                 <div class="fw-bold item-valor-total">
                                     R$ 0,00
                                 </div>
@@ -297,15 +316,10 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
 
         itensContainer.appendChild(item);
+
         adicionarEventosItem(item);
         atualizarNumeracao();
         calcularTotais();
-    }
-
-    function escapeHtml(value) {
-        const div = document.createElement('div');
-        div.textContent = value || '';
-        return div.innerHTML;
     }
 
     document
@@ -342,23 +356,25 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        anexosContainer.querySelectorAll('.anexo-item').forEach(function (item, index) {
-            const tipo = item.querySelector('[name$="[tipo]"]');
-            const arquivo = item.querySelector('[name$="[arquivo]"]');
-            const observacoes = item.querySelector('[name$="[observacoes]"]');
+        anexosContainer
+            .querySelectorAll('.anexo-item')
+            .forEach(function (item, index) {
+                const tipo = item.querySelector('[name$="[tipo]"]');
+                const arquivo = item.querySelector('[name$="[arquivo]"]');
+                const observacoes = item.querySelector('[name$="[observacoes]"]');
 
-            if (tipo) {
-                tipo.name = `anexos[${index}][tipo]`;
-            }
+                if (tipo) {
+                    tipo.name = `anexos[${index}][tipo]`;
+                }
 
-            if (arquivo) {
-                arquivo.name = `anexos[${index}][arquivo]`;
-            }
+                if (arquivo) {
+                    arquivo.name = `anexos[${index}][arquivo]`;
+                }
 
-            if (observacoes) {
-                observacoes.name = `anexos[${index}][observacoes]`;
-            }
-        });
+                if (observacoes) {
+                    observacoes.name = `anexos[${index}][observacoes]`;
+                }
+            });
     }
 
     function limparAnexo(item) {
