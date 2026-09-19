@@ -1,9 +1,7 @@
 @extends('layouts.layout')
 
 @section('content')
-
 <section class="container cadastro">
-
     <h1>
         <i class="bi bi-gear"></i> EDITAR PRODUTO
     </h1>
@@ -36,7 +34,7 @@
         @csrf
         @method('PUT')
 
-        @include('produto._form')
+        <livewire:produto.form-produto :produto="$produto" />
 
         {{-- Botão --}}
         <div class="col text-center">
@@ -44,11 +42,8 @@
                 Editar
             </button>
         </div>
-
     </form>
-
 </section>
-
 @endsection
 
 @section('scripts')

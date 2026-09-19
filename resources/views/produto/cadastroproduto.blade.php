@@ -1,9 +1,7 @@
 @extends('layouts.layout')
 
 @section('content')
-
 <section class="container cadastro">
-
     <h1>
         <i class="bi bi-gear"></i> CADASTRO DE PRODUTOS
     </h1>
@@ -35,7 +33,7 @@
     >
         @csrf
 
-        @include('produto._form')
+        <livewire:produto.form-produto />
 
         {{-- Botão --}}
         <div class="col text-center">
@@ -43,11 +41,8 @@
                 Cadastrar
             </button>
         </div>
-
     </form>
-
 </section>
-
 @endsection
 
 @section('scripts')
