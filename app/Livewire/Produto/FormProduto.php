@@ -5,6 +5,10 @@ namespace App\Livewire\Produto;
 use App\Models\Montadora;
 use App\Models\Produto;
 use App\Models\Veiculo;
+use App\Services\Produto\ParserAplicacoes;
+use App\Services\Produto\ResolverAplicacoes;
+use App\Services\Produto\ValidadorAplicacoes;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class FormProduto extends Component
@@ -20,6 +24,11 @@ class FormProduto extends Component
 
     public bool $codigoFabricanteDuplicado = false;
     public bool $codigoBarrasDuplicado = false;
+
+    public bool $mostrarPreviaImportacao = false;
+    public string $mensagemImportacao = '';
+    public array $aplicacoesImportadas = [];
+    public array $previsaoImportacao = [];
 
     public function mount(?Produto $produto = null): void
     {
@@ -125,6 +134,85 @@ class FormProduto extends Component
             ->reject(fn ($veiculo) => (int) $veiculo['id'] === $veiculoId)
             ->values()
             ->toArray();
+    }
+
+    public function importarAplicacoes(string $texto): void
+    {
+        $this->limparImportacao();
+
+        $validador = app(ValidadorAplicacoes::class);
+        $validacao = $validador->validar($texto);
+
+        if (!$validacao['valido']) {
+            $this->mensagemImportacao = $validacao['mensagem'];
+            return;
+        }
+
+        $parser = app(ParserAplicacoes::class);
+        $aplicacoes = $parser->processar($texto);
+
+        if ($aplicacoes === []) {
+            $this->mensagemImportacao = 'Nenhuma aplicação válida foi encontrada.';
+            return;
+        }
+
+        $resolver = app(ResolverAplicacoes::class);
+        $previsao = $resolver->resolver($aplicacoes);
+
+        $this->aplicacoesImportadas = $aplicacoes;
+        $this->previsaoImportacao = $previsao;
+        $this->mostrarPreviaImportacao = true;
+        $this->mensagemImportacao = 'Aplicações analisadas com sucesso.';
+    }
+
+    public function confirmarImportacao(): void
+    {
+        if (!$this->mostrarPreviaImportacao || $this->aplicacoesImportadas === []) {
+            $this->mensagemImportacao = 'Nenhuma importação aguardando confirmação.';
+            return;
+        }
+
+        DB::transaction(function () {
+            foreach ($this->aplicacoesImportadas as $aplicacao) {
+                $montadora = Montadora::query()
+                    ->firstOrCreate([
+                        'nome' => $aplicacao['montadora'],
+                    ]);
+
+                $veiculo = Veiculo::query()
+                    ->where('montadora_id', $montadora->id)
+                    ->where('nome', $aplicacao['veiculo'])
+                    ->first();
+
+                if (!$veiculo) {
+                    $veiculo = Veiculo::create([
+                        'nome' => $aplicacao['veiculo'],
+                        'montadora_id' => $montadora->id,
+                    ]);
+                }
+
+                $this->adicionarVeiculo($veiculo->id);
+            }
+        });
+
+        $total = count($this->aplicacoesImportadas);
+
+        $this->limparImportacao();
+
+        $this->mensagemImportacao = "{$total} aplicações importadas com sucesso.";
+    }
+
+    public function cancelarImportacao(): void
+    {
+        $this->limparImportacao();
+        $this->mensagemImportacao = 'Importação cancelada.';
+    }
+
+    private function limparImportacao(): void
+    {
+        $this->mostrarPreviaImportacao = false;
+        $this->aplicacoesImportadas = [];
+        $this->previsaoImportacao = [];
     }
 
     public function render()

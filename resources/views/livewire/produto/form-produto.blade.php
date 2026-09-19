@@ -1,5 +1,4 @@
 <div class="campos">
-
     {{-- =========================================================
          DADOS PRINCIPAIS + IDENTIFICAÇÃO
          ========================================================= --}}
@@ -8,14 +7,12 @@
             <i class="bi bi-box-seam"></i>
             <span>Dados principais e identificação</span>
         </div>
-
         <div class="row mb-3">
             {{-- Nome --}}
             <div class="col-md-5">
                 <label class="form-label" for="nome">
                     Nome:*
                 </label>
-
                 <input
                     type="text"
                     class="form-control"
@@ -26,13 +23,11 @@
                     required
                 >
             </div>
-
             {{-- Marca --}}
             <div class="col-md-4">
                 <label class="form-label" for="marca">
                     Marca:*
                 </label>
-
                 <input
                     type="text"
                     class="form-control"
@@ -43,14 +38,12 @@
                 >
             </div>
         </div>
-
         <div class="row">
             {{-- Código do fabricante --}}
             <div class="col-md-4">
                 <label class="form-label" for="codigo_fabricante">
                     Código do Fabricante:*
                 </label>
-
                 <input
                     type="text"
                     class="form-control @if($codigoFabricanteDuplicado) is-invalid @endif"
@@ -59,7 +52,6 @@
                     wire:model.live.debounce.500ms="codigoFabricante"
                     required
                 >
-
                 @if($codigoFabricanteDuplicado)
                     <div
                         class="invalid-feedback d-block"
@@ -69,13 +61,11 @@
                     </div>
                 @endif
             </div>
-
             {{-- Código de barras --}}
             <div class="col-md-4">
                 <label class="form-label" for="codigo_barras">
                     Código de Barras:
                 </label>
-
                 <input
                     type="text"
                     class="form-control @if($codigoBarrasDuplicado) is-invalid @endif"
@@ -83,7 +73,6 @@
                     name="codigo_barras"
                     wire:model.live.debounce.500ms="codigoBarras"
                 >
-
                 @if($codigoBarrasDuplicado)
                     <div
                         class="invalid-feedback d-block"
@@ -109,13 +98,147 @@
             Selecione os veículos compatíveis e informe a descrição do produto.
         </div>
 
+        {{-- Importação --}}
+        <div class="row mb-3">
+            <div class="col-12">
+                <button
+                    type="button"
+                    id="btn-importar-aplicacoes"
+                    class="btn btn-primary"
+                >
+                    <i class="bi bi-clipboard"></i>
+                    Importar aplicações da área de transferência
+                </button>
+
+                <div
+                    wire:loading
+                    wire:target="importarAplicacoes"
+                    class="small text-muted mt-2"
+                >
+                    Analisando aplicações...
+                </div>
+
+                @if($mensagemImportacao)
+                    <div class="alert alert-info mt-3 mb-0">
+                        {{ $mensagemImportacao }}
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        {{-- Prévia da importação --}}
+        @if($mostrarPreviaImportacao)
+            <div class="alert alert-warning">
+                <div class="fw-bold mb-2">
+                    <i class="bi bi-eye"></i>
+                    Prévia da importação
+                </div>
+
+                <div class="mb-3">
+                    Foram encontradas
+                    <strong>{{ $previsaoImportacao['total_aplicacoes'] ?? 0 }}</strong>
+                    aplicações na tabela.
+                </div>
+
+                @if(!empty($previsaoImportacao['montadoras']))
+                    <div class="mb-3">
+                        <strong>Montadoras:</strong>
+                        <ul class="mb-0">
+                            @foreach($previsaoImportacao['montadoras'] as $montadora)
+                                <li>
+                                    {{ $montadora['nome'] }}
+
+                                    @if($montadora['existente'] ?? false)
+                                        <span class="badge text-bg-success">
+                                            já cadastrada
+                                        </span>
+                                    @else
+                                        <span class="badge text-bg-warning">
+                                            será criada
+                                        </span>
+                                    @endif
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                @if(!empty($previsaoImportacao['veiculos_existentes']))
+                    <div class="mb-3">
+                        <strong>Veículos já cadastrados:</strong>
+                        <ul class="mb-0">
+                            @foreach($previsaoImportacao['veiculos_existentes'] as $veiculo)
+                                <li>
+                                    {{ $veiculo['montadora'] }} -
+                                    {{ $veiculo['veiculo'] }}
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                @if(!empty($previsaoImportacao['veiculos_novos']))
+                    <div class="mb-3">
+                        <strong>Veículos novos:</strong>
+                        <ul class="mb-0">
+                            @foreach($previsaoImportacao['veiculos_novos'] as $veiculo)
+                                <li>
+                                    {{ $veiculo['montadora'] }} -
+                                    {{ $veiculo['veiculo'] }}
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <div class="mt-3">
+                    <strong>
+                        <i class="bi bi-info-circle"></i>
+                        Observação:
+                    </strong>
+                    os dados técnicos da tabela, como ano, motor, válvulas,
+                    cilindrada e combustível, foram preservados durante a
+                    importação, mas ainda não são gravados na estrutura atual.
+                </div>
+
+                <div class="d-flex gap-2 mt-3">
+                    <button
+                        type="button"
+                        class="btn btn-success"
+                        wire:click="confirmarImportacao"
+                        wire:loading.attr="disabled"
+                        wire:target="confirmarImportacao"
+                    >
+                        <span wire:loading.remove wire:target="confirmarImportacao">
+                            <i class="bi bi-check-lg"></i>
+                            Confirmar importação
+                        </span>
+
+                        <span wire:loading wire:target="confirmarImportacao">
+                            Importando...
+                        </span>
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        wire:click="cancelarImportacao"
+                        wire:loading.attr="disabled"
+                        wire:target="cancelarImportacao"
+                    >
+                        <i class="bi bi-x-lg"></i>
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        @endif
+
         <div class="row mb-3">
             {{-- Montadora --}}
             <div class="col-md-4">
                 <label class="form-label" for="montadora_select">
                     Montadora:
                 </label>
-
                 <select
                     id="montadora_select"
                     class="form-control"
@@ -317,5 +440,4 @@
             </div>
         </div>
     </div>
-
 </div>
