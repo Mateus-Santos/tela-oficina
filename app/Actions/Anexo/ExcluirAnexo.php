@@ -2,17 +2,30 @@
 
 namespace App\Actions\Anexo;
 
-use App\Models\Anexo;
+use App\Models\AnexoVinculo;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class ExcluirAnexo
 {
-    public function execute(Anexo $anexo): void
+    public function execute(AnexoVinculo $vinculo): void
     {
-        if ($anexo->arquivo && Storage::disk('public')->exists($anexo->arquivo)) {
-            Storage::disk('public')->delete($anexo->arquivo);
-        }
+        DB::transaction(function () use ($vinculo) {
+            $anexo = $vinculo->anexo;
+            $vinculo->delete();
 
-        $anexo->delete();
+            if ($anexo->vinculos()->exists()) {
+                return;
+            }
+
+            if (
+                $anexo->arquivo
+                && Storage::disk('public')->exists($anexo->arquivo)
+            ) {
+                Storage::disk('public')->delete($anexo->arquivo);
+            }
+
+            $anexo->delete();
+        });
     }
 }

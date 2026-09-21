@@ -44,6 +44,16 @@ class ProdutoController extends Controller
         return view('produto.cadastroproduto', compact('montadoras'));
     }
 
+    public function show(Produto $produto)
+    {
+        $produto->load([
+            'fornecedor',
+            'veiculos.montadora',
+            'anexosVinculos.anexo',
+        ]);
+        return view('produto.showproduto', compact('produto'));
+    }
+
     public function store(
         StoreProdutoRequest $request,
         CriarProduto $criarProduto

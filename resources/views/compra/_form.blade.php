@@ -372,7 +372,7 @@
 
                 <div class="alert alert-light border mt-3 mb-0">
                     <i class="bi bi-info-circle"></i>
-                    PDF, XML, JPG, JPEG ou WEBP — máximo de 20 MB por arquivo.
+                    PDF, XML, JPG, JPEG ou WEBP — máximo de 2 MB por arquivo.
                 </div>
             </div>
         </div>

@@ -3,6 +3,7 @@
 @section('content')
 
 <div class="container cadastro">
+
     @php
         $estoqueLancado = $compra->itens->isNotEmpty() && $compra->itens->every(fn ($item) => $item->movimentacoesEstoque->contains('tipo', 'entrada'));
         $algumEstoqueLancado = $compra->itens->contains(fn ($item) => $item->movimentacoesEstoque->contains('tipo', 'entrada'));
@@ -163,18 +164,21 @@
                     <i class="bi bi-paperclip"></i>
                     Documentos e anexos
                 </h2>
+
                 <span class="badge bg-secondary">
                     <i class="bi bi-files"></i>
-                    {{ $compra->anexos->count() }}
-                    {{ $compra->anexos->count() === 1 ? 'arquivo' : 'arquivos' }}
+                    {{ $compra->anexosVinculos->count() }}
+                    {{ $compra->anexosVinculos->count() === 1 ? 'arquivo' : 'arquivos' }}
                 </span>
             </div>
 
             <form method="POST" action="{{ route('compras.anexos.store', $compra) }}" enctype="multipart/form-data" class="mb-4">
                 @csrf
+
                 <div class="row g-3">
                     <div class="col-12 col-md-4">
                         <label for="tipo" class="form-label">Tipo do documento</label>
+
                         <select name="tipo" id="tipo" class="form-select" required>
                             <option value="">Selecione...</option>
                             <option value="nf">Nota fiscal</option>
@@ -194,13 +198,31 @@
 
                     <div class="col-12 col-md-5">
                         <label for="arquivo" class="form-label">Arquivo</label>
-                        <input type="file" name="arquivo" id="arquivo" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.webp,.xml" required>
-                        <small class="text-muted">PDF, JPG, JPEG, PNG, WEBP ou XML — máximo de 20 MB.</small>
+
+                        <input
+                            type="file"
+                            name="arquivo"
+                            id="arquivo"
+                            class="form-control"
+                            accept=".pdf,.jpg,.jpeg,.png,.webp,.xml"
+                            required
+                        >
+
+                        <small class="text-muted">
+                            PDF, JPG, JPEG, PNG, WEBP ou XML — máximo de 2 MB.
+                        </small>
                     </div>
 
                     <div class="col-12 col-md-3">
                         <label for="observacoes" class="form-label">Observações</label>
-                        <input type="text" name="observacoes" id="observacoes" class="form-control" maxlength="1000">
+
+                        <input
+                            type="text"
+                            name="observacoes"
+                            id="observacoes"
+                            class="form-control"
+                            maxlength="1000"
+                        >
                     </div>
 
                     <div class="col-12">
@@ -212,7 +234,7 @@
                 </div>
             </form>
 
-            @if ($compra->anexos->isNotEmpty())
+            @if ($compra->anexosVinculos->isNotEmpty())
                 <div class="table-responsive">
                     <table class="table table-striped table-hover align-middle mb-0">
                         <thead>
@@ -225,10 +247,13 @@
                                 <th class="text-end">AÇÕES</th>
                             </tr>
                         </thead>
+
                         <tbody>
-                            @foreach ($compra->anexos as $anexo)
+                            @foreach ($compra->anexosVinculos as $vinculo)
                                 @php
-                                    $tipoAnexo = match ($anexo->tipo) {
+                                    $anexo = $vinculo->anexo;
+
+                                    $tipoAnexo = match ($vinculo->tipo) {
                                         'nf' => ['label' => 'Nota fiscal', 'icon' => 'bi-receipt'],
                                         'nf_xml' => ['label' => 'NF-e XML', 'icon' => 'bi-filetype-xml'],
                                         'foto' => ['label' => 'Foto', 'icon' => 'bi-image'],
@@ -251,24 +276,53 @@
                                             {{ $tipoAnexo['label'] }}
                                         </span>
                                     </td>
+
                                     <td>
-                                        <div class="fw-semibold text-break">{{ $anexo->nome_original }}</div>
-                                        <small class="text-muted">{{ $anexo->mime_type }}</small>
+                                        <div class="fw-semibold text-break">
+                                            {{ $anexo->nome_original }}
+                                        </div>
+
+                                        <small class="text-muted">
+                                            {{ $anexo->mime_type }}
+                                        </small>
                                     </td>
-                                    <td>{{ number_format($anexo->tamanho / 1024 / 1024, 2, ',', '.') }} MB</td>
-                                    <td>{{ $anexo->observacoes ?: '-' }}</td>
-                                    <td>{{ $anexo->created_at?->format('d/m/Y H:i') }}</td>
+
+                                    <td>
+                                        {{ number_format($anexo->tamanho / 1024 / 1024, 2, ',', '.') }} MB
+                                    </td>
+
+                                    <td>
+                                        {{ $vinculo->observacoes ?: '-' }}
+                                    </td>
+
+                                    <td>
+                                        {{ $vinculo->created_at?->format('d/m/Y H\:i') }}
+                                    </td>
+
                                     <td>
                                         <div class="d-flex justify-content-end gap-1">
-                                            <a href="{{ route('anexos.download', $anexo) }}" class="btn btn-sm btn-outline-primary" title="Baixar arquivo">
+                                            <a
+                                                href="{{ route('anexos.download', $anexo) }}"
+                                                class="btn btn-sm btn-outline-primary"
+                                                title="Baixar arquivo"
+                                            >
                                                 <i class="bi bi-download"></i>
                                             </a>
 
-                                            @if ($compra->status !== 'cancelada')
-                                                <form method="POST" action="{{ route('anexos.destroy', $anexo) }}" onsubmit="return confirm('Tem certeza que deseja excluir este anexo?');">
+                                            @if (!in_array($compra->status, ['aprovada', 'cancelada'], true))
+                                                <form
+                                                    method="POST"
+                                                    action="{{ route('anexos.destroy', $vinculo) }}"
+                                                    onsubmit="return confirm('Tem certeza que deseja excluir este anexo?');"
+                                                >
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir anexo">
+
+                                                    <button
+                                                        type="submit"
+                                                        class="btn btn-sm btn-outline-danger"
+                                                        title="Excluir anexo"
+                                                    >
                                                         <i class="bi bi-trash"></i>
                                                     </button>
                                                 </form>
@@ -300,6 +354,7 @@
             <div class="row g-3">
                 <div class="col-12 col-md-4">
                     <div class="text-muted small">Fornecedor</div>
+
                     <div class="fw-semibold">
                         <i class="bi bi-truck"></i>
                         {{ $compra->fornecedor->nome ?? 'Não informado' }}
@@ -329,6 +384,7 @@
                 @if ($compra->chave_nf)
                     <div class="col-12">
                         <div class="text-muted small">Chave de acesso</div>
+
                         <div class="fw-semibold text-break">
                             <i class="bi bi-upc-scan"></i>
                             {{ $compra->chave_nf }}
@@ -399,6 +455,7 @@
 
                                         @if ($item->produto?->codigo_fabricante)
                                             <br>
+
                                             <small class="text-muted">
                                                 Código: {{ $item->produto->codigo_fabricante }}
                                             </small>
@@ -506,6 +563,7 @@
             <div class="row g-3">
                 <div class="col-12 col-md-3">
                     <div class="text-muted small">Produtos</div>
+
                     <div class="fw-semibold">
                         R$ {{ number_format((float) $compra->valor_produtos, 2, ',', '.') }}
                     </div>
@@ -513,6 +571,7 @@
 
                 <div class="col-12 col-md-3">
                     <div class="text-muted small">Desconto</div>
+
                     <div class="fw-semibold">
                         R$ {{ number_format((float) $compra->desconto, 2, ',', '.') }}
                     </div>
@@ -520,6 +579,7 @@
 
                 <div class="col-12 col-md-3">
                     <div class="text-muted small">Frete</div>
+
                     <div class="fw-semibold">
                         R$ {{ number_format((float) $compra->frete, 2, ',', '.') }}
                     </div>
@@ -527,6 +587,7 @@
 
                 <div class="col-12 col-md-3">
                     <div class="text-muted small">Outras despesas</div>
+
                     <div class="fw-semibold">
                         R$ {{ number_format((float) $compra->outras_despesas, 2, ',', '.') }}
                     </div>
@@ -537,6 +598,7 @@
 
                     <div class="d-flex justify-content-end align-items-center gap-3">
                         <span class="text-muted">Valor total:</span>
+
                         <strong class="fs-4">
                             R$ {{ number_format((float) $compra->valor_total, 2, ',', '.') }}
                         </strong>
@@ -578,6 +640,7 @@
 
                 <form method="POST" action="{{ route('compras.iniciar-conferencia', $compra) }}" onsubmit="return confirm('Deseja iniciar a conferência desta compra? Após iniciar, a compra não poderá mais ser editada.');">
                     @csrf
+
                     <button type="submit" class="btn btn-info">
                         <i class="bi bi-clipboard-check"></i>
                         Iniciar conferência
@@ -586,16 +649,17 @@
 
                 <form method="POST" action="{{ route('compras.cancelar', $compra) }}" onsubmit="return confirm('Tem certeza que deseja cancelar esta compra?');">
                     @csrf
+
                     <button type="submit" class="btn btn-outline-danger">
                         <i class="bi bi-x-circle"></i>
                         Cancelar
                     </button>
                 </form>
-
             @elseif ($compra->status === 'conferindo')
                 @if ($todosItensConferidos)
                     <form method="POST" action="{{ route('compras.aprovar', $compra) }}" onsubmit="return confirm('Tem certeza que deseja aprovar esta compra?');">
                         @csrf
+
                         <button type="submit" class="btn btn-success">
                             <i class="bi bi-check-circle"></i>
                             Aprovar compra
@@ -610,12 +674,12 @@
 
                 <form method="POST" action="{{ route('compras.cancelar', $compra) }}" onsubmit="return confirm('Tem certeza que deseja cancelar esta compra?');">
                     @csrf
+
                     <button type="submit" class="btn btn-outline-danger">
                         <i class="bi bi-x-circle"></i>
                         Cancelar
                     </button>
                 </form>
-
             @elseif ($compra->status === 'aprovada')
                 <span class="text-success d-flex align-items-center">
                     <i class="bi bi-check-circle me-1"></i>
@@ -625,6 +689,7 @@
                 @if ($algumEstoqueLancado)
                     <form method="POST" action="{{ route('compras.estornar', $compra) }}" onsubmit="return confirm('Tem certeza que deseja estornar o estoque e cancelar esta compra? As entradas de estoque serão revertidas e uma movimentação de saída será registrada.');">
                         @csrf
+
                         <button type="submit" class="btn btn-outline-danger">
                             <i class="bi bi-arrow-counterclockwise"></i>
                             Estornar e cancelar
@@ -633,13 +698,13 @@
                 @else
                     <form method="POST" action="{{ route('compras.cancelar', $compra) }}" onsubmit="return confirm('Tem certeza que deseja cancelar esta compra?');">
                         @csrf
+
                         <button type="submit" class="btn btn-outline-danger">
                             <i class="bi bi-x-circle"></i>
                             Cancelar
                         </button>
                     </form>
                 @endif
-
             @elseif ($compra->status === 'cancelada')
                 <span class="text-danger d-flex align-items-center">
                     <i class="bi bi-x-circle me-1"></i>
@@ -655,6 +720,6 @@
             @endif
         </div>
     </div>
-</div>
 
+</div>
 @endsection
