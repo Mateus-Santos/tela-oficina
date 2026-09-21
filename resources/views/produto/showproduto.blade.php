@@ -43,9 +43,11 @@
                 {{-- Imagens --}}
                 <div class="col-12 col-md-4">
                     @php
-                        $fotos = $produto->anexos
+                        $fotos = $produto->anexosVinculos
                             ->where('tipo', 'foto')
                             ->sortBy('created_at')
+                            ->map(fn ($vinculo) => $vinculo->anexo)
+                            ->filter()
                             ->values();
                     @endphp
 
