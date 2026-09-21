@@ -28,6 +28,7 @@ export default defineConfig({
                 'resources/js/notaitem/form.js',
                 'resources/js/notaitem/itens.js',
                 'resources/js/notaitem/descontos.js',
+                'resources/js/components/barcode.js',
             ],
             refresh: true,
         }),
