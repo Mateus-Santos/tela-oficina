@@ -6,18 +6,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Compra extends Model
 {
     use HasFactory;
 
     public const STATUS_PENDENTE = 'pendente';
-
     public const STATUS_CONFERINDO = 'conferindo';
-
     public const STATUS_APROVADA = 'aprovada';
-
     public const STATUS_CANCELADA = 'cancelada';
 
     protected $table = 'compras';
@@ -58,9 +54,10 @@ class Compra extends Model
         return $this->hasMany(CompraItem::class);
     }
 
-    public function anexos(): MorphMany
+    public function anexosVinculos(): HasMany
     {
-        return $this->morphMany(Anexo::class, 'anexavel');
+        return $this->hasMany(AnexoVinculo::class, 'vinculavel_id')
+            ->where('vinculavel_type', self::class);
     }
 
     public function estaPendente(): bool
@@ -105,4 +102,3 @@ class Compra extends Model
         return $this->estaEmConferencia();
     }
 }
-

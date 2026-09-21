@@ -26,9 +26,7 @@ class CriarCompra
                 $quantidade = (float) $item['quantidade'];
                 $valorUnitario = (float) $item['valor_unitario'];
                 $descontoItem = (float) ($item['desconto'] ?? 0);
-
-                $valorTotalItem = ($quantidade * $valorUnitario)
-                    - $descontoItem;
+                $valorTotalItem = ($quantidade * $valorUnitario) - $descontoItem;
 
                 if ($valorTotalItem < 0) {
                     throw new \InvalidArgumentException(
@@ -70,9 +68,7 @@ class CriarCompra
                 $quantidade = (float) $item['quantidade'];
                 $valorUnitario = (float) $item['valor_unitario'];
                 $descontoItem = (float) ($item['desconto'] ?? 0);
-
-                $valorTotalItem = ($quantidade * $valorUnitario)
-                    - $descontoItem;
+                $valorTotalItem = ($quantidade * $valorUnitario) - $descontoItem;
 
                 $compra->itens()->create([
                     'produto_id' => $item['produto_id'],
@@ -101,7 +97,10 @@ class CriarCompra
                 );
             }
 
-            return $compra->load(['itens', 'anexos']);
+            return $compra->load([
+                'itens',
+                'anexosVinculos.anexo',
+            ]);
         });
     }
 }

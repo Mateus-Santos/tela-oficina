@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Produto extends Model
 {
@@ -85,9 +84,10 @@ class Produto extends Model
         return $this->belongsToMany(Veiculo::class, 'produtos_veiculos');
     }
 
-    public function anexos(): MorphMany
+    public function anexosVinculos(): HasMany
     {
-        return $this->morphMany(Anexo::class, 'anexavel');
+        return $this->hasMany(AnexoVinculo::class, 'vinculavel_id')
+            ->where('vinculavel_type', self::class);
     }
 
     public function fornecedor(): BelongsTo

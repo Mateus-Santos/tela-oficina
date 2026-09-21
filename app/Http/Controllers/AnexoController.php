@@ -6,6 +6,7 @@ use App\Actions\Anexo\CriarAnexo;
 use App\Actions\Anexo\ExcluirAnexo;
 use App\Http\Requests\Anexo\StoreAnexoRequest;
 use App\Models\Anexo;
+use App\Models\AnexoVinculo;
 use App\Models\Compra;
 use App\Models\ContaPagar;
 use Illuminate\Http\RedirectResponse;
@@ -62,19 +63,22 @@ class AnexoController extends Controller
     }
 
     public function destroy(
-        Anexo $anexo,
+        AnexoVinculo $vinculo,
         ExcluirAnexo $excluirAnexo
     ): RedirectResponse {
-        $anexavel = $anexo->anexavel;
+        $anexavel = $vinculo->vinculavel;
 
         if ($anexavel instanceof Compra) {
             if (in_array($anexavel->status, ['aprovada', 'cancelada'], true)) {
                 return redirect()
                     ->route('compras.show', $anexavel)
-                    ->with('error', 'Anexos de uma compra aprovada ou cancelada não podem ser excluídos.');
+                    ->with(
+                        'error',
+                        'Anexos de uma compra aprovada ou cancelada não podem ser excluídos.'
+                    );
             }
 
-            $excluirAnexo->execute($anexo);
+            $excluirAnexo->execute($vinculo);
 
             return redirect()
                 ->route('compras.show', $anexavel)
@@ -85,20 +89,19 @@ class AnexoController extends Controller
             if (in_array($anexavel->status, ['paga', 'cancelada'], true)) {
                 return redirect()
                     ->route('contas-pagar.show', $anexavel)
-                    ->with('error', 'Anexos de uma conta a pagar paga ou cancelada não podem ser excluídos.');
+                    ->with(
+                        'error',
+                        'Anexos de uma conta a pagar paga ou cancelada não podem ser excluídos.'
+                    );
             }
 
-            $excluirAnexo->execute($anexo);
+            $excluirAnexo->execute($vinculo);
 
             return redirect()
                 ->route('contas-pagar.show', $anexavel)
                 ->with('success', 'Anexo excluído com sucesso!');
         }
 
-        $excluirAnexo->execute($anexo);
-
-        return redirect()
-            ->route('compras.index')
-            ->with('success', 'Anexo excluído com sucesso!');
+        abort(404);
     }
 }

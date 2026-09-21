@@ -97,7 +97,7 @@ class CompraController extends Controller
             'fornecedor',
             'itens.produto',
             'itens.movimentacoesEstoque',
-            'anexos',
+            'anexosVinculos.anexo',
         ]);
 
         return view('compra.show', compact('compra'));

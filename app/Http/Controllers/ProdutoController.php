@@ -49,9 +49,8 @@ class ProdutoController extends Controller
         $produto->load([
             'fornecedor',
             'veiculos.montadora',
-            'anexos',
+            'anexosVinculos.anexo',
         ]);
-
         return view('produto.showproduto', compact('produto'));
     }
 

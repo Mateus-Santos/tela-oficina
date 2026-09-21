@@ -136,7 +136,7 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
 
         // Anexos
         Route::get('anexos/{anexo}/download', [AnexoController::class, 'download'])->name('anexos.download');
-        Route::delete('anexos/{anexo}', [AnexoController::class, 'destroy'])->name('anexos.destroy');
+        Route::delete('anexos/{vinculo}', [AnexoController::class, 'destroy'])->name('anexos.destroy');
 
         // Contas a Pagar
         Route::resource('contas-pagar', ContaPagarController::class)->parameters([

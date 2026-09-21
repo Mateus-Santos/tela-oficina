@@ -137,7 +137,7 @@ class StoreCompraRequest extends FormRequest
             'anexos.*.arquivo' => [
                 'required',
                 'file',
-                'max:20480',
+                'max:2048',
                 'mimes:pdf,jpg,jpeg,png,webp,xml',
             ],
             'anexos.*.tipo' => [
@@ -220,7 +220,7 @@ class StoreCompraRequest extends FormRequest
             'anexos.array' => 'Os anexos informados são inválidos.',
             'anexos.*.arquivo.required' => 'O arquivo do anexo é obrigatório.',
             'anexos.*.arquivo.file' => 'O arquivo enviado é inválido.',
-            'anexos.*.arquivo.max' => 'Cada arquivo não pode ter mais de 20 MB.',
+            'anexos.*.arquivo.max' => 'Cada arquivo não pode ter mais de 2 MB.',
             'anexos.*.arquivo.mimes' => 'O anexo deve ser PDF, XML, JPG, JPEG, PNG ou WEBP.',
             'anexos.*.tipo.required' => 'O tipo do documento é obrigatório.',
             'anexos.*.tipo.in' => 'O tipo de documento informado é inválido.',

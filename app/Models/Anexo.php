@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Anexo extends Model
 {
@@ -13,22 +13,18 @@ class Anexo extends Model
     protected $table = 'anexos';
 
     protected $fillable = [
-        'tipo',
         'arquivo',
         'nome_original',
         'mime_type',
         'tamanho',
-        'anexavel_type',
-        'anexavel_id',
-        'observacoes',
     ];
 
     protected $casts = [
         'tamanho' => 'integer',
     ];
 
-    public function anexavel(): MorphTo
+    public function vinculos(): HasMany
     {
-        return $this->morphTo();
+        return $this->hasMany(AnexoVinculo::class);
     }
 }

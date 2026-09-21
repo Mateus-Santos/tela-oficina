@@ -225,7 +225,9 @@ class ContaPagarController extends Controller
             'nota',
             'categoriaFinanceira',
             'formaPagamento',
-            'anexos' => fn ($query) => $query->latest(),
+            'anexosVinculos' => fn ($query) => $query
+                ->with('anexo')
+                ->latest(),
             'pagamentos' => fn ($query) => $query
                 ->with('formaPagamento')
                 ->latest('data_pagamento'),
