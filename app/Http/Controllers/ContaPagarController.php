@@ -258,6 +258,15 @@ class ContaPagarController extends Controller
 
     public function edit(ContaPagar $conta): View
     {
+        $valorPago = (float) $conta
+            ->pagamentosAtivos()
+            ->sum('valor');
+
+        $conta->setAttribute(
+            'valor_pago',
+            $valorPago
+        );
+
         $fornecedores = Fornecedor::query()
             ->orderBy('nome')
             ->get();

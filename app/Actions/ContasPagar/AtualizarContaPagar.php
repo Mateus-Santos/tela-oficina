@@ -23,6 +23,12 @@ class AtualizarContaPagar
 
             $valorPago = (float) $conta->pagamentosAtivos()->sum('valor');
 
+            if ($conta->status === 'paga' || $valorPago >= (float) $conta->valor) {
+                throw new InvalidArgumentException(
+                    'Não é possível alterar uma conta que já foi totalmente paga.'
+                );
+            }
+
             if (array_key_exists('valor', $dados)) {
                 $novoValor = round((float) $dados['valor'], 2);
 
@@ -32,9 +38,9 @@ class AtualizarContaPagar
                     );
                 }
 
-                if ($valorPago > 0 && $novoValor <= $valorPago) {
+                if ($valorPago > 0 && $novoValor < $valorPago) {
                     throw new InvalidArgumentException(
-                        'O valor da conta deve ser maior que o total já pago de R$ ' .
+                        'O valor da conta não pode ser menor que o total já pago de R$ ' .
                         number_format($valorPago, 2, ',', '.')
                     );
                 }

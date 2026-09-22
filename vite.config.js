@@ -22,7 +22,6 @@ export default defineConfig({
                 'resources/js/cadProduto.js',
                 'resources/js/cadVeiculo.js',
                 'resources/js/validateForm.js',
-                'resources/js/gerenciadorItensOs.js',
                 'resources/js/compra.js',
                 'resources/js/formsWizard.js',
                 'resources/js/notaitem/form.js',

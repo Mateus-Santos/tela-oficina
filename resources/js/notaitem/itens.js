@@ -1,17 +1,11 @@
+import BuscaItens from '../busca/busca-itens.js';
+
 (function () {
     'use strict';
 
     function iniciarItens() {
-        // ============================================================
-        // CONFIGURAÇÕES
-        // ============================================================
-        const API_BUSCA = '/api/notas-itens/buscar';
         const PRODUTO_TYPE = 'App\\Models\\Produto';
         const ORDEM_SERVICO_TYPE = 'App\\Models\\OrdemServico';
-
-        // ============================================================
-        // ELEMENTOS DO EDITOR
-        // ============================================================
         const tipoInput = document.getElementById('builder_type');
         const buscaInput = document.getElementById('builder_item_busca');
         const resultadosContainer = document.getElementById('builder_resultados');
@@ -23,231 +17,109 @@
         const descontoInput = document.getElementById('builder_desconto');
         const garantiaInput = document.getElementById('builder_garantia_dias');
         const botaoAdicionar = document.getElementById('btn-adicionar-item');
-
-        // ============================================================
-        // TABELA
-        // ============================================================
         const tabelaItens = document.getElementById('container-itens-dinamicos');
         const linhaVazia = document.getElementById('linha-vazia');
 
-        // ============================================================
-        // VALIDAÇÃO BÁSICA
-        // ============================================================
         if (!tipoInput || !buscaInput || !resultadosContainer || !tabelaItens) {
             console.warn('[SOS Mecânica] Elementos do gerenciador de itens não encontrados.');
             return;
         }
 
-        // ============================================================
-        // ESTADO
-        // ============================================================
-        let buscaTimeout = null;
-        let buscaController = null;
         let indiceItem = 0;
+        let itemSelecionado = { tipo: '', id: '', descricao: '', valor: 0 };
 
-        let itemSelecionado = {
-            tipo: '',
-            id: '',
-            descricao: '',
-            valor: 0
-        };
-
-        // ============================================================
-        // UTILITÁRIOS
-        // ============================================================
-        function escaparHtml(valor) {
-            if (valor === null || typeof valor === 'undefined') {
-                return '';
-            }
-
+        const escaparHtml = function (valor) {
+            if (valor == null) return '';
             return String(valor)
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#039;');
-        }
+        };
 
         function converterNumero(valor) {
-            if (valor === null || typeof valor === 'undefined') {
-                return 0;
-            }
+            if (valor == null || String(valor).trim() === '') return 0;
 
             let texto = String(valor).trim();
 
-            if (texto === '') {
-                return 0;
-            }
-
-            /*
-             * Aceita:
-             *
-             * 10
-             * 10.50
-             * 10,50
-             * 1.250,50
-             */
-            if (texto.indexOf(',') !== -1) {
-                texto = texto
-                    .replace(/\./g, '')
-                    .replace(',', '.');
+            if (texto.includes(',')) {
+                texto = texto.replace(/\./g, '').replace(',', '.');
             } else if ((texto.match(/\./g) || []).length > 1) {
                 texto = texto.replace(/\./g, '');
             }
 
             const numero = parseFloat(texto);
-
-            if (!Number.isFinite(numero)) {
-                return 0;
-            }
-
-            return numero;
+            return Number.isFinite(numero) ? numero : 0;
         }
 
-        function formatarMoeda(valor) {
+        const formatarMoeda = function (valor) {
             const numero = Number(valor);
+            return Number.isFinite(numero)
+                ? numero.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                : 'R$ 0,00';
+        };
 
-            if (!Number.isFinite(numero)) {
-                return 'R$ 0,00';
-            }
-
-            return numero.toLocaleString('pt-BR', {
-                style: 'currency',
-                currency: 'BRL'
-            });
-        }
-
-        function formatarNumero(valor) {
+        const formatarNumero = function (valor) {
             const numero = Number(valor);
+            return Number.isFinite(numero) ? numero.toFixed(2).replace('.', ',') : '0,00';
+        };
 
-            if (!Number.isFinite(numero)) {
-                return '0,00';
-            }
-
-            return numero.toFixed(2).replace('.', ',');
-        }
-
-        function obterTipoSelecionado() {
+        const obterTipoSelecionado = function () {
             return tipoInput.value || '';
-        }
+        };
 
         function obterVeiculoClienteId() {
-            const veiculoInput = document.getElementById('veiculo_cliente_id');
-
-            if (!veiculoInput) {
-                return '';
-            }
-
-            return veiculoInput.value || '';
+            const elemento = document.getElementById('veiculo_cliente_id');
+            return elemento ? elemento.value || '' : '';
         }
 
-        // ============================================================
-        // TIPOS
-        // ============================================================
         function normalizarTipo(tipo) {
-            const valor = String(tipo || '');
+            tipo = String(tipo || '');
 
-            if (
-                valor === PRODUTO_TYPE ||
-                valor === 'Produto' ||
-                valor === 'produto'
-            ) {
-                return 'produto';
-            }
-
-            if (
-                valor === ORDEM_SERVICO_TYPE ||
-                valor === 'OrdemServico' ||
-                valor === 'os'
-            ) {
-                return 'os';
-            }
+            if ([PRODUTO_TYPE, 'Produto', 'produto'].includes(tipo)) return 'produto';
+            if ([ORDEM_SERVICO_TYPE, 'OrdemServico', 'os'].includes(tipo)) return 'os';
 
             return '';
         }
 
         function obterTipoLinha(linha) {
-            if (!linha) {
-                return '';
-            }
+            if (!linha) return '';
 
-            const tipoInputLinha = linha.querySelector(
+            const input = linha.querySelector(
                 'input[name*="[itemable_type]"], input[name*="[tipo]"]'
             );
 
-            if (!tipoInputLinha) {
-                return '';
-            }
-
-            return normalizarTipo(tipoInputLinha.value);
+            return input ? normalizarTipo(input.value) : '';
         }
 
-        function obterItemableType(tipo) {
-            if (tipo === 'produto') {
-                return PRODUTO_TYPE;
-            }
-
-            if (tipo === 'os') {
-                return ORDEM_SERVICO_TYPE;
-            }
-
+        const obterItemableType = function (tipo) {
+            if (tipo === 'produto') return PRODUTO_TYPE;
+            if (tipo === 'os') return ORDEM_SERVICO_TYPE;
             return '';
-        }
+        };
 
-        // ============================================================
-        // CAMPOS DAS LINHAS
-        // ============================================================
-        function obterCampoLinha(linha, seletor) {
-            if (!linha) {
-                return null;
-            }
-
-            return linha.querySelector(seletor);
-        }
+        const obterCampoLinha = function (linha, seletor) {
+            return linha ? linha.querySelector(seletor) : null;
+        };
 
         function obterQuantidadeLinha(linha) {
-            const input = obterCampoLinha(
-                linha,
-                '.input-qtd, .item-quantidade'
-            );
-
+            const input = obterCampoLinha(linha, '.input-qtd, .item-quantidade');
             return input ? converterNumero(input.value) : 0;
         }
 
         function obterValorUnitarioLinha(linha) {
-            const input = obterCampoLinha(
-                linha,
-                '.input-valor, .item-valor-unitario'
-            );
-
+            const input = obterCampoLinha(linha, '.input-valor, .item-valor-unitario');
             return input ? converterNumero(input.value) : 0;
         }
 
         function obterDescontoLinha(linha) {
-            const input = obterCampoLinha(
-                linha,
-                '.input-desconto, .item-desconto'
-            );
-
-            return input
-                ? Math.max(0, converterNumero(input.value))
-                : 0;
+            const input = obterCampoLinha(linha, '.input-desconto, .item-desconto');
+            return input ? Math.max(0, converterNumero(input.value)) : 0;
         }
 
-        // ============================================================
-        // CÁLCULOS
-        // ============================================================
-        function calcularValorTotalItem(
-            quantidade,
-            valorUnitario,
-            desconto
-        ) {
-            const subtotal = quantidade * valorUnitario;
-
-            return Math.max(
-                0,
-                subtotal - Math.max(0, desconto)
-            );
+        function calcularValorTotalItem(quantidade, valorUnitario, desconto) {
+            return Math.max(0, quantidade * valorUnitario - Math.max(0, desconto));
         }
 
         function calcularDadosLinha(linha) {
@@ -256,225 +128,108 @@
             const desconto = obterDescontoLinha(linha);
             const subtotal = quantidade * valorUnitario;
 
-            const total = calcularValorTotalItem(
-                quantidade,
-                valorUnitario,
-                desconto
-            );
-
             return {
                 tipo: obterTipoLinha(linha),
-                quantidade,
-                valorUnitario,
-                desconto,
-                subtotal,
-                total
+                quantidade: quantidade,
+                valorUnitario: valorUnitario,
+                desconto: desconto,
+                subtotal: subtotal,
+                total: calcularValorTotalItem(quantidade, valorUnitario, desconto)
             };
         }
 
         function atualizarTotalLinha(linha) {
-            if (!linha) {
-                return;
-            }
+            if (!linha) return;
 
-            const dados = calcularDadosLinha(linha);
-
-            const totalElemento = linha.querySelector(
-                '.valor-total-item'
-            );
-
-            if (totalElemento) {
-                totalElemento.textContent = formatarMoeda(
-                    dados.total
-                );
-            }
+            const elemento = linha.querySelector('.valor-total-item');
+            if (elemento) elemento.textContent = formatarMoeda(calcularDadosLinha(linha).total);
         }
 
-        // ============================================================
-        // DADOS FINANCEIROS DA NOTA
-        //
-        // ESTE É O ÚNICO LOCAL QUE CALCULA O FINANCEIRO.
-        // ============================================================
         function obterDadosFinanceiros() {
             const dados = {
-                produto: {
-                    bruto: 0,
-                    desconto: 0,
-                    liquido: 0
-                },
-                os: {
-                    bruto: 0,
-                    desconto: 0,
-                    liquido: 0
-                },
+                produto: { bruto: 0, desconto: 0, liquido: 0 },
+                os: { bruto: 0, desconto: 0, liquido: 0 },
                 subtotal: 0,
                 desconto: 0,
                 total: 0
             };
 
-            const linhas = tabelaItens.querySelectorAll(
-                'tr[data-item-index]'
-            );
-
-            linhas.forEach(function (linha) {
+            tabelaItens.querySelectorAll('tr[data-item-index]').forEach(function (linha) {
                 const item = calcularDadosLinha(linha);
-
-                if (!item.tipo) {
-                    return;
-                }
+                if (!item.tipo) return;
 
                 dados[item.tipo].bruto += item.subtotal;
                 dados[item.tipo].desconto += item.desconto;
             });
 
-            dados.produto.liquido = Math.max(
-                0,
-                dados.produto.bruto - dados.produto.desconto
-            );
+            ['produto', 'os'].forEach(function (tipo) {
+                dados[tipo].liquido = Math.max(0, dados[tipo].bruto - dados[tipo].desconto);
+            });
 
-            dados.os.liquido = Math.max(
-                0,
-                dados.os.bruto - dados.os.desconto
-            );
-
-            dados.subtotal =
-                dados.produto.bruto +
-                dados.os.bruto;
-
-            dados.desconto =
-                dados.produto.desconto +
-                dados.os.desconto;
-
-            dados.total =
-                dados.produto.liquido +
-                dados.os.liquido;
+            dados.subtotal = dados.produto.bruto + dados.os.bruto;
+            dados.desconto = dados.produto.desconto + dados.os.desconto;
+            dados.total = dados.produto.liquido + dados.os.liquido;
 
             return dados;
         }
 
-        // ============================================================
-        // ATUALIZA RESUMO FINANCEIRO
-        // ============================================================
         function atualizarResumoFinanceiro() {
-            const linhas = tabelaItens.querySelectorAll(
-                'tr[data-item-index]'
-            );
-
-            linhas.forEach(function (linha) {
-                atualizarTotalLinha(linha);
-            });
+            tabelaItens.querySelectorAll('tr[data-item-index]').forEach(atualizarTotalLinha);
 
             const dados = obterDadosFinanceiros();
 
             const elementos = {
-                pecasBruto: document.getElementById(
-                    'resumo-pecas-bruto'
-                ),
-                pecasDesconto: document.getElementById(
-                    'resumo-pecas-desconto'
-                ),
-                pecasLiquido: document.getElementById(
-                    'resumo-pecas-liquido'
-                ),
-                servicosBruto: document.getElementById(
-                    'resumo-servicos-bruto'
-                ),
-                servicosDesconto: document.getElementById(
-                    'resumo-servicos-desconto'
-                ),
-                servicosLiquido: document.getElementById(
-                    'resumo-servicos-liquido'
-                ),
-                totalDescontos: document.getElementById(
-                    'resumo-total-descontos'
-                ),
-                totalGeral: document.getElementById(
-                    'valor-geral-os'
-                )
+                pecasBruto: 'resumo-pecas-bruto',
+                pecasDesconto: 'resumo-pecas-desconto',
+                pecasLiquido: 'resumo-pecas-liquido',
+                servicosBruto: 'resumo-servicos-bruto',
+                servicosDesconto: 'resumo-servicos-desconto',
+                servicosLiquido: 'resumo-servicos-liquido',
+                totalDescontos: 'resumo-total-descontos',
+                totalGeral: 'valor-geral-os'
             };
 
-            if (elementos.pecasBruto) {
-                elementos.pecasBruto.textContent =
-                    formatarMoeda(dados.produto.bruto);
-            }
+            const valores = {
+                pecasBruto: dados.produto.bruto,
+                pecasDesconto: dados.produto.desconto,
+                pecasLiquido: dados.produto.liquido,
+                servicosBruto: dados.os.bruto,
+                servicosDesconto: dados.os.desconto,
+                servicosLiquido: dados.os.liquido,
+                totalDescontos: dados.desconto,
+                totalGeral: dados.total
+            };
 
-            if (elementos.pecasDesconto) {
-                elementos.pecasDesconto.textContent =
-                    formatarMoeda(dados.produto.desconto);
-            }
+            Object.entries(elementos).forEach(function (entrada) {
+                const chave = entrada[0];
+                const elemento = document.getElementById(entrada[1]);
 
-            if (elementos.pecasLiquido) {
-                elementos.pecasLiquido.textContent =
-                    formatarMoeda(dados.produto.liquido);
-            }
-
-            if (elementos.servicosBruto) {
-                elementos.servicosBruto.textContent =
-                    formatarMoeda(dados.os.bruto);
-            }
-
-            if (elementos.servicosDesconto) {
-                elementos.servicosDesconto.textContent =
-                    formatarMoeda(dados.os.desconto);
-            }
-
-            if (elementos.servicosLiquido) {
-                elementos.servicosLiquido.textContent =
-                    formatarMoeda(dados.os.liquido);
-            }
-
-            if (elementos.totalDescontos) {
-                elementos.totalDescontos.textContent =
-                    formatarMoeda(dados.desconto);
-            }
-
-            if (elementos.totalGeral) {
-                elementos.totalGeral.textContent =
-                    formatarMoeda(dados.total);
-            }
+                if (elemento) elemento.textContent = formatarMoeda(valores[chave]);
+            });
 
             return dados;
         }
 
-        // ============================================================
-        // API PÚBLICA PARA OUTROS MÓDULOS
-        // ============================================================
         window.NotaItens = {
             recalcular: atualizarResumoFinanceiro,
             obterDadosFinanceiros: obterDadosFinanceiros,
             obterSubtotalCategoria: function (tipo) {
                 const dados = obterDadosFinanceiros();
 
-                if (tipo === 'produto') {
-                    return dados.produto.bruto;
-                }
-
-                if (tipo === 'os') {
-                    return dados.os.bruto;
-                }
+                if (tipo === 'produto') return dados.produto.bruto;
+                if (tipo === 'os') return dados.os.bruto;
 
                 return 0;
             }
         };
 
-        // ============================================================
-        // RESULTADOS DA BUSCA
-        // ============================================================
-        function limparResultados() {
+        const limparResultados = function () {
             resultadosContainer.innerHTML = '';
-        }
+        };
 
         function limparSelecao() {
-            itemSelecionado = {
-                tipo: '',
-                id: '',
-                descricao: '',
-                valor: 0
-            };
-
-            if (itemIdInput) {
-                itemIdInput.value = '';
-            }
+            itemSelecionado = { tipo: '', id: '', descricao: '', valor: 0 };
+            if (itemIdInput) itemIdInput.value = '';
         }
 
         function atualizarEstadoBusca() {
@@ -486,1105 +241,453 @@
                 limparResultados();
                 limparSelecao();
 
-                if (buscaStatus) {
-                    buscaStatus.textContent =
-                        'Selecione o tipo de item.';
-                }
-
+                if (buscaStatus) buscaStatus.textContent = 'Selecione o tipo de item.';
                 return;
             }
 
             buscaInput.disabled = false;
-
-            if (buscaStatus) {
-                buscaStatus.textContent =
-                    'Digite para pesquisar.';
-            }
+            if (buscaStatus) buscaStatus.textContent = 'Digite para pesquisar.';
         }
 
         function selecionarItem(item) {
             const tipo = obterTipoSelecionado();
 
-            if (!tipo || !item) {
+            if (!tipo || !item) return;
+
+            if (tipo === 'os' && item.disponivel === false) {
+                const notaId = item.nota && item.nota.id ? item.nota.id : null;
+                const mensagem = notaId
+                    ? 'Esta O.S. já está vinculada à Nota #' + notaId + '.'
+                    : 'Esta O.S. já está vinculada a uma Nota.';
+
+                if (buscaStatus) buscaStatus.textContent = mensagem;
                 return;
             }
 
-            let descricao = '';
+            const descricao = tipo === 'produto'
+                ? item.nome || ''
+                : item.descricao || '';
 
-            if (tipo === 'produto') {
-                descricao = item.nome || '';
-            }
-
-            if (tipo === 'os') {
-                descricao = item.descricao || '';
-            }
-
-            let valor = 0;
-
-            if (tipo === 'produto') {
-                valor = converterNumero(item.preco);
-            }
-
-            if (tipo === 'os') {
-                valor = converterNumero(item.valor);
-            }
+            const valor = converterNumero(
+                tipo === 'produto' ? item.preco : item.valor
+            );
 
             itemSelecionado = {
-                tipo,
+                tipo: tipo,
                 id: item.id,
-                descricao,
-                valor
+                descricao: descricao,
+                valor: valor
             };
 
-            if (itemIdInput) {
-                itemIdInput.value = item.id;
-            }
-
-            if (descricaoInput) {
-                descricaoInput.value = descricao;
-            }
-
-            if (valorInput) {
-                valorInput.value = valor.toFixed(2);
-            }
-
-            if (descontoInput) {
-                descontoInput.value = '0.00';
-            }
+            if (itemIdInput) itemIdInput.value = item.id;
+            if (descricaoInput) descricaoInput.value = descricao;
+            if (valorInput) valorInput.value = valor.toFixed(2);
+            if (descontoInput) descontoInput.value = '0.00';
 
             if (buscaInput) {
-                if (tipo === 'produto') {
-                    buscaInput.value = item.nome || '';
-                } else {
-                    buscaInput.value =
-                        'O.S. #' +
-                        item.id +
-                        ' - ' +
-                        descricao;
-                }
+                buscaInput.value = tipo === 'produto'
+                    ? item.nome || ''
+                    : 'O.S. #' + item.id + ' - ' + descricao;
             }
 
             limparResultados();
 
-            if (buscaStatus) {
-                buscaStatus.textContent =
-                    'Item selecionado.';
-            }
+            if (buscaStatus) buscaStatus.textContent = 'Item selecionado.';
 
             atualizarPreviaItem();
         }
 
-        function renderizarResultados(itens, tipo) {
-            resultadosContainer.innerHTML = '';
-
-            if (!Array.isArray(itens) || itens.length === 0) {
-                resultadosContainer.innerHTML = `
-                    <div class="list-group-item text-muted">
-                        <i class="bi bi-search"></i>
-                        Nenhum item encontrado.
-                    </div>
-                `;
-
-                return;
-            }
-
-            itens.forEach(function (item) {
-                const botao = document.createElement('button');
-
-                botao.type = 'button';
-                botao.className =
-                    'list-group-item list-group-item-action';
-
-                if (tipo === 'produto') {
-                    const nome =
-                        item.nome ||
-                        'Produto sem nome';
-
-                    const descricao =
-                        item.descricao ||
-                        '';
-
-                    /*
-                     * Compatibilidade com diferentes formatos
-                     * retornados pela API:
-                     *
-                     * marca: { nome: '...' }
-                     * marca: '...'
-                     * marca_nome: '...'
-                     *
-                     * Não usamos optional chaining aqui porque
-                     * o Babel atual do projeto não suporta ?. .
-                     */
-                    const marca =
-                        typeof item.marca === 'object'
-                            ? (item.marca && item.marca.nome) || ''
-                            : item.marca ||
-                              item.marca_nome ||
-                              '';
-
-                    const codigoFabricante =
-                        item.codigo_fabricante ||
-                        '';
-
-                    const codigoBarras =
-                        item.codigo_barras ||
-                        '';
-
-                    const preco =
-                        converterNumero(item.preco);
-
-                    botao.innerHTML = `
-                        <div class="d-flex align-items-start gap-3">
-                            <div
-                                class="d-flex align-items-center justify-content-center rounded bg-light text-primary flex-shrink-0"
-                                style="width: 42px; height: 42px;"
-                            >
-                                <i class="bi bi-box-seam fs-5"></i>
-                            </div>
-
-                            <div class="flex-grow-1 min-width-0">
-                                <div class="d-flex justify-content-between align-items-start gap-3">
-                                    <strong class="d-block text-dark">
-                                        ${escaparHtml(nome)}
-                                    </strong>
-
-                                    <strong class="text-primary text-nowrap">
-                                        ${formatarMoeda(preco)}
-                                    </strong>
-                                </div>
-
-                                ${
-                                    marca
-                                        ? `
-                                            <div class="small text-muted mt-1">
-                                                <i class="bi bi-bookmark"></i>
-                                                <span class="fw-semibold">
-                                                    Marca:
-                                                </span>
-                                                ${escaparHtml(marca)}
-                                            </div>
-                                        `
-                                        : ''
-                                }
-
-                                ${
-                                    codigoFabricante
-                                        ? `
-                                            <div class="small text-muted mt-1">
-                                                <i class="bi bi-tag"></i>
-                                                <span class="fw-semibold">
-                                                    Fabricante:
-                                                </span>
-                                                ${escaparHtml(codigoFabricante)}
-                                            </div>
-                                        `
-                                        : ''
-                                }
-
-                                ${
-                                    codigoBarras
-                                        ? `
-                                            <div class="small text-muted mt-1">
-                                                <i class="bi bi-upc-scan"></i>
-                                                <span class="fw-semibold">
-                                                    Código de barras:
-                                                </span>
-                                                ${escaparHtml(codigoBarras)}
-                                            </div>
-                                        `
-                                        : ''
-                                }
-
-                                ${
-                                    descricao
-                                        ? `
-                                            <div
-                                                class="small text-muted mt-2"
-                                                style="
-                                                    display: -webkit-box;
-                                                    -webkit-box-orient: vertical;
-                                                    -webkit-line-clamp: 3;
-                                                    overflow: hidden;
-                                                    line-height: 1.4;
-                                                "
-                                            >
-                                                ${escaparHtml(descricao)}
-                                            </div>
-                                        `
-                                        : ''
-                                }
-                            </div>
-
-                            <div
-                                class="d-flex align-items-center justify-content-center text-muted flex-shrink-0"
-                                style="width: 20px;"
-                            >
-                                <i class="bi bi-chevron-right"></i>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    const descricao =
-                        item.descricao ||
-                        'Ordem de Serviço';
-
-                    const valor =
-                        converterNumero(item.valor);
-
-                    botao.innerHTML = `
-                        <div class="d-flex align-items-start gap-3">
-                            <div
-                                class="d-flex align-items-center justify-content-center rounded bg-light text-warning flex-shrink-0"
-                                style="width: 42px; height: 42px;"
-                            >
-                                <i class="bi bi-tools fs-5"></i>
-                            </div>
-
-                            <div class="flex-grow-1 min-width-0">
-                                <div class="d-flex justify-content-between align-items-start gap-3">
-                                    <strong class="d-block text-dark">
-                                        O.S. #${escaparHtml(item.id)}
-                                    </strong>
-
-                                    <strong class="text-primary text-nowrap">
-                                        ${formatarMoeda(valor)}
-                                    </strong>
-                                </div>
-
-                                <div
-                                    class="small text-muted mt-2"
-                                    style="
-                                        display: -webkit-box;
-                                        -webkit-box-orient: vertical;
-                                        -webkit-line-clamp: 3;
-                                        overflow: hidden;
-                                        line-height: 1.4;
-                                    "
-                                >
-                                    ${escaparHtml(descricao)}
-                                </div>
-
-                                ${
-                                    item.status
-                                        ? `
-                                            <div class="mt-2">
-                                                <span class="badge bg-secondary">
-                                                    ${escaparHtml(item.status)}
-                                                </span>
-                                            </div>
-                                        `
-                                        : ''
-                                }
-                            </div>
-
-                            <div
-                                class="d-flex align-items-center justify-content-center text-muted flex-shrink-0"
-                                style="width: 20px;"
-                            >
-                                <i class="bi bi-chevron-right"></i>
-                            </div>
-                        </div>
-                    `;
-                }
-
-                botao.addEventListener(
-                    'click',
-                    function () {
-                        selecionarItem(item);
-                    }
-                );
-
-                resultadosContainer.appendChild(botao);
-            });
-        }
-
-        // ============================================================
-        // BUSCA API
-        // ============================================================
-        async function buscarItens() {
-            const tipo = obterTipoSelecionado();
-            const busca = buscaInput.value.trim();
-
-            if (!tipo) {
-                limparResultados();
-
-                if (buscaStatus) {
-                    buscaStatus.textContent =
-                        'Selecione o tipo de item.';
-                }
-
-                return;
-            }
-
-            if (!busca) {
-                limparResultados();
-
-                if (buscaStatus) {
-                    buscaStatus.textContent =
-                        'Digite para pesquisar.';
-                }
-
-                return;
-            }
-
-            if (buscaController) {
-                buscaController.abort();
-            }
-
-            buscaController = new AbortController();
-
-            if (buscaStatus) {
-                buscaStatus.textContent =
-                    'Buscando...';
-            }
-
-            const parametros = new URLSearchParams();
-
-            parametros.set('tipo', tipo);
-            parametros.set('q', busca);
-
-            if (tipo === 'os') {
-                const veiculoClienteId =
-                    obterVeiculoClienteId();
-
-                if (veiculoClienteId) {
-                    parametros.set(
-                        'veiculo_cliente_id',
-                        veiculoClienteId
-                    );
-                }
-            }
-
-            const url =
-                API_BUSCA +
-                '?' +
-                parametros.toString();
-
-            try {
-                const response = await fetch(url, {
-                    method: 'GET',
-                    headers: {
-                        Accept: 'application/json'
-                    },
-                    signal: buscaController.signal
-                });
-
-                if (!response.ok) {
-                    throw new Error(
-                        'Erro HTTP ' +
-                        response.status
-                    );
-                }
-
-                const data = await response.json();
-
-                const itens =
-                    Array.isArray(data.data)
-                        ? data.data
-                        : [];
-
-                renderizarResultados(
-                    itens,
-                    tipo
-                );
-
-                if (buscaStatus) {
-                    if (itens.length === 0) {
-                        buscaStatus.textContent =
-                            'Nenhum item encontrado.';
-                    } else {
-                        buscaStatus.textContent =
-                            itens.length +
-                            ' resultado(s) encontrado(s).';
-                    }
-                }
-            } catch (error) {
-                if (error.name === 'AbortError') {
-                    return;
-                }
-
-                console.error(
-                    '[SOS Mecânica] Erro ao buscar item:',
-                    error
-                );
-
-                resultadosContainer.innerHTML = `
-                    <div class="list-group-item text-danger">
-                        Não foi possível realizar a busca.
-                    </div>
-                `;
-
-                if (buscaStatus) {
-                    buscaStatus.textContent =
-                        'Erro ao consultar os itens.';
-                }
-            } finally {
-                buscaController = null;
-            }
-        }
-
-        // ============================================================
-        // PREVIEW DO ITEM
-        // ============================================================
         function atualizarPreviaItem() {
-            const totalElemento =
-                document.getElementById(
-                    'builder_total'
-                );
+            const totalElemento = document.getElementById('builder_total');
+            if (!totalElemento) return;
 
-            if (!totalElemento) {
-                return;
-            }
+            const quantidade = quantidadeInput ? converterNumero(quantidadeInput.value) : 0;
+            const valor = valorInput ? converterNumero(valorInput.value) : 0;
+            const desconto = descontoInput ? converterNumero(descontoInput.value) : 0;
 
-            const quantidade =
-                quantidadeInput
-                    ? converterNumero(
-                        quantidadeInput.value
-                    )
-                    : 0;
-
-            const valor =
-                valorInput
-                    ? converterNumero(
-                        valorInput.value
-                    )
-                    : 0;
-
-            const desconto =
-                descontoInput
-                    ? converterNumero(
-                        descontoInput.value
-                    )
-                    : 0;
-
-            const total =
-                calcularValorTotalItem(
-                    quantidade,
-                    valor,
-                    desconto
-                );
-
-            totalElemento.textContent =
-                formatarMoeda(total);
+            totalElemento.textContent = formatarMoeda(
+                calcularValorTotalItem(quantidade, valor, desconto)
+            );
         }
 
-        // ============================================================
-        // VALIDAÇÃO
-        // ============================================================
         function validarItem() {
             if (!obterTipoSelecionado()) {
-                alert(
-                    'Selecione o tipo do item.'
-                );
-
+                alert('Selecione o tipo do item.');
                 return false;
             }
 
-            if (
-                !itemIdInput ||
-                !itemIdInput.value
-            ) {
-                alert(
-                    'Selecione um item da pesquisa.'
-                );
-
+            if (!itemIdInput || !itemIdInput.value) {
+                alert('Selecione um item da pesquisa.');
                 return false;
             }
 
-            if (
-                !descricaoInput ||
-                !descricaoInput.value.trim()
-            ) {
-                alert(
-                    'Informe a descrição do item.'
-                );
-
+            if (!descricaoInput || !descricaoInput.value.trim()) {
+                alert('Informe a descrição do item.');
                 return false;
             }
 
-            const quantidade =
-                quantidadeInput
-                    ? converterNumero(
-                        quantidadeInput.value
-                    )
-                    : 0;
+            const quantidade = quantidadeInput ? converterNumero(quantidadeInput.value) : 0;
 
-            if (
-                !Number.isInteger(quantidade) ||
-                quantidade < 1
-            ) {
-                alert(
-                    'A quantidade deve ser um número inteiro maior ou igual a 1.'
-                );
-
-                if (quantidadeInput) {
-                    quantidadeInput.focus();
-                }
-
+            if (!Number.isInteger(quantidade) || quantidade < 1) {
+                alert('A quantidade deve ser um número inteiro maior ou igual a 1.');
+                if (quantidadeInput) quantidadeInput.focus();
                 return false;
             }
 
-            const valor =
-                valorInput
-                    ? converterNumero(
-                        valorInput.value
-                    )
-                    : 0;
+            const valor = valorInput ? converterNumero(valorInput.value) : 0;
 
             if (valor < 0) {
-                alert(
-                    'O valor do item não pode ser negativo.'
-                );
-
-                if (valorInput) {
-                    valorInput.focus();
-                }
-
+                alert('O valor do item não pode ser negativo.');
+                if (valorInput) valorInput.focus();
                 return false;
             }
 
-            const desconto =
-                descontoInput
-                    ? Math.max(
-                        0,
-                        converterNumero(
-                            descontoInput.value
-                        )
-                    )
-                    : 0;
+            const desconto = descontoInput
+                ? Math.max(0, converterNumero(descontoInput.value))
+                : 0;
 
-            const subtotal =
-                quantidade * valor;
-
-            if (desconto > subtotal) {
-                alert(
-                    'O desconto não pode ser maior que o valor do item.'
-                );
-
-                if (descontoInput) {
-                    descontoInput.focus();
-                }
-
+            if (desconto > quantidade * valor) {
+                alert('O desconto não pode ser maior que o valor do item.');
+                if (descontoInput) descontoInput.focus();
                 return false;
             }
 
             return true;
         }
 
-        // ============================================================
-        // ADICIONAR ITEM
-        // ============================================================
         function adicionarItem() {
-            if (!validarItem()) {
-                return;
-            }
+            if (!validarItem()) return;
 
-            const tipo =
-                obterTipoSelecionado();
+            const tipo = obterTipoSelecionado();
+            const itemId = itemIdInput.value;
+            const descricao = descricaoInput.value.trim();
+            const quantidade = Math.trunc(converterNumero(quantidadeInput.value));
+            const valorUnitario = converterNumero(valorInput.value);
+            const desconto = descontoInput
+                ? Math.max(0, converterNumero(descontoInput.value))
+                : 0;
+            const garantiaDias = garantiaInput
+                ? parseInt(garantiaInput.value, 10) || 0
+                : 0;
+            const index = indiceItem++;
+            const valorTotal = calcularValorTotalItem(quantidade, valorUnitario, desconto);
+            const linha = document.createElement('tr');
 
-            const itemId =
-                itemIdInput.value;
-
-            const descricao =
-                descricaoInput.value.trim();
-
-            const quantidade =
-                Math.trunc(
-                    converterNumero(
-                        quantidadeInput.value
-                    )
-                );
-
-            const valorUnitario =
-                converterNumero(
-                    valorInput.value
-                );
-
-            const desconto =
-                descontoInput
-                    ? Math.max(
-                        0,
-                        converterNumero(
-                            descontoInput.value
-                        )
-                    )
-                    : 0;
-
-            const garantiaDias =
-                garantiaInput
-                    ? parseInt(
-                        garantiaInput.value,
-                        10
-                    ) || 0
-                    : 0;
-
-            const valorTotal =
-                calcularValorTotalItem(
-                    quantidade,
-                    valorUnitario,
-                    desconto
-                );
-
-            const index =
-                indiceItem++;
-
-            const itemableType =
-                obterItemableType(tipo);
-
-            const linha =
-                document.createElement('tr');
-
-            linha.setAttribute(
-                'data-item-index',
-                index
-            );
+            linha.dataset.itemIndex = index;
 
             linha.innerHTML = `
                 <td>
-                    <input
-                        type="hidden"
-                        name="itens[${index}][itemable_type]"
-                        value="${escaparHtml(itemableType)}"
-                    >
-
-                    <input
-                        type="hidden"
-                        name="itens[${index}][itemable_id]"
-                        value="${escaparHtml(itemId)}"
-                    >
-
-                    <strong>
-                        ${escaparHtml(
-                            tipo === 'produto'
-                                ? 'Produto'
-                                : 'O.S.'
-                        )}
-                    </strong>
+                    <input type="hidden" name="itens[${index}][itemable_type]" value="${escaparHtml(obterItemableType(tipo))}">
+                    <input type="hidden" name="itens[${index}][itemable_id]" value="${escaparHtml(itemId)}">
+                    <strong>${escaparHtml(tipo === 'produto' ? 'Produto' : 'O.S.')}</strong>
                 </td>
-
                 <td>
-                    <input
-                        type="text"
-                        name="itens[${index}][descricao]"
-                        value="${escaparHtml(descricao)}"
-                        class="form-control input-descricao"
-                    >
+                    <input type="text" name="itens[${index}][descricao]" value="${escaparHtml(descricao)}" class="form-control input-descricao">
                 </td>
-
                 <td>
-                    <input
-                        type="number"
-                        name="itens[${index}][quantidade]"
-                        value="${quantidade}"
-                        min="1"
-                        step="1"
-                        class="form-control input-qtd"
-                    >
+                    <input type="number" name="itens[${index}][quantidade]" value="${quantidade}" min="1" step="1" class="form-control input-qtd">
                 </td>
-
                 <td>
-                    <input
-                        type="text"
-                        name="itens[${index}][valor_unitario]"
-                        value="${formatarNumero(valorUnitario)}"
-                        class="form-control input-valor"
-                    >
+                    <input type="text" name="itens[${index}][valor_unitario]" value="${formatarNumero(valorUnitario)}" class="form-control input-valor">
                 </td>
-
                 <td>
-                    <input
-                        type="text"
-                        name="itens[${index}][desconto]"
-                        value="${formatarNumero(desconto)}"
-                        class="form-control input-desconto"
-                    >
+                    <input type="text" name="itens[${index}][desconto]" value="${formatarNumero(desconto)}" class="form-control input-desconto">
                 </td>
-
                 <td>
-                    <input
-                        type="number"
-                        name="itens[${index}][garantia_dias]"
-                        value="${
-                            garantiaDias > 0
-                                ? garantiaDias
-                                : ''
-                        }"
-                        min="0"
-                        step="1"
-                        class="form-control input-garantia"
-                    >
+                    <input type="number" name="itens[${index}][garantia_dias]" value="${garantiaDias > 0 ? garantiaDias : ''}" min="0" step="1" class="form-control input-garantia">
                 </td>
-
-                <td class="valor-total-item">
-                    ${formatarMoeda(valorTotal)}
-                </td>
-
+                <td class="valor-total-item">${formatarMoeda(valorTotal)}</td>
                 <td>
-                    <button
-                        type="button"
-                        class="btn btn-danger btn-remover-item"
-                        title="Remover item"
-                    >
+                    <button type="button" class="btn btn-danger btn-remover-item" title="Remover item">
                         <i class="bi bi-trash"></i>
                     </button>
                 </td>
             `;
 
-            if (linhaVazia) {
-                linhaVazia.style.display = 'none';
-            }
+            if (linhaVazia) linhaVazia.style.display = 'none';
 
             tabelaItens.appendChild(linha);
-
             atualizarResumoFinanceiro();
             limparEditorItem();
+            limparBusca();
             fecharModalAdicionarItem();
         }
 
-        // ============================================================
-        // REMOVER ITEM
-        // ============================================================
         function removerItem(linha) {
-            if (!linha) {
-                return;
-            }
+            if (!linha) return;
 
             linha.remove();
-
             verificarTabelaVazia();
             atualizarResumoFinanceiro();
         }
 
-        // ============================================================
-        // TABELA VAZIA
-        // ============================================================
         function verificarTabelaVazia() {
-            if (!linhaVazia) {
+            if (!linhaVazia) return;
+
+            linhaVazia.style.display =
+                tabelaItens.querySelectorAll('tr[data-item-index]').length
+                    ? 'none'
+                    : '';
+        }
+
+        function limparEditorItem() {
+            itemSelecionado = { tipo: '', id: '', descricao: '', valor: 0 };
+
+            if (itemIdInput) itemIdInput.value = '';
+            if (descricaoInput) descricaoInput.value = '';
+            if (valorInput) valorInput.value = '';
+            if (descontoInput) descontoInput.value = '0.00';
+
+            if (quantidadeInput) {
+                quantidadeInput.value = quantidadeInput.defaultValue || '1';
+            }
+
+            if (garantiaInput) garantiaInput.value = '';
+            if (buscaInput) buscaInput.value = '';
+
+            atualizarPreviaItem();
+        }
+
+        function limparBusca() {
+            if (buscaItens) {
+                buscaItens.limpar();
+            } else {
+                limparResultados();
+                if (buscaInput) buscaInput.value = '';
+                if (buscaStatus) buscaStatus.textContent = 'Digite para pesquisar.';
+            }
+        }
+
+        function fecharModalAdicionarItem() {
+            const modalElement = document.getElementById('modalAdicionarItem');
+
+            if (!modalElement || typeof bootstrap === 'undefined' || !bootstrap.Modal) {
                 return;
             }
 
-            const linhas =
-                tabelaItens.querySelectorAll(
-                    'tr[data-item-index]'
-                );
-
-            linhaVazia.style.display =
-                linhas.length === 0
-                    ? ''
-                    : 'none';
+            const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+            modal.hide();
         }
 
-        // ============================================================
-        // LIMPAR EDITOR
-        // ============================================================
-        function limparEditorItem() {
+        const buscaItens = new BuscaItens({
+            input: buscaInput,
+            resultados: resultadosContainer,
+            status: buscaStatus,
+            endpoint: '/api/notas-itens/buscar',
+            debounce: 350,
+            minimoCaracteres: 1,
+
+            obterParametros: function (busca) {
+                const tipo = obterTipoSelecionado();
+
+                if (!tipo) return null;
+
+                const parametros = { tipo: tipo, q: busca };
+
+                if (tipo === 'os') {
+                    const veiculoClienteId = obterVeiculoClienteId();
+
+                    if (veiculoClienteId) {
+                        parametros.veiculo_cliente_id = veiculoClienteId;
+                    }
+                }
+
+                return parametros;
+            },
+
+            renderizarItem: function (item) {
+                const tipo = obterTipoSelecionado();
+                const container = document.createElement('div');
+
+                if (tipo === 'produto') {
+                    const nome = item.nome || 'Produto sem nome';
+                    const descricao = item.descricao || '';
+                    let marca = '';
+
+                    if (item.marca && typeof item.marca === 'object') {
+                        marca = item.marca.nome || '';
+                    } else {
+                        marca = item.marca || item.marca_nome || '';
+                    }
+
+                    const codigoFabricante = item.codigo_fabricante || '';
+                    const codigoBarras = item.codigo_barras || '';
+                    const preco = converterNumero(item.preco);
+
+                    container.innerHTML = `
+                        <div class="d-flex align-items-start gap-3">
+                            <div class="d-flex align-items-center justify-content-center rounded bg-light text-primary flex-shrink-0" style="width:42px;height:42px;">
+                                <i class="bi bi-box-seam fs-5"></i>
+                            </div>
+                            <div class="flex-grow-1 min-width-0">
+                                <div class="d-flex justify-content-between align-items-start gap-3">
+                                    <strong class="d-block text-dark">${escaparHtml(nome)}</strong>
+                                    <strong class="text-primary text-nowrap">${formatarMoeda(preco)}</strong>
+                                </div>
+                                ${marca ? `<div class="small text-muted mt-1"><i class="bi bi-bookmark"></i> <span class="fw-semibold">Marca:</span> ${escaparHtml(marca)}</div>` : ''}
+                                ${codigoFabricante ? `<div class="small text-muted mt-1"><i class="bi bi-tag"></i> <span class="fw-semibold">Fabricante:</span> ${escaparHtml(codigoFabricante)}</div>` : ''}
+                                ${codigoBarras ? `<div class="small text-muted mt-1"><i class="bi bi-upc-scan"></i> <span class="fw-semibold">Código de barras:</span> ${escaparHtml(codigoBarras)}</div>` : ''}
+                                ${descricao ? `<div class="small text-muted mt-2" style="display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;line-height:1.4;">${escaparHtml(descricao)}</div>` : ''}
+                            </div>
+                            <div class="d-flex align-items-center justify-content-center text-muted flex-shrink-0" style="width:20px;">
+                                <i class="bi bi-chevron-right"></i>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    const descricao = item.descricao || 'Ordem de Serviço';
+                    const valor = converterNumero(item.valor);
+                    const disponivel = item.disponivel !== false;
+                    const notaId = item.nota && item.nota.id ? item.nota.id : null;
+                    const notaStatus = item.nota && item.nota.status ? item.nota.status : '';
+
+                    if (!disponivel) {
+                        container.className = 'opacity-75';
+                        container.innerHTML = `
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="d-flex align-items-center justify-content-center rounded bg-light text-secondary flex-shrink-0" style="width:42px;height:42px;">
+                                    <i class="bi bi-link-45deg fs-5"></i>
+                                </div>
+                                <div class="flex-grow-1 min-width-0">
+                                    <div class="d-flex justify-content-between align-items-start gap-3">
+                                        <strong class="d-block text-dark">O.S. #${escaparHtml(item.id)}</strong>
+                                        <strong class="text-muted text-nowrap">${formatarMoeda(valor)}</strong>
+                                    </div>
+                                    <div class="small text-muted mt-2" style="display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;line-height:1.4;">
+                                        ${escaparHtml(descricao)}
+                                    </div>
+                                    <div class="mt-2">
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="bi bi-link-45deg"></i>
+                                            Já vinculada${notaId ? ' à Nota #' + escaparHtml(notaId) : ' a uma Nota'}
+                                        </span>
+                                    </div>
+                                    ${notaStatus ? `<div class="small text-muted mt-1">Status da Nota: ${escaparHtml(notaStatus)}</div>` : ''}
+                                </div>
+                                <div class="d-flex align-items-center justify-content-center text-muted flex-shrink-0" style="width:20px;">
+                                    <i class="bi bi-lock"></i>
+                                </div>
+                            </div>
+                        `;
+
+                        return container;
+                    }
+
+                    container.innerHTML = `
+                        <div class="d-flex align-items-start gap-3">
+                            <div class="d-flex align-items-center justify-content-center rounded bg-light text-warning flex-shrink-0" style="width:42px;height:42px;">
+                                <i class="bi bi-tools fs-5"></i>
+                            </div>
+                            <div class="flex-grow-1 min-width-0">
+                                <div class="d-flex justify-content-between align-items-start gap-3">
+                                    <strong class="d-block text-dark">O.S. #${escaparHtml(item.id)}</strong>
+                                    <strong class="text-primary text-nowrap">${formatarMoeda(valor)}</strong>
+                                </div>
+                                <div class="small text-muted mt-2" style="display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;line-height:1.4;">
+                                    ${escaparHtml(descricao)}
+                                </div>
+                                ${item.status ? `<div class="mt-2"><span class="badge bg-secondary">${escaparHtml(item.status)}</span></div>` : ''}
+                            </div>
+                            <div class="d-flex align-items-center justify-content-center text-muted flex-shrink-0" style="width:20px;">
+                                <i class="bi bi-chevron-right"></i>
+                            </div>
+                        </div>
+                    `;
+
+                    return container;
+                }
+
+                return container;
+            },
+
+            aoSelecionar: selecionarItem
+        });
+
+        tipoInput.addEventListener('change', function () {
             limparSelecao();
-            limparResultados();
+            buscaItens.limpar();
 
-            if (buscaInput) {
-                buscaInput.value = '';
-            }
+            if (descricaoInput) descricaoInput.value = '';
+            if (valorInput) valorInput.value = '';
+            if (descontoInput) descontoInput.value = '0.00';
 
-            if (descricaoInput) {
-                descricaoInput.value = '';
-            }
-
-            if (quantidadeInput) {
-                quantidadeInput.value = '1';
-            }
-
-            if (valorInput) {
-                valorInput.value = '';
-            }
-
-            if (descontoInput) {
-                descontoInput.value = '0.00';
-            }
-
-            if (garantiaInput) {
-                garantiaInput.value = '';
-            }
-
-            /*
-             * Não zeramos o tipo.
-             *
-             * Permite adicionar vários produtos
-             * consecutivamente.
-             */
             atualizarEstadoBusca();
             atualizarPreviaItem();
+        });
 
-            if (buscaStatus) {
-                buscaStatus.textContent =
-                    'Digite para pesquisar.';
-            }
-        }
+        buscaInput.addEventListener('input', limparSelecao);
 
-        // ============================================================
-        // FECHAR MODAL DE ADIÇÃO
-        // ============================================================
-        function fecharModalAdicionarItem() {
-            const modalElement =
-                document.getElementById(
-                    'modalAdicionarItem'
-                );
+        buscaInput.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') limparResultados();
+        });
 
-            if (
-                modalElement &&
-                typeof bootstrap !== 'undefined'
-            ) {
-                const modal =
-                    bootstrap.Modal.getInstance(
-                        modalElement
-                    );
+        [quantidadeInput, valorInput, descontoInput].forEach(function (input) {
+            if (input) input.addEventListener('input', atualizarPreviaItem);
+        });
 
-                if (modal) {
-                    modal.hide();
-                }
-            }
-        }
-
-        // ============================================================
-        // EVENTO DO TIPO
-        // ============================================================
-        tipoInput.addEventListener(
-            'change',
-            function () {
-                limparSelecao();
-                limparResultados();
-                buscaInput.value = '';
-
-                if (descricaoInput) {
-                    descricaoInput.value = '';
-                }
-
-                if (valorInput) {
-                    valorInput.value = '';
-                }
-
-                if (descontoInput) {
-                    descontoInput.value = '0.00';
-                }
-
-                atualizarEstadoBusca();
-                atualizarPreviaItem();
-            }
-        );
-
-        // ============================================================
-        // EVENTO DA BUSCA
-        // ============================================================
-        buscaInput.addEventListener(
-            'input',
-            function () {
-                limparSelecao();
-
-                if (buscaTimeout) {
-                    clearTimeout(buscaTimeout);
-                }
-
-                buscaTimeout = setTimeout(
-                    buscarItens,
-                    350
-                );
-            }
-        );
-
-        buscaInput.addEventListener(
-            'keydown',
-            function (event) {
-                if (event.key === 'Escape') {
-                    limparResultados();
-                }
-            }
-        );
-
-        // ============================================================
-        // CAMPOS DO EDITOR
-        // ============================================================
-        if (quantidadeInput) {
-            quantidadeInput.addEventListener(
-                'input',
-                atualizarPreviaItem
-            );
-        }
-
-        if (valorInput) {
-            valorInput.addEventListener(
-                'input',
-                atualizarPreviaItem
-            );
-        }
-
-        if (descontoInput) {
-            descontoInput.addEventListener(
-                'input',
-                atualizarPreviaItem
-            );
-        }
-
-        // ============================================================
-        // BOTÃO ADICIONAR
-        // ============================================================
         if (botaoAdicionar) {
-            botaoAdicionar.addEventListener(
-                'click',
-                adicionarItem
-            );
+            botaoAdicionar.addEventListener('click', adicionarItem);
         }
 
-        // ============================================================
-        // EVENTOS DA TABELA
-        //
-        // UM ÚNICO LISTENER DELEGADO.
-        // ============================================================
-        tabelaItens.addEventListener(
-            'input',
-            function (event) {
-                if (
-                    event.target.matches(
-                        '.input-qtd, .input-valor, .input-desconto, .item-quantidade, .item-valor-unitario, .item-desconto'
-                    )
-                ) {
-                    const linha =
-                        event.target.closest(
-                            'tr[data-item-index]'
-                        );
+        const camposCalculaveis =
+            '.input-qtd, .input-valor, .input-desconto, .item-quantidade, .item-valor-unitario, .item-desconto';
 
-                    if (linha) {
-                        atualizarTotalLinha(linha);
-                    }
+        ['input', 'change'].forEach(function (evento) {
+            tabelaItens.addEventListener(evento, function (event) {
+                if (!event.target.matches(camposCalculaveis)) return;
 
-                    atualizarResumoFinanceiro();
-                }
-            }
-        );
+                const linha = event.target.closest('tr[data-item-index]');
 
-        tabelaItens.addEventListener(
-            'change',
-            function (event) {
-                if (
-                    event.target.matches(
-                        '.input-qtd, .input-valor, .input-desconto, .item-quantidade, .item-valor-unitario, .item-desconto'
-                    )
-                ) {
-                    const linha =
-                        event.target.closest(
-                            'tr[data-item-index]'
-                        );
+                if (linha) atualizarTotalLinha(linha);
 
-                    if (linha) {
-                        atualizarTotalLinha(linha);
-                    }
+                atualizarResumoFinanceiro();
+            });
+        });
 
-                    atualizarResumoFinanceiro();
-                }
-            }
-        );
+        tabelaItens.addEventListener('click', function (event) {
+            const botao = event.target.closest('.btn-remover-item');
 
-        tabelaItens.addEventListener(
-            'click',
-            function (event) {
-                const botao =
-                    event.target.closest(
-                        '.btn-remover-item'
-                    );
+            if (botao) removerItem(botao.closest('tr[data-item-index]'));
+        });
 
-                if (!botao) {
-                    return;
-                }
+        const linhasExistentes = tabelaItens.querySelectorAll('tr[data-item-index]');
 
-                const linha =
-                    botao.closest(
-                        'tr[data-item-index]'
-                    );
-
-                removerItem(linha);
-            }
-        );
-
-        // ============================================================
-        // LINHAS EXISTENTES
-        // ============================================================
-        const linhasExistentes =
-            tabelaItens.querySelectorAll(
-                'tr[data-item-index]'
-            );
-
-        if (linhasExistentes.length > 0) {
-            let maiorIndice = -1;
-
-            linhasExistentes.forEach(
-                function (linha) {
-                    const indice =
-                        parseInt(
-                            linha.getAttribute(
-                                'data-item-index'
-                            ),
-                            10
-                        );
-
-                    if (
-                        !Number.isNaN(indice) &&
-                        indice > maiorIndice
-                    ) {
-                        maiorIndice = indice;
-                    }
-                }
-            );
-
-            indiceItem =
-                maiorIndice + 1;
+        if (linhasExistentes.length) {
+            indiceItem = Math.max.apply(
+                null,
+                Array.from(linhasExistentes)
+                    .map(function (linha) {
+                        return parseInt(linha.dataset.itemIndex, 10);
+                    })
+                    .filter(Number.isFinite)
+            ) + 1;
         }
 
-        // ============================================================
-        // MODAL DE ADIÇÃO
-        // ============================================================
-        const modalAdicionarItem =
-            document.getElementById(
-                'modalAdicionarItem'
-            );
+        const modalAdicionarItem = document.getElementById('modalAdicionarItem');
 
         if (modalAdicionarItem) {
-            modalAdicionarItem.addEventListener(
-                'shown.bs.modal',
-                function () {
-                    atualizarEstadoBusca();
+            modalAdicionarItem.addEventListener('shown.bs.modal', function () {
+                atualizarEstadoBusca();
 
-                    if (
-                        buscaInput &&
-                        !buscaInput.disabled
-                    ) {
-                        buscaInput.focus();
-                    }
-                }
-            );
+                if (!buscaInput.disabled) buscaInput.focus();
+            });
+
+            modalAdicionarItem.addEventListener('hidden.bs.modal', function () {
+                limparBusca();
+                limparEditorItem();
+            });
         }
 
-        // ============================================================
-        // INICIALIZAÇÃO
-        // ============================================================
         verificarTabelaVazia();
         atualizarEstadoBusca();
         atualizarPreviaItem();
         atualizarResumoFinanceiro();
 
-        console.log(
-            '[SOS Mecânica] itens.js inicializado com sucesso.'
-        );
+        console.log('[SOS Mecânica] itens.js inicializado com sucesso.');
     }
 
-    // ================================================================
-    // INICIALIZAÇÃO ROBUSTA
-    // ================================================================
     if (document.readyState === 'loading') {
-        document.addEventListener(
-            'DOMContentLoaded',
-            iniciarItens,
-            {
-                once: true
-            }
-        );
+        document.addEventListener('DOMContentLoaded', iniciarItens, { once: true });
     } else {
         iniciarItens();
     }
