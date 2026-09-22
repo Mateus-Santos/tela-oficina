@@ -28,9 +28,47 @@ class StoreCompraRequest extends FormRequest
                 || !empty($anexo['observacoes'] ?? '');
         }, ARRAY_FILTER_USE_BOTH);
 
+        $itens = $this->input('itens', []);
+
+        if (is_array($itens)) {
+            foreach ($itens as $index => &$item) {
+                if (
+                    isset($item['valor_unitario'])
+                    && $item['valor_unitario'] !== ''
+                    && $item['valor_unitario'] !== null
+                ) {
+                    $item['valor_unitario'] = $this->normalizarValor(
+                        $item['valor_unitario']
+                    );
+                }
+            }
+
+            unset($item);
+        }
+
         $this->merge([
             'anexos' => array_values($anexos),
+            'itens' => $itens,
         ]);
+    }
+
+    private function normalizarValor(mixed $valor): mixed
+    {
+        if (!is_string($valor)) {
+            return $valor;
+        }
+
+        $valor = trim($valor);
+
+        if ($valor === '') {
+            return $valor;
+        }
+
+        return str_replace(
+            ',',
+            '.',
+            str_replace('.', '', $valor)
+        );
     }
 
     public function rules(): array
