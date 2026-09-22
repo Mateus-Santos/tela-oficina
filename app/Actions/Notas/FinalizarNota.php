@@ -8,7 +8,6 @@ use App\Models\CategoriaFinanceira;
 use App\Models\Nota;
 use App\Models\Produto;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 
 class FinalizarNota
@@ -53,14 +52,6 @@ class FinalizarNota
                 );
             }
 
-            $contasReceberExistentes = $nota->contaReceber()->count();
-
-            if ($contasReceberExistentes > 0) {
-                throw new InvalidArgumentException(
-                    "A Nota #{$nota->id} já possui uma Conta a Receber vinculada."
-                );
-            }
-
             $itensProdutos = $nota->itens
                 ->filter(function ($item) {
                     if (!$item->itemable) {
@@ -78,18 +69,9 @@ class FinalizarNota
 
             foreach ($itensProdutos as $item) {
                 $movimentacaoExistente = DB::table('movimentacao_estoques')
-                    ->where(
-                        'origem_type',
-                        $item->getMorphClass()
-                    )
-                    ->where(
-                        'origem_id',
-                        $item->id
-                    )
-                    ->where(
-                        'tipo',
-                        'saida'
-                    )
+                    ->where('origem_type', $item->getMorphClass())
+                    ->where('origem_id', $item->id)
+                    ->where('tipo', 'saida')
                     ->exists();
 
                 if ($movimentacaoExistente) {
@@ -108,18 +90,9 @@ class FinalizarNota
             }
 
             $categoriaFinanceira = CategoriaFinanceira::query()
-                ->where(
-                    'nome',
-                    self::CATEGORIA_RECEITA_NOME
-                )
-                ->where(
-                    'tipo',
-                    'entrada'
-                )
-                ->where(
-                    'ativo',
-                    true
-                )
+                ->where('nome', self::CATEGORIA_RECEITA_NOME)
+                ->where('tipo', 'entrada')
+                ->where('ativo', true)
                 ->first();
 
             if (!$categoriaFinanceira) {
@@ -128,19 +101,23 @@ class FinalizarNota
                 );
             }
 
-            $this->criarContaReceber->execute([
-                'cliente_id' => $nota->cliente_id,
-                'nota_id' => $nota->id,
-                'categoria_financeira_id' => $categoriaFinanceira->id,
-                'descricao' => "Conta a receber da Nota #{$nota->id}.",
-                'valor_original' => (float) $nota->total,
-                'desconto' => 0,
-                'juros' => 0,
-                'multa' => 0,
-                'data_emissao' => now()->toDateString(),
-                'data_vencimento' => now()->toDateString(),
-                'observacoes' => "Gerada automaticamente pela finalização da Nota #{$nota->id}.",
-            ]);
+            $contaReceber = $nota->contaReceber()->first();
+
+            if (!$contaReceber) {
+                $this->criarContaReceber->execute([
+                    'cliente_id' => $nota->cliente_id,
+                    'nota_id' => $nota->id,
+                    'categoria_financeira_id' => $categoriaFinanceira->id,
+                    'descricao' => "Conta a receber da Nota #{$nota->id}.",
+                    'valor_original' => (float) $nota->total,
+                    'desconto' => 0,
+                    'juros' => 0,
+                    'multa' => 0,
+                    'data_emissao' => now()->toDateString(),
+                    'data_vencimento' => now()->toDateString(),
+                    'observacoes' => "Gerada automaticamente pela finalização da Nota #{$nota->id}.",
+                ]);
+            }
 
             $nota->update([
                 'status' => 'Finalizado',

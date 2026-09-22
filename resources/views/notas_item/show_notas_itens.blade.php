@@ -1,10 +1,13 @@
 @extends('layouts.layout')
 
 @section('content')
+
 <div class="container cadastro">
+
     {{-- =========================================================
          CABEÇALHO
     ========================================================== --}}
+
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
         <div>
             <h1 class="mb-1">
@@ -41,6 +44,7 @@
     {{-- =========================================================
          MENSAGENS
     ========================================================== --}}
+
     @if(session('success'))
         <div class="alert alert-success">
             <i class="bi bi-check-circle"></i>
@@ -72,6 +76,7 @@
     {{-- =========================================================
          STATUS E AÇÕES
     ========================================================== --}}
+
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
             <h5 class="mb-0">
@@ -166,6 +171,7 @@
     {{-- =========================================================
          INFORMAÇÕES DA NOTA
     ========================================================== --}}
+
     <div class="card mb-4">
         <div class="card-header">
             <h5 class="mb-0">
@@ -176,12 +182,15 @@
 
         <div class="card-body">
             <div class="row g-3">
+
                 {{-- ID --}}
+
                 <div class="col-md-3">
                     <div class="border rounded p-3 h-100">
                         <small class="text-muted d-block">
                             Número
                         </small>
+
                         <strong>
                             #{{ $nota->id }}
                         </strong>
@@ -189,11 +198,13 @@
                 </div>
 
                 {{-- TIPO --}}
+
                 <div class="col-md-3">
                     <div class="border rounded p-3 h-100">
                         <small class="text-muted d-block">
                             Tipo
                         </small>
+
                         <strong>
                             {{ $nota->tipo ?? 'N/A' }}
                         </strong>
@@ -201,11 +212,13 @@
                 </div>
 
                 {{-- DATA --}}
+
                 <div class="col-md-3">
                     <div class="border rounded p-3 h-100">
                         <small class="text-muted d-block">
                             Criada em
                         </small>
+
                         <strong>
                             {{ $nota->created_at ? $nota->created_at->format('d/m/Y H:i') : 'N/A' }}
                         </strong>
@@ -213,11 +226,13 @@
                 </div>
 
                 {{-- CLIENTE --}}
+
                 <div class="col-md-3">
                     <div class="border rounded p-3 h-100">
                         <small class="text-muted d-block">
                             Cliente
                         </small>
+
                         <strong>
                             {{ $nota->cliente?->pessoa?->nome ?? 'Cliente Geral / Balcão' }}
                         </strong>
@@ -225,11 +240,13 @@
                 </div>
 
                 {{-- PLACA --}}
+
                 <div class="col-md-3">
                     <div class="border rounded p-3 h-100">
                         <small class="text-muted d-block">
                             Placa
                         </small>
+
                         <strong>
                             {{ $nota->veiculosCliente?->placa ?? 'N/A' }}
                         </strong>
@@ -237,11 +254,13 @@
                 </div>
 
                 {{-- KM --}}
+
                 <div class="col-md-3">
                     <div class="border rounded p-3 h-100">
                         <small class="text-muted d-block">
                             KM atual
                         </small>
+
                         <strong>
                             {{ $nota->km !== null ? number_format($nota->km, 0, ',', '.') . ' km' : 'N/A' }}
                         </strong>
@@ -249,11 +268,13 @@
                 </div>
 
                 {{-- PRÓXIMA TROCA --}}
+
                 <div class="col-md-3">
                     <div class="border rounded p-3 h-100">
                         <small class="text-muted d-block">
                             Próxima troca de óleo
                         </small>
+
                         <strong>
                             {{ $nota->km_proxima_troca_oleo !== null ? number_format($nota->km_proxima_troca_oleo, 0, ',', '.') . ' km' : 'N/A' }}
                         </strong>
@@ -261,16 +282,19 @@
                 </div>
 
                 {{-- QUANTIDADE DE ITENS --}}
+
                 <div class="col-md-3">
                     <div class="border rounded p-3 h-100">
                         <small class="text-muted d-block">
                             Itens
                         </small>
+
                         <strong>
                             {{ $nota->itens->count() }}
                         </strong>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -278,6 +302,7 @@
     {{-- =========================================================
          ITENS
     ========================================================== --}}
+
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
             <h5 class="mb-0">
@@ -310,21 +335,31 @@
                                 <th>
                                     Tipo
                                 </th>
+
+                                <th>
+                                    Código
+                                </th>
+
                                 <th>
                                     Descrição
                                 </th>
+
                                 <th>
                                     Qtd.
                                 </th>
+
                                 <th>
                                     Valor unit.
                                 </th>
+
                                 <th>
                                     Desconto
                                 </th>
+
                                 <th>
                                     Total
                                 </th>
+
                                 <th>
                                     Garantia
                                 </th>
@@ -333,21 +368,27 @@
 
                         <tbody>
                             @foreach($nota->itens as $item)
+
                                 @php
                                     $valorUnitario = (float) ($item->valor_unitario ?? 0);
                                     $desconto = (float) ($item->desconto ?? 0);
                                     $quantidade = (float) ($item->quantidade ?? 0);
                                     $totalItem = max(0, ($quantidade * $valorUnitario) - $desconto);
+                                    $isProduto = $item->itemable_type === 'App\Models\Produto';
+                                    $isOrdemServico = $item->itemable_type === 'App\Models\OrdemServico';
                                 @endphp
 
                                 <tr>
+
+                                    {{-- TIPO --}}
+
                                     <td>
-                                        @if($item->itemable_type === 'App\Models\Produto')
+                                        @if($isProduto)
                                             <span class="badge bg-primary">
                                                 <i class="bi bi-box-seam"></i>
                                                 Produto
                                             </span>
-                                        @elseif($item->itemable_type === 'App\Models\OrdemServico')
+                                        @elseif($isOrdemServico)
                                             <span class="badge bg-warning text-dark">
                                                 <i class="bi bi-tools"></i>
                                                 O.S.
@@ -360,27 +401,51 @@
                                         @endif
                                     </td>
 
+                                    {{-- CÓDIGO --}}
+
+                                    <td>
+                                        @if($isProduto)
+                                            {{ $item->itemable?->codigo_fabricante ?? '—' }}
+                                        @elseif($isOrdemServico)
+                                            {{ $item->itemable?->id ? '#' . $item->itemable->id : '—' }}
+                                        @else
+                                            —
+                                        @endif
+                                    </td>
+
+                                    {{-- DESCRIÇÃO --}}
+
                                     <td>
                                         {{ $item->descricao ?? $item->itemable?->nome ?? $item->itemable?->descricao ?? 'Item sem descrição' }}
                                     </td>
+
+                                    {{-- QUANTIDADE --}}
 
                                     <td>
                                         {{ $quantidade }}
                                     </td>
 
+                                    {{-- VALOR UNITÁRIO --}}
+
                                     <td>
                                         R$ {{ number_format($valorUnitario, 2, ',', '.') }}
                                     </td>
 
+                                    {{-- DESCONTO --}}
+
                                     <td>
                                         R$ {{ number_format($desconto, 2, ',', '.') }}
                                     </td>
+
+                                    {{-- TOTAL --}}
 
                                     <td>
                                         <strong>
                                             R$ {{ number_format($totalItem, 2, ',', '.') }}
                                         </strong>
                                     </td>
+
+                                    {{-- GARANTIA --}}
 
                                     <td>
                                         @if(($item->garantia_dias ?? 0) > 0)
@@ -389,6 +454,7 @@
                                             —
                                         @endif
                                     </td>
+
                                 </tr>
                             @endforeach
                         </tbody>
@@ -401,6 +467,7 @@
     {{-- =========================================================
          RESUMO FINANCEIRO
     ========================================================== --}}
+
     <div class="card mb-4">
         <div class="card-header">
             <h5 class="mb-0">
@@ -417,11 +484,13 @@
             @endphp
 
             <div class="row g-3">
+
                 <div class="col-md-4">
                     <div class="border rounded p-3 h-100">
                         <small class="text-muted d-block">
                             Subtotal
                         </small>
+
                         <strong class="fs-5">
                             R$ {{ number_format($subtotal, 2, ',', '.') }}
                         </strong>
@@ -433,6 +502,7 @@
                         <small class="text-muted d-block">
                             Descontos
                         </small>
+
                         <strong class="fs-5">
                             R$ {{ number_format($descontoTotal, 2, ',', '.') }}
                         </strong>
@@ -444,11 +514,13 @@
                         <small class="text-muted d-block">
                             Total da nota
                         </small>
+
                         <strong class="fs-4">
                             R$ {{ number_format($totalNota, 2, ',', '.') }}
                         </strong>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -456,6 +528,7 @@
     {{-- =========================================================
          RODAPÉ
     ========================================================== --}}
+
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
         <a
             href="{{ route('notas.index') }}"
@@ -475,5 +548,7 @@
             </a>
         @endif
     </div>
+
 </div>
+
 @endsection
