@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\OrdemServico;
-use App\Models\Produto;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -12,7 +11,7 @@ use Illuminate\Validation\Rule;
 class NotaItemBuscaController extends Controller
 {
     /**
-     * Busca produtos ou ordens de serviço para adicionar à nota.
+     * Busca ordens de serviço para adicionar à nota.
      */
     public function __invoke(Request $request): JsonResponse
     {
@@ -20,7 +19,7 @@ class NotaItemBuscaController extends Controller
             'tipo' => [
                 'required',
                 'string',
-                Rule::in(['produto', 'os']),
+                Rule::in(['os']),
             ],
             'q' => [
                 'nullable',
@@ -34,80 +33,13 @@ class NotaItemBuscaController extends Controller
             ],
         ]);
 
-        $tipo = $dados['tipo'];
         $busca = trim($dados['q'] ?? '');
         $veiculoClienteId = $dados['veiculo_cliente_id'] ?? null;
-
-        if ($tipo === 'produto') {
-            return $this->buscarProdutos($busca);
-        }
 
         return $this->buscarOrdensServico(
             $busca,
             $veiculoClienteId
         );
-    }
-
-    /**
-     * Busca produtos por nome, descrição,
-     * código de barras ou código do fabricante.
-     */
-    private function buscarProdutos(string $busca): JsonResponse
-    {
-        if ($busca === '') {
-            return response()->json([
-                'data' => [],
-            ]);
-        }
-
-        $produtos = Produto::query()
-            ->select([
-                'id',
-                'nome',
-                'descricao',
-                'preco_uni',
-                'codigo_fabricante',
-                'codigo_barras',
-                'marca',
-            ])
-            ->where(function ($query) use ($busca) {
-                $query
-                    ->where('nome', 'like', "%{$busca}%")
-                    ->orWhere(
-                        'descricao',
-                        'like',
-                        "%{$busca}%"
-                    )
-                    ->orWhere(
-                        'codigo_fabricante',
-                        'like',
-                        "%{$busca}%"
-                    )
-                    ->orWhere(
-                        'codigo_barras',
-                        'like',
-                        "%{$busca}%"
-                    );
-            })
-            ->orderBy('nome')
-            ->limit(15)
-            ->get();
-
-        return response()->json([
-            'data' => $produtos->map(function ($produto) {
-                return [
-                    'id' => $produto->id,
-                    'nome' => $produto->nome,
-                    'descricao' => $produto->descricao,
-                    'preco' => (float) $produto->preco_uni,
-                    'codigo_fabricante' =>
-                        $produto->codigo_fabricante,
-                    'codigo_barras' =>
-                        $produto->codigo_barras,
-                    'marca' => $produto->marca,
-                ];
-            })->values(),
-        ]);
     }
 
     /**
