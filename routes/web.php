@@ -38,7 +38,6 @@ Route::get('/home', function () {
 
 // Usuários estão desbloqueados.
 Route::middleware(['auth', 'check.blocked'])->group(function () {
-
     Route::get('/perfil', function () {
         return view('cliente/editarcliente');
     })->name('perfil');
@@ -47,82 +46,163 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
 
     Route::resource('veiculosclientes', VeiculosClientesController::class);
 
-    Route::get('/veiculos/montadora/{id}', [VeiculoController::class, 'porMontadora']);
+    Route::get(
+        '/veiculos/montadora/{id}',
+        [VeiculoController::class, 'porMontadora']
+    );
 
     // Rotas para administradores.
     Route::middleware(['admin'])->group(function () {
-
         // Estoque
-        Route::get('/estoque', [EstoqueController::class, 'index'])->name('estoque.index');
-        Route::get('/estoque/movimentacoes', [MovimentacaoEstoqueController::class, 'index'])->name('estoque.movimentacoes.index');
-        Route::get('/estoque/{produto}/saida', [EstoqueController::class, 'saida'])->name('estoque.saida');
-        Route::post('/estoque/{produto}/saida', [EstoqueController::class, 'registrarSaida'])->name('estoque.registrarSaida');
-        Route::get('/estoque/{produto}/ajuste', [EstoqueController::class, 'ajuste'])->name('estoque.ajuste');
-        Route::post('/estoque/{produto}/ajuste', [EstoqueController::class, 'registrarAjuste'])->name('estoque.registrarAjuste');
+        Route::get(
+            '/estoque',
+            [EstoqueController::class, 'index']
+        )->name('estoque.index');
+
+        Route::get(
+            '/estoque/movimentacoes',
+            [MovimentacaoEstoqueController::class, 'index']
+        )->name('estoque.movimentacoes.index');
+
+        Route::get(
+            '/estoque/{produto}/saida',
+            [EstoqueController::class, 'saida']
+        )->name('estoque.saida');
+
+        Route::post(
+            '/estoque/{produto}/saida',
+            [EstoqueController::class, 'registrarSaida']
+        )->name('estoque.registrarSaida');
+
+        Route::get(
+            '/estoque/{produto}/ajuste',
+            [EstoqueController::class, 'ajuste']
+        )->name('estoque.ajuste');
+
+        Route::post(
+            '/estoque/{produto}/ajuste',
+            [EstoqueController::class, 'registrarAjuste']
+        )->name('estoque.registrarAjuste');
 
         // Notas
-        Route::get('/notas/{id}/pdf', [NotaController::class, 'gerarpdf'])->name('notas.pdf');
-        Route::post('/notas/{nota}/finalizar', [NotaController::class, 'finalizar'])->name('notas.finalizar');
-        Route::post('/notas/{nota}/cancelar', [NotaController::class, 'cancelar'])->name('notas.cancelar');
-        Route::resource('notas', NotaController::class)->only(['index', 'show', 'destroy']);
+        Route::get(
+            '/notas/{id}/pdf',
+            [NotaController::class, 'gerarpdf']
+        )->name('notas.pdf');
+
+        Route::post(
+            '/notas/{nota}/finalizar',
+            [NotaController::class, 'finalizar']
+        )->name('notas.finalizar');
+
+        Route::post(
+            '/notas/{nota}/cancelar',
+            [NotaController::class, 'cancelar']
+        )->name('notas.cancelar');
+
+        Route::resource('notas', NotaController::class)
+            ->only(['index', 'show', 'destroy']);
 
         // Busca de itens para composição da nota
-        Route::get('/api/notas-itens/buscar', NotaItemBuscaController::class)
-            ->name('api.notas-itens.buscar');
+        Route::get(
+            '/api/notas-itens/buscar',
+            NotaItemBuscaController::class
+        )->name('api.notas-itens.buscar');
 
         // Busca de produtos
-        Route::get('/api/produtos/buscar', ProdutoBuscaController::class)
-            ->name('api.produtos.buscar');
+        Route::get(
+            '/api/produtos/buscar',
+            ProdutoBuscaController::class
+        )->name('api.produtos.buscar');
 
         // Ordens de Serviço
-        Route::resource('ordemservicos', OrdemServicoController::class);
+        Route::resource(
+            'ordemservicos',
+            OrdemServicoController::class
+        );
 
         // Itens das Notas
-        Route::resource('notasitem', NotasItemController::class);
+        Route::resource(
+            'notasitem',
+            NotasItemController::class
+        );
 
         // Usuários
-        Route::resource('users', UserController::class);
+        Route::resource(
+            'users',
+            UserController::class
+        );
 
         // Clientes
-        Route::resource('clientes', ClienteController::class);
+        Route::resource(
+            'clientes',
+            ClienteController::class
+        );
 
         // Produtos
-        Route::resource('produtos', ProdutoController::class);
+        Route::resource(
+            'produtos',
+            ProdutoController::class
+        );
 
         // Colaboradores
-        Route::resource('colaboradores', ColaboradorController::class);
+        Route::resource(
+            'colaboradores',
+            ColaboradorController::class
+        );
 
         // Endereços
-        Route::resource('enderecos', EnderecoController::class);
+        Route::resource(
+            'enderecos',
+            EnderecoController::class
+        );
 
-        Route::get('/endereco/create/{id}', [EnderecoController::class, 'create']);
+        Route::get(
+            '/endereco/create/{id}',
+            [EnderecoController::class, 'create']
+        );
 
         // Veículos
-        Route::resource('veiculos', VeiculoController::class);
+        Route::resource(
+            'veiculos',
+            VeiculoController::class
+        );
 
         // Montadoras
-        Route::resource('montadoras', MontadoraController::class);
+        Route::resource(
+            'montadoras',
+            MontadoraController::class
+        );
 
         // Setores de Serviço
-        Route::resource('setor-servicos', SetorServicoController::class);
+        Route::resource(
+            'setor-servicos',
+            SetorServicoController::class
+        );
 
         // Formas de Pagamento
-        Route::resource('formas-pagamento', FormaPagamentoController::class)
-            ->parameters([
-                'formas-pagamento' => 'formaPagamento',
-            ]);
+        Route::resource(
+            'formas-pagamento',
+            FormaPagamentoController::class
+        )->parameters([
+            'formas-pagamento' => 'formaPagamento',
+        ]);
 
         // Categorias Financeiras
-        Route::resource('categorias-financeiras', CategoriaFinanceiraController::class)
-            ->parameters([
-                'categorias-financeiras' => 'categoriaFinanceira',
-            ]);
+        Route::resource(
+            'categorias-financeiras',
+            CategoriaFinanceiraController::class
+        )->parameters([
+            'categorias-financeiras' => 'categoriaFinanceira',
+        ]);
 
         // Contas a Receber
-        Route::resource('contas-receber', ContaReceberController::class)
-            ->parameters([
-                'contas-receber' => 'contaReceber',
-            ]);
+        Route::resource(
+            'contas-receber',
+            ContaReceberController::class
+        )->parameters([
+            'contas-receber' => 'contaReceber',
+        ]);
 
         // Recebimentos
         Route::get(
@@ -161,7 +241,10 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
             [CompraController::class, 'registrarEstoque']
         )->name('compras.estoque');
 
-        Route::resource('compras', CompraController::class);
+        Route::resource(
+            'compras',
+            CompraController::class
+        );
 
         Route::post(
             'compras/{compra}/estornar',
@@ -169,10 +252,12 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         )->name('compras.estornar');
 
         // Fornecedores
-        Route::resource('fornecedores', FornecedorController::class)
-            ->parameters([
-                'fornecedores' => 'fornecedor',
-            ]);
+        Route::resource(
+            'fornecedores',
+            FornecedorController::class
+        )->parameters([
+            'fornecedores' => 'fornecedor',
+        ]);
 
         // Anexos de Compras
         Route::post(
@@ -198,11 +283,17 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         )->name('anexos.destroy');
 
         // Contas a Pagar
-        Route::resource('contas-pagar', ContaPagarController::class)
-            ->parameters([
-                'contas-pagar' => 'conta',
-            ])
-            ->except(['destroy']);
+        Route::resource(
+            'contas-pagar',
+            ContaPagarController::class
+        )->parameters([
+            'contas-pagar' => 'conta',
+        ])->except(['destroy']);
+
+        Route::post(
+            'contas-pagar/{conta}/parcelas',
+            [ContaPagarController::class, 'atualizarParcelas']
+        )->name('contas-pagar.parcelas.update');
 
         Route::post(
             'contas-pagar/{conta}/pagamentos',
