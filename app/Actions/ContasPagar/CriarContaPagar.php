@@ -10,7 +10,7 @@ class CriarContaPagar
     public function execute(array $dados): ContaPagar
     {
         return DB::transaction(function () use ($dados) {
-            return ContaPagar::create([
+            $conta = ContaPagar::create([
                 'fornecedor_id' => $dados['fornecedor_id'] ?? null,
                 'nota_id' => $dados['nota_id'] ?? null,
                 'categoria_financeira_id' => $dados['categoria_financeira_id'] ?? null,
@@ -22,6 +22,14 @@ class CriarContaPagar
                 'status' => 'aberta',
                 'observacoes' => $dados['observacoes'] ?? null,
             ]);
+
+            $conta->parcelas()->create([
+                'numero' => 1,
+                'valor' => $dados['valor'],
+                'data_vencimento' => $dados['data_vencimento'],
+            ]);
+
+            return $conta->load('parcelas');
         });
     }
 }

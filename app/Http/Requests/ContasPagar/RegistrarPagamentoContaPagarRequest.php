@@ -15,6 +15,17 @@ class RegistrarPagamentoContaPagarRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'parcela_conta_pagar_id' => [
+                'required',
+                'integer',
+                Rule::exists('parcelas_contas_pagar', 'id')
+                    ->where(
+                        fn ($query) => $query->where(
+                            'conta_pagar_id',
+                            $this->route('conta')->id
+                        )
+                    ),
+            ],
             'valor' => [
                 'required',
                 'numeric',
@@ -27,7 +38,9 @@ class RegistrarPagamentoContaPagarRequest extends FormRequest
             'forma_pagamento_id' => [
                 'required',
                 Rule::exists('formas_pagamento', 'id')
-                    ->where(fn ($query) => $query->where('ativo', true)),
+                    ->where(
+                        fn ($query) => $query->where('ativo', true)
+                    ),
             ],
             'observacoes' => [
                 'nullable',
@@ -39,6 +52,9 @@ class RegistrarPagamentoContaPagarRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'parcela_conta_pagar_id.required' => 'A parcela do pagamento é obrigatória.',
+            'parcela_conta_pagar_id.integer' => 'A parcela selecionada é inválida.',
+            'parcela_conta_pagar_id.exists' => 'A parcela selecionada não pertence a esta conta a pagar.',
             'valor.required' => 'O valor do pagamento é obrigatório.',
             'valor.numeric' => 'O valor do pagamento deve ser numérico.',
             'valor.gt' => 'O valor do pagamento deve ser maior que zero.',

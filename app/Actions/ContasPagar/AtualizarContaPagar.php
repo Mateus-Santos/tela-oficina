@@ -13,6 +13,7 @@ class AtualizarContaPagar
         return DB::transaction(function () use ($conta, $dados) {
             $conta = ContaPagar::query()
                 ->lockForUpdate()
+                ->with('parcelas')
                 ->findOrFail($conta->id);
 
             if ($conta->status === 'cancelada') {
@@ -23,10 +24,35 @@ class AtualizarContaPagar
 
             $valorPago = (float) $conta->pagamentosAtivos()->sum('valor');
 
-            if ($conta->status === 'paga' || $valorPago >= (float) $conta->valor) {
+            if (
+                $conta->status === 'paga'
+                || $valorPago >= (float) $conta->valor
+            ) {
                 throw new InvalidArgumentException(
                     'Não é possível alterar uma conta que já foi totalmente paga.'
                 );
+            }
+
+            $quantidadeParcelas = $conta->parcelas->count();
+
+            if ($quantidadeParcelas > 1) {
+                if (
+                    array_key_exists('valor', $dados)
+                    && round((float) $dados['valor'], 2) !== round((float) $conta->valor, 2)
+                ) {
+                    throw new InvalidArgumentException(
+                        'O valor de uma conta com múltiplas parcelas deve ser alterado pelo gerenciamento das parcelas.'
+                    );
+                }
+
+                if (
+                    array_key_exists('data_vencimento', $dados)
+                    && $dados['data_vencimento'] !== $conta->data_vencimento?->format('Y-m-d')
+                ) {
+                    throw new InvalidArgumentException(
+                        'O vencimento de uma conta com múltiplas parcelas deve ser alterado pelo gerenciamento das parcelas.'
+                    );
+                }
             }
 
             if (array_key_exists('valor', $dados)) {
@@ -52,6 +78,15 @@ class AtualizarContaPagar
 
             $conta->update($dados);
 
+            if ($quantidadeParcelas === 1) {
+                $parcela = $conta->parcelas->first();
+
+                $parcela->update([
+                    'valor' => $conta->valor,
+                    'data_vencimento' => $conta->data_vencimento,
+                ]);
+            }
+
             $valorAtual = (float) $conta->valor;
 
             if ($valorPago <= 0) {
@@ -66,7 +101,7 @@ class AtualizarContaPagar
                 'status' => $status,
             ]);
 
-            return $conta->refresh();
+            return $conta->fresh('parcelas');
         });
     }
 }
