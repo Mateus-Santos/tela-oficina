@@ -5,6 +5,7 @@ namespace App\Actions\ContasPagar;
 use App\Models\ContaPagar;
 use App\Models\FormaPagamento;
 use App\Models\PagamentoContaPagar;
+use App\Models\ParcelaContaPagar;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -22,6 +23,26 @@ class RegistrarPagamentoContaPagar
             if ($conta->status === 'cancelada') {
                 throw new InvalidArgumentException(
                     'Não é possível registrar pagamento em uma conta cancelada.'
+                );
+            }
+
+            $parcelaId = $dados['parcela_conta_pagar_id'] ?? null;
+
+            if (!$parcelaId) {
+                throw new InvalidArgumentException(
+                    'A parcela do pagamento deve ser informada.'
+                );
+            }
+
+            $parcela = ParcelaContaPagar::query()
+                ->whereKey($parcelaId)
+                ->where('conta_pagar_id', $conta->id)
+                ->lockForUpdate()
+                ->first();
+
+            if (!$parcela) {
+                throw new InvalidArgumentException(
+                    'A parcela selecionada não pertence a esta conta a pagar.'
                 );
             }
 
@@ -44,27 +65,30 @@ class RegistrarPagamentoContaPagar
                 );
             }
 
-            $valorPago = (float) $conta->pagamentosAtivos()->sum('valor');
+            $valorPagoParcela = (float) $parcela
+                ->pagamentosAtivos()
+                ->sum('valor');
 
-            $saldo = round(
-                (float) $conta->valor - $valorPago,
+            $saldoParcela = round(
+                (float) $parcela->valor - $valorPagoParcela,
                 2
             );
 
-            if ($saldo <= 0) {
+            if ($saldoParcela <= 0) {
                 throw new InvalidArgumentException(
-                    'Esta conta já está totalmente paga.'
+                    'Esta parcela já está totalmente paga.'
                 );
             }
 
-            if ($valor > $saldo) {
+            if ($valor > $saldoParcela) {
                 throw new InvalidArgumentException(
-                    'O valor do pagamento não pode ser maior que o saldo de R$ ' .
-                    number_format($saldo, 2, ',', '.')
+                    'O valor do pagamento não pode ser maior que o saldo da parcela de R$ ' .
+                    number_format($saldoParcela, 2, ',', '.')
                 );
             }
 
             $pagamento = $conta->pagamentos()->create([
+                'parcela_conta_pagar_id' => $parcela->id,
                 'valor' => $valor,
                 'data_pagamento' => $dados['data_pagamento'],
                 'forma_pagamento_id' => $formaPagamento->id,
@@ -72,18 +96,25 @@ class RegistrarPagamentoContaPagar
                 'observacoes' => $dados['observacoes'] ?? null,
             ]);
 
-            $novoValorPago = round(
-                $valorPago + $valor,
-                2
-            );
+            $valorPagoConta = (float) $conta
+                ->pagamentosAtivos()
+                ->sum('valor');
+
+            $valorConta = (float) $conta->valor;
+
+            if ($valorPagoConta >= $valorConta) {
+                $status = 'paga';
+            } elseif ($valorPagoConta > 0) {
+                $status = 'parcialmente_paga';
+            } else {
+                $status = 'aberta';
+            }
 
             $conta->update([
-                'status' => $novoValorPago >= (float) $conta->valor
-                    ? 'paga'
-                    : 'parcialmente_paga',
+                'status' => $status,
             ]);
 
-            return $pagamento;
+            return $pagamento->fresh();
         });
     }
 }

@@ -57,14 +57,21 @@
         @enderror
 
         @if ($valorPago > 0)
-            <small class="text-muted">
-                <i class="bi bi-info-circle"></i>
-                Já pago:
-                <strong>
-                    R$ {{ number_format($valorPago, 2, ',', '.') }}
-                </strong>.
-                O novo valor não pode ser inferior ao total já pago.
-            </small>
+
+            <div class="alert alert-info d-flex align-items-start gap-2 py-2 px-3 mt-2 mb-0">
+
+                <i class="bi bi-info-circle-fill mt-1"></i>
+
+                <div>
+                    <strong>Já pago: R$ {{ number_format($valorPago, 2, ',', '.') }}</strong>
+
+                    <div class="small mt-1">
+                        O novo valor não pode ser inferior ao total já pago.
+                    </div>
+                </div>
+
+            </div>
+
         @endif
 
     </div>
@@ -81,7 +88,6 @@
             id="fornecedor_id"
             class="form-select @error('fornecedor_id') is-invalid @enderror"
         >
-
             <option value="">Não informado</option>
 
             @foreach ($fornecedores as $fornecedor)
@@ -119,7 +125,6 @@
             id="nota_id"
             class="form-select @error('nota_id') is-invalid @enderror"
         >
-
             <option value="">Nenhuma nota vinculada</option>
 
             @foreach ($notas as $nota)
@@ -141,9 +146,10 @@
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
 
-        <small class="text-muted">
-            A vinculação é opcional.
-        </small>
+        <div class="alert alert-light border d-flex align-items-center gap-2 py-2 px-3 mt-2 mb-0 small">
+            <i class="bi bi-info-circle text-secondary"></i>
+            <span>A vinculação é opcional.</span>
+        </div>
 
     </div>
 
@@ -159,7 +165,6 @@
             id="categoria_financeira_id"
             class="form-select @error('categoria_financeira_id') is-invalid @enderror"
         >
-
             <option value="">Nenhuma categoria</option>
 
             @foreach ($categoriasFinanceiras as $categoria)
@@ -179,9 +184,10 @@
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
 
-        <small class="text-muted">
-            Classificação da despesa no financeiro.
-        </small>
+        <div class="alert alert-light border d-flex align-items-center gap-2 py-2 px-3 mt-2 mb-0 small">
+            <i class="bi bi-info-circle text-secondary"></i>
+            <span>Classificação da despesa no financeiro.</span>
+        </div>
 
     </div>
 
@@ -197,7 +203,6 @@
             id="forma_pagamento_id"
             class="form-select @error('forma_pagamento_id') is-invalid @enderror"
         >
-
             <option value="">Nenhuma forma definida</option>
 
             @foreach ($formasPagamento as $formaPagamento)
@@ -217,9 +222,10 @@
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
 
-        <small class="text-muted">
-            Forma preferencial. A forma realmente utilizada pode ser diferente no pagamento.
-        </small>
+        <div class="alert alert-light border d-flex align-items-center gap-2 py-2 px-3 mt-2 mb-0 small">
+            <i class="bi bi-info-circle text-secondary"></i>
+            <span>Forma preferencial. A forma realmente utilizada pode ser diferente no pagamento.</span>
+        </div>
 
     </div>
 

@@ -14,6 +14,7 @@ class ContaPagar extends Model
     protected $table = 'contas_pagar';
 
     protected $fillable = [
+        'compra_id',
         'fornecedor_id',
         'nota_id',
         'categoria_financeira_id',
@@ -31,6 +32,11 @@ class ContaPagar extends Model
         'data_emissao' => 'date',
         'data_vencimento' => 'date',
     ];
+
+    public function compra(): BelongsTo
+    {
+        return $this->belongsTo(Compra::class);
+    }
 
     public function fornecedor(): BelongsTo
     {
@@ -58,6 +64,14 @@ class ContaPagar extends Model
         );
     }
 
+    public function parcelas(): HasMany
+    {
+        return $this->hasMany(
+            ParcelaContaPagar::class,
+            'conta_pagar_id'
+        )->orderBy('numero');
+    }
+
     public function pagamentos(): HasMany
     {
         return $this->hasMany(PagamentoContaPagar::class);
@@ -70,8 +84,13 @@ class ContaPagar extends Model
 
     public function anexosVinculos(): HasMany
     {
-        return $this->hasMany(AnexoVinculo::class, 'vinculavel_id')
-            ->where('vinculavel_type', self::class);
+        return $this->hasMany(
+            AnexoVinculo::class,
+            'vinculavel_id'
+        )->where(
+            'vinculavel_type',
+            self::class
+        );
     }
 
     public function getValorPagoAttribute(): float
@@ -81,7 +100,13 @@ class ContaPagar extends Model
 
     public function getSaldoAttribute(): float
     {
-        return max(0, round((float) $this->valor - $this->valor_pago, 2));
+        return max(
+            0,
+            round(
+                (float) $this->valor - $this->valor_pago,
+                2
+            )
+        );
     }
 
     public function estaPaga(): bool

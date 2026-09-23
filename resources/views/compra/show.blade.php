@@ -27,6 +27,7 @@
     @endif
 
     {{-- STATUS DA COMPRA --}}
+
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
@@ -88,6 +89,7 @@
     </div>
 
     {{-- STATUS DO ESTOQUE --}}
+
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
@@ -157,6 +159,7 @@
     </div>
 
     {{-- ANEXOS --}}
+
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap mb-3">
@@ -172,67 +175,75 @@
                 </span>
             </div>
 
-            <form method="POST" action="{{ route('compras.anexos.store', $compra) }}" enctype="multipart/form-data" class="mb-4">
-                @csrf
+            @if (!in_array($compra->status, ['aprovada', 'cancelada'], true))
+                <form method="POST" action="{{ route('compras.anexos.store', $compra) }}" enctype="multipart/form-data" class="mb-4">
+                    @csrf
 
-                <div class="row g-3">
-                    <div class="col-12 col-md-4">
-                        <label for="tipo" class="form-label">Tipo do documento</label>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4">
+                            <label for="tipo" class="form-label">Tipo do documento</label>
+                            <select name="tipo" id="tipo" class="form-select" required>
+                                <option value="">Selecione...</option>
+                                <option value="nf">Nota fiscal</option>
+                                <option value="nf_xml">NF-e XML</option>
+                                <option value="foto">Foto</option>
+                                <option value="comprovante">Comprovante</option>
+                                <option value="boleto">Boleto</option>
+                                <option value="contrato">Contrato</option>
+                                <option value="orcamento">Orçamento</option>
+                                <option value="conta_luz">Conta de luz</option>
+                                <option value="conta_agua">Conta de água</option>
+                                <option value="conta_telefone">Conta de telefone</option>
+                                <option value="recibo">Recibo</option>
+                                <option value="outro">Outro</option>
+                            </select>
+                        </div>
 
-                        <select name="tipo" id="tipo" class="form-select" required>
-                            <option value="">Selecione...</option>
-                            <option value="nf">Nota fiscal</option>
-                            <option value="nf_xml">NF-e XML</option>
-                            <option value="foto">Foto</option>
-                            <option value="comprovante">Comprovante</option>
-                            <option value="boleto">Boleto</option>
-                            <option value="contrato">Contrato</option>
-                            <option value="orcamento">Orçamento</option>
-                            <option value="conta_luz">Conta de luz</option>
-                            <option value="conta_agua">Conta de água</option>
-                            <option value="conta_telefone">Conta de telefone</option>
-                            <option value="recibo">Recibo</option>
-                            <option value="outro">Outro</option>
-                        </select>
+                        <div class="col-12 col-md-5">
+                            <label for="arquivo" class="form-label">Arquivo</label>
+                            <input
+                                type="file"
+                                name="arquivo"
+                                id="arquivo"
+                                class="form-control"
+                                accept=".pdf,.jpg,.jpeg,.png,.webp,.xml"
+                                required
+                            >
+                            <small class="text-muted">
+                                PDF, JPG, JPEG, PNG, WEBP ou XML — máximo de 2 MB.
+                            </small>
+                        </div>
+
+                        <div class="col-12 col-md-3">
+                            <label for="observacoes" class="form-label">Observações</label>
+                            <input
+                                type="text"
+                                name="observacoes"
+                                id="observacoes"
+                                class="form-control"
+                                maxlength="1000"
+                            >
+                        </div>
+
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-cloud-arrow-up"></i>
+                                Enviar anexo
+                            </button>
+                        </div>
                     </div>
-
-                    <div class="col-12 col-md-5">
-                        <label for="arquivo" class="form-label">Arquivo</label>
-
-                        <input
-                            type="file"
-                            name="arquivo"
-                            id="arquivo"
-                            class="form-control"
-                            accept=".pdf,.jpg,.jpeg,.png,.webp,.xml"
-                            required
-                        >
-
-                        <small class="text-muted">
-                            PDF, JPG, JPEG, PNG, WEBP ou XML — máximo de 2 MB.
-                        </small>
-                    </div>
-
-                    <div class="col-12 col-md-3">
-                        <label for="observacoes" class="form-label">Observações</label>
-
-                        <input
-                            type="text"
-                            name="observacoes"
-                            id="observacoes"
-                            class="form-control"
-                            maxlength="1000"
-                        >
-                    </div>
-
-                    <div class="col-12">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-cloud-arrow-up"></i>
-                            Enviar anexo
-                        </button>
-                    </div>
+                </form>
+            @elseif ($compra->status === 'aprovada')
+                <div class="alert alert-info mb-4">
+                    <i class="bi bi-lock"></i>
+                    Esta compra está aprovada. Novos anexos não podem ser adicionados.
                 </div>
-            </form>
+            @else
+                <div class="alert alert-warning mb-4">
+                    <i class="bi bi-lock"></i>
+                    Esta compra está cancelada. Novos anexos não podem ser adicionados.
+                </div>
+            @endif
 
             @if ($compra->anexosVinculos->isNotEmpty())
                 <div class="table-responsive">
@@ -252,7 +263,6 @@
                             @foreach ($compra->anexosVinculos as $vinculo)
                                 @php
                                     $anexo = $vinculo->anexo;
-
                                     $tipoAnexo = match ($vinculo->tipo) {
                                         'nf' => ['label' => 'Nota fiscal', 'icon' => 'bi-receipt'],
                                         'nf_xml' => ['label' => 'NF-e XML', 'icon' => 'bi-filetype-xml'],
@@ -281,7 +291,6 @@
                                         <div class="fw-semibold text-break">
                                             {{ $anexo->nome_original }}
                                         </div>
-
                                         <small class="text-muted">
                                             {{ $anexo->mime_type }}
                                         </small>
@@ -344,6 +353,7 @@
     </div>
 
     {{-- DADOS DA NF --}}
+
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <h2 class="h5 mb-3">
@@ -354,7 +364,6 @@
             <div class="row g-3">
                 <div class="col-12 col-md-4">
                     <div class="text-muted small">Fornecedor</div>
-
                     <div class="fw-semibold">
                         <i class="bi bi-truck"></i>
                         {{ $compra->fornecedor->nome ?? 'Não informado' }}
@@ -384,7 +393,6 @@
                 @if ($compra->chave_nf)
                     <div class="col-12">
                         <div class="text-muted small">Chave de acesso</div>
-
                         <div class="fw-semibold text-break">
                             <i class="bi bi-upc-scan"></i>
                             {{ $compra->chave_nf }}
@@ -396,6 +404,7 @@
     </div>
 
     {{-- ITENS --}}
+
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
@@ -420,6 +429,7 @@
             </div>
 
             @if ($compra->itens->isNotEmpty())
+
                 @if ($compra->status === 'conferindo')
                     <form method="POST" action="{{ route('compras.conferir', $compra) }}">
                         @csrf
@@ -455,7 +465,6 @@
 
                                         @if ($item->produto?->codigo_fabricante)
                                             <br>
-
                                             <small class="text-muted">
                                                 Código: {{ $item->produto->codigo_fabricante }}
                                             </small>
@@ -543,6 +552,7 @@
                 @if ($compra->status === 'conferindo')
                     </form>
                 @endif
+
             @else
                 <div class="alert alert-warning mb-0">
                     <i class="bi bi-exclamation-triangle"></i>
@@ -553,6 +563,7 @@
     </div>
 
     {{-- RESUMO FINANCEIRO --}}
+
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <h2 class="h5 mb-3">
@@ -563,7 +574,6 @@
             <div class="row g-3">
                 <div class="col-12 col-md-3">
                     <div class="text-muted small">Produtos</div>
-
                     <div class="fw-semibold">
                         R$ {{ number_format((float) $compra->valor_produtos, 2, ',', '.') }}
                     </div>
@@ -571,7 +581,6 @@
 
                 <div class="col-12 col-md-3">
                     <div class="text-muted small">Desconto</div>
-
                     <div class="fw-semibold">
                         R$ {{ number_format((float) $compra->desconto, 2, ',', '.') }}
                     </div>
@@ -579,7 +588,6 @@
 
                 <div class="col-12 col-md-3">
                     <div class="text-muted small">Frete</div>
-
                     <div class="fw-semibold">
                         R$ {{ number_format((float) $compra->frete, 2, ',', '.') }}
                     </div>
@@ -587,7 +595,6 @@
 
                 <div class="col-12 col-md-3">
                     <div class="text-muted small">Outras despesas</div>
-
                     <div class="fw-semibold">
                         R$ {{ number_format((float) $compra->outras_despesas, 2, ',', '.') }}
                     </div>
@@ -598,7 +605,6 @@
 
                     <div class="d-flex justify-content-end align-items-center gap-3">
                         <span class="text-muted">Valor total:</span>
-
                         <strong class="fs-4">
                             R$ {{ number_format((float) $compra->valor_total, 2, ',', '.') }}
                         </strong>
@@ -609,6 +615,7 @@
     </div>
 
     {{-- OBSERVAÇÕES --}}
+
     @if ($compra->observacoes)
         <div class="card shadow-sm mb-4">
             <div class="card-body">
@@ -625,6 +632,7 @@
     @endif
 
     {{-- AÇÕES --}}
+
     <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mt-4">
         <a href="{{ route('compras.index') }}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i>
@@ -656,6 +664,7 @@
                     </button>
                 </form>
             @elseif ($compra->status === 'conferindo')
+
                 @if ($todosItensConferidos)
                     <form method="POST" action="{{ route('compras.aprovar', $compra) }}" onsubmit="return confirm('Tem certeza que deseja aprovar esta compra?');">
                         @csrf
@@ -680,7 +689,9 @@
                         Cancelar
                     </button>
                 </form>
+
             @elseif ($compra->status === 'aprovada')
+
                 <span class="text-success d-flex align-items-center">
                     <i class="bi bi-check-circle me-1"></i>
                     Compra aprovada
@@ -705,11 +716,14 @@
                         </button>
                     </form>
                 @endif
+
             @elseif ($compra->status === 'cancelada')
+
                 <span class="text-danger d-flex align-items-center">
                     <i class="bi bi-x-circle me-1"></i>
                     Compra cancelada
                 </span>
+
             @endif
 
             @if ($estoqueLancado)
@@ -722,4 +736,5 @@
     </div>
 
 </div>
+
 @endsection

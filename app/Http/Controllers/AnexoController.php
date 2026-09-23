@@ -20,6 +20,15 @@ class AnexoController extends Controller
         Compra $compra,
         CriarAnexo $criarAnexo
     ): RedirectResponse {
+        if (in_array($compra->status, ['aprovada', 'cancelada'], true)) {
+            return redirect()
+                ->route('compras.show', $compra)
+                ->with(
+                    'error',
+                    'Não é possível adicionar anexos a uma compra aprovada ou cancelada.'
+                );
+        }
+
         $criarAnexo->execute(
             $compra,
             $request->file('arquivo'),
@@ -37,6 +46,15 @@ class AnexoController extends Controller
         ContaPagar $conta,
         CriarAnexo $criarAnexo
     ): RedirectResponse {
+        if (in_array($conta->status, ['paga', 'cancelada'], true)) {
+            return redirect()
+                ->route('contas-pagar.show', $conta)
+                ->with(
+                    'error',
+                    'Não é possível adicionar anexos a uma conta paga ou cancelada.'
+                );
+        }
+
         $criarAnexo->execute(
             $conta,
             $request->file('arquivo'),

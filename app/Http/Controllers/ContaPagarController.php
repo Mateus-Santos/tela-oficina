@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Actions\ContasPagar\AtualizarContaPagar;
+use App\Actions\ContasPagar\AtualizarParcelasContaPagar;
 use App\Actions\ContasPagar\CancelarContaPagar;
 use App\Actions\ContasPagar\CriarContaPagar;
 use App\Actions\ContasPagar\EstornarPagamentoContaPagar;
 use App\Actions\ContasPagar\RegistrarPagamentoContaPagar;
+use App\Http\Requests\ContasPagar\AtualizarParcelasContaPagarRequest;
 use App\Http\Requests\ContasPagar\CancelarContaPagarRequest;
 use App\Http\Requests\ContasPagar\EstornarPagamentoContaPagarRequest;
 use App\Http\Requests\ContasPagar\RegistrarPagamentoContaPagarRequest;
@@ -225,11 +227,15 @@ class ContaPagarController extends Controller
             'nota',
             'categoriaFinanceira',
             'formaPagamento',
+            'parcelas',
             'anexosVinculos' => fn ($query) => $query
                 ->with('anexo')
                 ->latest(),
             'pagamentos' => fn ($query) => $query
-                ->with('formaPagamento')
+                ->with([
+                    'formaPagamento',
+                    'parcela',
+                ])
                 ->latest('data_pagamento'),
         ]);
 
@@ -333,6 +339,27 @@ class ContaPagarController extends Controller
             ->with(
                 'success',
                 'Conta a pagar atualizada com sucesso.'
+            );
+    }
+
+    public function atualizarParcelas(
+        AtualizarParcelasContaPagarRequest $request,
+        ContaPagar $conta,
+        AtualizarParcelasContaPagar $action
+    ): RedirectResponse {
+        $action->execute(
+            $conta,
+            $request->validated('parcelas')
+        );
+
+        return redirect()
+            ->route(
+                'contas-pagar.show',
+                $conta
+            )
+            ->with(
+                'success',
+                'Parcelas atualizadas com sucesso.'
             );
     }
 
