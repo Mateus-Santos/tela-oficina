@@ -14,6 +14,7 @@ class PagamentoContaPagar extends Model
 
     protected $fillable = [
         'conta_pagar_id',
+        'parcela_conta_pagar_id',
         'valor',
         'data_pagamento',
         'forma_pagamento',
@@ -31,7 +32,18 @@ class PagamentoContaPagar extends Model
 
     public function contaPagar(): BelongsTo
     {
-        return $this->belongsTo(ContaPagar::class);
+        return $this->belongsTo(
+            ContaPagar::class,
+            'conta_pagar_id'
+        );
+    }
+
+    public function parcela(): BelongsTo
+    {
+        return $this->belongsTo(
+            ParcelaContaPagar::class,
+            'parcela_conta_pagar_id'
+        );
     }
 
     public function formaPagamento(): BelongsTo
