@@ -11,6 +11,7 @@ use App\Models\Cliente;
 use App\Models\ContaReceber;
 use App\Models\Nota;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ContaReceberController extends Controller
 {
@@ -59,20 +60,18 @@ class ContaReceberController extends Controller
             $status = $request->input('status');
 
             if ($status === 'vencida') {
-                $query->whereIn(
-                    'status',
-                    ['aberta', 'parcial']
-                )->whereDate(
-                    'data_vencimento',
-                    '<',
-                    now()->toDateString()
-                );
+                $query
+                    ->whereIn('status', ['aberta', 'parcial'])
+                    ->whereDate(
+                        'data_vencimento',
+                        '<',
+                        now()->toDateString()
+                    );
             } else {
-                $query->where(
-                    'status',
-                    $status
-                );
+                $query->where('status', $status);
             }
+        } else {
+            $query->where('status', '!=', 'cancelada');
         }
 
         if ($request->filled('data_inicio')) {
@@ -98,14 +97,72 @@ class ContaReceberController extends Controller
             );
         }
 
+        $resumo = [
+            'total' => (clone $query)->count(),
+
+            'valor_total' => (clone $query)->sum(
+                DB::raw(
+                    'COALESCE(valor_original, 0)
+                    - COALESCE(desconto, 0)
+                    + COALESCE(juros, 0)
+                    + COALESCE(multa, 0)'
+                )
+            ),
+
+            'em_aberto' => (clone $query)
+                ->whereIn('status', ['aberta', 'parcial'])
+                ->count(),
+
+            'vencidas' => (clone $query)
+                ->whereIn('status', ['aberta', 'parcial'])
+                ->whereDate(
+                    'data_vencimento',
+                    '<',
+                    now()->toDateString()
+                )
+                ->count(),
+
+            'total_vencido' => (clone $query)
+                ->whereIn('status', ['aberta', 'parcial'])
+                ->whereDate(
+                    'data_vencimento',
+                    '<',
+                    now()->toDateString()
+                )
+                ->sum(
+                    DB::raw(
+                        'GREATEST(
+                            COALESCE(valor_original, 0)
+                            - COALESCE(desconto, 0)
+                            + COALESCE(juros, 0)
+                            + COALESCE(multa, 0)
+                            - COALESCE(
+                                (
+                                    SELECT SUM(r.valor)
+                                    FROM recebimentos r
+                                    WHERE r.conta_receber_id = contas_receber.id
+                                    AND r.estornado_em IS NULL
+                                ),
+                                0
+                            ),
+                            0
+                        )'
+                    )
+                ),
+        ];
+
         $contasReceber = $query
             ->orderByDesc('data_vencimento')
+            ->orderByDesc('id')
             ->paginate(15)
             ->withQueryString();
 
         return view(
             'financeiro.contas_receber.index',
-            compact('contasReceber')
+            compact(
+                'contasReceber',
+                'resumo'
+            )
         );
     }
 

@@ -2,49 +2,169 @@
 
 @section('content')
 
-<section class="container cadastro">
+<div class="container cadastro">
 
     <x-list-header
-        title="CONTAS A RECEBER"
+        title="LISTAR CONTAS A RECEBER"
         icon="bi-cash-stack"
         create-route="contas-receber.create"
         create-text="Nova Conta"
         create-icon="bi-plus-lg"
     />
 
-    @if ($errors->any())
-        <div class="alert alert-danger mensseger_error_container">
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>
+            {{ session('success') }}
+
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+            ></button>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            {{ session('error') }}
+
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+            ></button>
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+
             <ul class="mb-0">
-                @foreach ($errors->all() as $error)
+                @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>
+
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+            ></button>
         </div>
     @endif
 
-    @if (session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
-        </div>
-    @endif
+    {{-- RESUMO --}}
+    <div class="row g-3 mb-4">
 
-    @if (session('error'))
-        <div class="alert alert-danger">
-            {{ session('error') }}
-        </div>
-    @endif
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
 
+                        <div>
+                            <div class="text-muted small text-uppercase">
+                                Valor total
+                            </div>
+
+                            <div class="fs-4 fw-bold">
+                                R$
+                                {{ number_format($resumo['valor_total'], 2, ',', '.') }}
+                            </div>
+                        </div>
+
+                        <i class="bi bi-cash-stack fs-2 text-muted"></i>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+
+                        <div>
+                            <div class="text-muted small text-uppercase">
+                                Contas
+                            </div>
+
+                            <div class="fs-4 fw-bold">
+                                {{ $resumo['total'] }}
+                            </div>
+                        </div>
+
+                        <i class="bi bi-receipt fs-2 text-muted"></i>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+
+                        <div>
+                            <div class="text-muted small text-uppercase">
+                                Em aberto
+                            </div>
+
+                            <div class="fs-4 fw-bold">
+                                {{ $resumo['em_aberto'] }}
+                            </div>
+                        </div>
+
+                        <i class="bi bi-hourglass-split fs-2 text-muted"></i>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+
+                        <div>
+                            <div class="text-muted small text-uppercase">
+                                Total vencido
+                            </div>
+
+                            <div class="fs-4 fw-bold text-danger">
+                                R$
+                                {{ number_format($resumo['total_vencido'], 2, ',', '.') }}
+                            </div>
+                        </div>
+
+                        <i class="bi bi-exclamation-circle fs-2 text-danger"></i>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    {{-- FILTROS --}}
     <x-filtros-container
         action="{{ route('contas-receber.index') }}"
         id="filtros-contas-receber"
         :collapsible="true"
         :expanded="request()->hasAny(['data_inicio', 'data_fim'])"
     >
+
         <x-slot:primary>
 
             <div class="row g-3 align-items-end">
 
                 <div class="col-12 col-md-4">
+
                     <label for="cliente" class="form-label">
                         <i class="bi bi-person"></i>
                         Cliente
@@ -58,9 +178,11 @@
                         placeholder="Nome do cliente"
                         value="{{ request('cliente') }}"
                     >
+
                 </div>
 
                 <div class="col-12 col-md-3">
+
                     <label for="status" class="form-label">
                         <i class="bi bi-info-circle"></i>
                         Status
@@ -71,7 +193,9 @@
                         name="status"
                         class="filtros-container__select"
                     >
-                        <option value="">Todos</option>
+                        <option value="">
+                            Todos
+                        </option>
 
                         <option
                             value="aberta"
@@ -108,9 +232,11 @@
                             Cancelada
                         </option>
                     </select>
+
                 </div>
 
                 <div class="col-12 col-md-3">
+
                     <label for="nota_id" class="form-label">
                         <i class="bi bi-receipt"></i>
                         Nota
@@ -125,9 +251,11 @@
                         value="{{ request('nota_id') }}"
                         min="1"
                     >
+
                 </div>
 
                 <div class="col-12 col-md-2">
+
                     <div class="filtros-container__actions">
 
                         <button
@@ -140,13 +268,14 @@
 
                         <a
                             href="{{ route('contas-receber.index') }}"
-                            class="btn btn-secondary"
+                            class="btn btn-outline-secondary"
                             title="Limpar filtros"
                         >
                             <i class="bi bi-x-lg"></i>
                         </a>
 
                     </div>
+
                 </div>
 
             </div>
@@ -158,6 +287,7 @@
             <div class="row g-3">
 
                 <div class="col-12 col-md-6">
+
                     <label for="data_inicio" class="form-label">
                         <i class="bi bi-calendar-event"></i>
                         Vencimento de
@@ -170,9 +300,11 @@
                         class="filtros-container__input"
                         value="{{ request('data_inicio') }}"
                     >
+
                 </div>
 
                 <div class="col-12 col-md-6">
+
                     <label for="data_fim" class="form-label">
                         <i class="bi bi-calendar-event"></i>
                         Vencimento até
@@ -185,6 +317,7 @@
                         class="filtros-container__input"
                         value="{{ request('data_fim') }}"
                     >
+
                 </div>
 
             </div>
@@ -193,242 +326,507 @@
 
     </x-filtros-container>
 
-    <div class="table-responsive">
+    {{-- RESULTADOS --}}
+    @if($contasReceber->isEmpty())
 
-        <table class="table table-striped table-hover align-middle">
+        <div class="card border-0 shadow-sm">
 
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>CLIENTE</th>
-                    <th>DESCRIÇÃO</th>
-                    <th>NOTA</th>
-                    <th>VENCIMENTO</th>
-                    <th>VALOR</th>
-                    <th>RECEBIDO</th>
-                    <th>SALDO</th>
-                    <th>STATUS</th>
-                    <th>AÇÕES</th>
-                </tr>
-            </thead>
+            <div class="card-body text-center py-5">
 
-            <tbody>
+                <i class="bi bi-cash-stack fs-1 text-muted"></i>
 
-                @forelse ($contasReceber as $contaReceber)
+                <h5 class="mt-3">
+                    Nenhuma conta encontrada
+                </h5>
 
-                    @php
-                        $valorDevido =
-                            (float) $contaReceber->valor_original
-                            - (float) $contaReceber->desconto
-                            + (float) $contaReceber->juros
-                            + (float) $contaReceber->multa;
+                @if(request()->hasAny([
+                    'cliente',
+                    'status',
+                    'nota_id',
+                    'data_inicio',
+                    'data_fim'
+                ]))
 
-                        $valorRecebido =
-                            (float) ($contaReceber->valor_recebido ?? 0);
+                    <p class="text-muted mb-3">
+                        Nenhuma conta corresponde aos filtros informados.
+                    </p>
 
-                        $saldo = max(
-                            0,
-                            $valorDevido - $valorRecebido
-                        );
+                    <a
+                        href="{{ route('contas-receber.index') }}"
+                        class="btn btn-outline-secondary"
+                    >
+                        <i class="bi bi-x-lg me-1"></i>
+                        Limpar filtros
+                    </a>
 
-                        $nomeCliente =
-                            $contaReceber->cliente?->pessoa?->nome
-                            ?? $contaReceber->nota?->cliente?->pessoa?->nome
-                            ?? 'Sem cliente';
-                    @endphp
+                @else
 
-                    <tr>
+                    <p class="text-muted mb-3">
+                        Ainda não existem contas a receber cadastradas.
+                    </p>
 
-                        <td>
-                            {{ str_pad($contaReceber->id, 6, '0', STR_PAD_LEFT) }}
-                        </td>
+                    <a
+                        href="{{ route('contas-receber.create') }}"
+                        class="btn btn-primary"
+                    >
+                        <i class="bi bi-plus-lg me-1"></i>
+                        Nova Conta
+                    </a>
 
-                        <td>
-                            {{ $nomeCliente }}
-                        </td>
+                @endif
 
-                        <td>
-                            {{ $contaReceber->descricao }}
-                        </td>
+            </div>
 
-                        <td>
-                            @if ($contaReceber->nota)
-                                #{{ str_pad($contaReceber->nota->id, 6, '0', STR_PAD_LEFT) }}
-                            @else
-                                <span class="text-muted">
-                                    Sem nota
-                                </span>
-                            @endif
-                        </td>
+        </div>
 
-                        <td>
-                            {{ $contaReceber->data_vencimento->format('d/m/Y') }}
-                        </td>
+    @else
 
-                        <td>
-                            R$ {{ number_format($valorDevido, 2, ',', '.') }}
-                        </td>
+        @php
+            $gruposPorVencimento = $contasReceber
+                ->getCollection()
+                ->groupBy(
+                    fn ($conta) => $conta->data_vencimento->format('Y-m-d')
+                );
+        @endphp
 
-                        <td>
-                            R$ {{ number_format($valorRecebido, 2, ',', '.') }}
-                        </td>
+        <div class="d-flex align-items-center justify-content-between mb-3">
 
-                        <td>
-                            R$ {{ number_format($saldo, 2, ',', '.') }}
-                        </td>
+            <div>
+                <h5 class="mb-1">
+                    Agenda de recebimentos
+                </h5>
 
-                        <td>
+                <div class="text-muted small">
+                    {{ $contasReceber->total() }}
 
-                            @if ($contaReceber->estaVencida())
+                    {{ $contasReceber->total() === 1
+                        ? 'conta encontrada'
+                        : 'contas encontradas'
+                    }}
+                </div>
+            </div>
 
-                                <span class="badge bg-danger">
-                                    <i class="bi bi-exclamation-circle"></i>
-                                    Vencida
-                                </span>
+        </div>
 
-                            @elseif ($contaReceber->status === 'quitada')
+        @foreach($gruposPorVencimento as $data => $contasDoDia)
 
-                                <span class="badge bg-success">
-                                    <i class="bi bi-check-circle"></i>
-                                    Quitada
-                                </span>
+            @php
+                $dataVencimento = $contasDoDia->first()->data_vencimento;
 
-                            @elseif ($contaReceber->status === 'parcial')
+                $totalGrupo = 0;
+                $recebidoGrupo = 0;
+                $saldoGrupo = 0;
 
-                                <span class="badge bg-warning text-dark">
-                                    <i class="bi bi-hourglass-split"></i>
-                                    Parcial
-                                </span>
+                foreach ($contasDoDia as $conta) {
+                    $valorDevido =
+                        (float) $conta->valor_original
+                        - (float) $conta->desconto
+                        + (float) $conta->juros
+                        + (float) $conta->multa;
 
-                            @elseif ($contaReceber->status === 'cancelada')
+                    $valorRecebido =
+                        (float) ($conta->valor_recebido ?? 0);
 
-                                <span class="badge bg-secondary">
-                                    <i class="bi bi-x-circle"></i>
-                                    Cancelada
-                                </span>
+                    $saldo = max(
+                        0,
+                        round(
+                            $valorDevido - $valorRecebido,
+                            2
+                        )
+                    );
 
-                            @else
+                    $totalGrupo += $valorDevido;
+                    $recebidoGrupo += $valorRecebido;
+                    $saldoGrupo += $saldo;
+                }
 
-                                <span class="badge bg-primary">
-                                    <i class="bi bi-clock"></i>
-                                    Aberta
-                                </span>
+                $estaVencido =
+                    $dataVencimento->isBefore(today())
+                    && $saldoGrupo > 0;
 
-                            @endif
+                $venceHoje =
+                    $dataVencimento->isToday();
+            @endphp
 
-                        </td>
+            <div class="card border-0 shadow-sm mb-4">
 
-                        <td>
+                <div class="card-header bg-white border-bottom py-3">
 
-                            <div class="d-flex gap-1">
+                    <div class="row align-items-center g-3">
 
-                                <a
-                                    href="{{ route('contas-receber.show', $contaReceber) }}"
-                                    class="btn btn-primary btn-sm"
-                                    title="Visualizar"
-                                >
-                                    <i class="bi bi-eye"></i>
-                                </a>
+                        <div class="col-12 col-lg-4">
 
-                                @if (
-                                    !$contaReceber->recebimentos_exists
-                                    && $contaReceber->status !== 'cancelada'
-                                )
+                            <div class="d-flex align-items-center gap-2">
 
-                                    <a
-                                        href="{{ route('contas-receber.edit', $contaReceber) }}"
-                                        class="btn btn-warning btn-sm"
-                                        title="Editar"
-                                    >
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-
+                                @if($estaVencido)
+                                    <i class="bi bi-exclamation-circle-fill text-danger fs-4"></i>
+                                @elseif($venceHoje)
+                                    <i class="bi bi-calendar-event-fill text-warning fs-4"></i>
+                                @else
+                                    <i class="bi bi-calendar3 text-primary fs-4"></i>
                                 @endif
 
-                                @if (
-                                    !$contaReceber->estaVencida()
-                                    && $contaReceber->status !== 'quitada'
-                                    && $contaReceber->status !== 'cancelada'
-                                    && $saldo > 0
-                                )
+                                <div>
 
-                                    <a
-                                        href="{{ route('recebimentos.create', $contaReceber) }}"
-                                        class="btn btn-success btn-sm"
-                                        title="Registrar recebimento"
-                                    >
-                                        <i class="bi bi-cash-coin"></i>
-                                    </a>
+                                    <div class="fw-bold fs-5">
+                                        {{ $dataVencimento->format('d/m/Y') }}
+                                    </div>
 
-                                @elseif (
-                                    $contaReceber->estaVencida()
-                                    && $contaReceber->status !== 'cancelada'
-                                    && $saldo > 0
-                                )
+                                    <div class="small text-muted">
 
-                                    <a
-                                        href="{{ route('recebimentos.create', $contaReceber) }}"
-                                        class="btn btn-danger btn-sm"
-                                        title="Registrar recebimento de conta vencida"
-                                    >
-                                        <i class="bi bi-cash-coin"></i>
-                                    </a>
+                                        {{ $contasDoDia->count() }}
 
-                                @endif
+                                        {{ $contasDoDia->count() === 1
+                                            ? 'conta'
+                                            : 'contas'
+                                        }}
 
-                                @if (!$contaReceber->recebimentos_exists)
+                                        @if($estaVencido)
+                                            <span class="badge bg-danger ms-1">
+                                                VENCIDO
+                                            </span>
+                                        @elseif($venceHoje)
+                                            <span class="badge bg-warning text-dark ms-1">
+                                                VENCE HOJE
+                                            </span>
+                                        @endif
 
-                                    <form
-                                        action="{{ route('contas-receber.destroy', $contaReceber) }}"
-                                        method="POST"
-                                        onsubmit="return confirm('Tem certeza que deseja excluir esta conta a receber?');"
-                                    >
-                                        @csrf
-                                        @method('DELETE')
+                                    </div>
 
-                                        <button
-                                            type="submit"
-                                            class="btn btn-danger btn-sm"
-                                            title="Excluir"
-                                        >
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-
-                                @endif
+                                </div>
 
                             </div>
 
-                        </td>
+                        </div>
 
-                    </tr>
+                        <div class="col-12 col-lg-8">
 
-                @empty
+                            <div class="row g-2 text-lg-end">
 
-                    <tr>
+                                <div class="col-4">
 
-                        <td
-                            colspan="10"
-                            class="text-center"
-                        >
-                            <i class="bi bi-info-circle"></i>
-                            Nenhuma conta a receber encontrada.
-                        </td>
+                                    <div class="small text-muted">
+                                        Total
+                                    </div>
 
-                    </tr>
+                                    <div class="fw-bold">
+                                        R$
+                                        {{ number_format($totalGrupo, 2, ',', '.') }}
+                                    </div>
 
-                @endforelse
+                                </div>
 
-            </tbody>
+                                <div class="col-4">
 
-        </table>
+                                    <div class="small text-muted">
+                                        Recebido
+                                    </div>
 
-    </div>
+                                    <div class="fw-bold text-success">
+                                        R$
+                                        {{ number_format($recebidoGrupo, 2, ',', '.') }}
+                                    </div>
 
-    <div class="d-flex justify-content-center mt-4">
-        {{ $contasReceber->links() }}
-    </div>
+                                </div>
 
-</section>
+                                <div class="col-4">
+
+                                    <div class="small text-muted">
+                                        Saldo
+                                    </div>
+
+                                    <div
+                                        class="fw-bold {{ $saldoGrupo > 0 && $estaVencido ? 'text-danger' : '' }}"
+                                    >
+                                        R$
+                                        {{ number_format($saldoGrupo, 2, ',', '.') }}
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle mb-0">
+
+                        <thead>
+
+                            <tr>
+
+                                <th class="ps-3">
+                                    ID
+                                </th>
+
+                                <th>
+                                    Cliente
+                                </th>
+
+                                <th>
+                                    Descrição
+                                </th>
+
+                                <th>
+                                    Nota
+                                </th>
+
+                                <th>
+                                    Valor
+                                </th>
+
+                                <th>
+                                    Recebido
+                                </th>
+
+                                <th>
+                                    Saldo
+                                </th>
+
+                                <th>
+                                    Status
+                                </th>
+
+                                <th class="text-end pe-3">
+                                    Ações
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            @foreach($contasDoDia as $contaReceber)
+
+                                @php
+                                    $valorDevido =
+                                        (float) $contaReceber->valor_original
+                                        - (float) $contaReceber->desconto
+                                        + (float) $contaReceber->juros
+                                        + (float) $contaReceber->multa;
+
+                                    $valorRecebido =
+                                        (float) ($contaReceber->valor_recebido ?? 0);
+
+                                    $saldo = max(
+                                        0,
+                                        round(
+                                            $valorDevido - $valorRecebido,
+                                            2
+                                        )
+                                    );
+
+                                    $nomeCliente =
+                                        $contaReceber->cliente?->pessoa?->nome
+                                        ?? $contaReceber->nota?->cliente?->pessoa?->nome
+                                        ?? 'Sem cliente';
+
+                                    $estaCancelada =
+                                        $contaReceber->status === 'cancelada';
+
+                                    $estaQuitada =
+                                        !$estaCancelada && $saldo <= 0;
+
+                                    $estaVencida =
+                                        !$estaCancelada
+                                        && !$estaQuitada
+                                        && $contaReceber->data_vencimento->isBefore(today());
+
+                                    $estaParcial =
+                                        !$estaCancelada
+                                        && !$estaQuitada
+                                        && $valorRecebido > 0;
+                                @endphp
+
+                                <tr>
+
+                                    <td class="ps-3">
+                                        #{{ str_pad($contaReceber->id, 6, '0', STR_PAD_LEFT) }}
+                                    </td>
+
+                                    <td>
+                                        <div class="fw-semibold">
+                                            {{ $nomeCliente }}
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <div class="fw-semibold">
+                                            {{ $contaReceber->descricao }}
+                                        </div>
+                                    </td>
+
+                                    <td>
+
+                                        @if($contaReceber->nota)
+
+                                            <span class="fw-semibold">
+                                                #{{ str_pad($contaReceber->nota->id, 6, '0', STR_PAD_LEFT) }}
+                                            </span>
+
+                                        @else
+
+                                            <span class="text-muted">
+                                                Sem nota
+                                            </span>
+
+                                        @endif
+
+                                    </td>
+
+                                    <td class="fw-semibold text-nowrap">
+                                        R$
+                                        {{ number_format($valorDevido, 2, ',', '.') }}
+                                    </td>
+
+                                    <td class="text-success text-nowrap">
+                                        R$
+                                        {{ number_format($valorRecebido, 2, ',', '.') }}
+                                    </td>
+
+                                    <td
+                                        class="fw-semibold text-nowrap {{ $estaVencida ? 'text-danger' : '' }}"
+                                    >
+                                        R$
+                                        {{ number_format($saldo, 2, ',', '.') }}
+                                    </td>
+
+                                    <td>
+
+                                        @if($estaCancelada)
+
+                                            <span class="badge bg-secondary">
+                                                Cancelada
+                                            </span>
+
+                                        @elseif($estaQuitada)
+
+                                            <span class="badge bg-success">
+                                                Quitada
+                                            </span>
+
+                                        @elseif($estaVencida)
+
+                                            <span class="badge bg-danger">
+                                                Vencida
+                                            </span>
+
+                                        @elseif($estaParcial)
+
+                                            <span class="badge bg-warning text-dark">
+                                                Parcial
+                                            </span>
+
+                                        @else
+
+                                            <span class="badge bg-primary">
+                                                Aberta
+                                            </span>
+
+                                        @endif
+
+                                    </td>
+
+                                    <td class="text-end pe-3">
+
+                                        <div
+                                            class="btn-group"
+                                            role="group"
+                                        >
+
+                                            <a
+                                                href="{{ route('contas-receber.show', $contaReceber) }}"
+                                                class="btn btn-sm btn-outline-primary"
+                                                title="Visualizar"
+                                            >
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+
+                                            @if(
+                                                !$contaReceber->recebimentos_exists
+                                                && !$estaCancelada
+                                            )
+
+                                                <a
+                                                    href="{{ route('contas-receber.edit', $contaReceber) }}"
+                                                    class="btn btn-sm btn-outline-secondary"
+                                                    title="Editar"
+                                                >
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+
+                                            @endif
+
+                                            @if(
+                                                !$estaQuitada
+                                                && !$estaCancelada
+                                                && $saldo > 0
+                                            )
+
+                                                <a
+                                                    href="{{ route('recebimentos.create', $contaReceber) }}"
+                                                    class="btn btn-sm {{ $estaVencida ? 'btn-outline-danger' : 'btn-outline-success' }}"
+                                                    title="{{ $estaVencida ? 'Registrar recebimento de conta vencida' : 'Registrar recebimento' }}"
+                                                >
+                                                    <i class="bi bi-cash-coin"></i>
+                                                </a>
+
+                                            @endif
+
+                                            @if(!$contaReceber->recebimentos_exists)
+
+                                                <form
+                                                    action="{{ route('contas-receber.destroy', $contaReceber) }}"
+                                                    method="POST"
+                                                    onsubmit="return confirm('Tem certeza que deseja excluir esta conta a receber?');"
+                                                >
+
+                                                    @csrf
+                                                    @method('DELETE')
+
+                                                    <button
+                                                        type="submit"
+                                                        class="btn btn-sm btn-outline-danger"
+                                                        title="Excluir"
+                                                    >
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+
+                                                </form>
+
+                                            @endif
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                            @endforeach
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        @endforeach
+
+        <div class="mt-4">
+            {{ $contasReceber->links() }}
+        </div>
+
+    @endif
+
+</div>
 
 @endsection
+
