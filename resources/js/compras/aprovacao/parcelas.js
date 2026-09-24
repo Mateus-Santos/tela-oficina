@@ -1,236 +1,954 @@
-export default function inicializarParcelas(configuracao) {
-    const {
-        valorTotal,
-        quantidadeInput,
-        primeiraDataInput,
-        intervaloInput,
-        previewContainer,
-        totalElement,
-    } = configuracao;
+const LIMITE_MAXIMO_PARCELAS = 120;
 
-    if (
-        !quantidadeInput ||
-        !primeiraDataInput ||
-        !intervaloInput ||
-        !previewContainer
-    ) {
+function totalEmCentavos(valor) {
+    const numero = Number(valor);
+
+    if (!Number.isFinite(numero)) {
+        return 0;
+    }
+
+    return Math.round(numero * 100);
+}
+
+function formatarMoeda(valor) {
+    return Number(valor).toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+    });
+}
+
+function formatarData(valor) {
+    if (!valor) {
+        return '';
+    }
+
+    const partes = valor.split('-');
+
+    if (partes.length !== 3) {
+        return '';
+    }
+
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+}
+
+function obterData(valor) {
+    if (!valor) {
         return null;
     }
 
-    const LIMITE_MAXIMO_PARCELAS = 120;
+    const data = new Date(`${valor}T00:00:00`);
 
-    const totalEmCentavos = Math.round(Number(valorTotal) * 100);
+    if (Number.isNaN(data.getTime())) {
+        return null;
+    }
 
-    const formatarMoeda = function (valor) {
-        return Number(valor).toLocaleString('pt-BR', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-        });
-    };
+    return data;
+}
 
-    const formatarData = function (data) {
-        return data.toLocaleDateString('pt-BR');
-    };
+function formatarDataInput(data) {
+    if (
+        !(data instanceof Date) ||
+        Number.isNaN(data.getTime())
+    ) {
+        return '';
+    }
 
-    const obterData = function (valor) {
-        if (!valor) {
-            return null;
-        }
+    const ano = data.getFullYear();
+    const mes = String(
+        data.getMonth() + 1
+    ).padStart(2, '0');
 
-        const partes = valor.split('-');
+    const dia = String(
+        data.getDate()
+    ).padStart(2, '0');
 
-        if (partes.length !== 3) {
-            return null;
-        }
+    return `${ano}-${mes}-${dia}`;
+}
 
-        const ano = Number(partes[0]);
-        const mes = Number(partes[1]);
-        const dia = Number(partes[2]);
+function adicionarDias(valor, dias) {
+    const data = obterData(valor);
 
-        if (
-            !Number.isInteger(ano) ||
-            !Number.isInteger(mes) ||
-            !Number.isInteger(dia)
-        ) {
-            return null;
-        }
+    if (!data) {
+        return '';
+    }
 
-        const data = new Date(ano, mes - 1, dia);
+    data.setDate(
+        data.getDate() + dias
+    );
 
-        if (
-            Number.isNaN(data.getTime()) ||
-            data.getFullYear() !== ano ||
-            data.getMonth() !== mes - 1 ||
-            data.getDate() !== dia
-        ) {
-            return null;
-        }
+    return formatarDataInput(data);
+}
 
-        return data;
-    };
+function obterQuantidade(quantidadeInput) {
+    if (!quantidadeInput) {
+        return 1;
+    }
 
-    const formatarDataInput = function (data) {
-        return (
-            data.getFullYear() +
-            '-' +
-            String(data.getMonth() + 1).padStart(2, '0') +
-            '-' +
-            String(data.getDate()).padStart(2, '0')
+    const valor = Number.parseInt(
+        quantidadeInput.value || '1',
+        10
+    );
+
+    if (!Number.isFinite(valor)) {
+        return 1;
+    }
+
+    return Math.min(
+        LIMITE_MAXIMO_PARCELAS,
+        Math.max(1, valor)
+    );
+}
+
+function obterIntervalo(intervaloInput) {
+    if (!intervaloInput) {
+        return 30;
+    }
+
+    const valor = Number.parseInt(
+        intervaloInput.value || '30',
+        10
+    );
+
+    if (!Number.isFinite(valor)) {
+        return 30;
+    }
+
+    return Math.max(1, valor);
+}
+
+function calcularValores(total, quantidade) {
+    const totalCentavos =
+        totalEmCentavos(total);
+
+    if (quantidade <= 0) {
+        return [];
+    }
+
+    const valorBase = Math.floor(
+        totalCentavos / quantidade
+    );
+
+    const restante =
+        totalCentavos -
+        (valorBase * quantidade);
+
+    const valores = [];
+
+    for (
+        let indice = 0;
+        indice < quantidade;
+        indice += 1
+    ) {
+        const valorCentavos =
+            valorBase +
+            (indice < restante ? 1 : 0);
+
+        valores.push(
+            valorCentavos / 100
         );
-    };
+    }
 
-    const adicionarDias = function (data, dias) {
-        const novaData = new Date(data.getTime());
+    return valores;
+}
 
-        novaData.setDate(novaData.getDate() + Number(dias));
+function calcularDatasAutomaticas(
+    quantidade,
+    primeiraData,
+    intervalo
+) {
+    const datas = [];
 
-        return novaData;
-    };
-
-    const obterQuantidade = function () {
-        const quantidade = Number.parseInt(
-            quantidadeInput.value,
-            10
-        );
-
-        if (!Number.isInteger(quantidade) || quantidade < 1) {
-            return 1;
+    if (!primeiraData) {
+        for (
+            let indice = 0;
+            indice < quantidade;
+            indice += 1
+        ) {
+            datas.push('');
         }
 
-        return Math.min(
+        return datas;
+    }
+
+    for (
+        let indice = 0;
+        indice < quantidade;
+        indice += 1
+    ) {
+        datas.push(
+            adicionarDias(
+                primeiraData,
+                indice * intervalo
+            )
+        );
+    }
+
+    return datas;
+}
+
+function ajustarQuantidadePersonalizada(
+    datas,
+    quantidade
+) {
+    const resultado = Array.isArray(datas)
+        ? datas.slice(0, quantidade)
+        : [];
+
+    while (
+        resultado.length < quantidade
+    ) {
+        resultado.push('');
+    }
+
+    return resultado;
+}
+
+function inicializarParcelas({
+    quantidadeInput,
+    primeiraDataInput,
+    intervaloInput,
+    previewElement,
+    totalElement,
+    valorTotal,
+}) {
+    if (!previewElement) {
+        return {
+            atualizar: function () {},
+            calcularParcelas: function () {
+                return [];
+            },
+            obterParcelas: function () {
+                return [];
+            },
+            atualizarDataPersonalizada:
+                function () {},
+            reset: function () {},
+        };
+    }
+
+    let personalizarVencimentos = false;
+
+    let datasPersonalizadas = [];
+
+    let quantidadeAnterior =
+        obterQuantidade(quantidadeInput);
+
+    let controlePersonalizacao = null;
+
+    let checkboxPersonalizacao = null;
+
+    function obterQuantidadeAtual() {
+        return obterQuantidade(
+            quantidadeInput
+        );
+    }
+
+    function obterIntervaloAtual() {
+        return obterIntervalo(
+            intervaloInput
+        );
+    }
+
+    function obterPrimeiraDataAtual() {
+        if (!primeiraDataInput) {
+            return '';
+        }
+
+        return primeiraDataInput.value || '';
+    }
+
+    function obterDatasAutomaticasAtuais(
+        quantidade
+    ) {
+        return calcularDatasAutomaticas(
             quantidade,
-            LIMITE_MAXIMO_PARCELAS
+            obterPrimeiraDataAtual(),
+            obterIntervaloAtual()
         );
-    };
+    }
 
-    const obterIntervalo = function () {
-        const intervalo = Number(intervaloInput.value);
+    function garantirQuantidadePersonalizada(
+        quantidade
+    ) {
+        datasPersonalizadas =
+            ajustarQuantidadePersonalizada(
+                datasPersonalizadas,
+                quantidade
+            );
+    }
 
-        if (!Number.isFinite(intervalo) || intervalo <= 0) {
-            return null;
+    function atualizarEstadoCamposAutomaticos() {
+        const desabilitado =
+            personalizarVencimentos;
+
+        if (primeiraDataInput) {
+            primeiraDataInput.disabled =
+                desabilitado;
         }
 
-        return intervalo;
-    };
+        if (intervaloInput) {
+            intervaloInput.disabled =
+                desabilitado;
+        }
+    }
 
-    const calcularValores = function (quantidade) {
-        const valorBase = Math.floor(
-            totalEmCentavos / quantidade
-        );
+    function validarDatasPersonalizadas(
+        exibirMensagem
+    ) {
+        let primeiraDataInvalida = null;
 
-        const restante = totalEmCentavos % quantidade;
+        for (
+            let indice = 0;
+            indice < datasPersonalizadas.length;
+            indice += 1
+        ) {
+            const valorAtual =
+                datasPersonalizadas[indice];
 
-        return Array.from(
-            { length: quantidade },
-            function (_, indice) {
-                return (
-                    valorBase +
-                    (indice < restante ? 1 : 0)
+            if (!valorAtual) {
+                primeiraDataInvalida = indice;
+                break;
+            }
+
+            const dataAtual =
+                obterData(valorAtual);
+
+            if (!dataAtual) {
+                primeiraDataInvalida = indice;
+                break;
+            }
+
+            if (indice > 0) {
+                const valorAnterior =
+                    datasPersonalizadas[
+                        indice - 1
+                    ];
+
+                if (!valorAnterior) {
+                    primeiraDataInvalida = indice;
+                    break;
+                }
+
+                const dataAnterior =
+                    obterData(valorAnterior);
+
+                if (
+                    dataAnterior &&
+                    dataAtual.getTime() <
+                        dataAnterior.getTime()
+                ) {
+                    primeiraDataInvalida = indice;
+                    break;
+                }
+            }
+        }
+
+        const campos =
+            previewElement.querySelectorAll(
+                '[data-parcela-data-index]'
+            );
+
+        campos.forEach(function (campo) {
+            campo.classList.remove(
+                'is-invalid'
+            );
+        });
+
+        const mensagem =
+            previewElement.querySelector(
+                '[data-parcelas-validacao]'
+            );
+
+        if (
+            primeiraDataInvalida !== null
+        ) {
+            const campo =
+                previewElement.querySelector(
+                    `[data-parcela-data-index="${primeiraDataInvalida}"]`
+                );
+
+            if (campo) {
+                campo.classList.add(
+                    'is-invalid'
                 );
             }
-        );
-    };
 
-    const calcularParcelas = function () {
-        const quantidade = obterQuantidade();
-        const primeiraData = obterData(
-            primeiraDataInput.value
-        );
-        const intervalo = obterIntervalo();
+            if (
+                mensagem &&
+                exibirMensagem
+            ) {
+                mensagem.textContent =
+                    'Preencha todas as datas e mantenha as parcelas em ordem cronológica.';
 
-        if (!primeiraData || intervalo === null) {
-            return [];
-        }
-
-        const valores = calcularValores(quantidade);
-
-        return valores.map(function (valorCentavos, indice) {
-            const dataVencimento = adicionarDias(
-                primeiraData,
-                intervalo * indice
-            );
-
-            return {
-                numero: indice + 1,
-                valor: valorCentavos / 100,
-                valorCentavos,
-                dataVencimento,
-                dataVencimentoInput:
-                    formatarDataInput(dataVencimento),
-            };
-        });
-    };
-
-    const renderizar = function () {
-        const parcelas = calcularParcelas();
-
-        if (parcelas.length === 0) {
-            previewContainer.innerHTML = `
-                <div class="text-muted">
-                    Informe uma data de vencimento e um intervalo válidos.
-                </div>
-            `;
-
-            if (totalElement) {
-                totalElement.textContent = 'R$ 0,00';
+                mensagem.classList.remove(
+                    'd-none'
+                );
             }
 
+            return false;
+        }
+
+        if (mensagem) {
+            mensagem.classList.add(
+                'd-none'
+            );
+
+            mensagem.textContent = '';
+        }
+
+        return true;
+    }
+
+    function criarMensagemValidacao() {
+        const mensagem =
+            document.createElement('div');
+
+        mensagem.setAttribute(
+            'data-parcelas-validacao',
+            ''
+        );
+
+        mensagem.className =
+            'alert alert-danger py-2 mb-3 d-none';
+
+        mensagem.textContent =
+            'Preencha todas as datas e mantenha as parcelas em ordem cronológica.';
+
+        return mensagem;
+    }
+
+    function criarControlePersonalizacao() {
+        if (controlePersonalizacao) {
+            return;
+        }
+
+        controlePersonalizacao =
+            document.createElement('div');
+
+        controlePersonalizacao.setAttribute(
+            'data-parcelas-personalizacao',
+            ''
+        );
+
+        controlePersonalizacao.className =
+            'mb-3';
+
+        const divSwitch =
+            document.createElement('div');
+
+        divSwitch.className =
+            'form-check form-switch d-flex align-items-center gap-2';
+
+        checkboxPersonalizacao =
+            document.createElement('input');
+
+        checkboxPersonalizacao.type =
+            'checkbox';
+
+        checkboxPersonalizacao.className =
+            'form-check-input';
+
+        checkboxPersonalizacao.id =
+            `personalizar-vencimentos-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+        checkboxPersonalizacao.checked =
+            personalizarVencimentos;
+
+        const label =
+            document.createElement('label');
+
+        label.className =
+            'form-check-label';
+
+        label.setAttribute(
+            'for',
+            checkboxPersonalizacao.id
+        );
+
+        label.textContent =
+            'Personalizar data de vencimento de cada parcela';
+
+        checkboxPersonalizacao.addEventListener(
+            'change',
+            function () {
+                const quantidade =
+                    obterQuantidadeAtual();
+
+                if (
+                    checkboxPersonalizacao.checked
+                ) {
+                    if (
+                        datasPersonalizadas.length ===
+                        0
+                    ) {
+                        datasPersonalizadas =
+                            obterDatasAutomaticasAtuais(
+                                quantidade
+                            );
+                    } else {
+                        garantirQuantidadePersonalizada(
+                            quantidade
+                        );
+                    }
+
+                    personalizarVencimentos =
+                        true;
+                } else {
+                    personalizarVencimentos =
+                        false;
+
+                    datasPersonalizadas =
+                        obterDatasAutomaticasAtuais(
+                            quantidade
+                        );
+                }
+
+                atualizar();
+            }
+        );
+
+        divSwitch.appendChild(
+            checkboxPersonalizacao
+        );
+
+        divSwitch.appendChild(label);
+
+        controlePersonalizacao.appendChild(
+            divSwitch
+        );
+
+        const parentElement =
+            previewElement.parentElement;
+
+        if (!parentElement) {
+            return;
+        }
+
+        const referencia =
+            parentElement.querySelector(
+                '.card'
+            );
+
+        if (referencia) {
+            parentElement.insertBefore(
+                controlePersonalizacao,
+                referencia
+            );
+        } else {
+            parentElement.insertBefore(
+                controlePersonalizacao,
+                previewElement
+            );
+        }
+    }
+
+    function sincronizarControlePersonalizacao() {
+        criarControlePersonalizacao();
+
+        if (checkboxPersonalizacao) {
+            checkboxPersonalizacao.checked =
+                personalizarVencimentos;
+        }
+
+        atualizarEstadoCamposAutomaticos();
+    }
+
+    function renderizarAutomatico(
+        parcelas
+    ) {
+        const tabela =
+            document.createElement('div');
+
+        tabela.className =
+            'table-responsive';
+
+        const table =
+            document.createElement('table');
+
+        table.className =
+            'table table-sm table-bordered align-middle mb-0';
+
+        const thead =
+            document.createElement('thead');
+
+        thead.innerHTML = `
+            <tr>
+                <th>Parcela</th>
+                <th>Vencimento</th>
+                <th class="text-end">Valor</th>
+            </tr>
+        `;
+
+        const tbody =
+            document.createElement('tbody');
+
+        parcelas.forEach(function (parcela) {
+            const tr =
+                document.createElement('tr');
+
+            tr.innerHTML = `
+                <td>${parcela.numero}</td>
+                <td>${formatarData(parcela.data_vencimento)}</td>
+                <td class="text-end">${formatarMoeda(parcela.valor)}</td>
+            `;
+
+            tbody.appendChild(tr);
+        });
+
+        table.appendChild(thead);
+        table.appendChild(tbody);
+        tabela.appendChild(table);
+
+        previewElement.appendChild(
+            tabela
+        );
+    }
+
+    function renderizarPersonalizado(
+        parcelas
+    ) {
+        const mensagem =
+            criarMensagemValidacao();
+
+        previewElement.appendChild(
+            mensagem
+        );
+
+        const tabela =
+            document.createElement('div');
+
+        tabela.className =
+            'table-responsive';
+
+        const table =
+            document.createElement('table');
+
+        table.className =
+            'table table-sm table-bordered align-middle mb-0';
+
+        const thead =
+            document.createElement('thead');
+
+        thead.innerHTML = `
+            <tr>
+                <th style="width: 90px;">
+                    Parcela
+                </th>
+                <th>
+                    Data de vencimento
+                </th>
+                <th class="text-end">
+                    Valor
+                </th>
+            </tr>
+        `;
+
+        const tbody =
+            document.createElement('tbody');
+
+        parcelas.forEach(function (
+            parcela,
+            indice
+        ) {
+            const tr =
+                document.createElement('tr');
+
+            const tdNumero =
+                document.createElement('td');
+
+            tdNumero.textContent =
+                parcela.numero;
+
+            const tdData =
+                document.createElement('td');
+
+            const input =
+                document.createElement('input');
+
+            input.type = 'date';
+
+            input.className =
+                'form-control form-control-sm';
+
+            input.value =
+                datasPersonalizadas[
+                    indice
+                ] || '';
+
+            input.setAttribute(
+                'data-parcela-data-index',
+                String(indice)
+            );
+
+            input.addEventListener(
+                'change',
+                function () {
+                    datasPersonalizadas[
+                        indice
+                    ] = input.value || '';
+
+                    validarDatasPersonalizadas(
+                        true
+                    );
+                }
+            );
+
+            input.addEventListener(
+                'input',
+                function () {
+                    datasPersonalizadas[
+                        indice
+                    ] = input.value || '';
+
+                    validarDatasPersonalizadas(
+                        false
+                    );
+                }
+            );
+
+            tdData.appendChild(input);
+
+            const tdValor =
+                document.createElement('td');
+
+            tdValor.className =
+                'text-end';
+
+            tdValor.textContent =
+                formatarMoeda(
+                    parcela.valor
+                );
+
+            tr.appendChild(tdNumero);
+            tr.appendChild(tdData);
+            tr.appendChild(tdValor);
+
+            tbody.appendChild(tr);
+        });
+
+        table.appendChild(thead);
+        table.appendChild(tbody);
+
+        tabela.appendChild(table);
+
+        previewElement.appendChild(
+            tabela
+        );
+
+        validarDatasPersonalizadas(
+            false
+        );
+    }
+
+    function calcularParcelas() {
+        const quantidade =
+            obterQuantidadeAtual();
+
+        if (quantidade <= 0) {
             return [];
         }
 
-        previewContainer.innerHTML = parcelas
-            .map(function (parcela) {
-                return `
-                    <div class="d-flex justify-content-between border-bottom py-2">
-                        <span>
-                            Parcela ${parcela.numero}
-                            <small class="text-muted">
-                                — ${formatarData(parcela.dataVencimento)}
-                            </small>
-                        </span>
-
-                        <strong>
-                            R$ ${formatarMoeda(parcela.valor)}
-                        </strong>
-                    </div>
-                `;
-            })
-            .join('');
-
-        if (totalElement) {
-            const totalParcelasEmCentavos = parcelas.reduce(
-                function (total, parcela) {
-                    return total + parcela.valorCentavos;
-                },
-                0
+        const valores =
+            calcularValores(
+                valorTotal,
+                quantidade
             );
 
-            totalElement.textContent =
-                'R$ ' + formatarMoeda(totalParcelasEmCentavos / 100);
+        let datas;
+
+        if (personalizarVencimentos) {
+            garantirQuantidadePersonalizada(
+                quantidade
+            );
+
+            datas =
+                datasPersonalizadas.slice();
+        } else {
+            datas =
+                obterDatasAutomaticasAtuais(
+                    quantidade
+                );
+        }
+
+        const parcelas = [];
+
+        for (
+            let indice = 0;
+            indice < quantidade;
+            indice += 1
+        ) {
+            parcelas.push({
+                numero: indice + 1,
+                valor: valores[indice],
+                data_vencimento:
+                    datas[indice] || '',
+            });
         }
 
         return parcelas;
-    };
+    }
 
-    const atualizar = function () {
-        return renderizar();
-    };
+    function renderizar() {
+        const quantidade =
+            obterQuantidadeAtual();
 
-    quantidadeInput.setAttribute(
-        'max',
-        LIMITE_MAXIMO_PARCELAS
-    );
+        if (
+            quantidade !==
+                quantidadeAnterior &&
+            personalizarVencimentos
+        ) {
+            garantirQuantidadePersonalizada(
+                quantidade
+            );
+        }
 
-    quantidadeInput.addEventListener('input', atualizar);
-    quantidadeInput.addEventListener('change', atualizar);
-    primeiraDataInput.addEventListener('change', atualizar);
-    intervaloInput.addEventListener('change', atualizar);
+        quantidadeAnterior =
+            quantidade;
 
-    renderizar();
+        sincronizarControlePersonalizacao();
+
+        previewElement.innerHTML = '';
+
+        const parcelas =
+            calcularParcelas();
+
+        if (!parcelas.length) {
+            previewElement.innerHTML =
+                '<div class="alert alert-warning mb-0">Nenhuma parcela configurada.</div>';
+
+            return;
+        }
+
+        if (personalizarVencimentos) {
+            renderizarPersonalizado(
+                parcelas
+            );
+        } else {
+            renderizarAutomatico(
+                parcelas
+            );
+        }
+    }
+
+    function atualizar() {
+        renderizar();
+
+        if (totalElement) {
+            totalElement.textContent =
+                formatarMoeda(valorTotal);
+        }
+    }
+
+    function atualizarDataPersonalizada(
+        indice,
+        valor
+    ) {
+        if (!personalizarVencimentos) {
+            return;
+        }
+
+        if (
+            indice < 0 ||
+            indice >=
+                datasPersonalizadas.length
+        ) {
+            return;
+        }
+
+        datasPersonalizadas[indice] =
+            valor || '';
+
+        renderizar();
+    }
+
+    function reset() {
+        personalizarVencimentos =
+            false;
+
+        datasPersonalizadas = [];
+
+        quantidadeAnterior =
+            obterQuantidade(
+                quantidadeInput
+            );
+
+        if (quantidadeInput) {
+            quantidadeInput.value =
+                quantidadeAnterior;
+        }
+
+        if (checkboxPersonalizacao) {
+            checkboxPersonalizacao.checked =
+                false;
+        }
+
+        atualizar();
+    }
+
+    if (quantidadeInput) {
+        quantidadeInput.addEventListener(
+            'input',
+            function () {
+                const quantidade =
+                    obterQuantidadeAtual();
+
+                quantidadeInput.value =
+                    quantidade;
+
+                atualizar();
+            }
+        );
+
+        quantidadeInput.addEventListener(
+            'change',
+            function () {
+                const quantidade =
+                    obterQuantidadeAtual();
+
+                quantidadeInput.value =
+                    quantidade;
+
+                atualizar();
+            }
+        );
+    }
+
+    if (primeiraDataInput) {
+        primeiraDataInput.addEventListener(
+            'change',
+            function () {
+                if (
+                    !personalizarVencimentos
+                ) {
+                    atualizar();
+                }
+            }
+        );
+    }
+
+    if (intervaloInput) {
+        intervaloInput.addEventListener(
+            'change',
+            function () {
+                if (
+                    !personalizarVencimentos
+                ) {
+                    atualizar();
+                }
+            }
+        );
+    }
+
+    atualizar();
 
     return {
         atualizar,
         calcularParcelas,
-        obterParcelas: calcularParcelas,
+        obterParcelas:
+            calcularParcelas,
+        atualizarDataPersonalizada,
+        reset,
     };
 }
+
+export default inicializarParcelas;
