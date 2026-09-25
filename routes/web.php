@@ -117,7 +117,7 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         ]);
 
         // Recebimentos
-        Route::get('contas-receber/{contaReceber}/recebimentos/create', [RecebimentoController::class, 'create'])->name('recebimentos.create');
+        Route::get('contas-receber/{contaReceber}/parcelas/{parcela}/recebimentos/create', [RecebimentoController::class, 'create'])->name('recebimentos.create');
         Route::post('recebimentos', [RecebimentoController::class, 'store'])->name('recebimentos.store');
 
         // Compras

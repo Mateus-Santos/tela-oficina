@@ -60,22 +60,46 @@ class EstornarRecebimento
                 'motivo_estorno' => $motivo,
             ]);
 
-            $valorDevido =
-                (float) $conta->valor_original
-                - (float) $conta->desconto
-                + (float) $conta->juros
-                + (float) $conta->multa;
+            $valorOriginalCentavos = (int) round(
+                (float) $conta->valor_original * 100
+            );
 
-            $valorRecebido = (float) $conta
-                ->recebimentos()
-                ->whereNull('estornado_em')
-                ->sum('valor');
+            $descontoCentavos = (int) round(
+                (float) $conta->desconto * 100
+            );
 
-            if ($valorRecebido <= 0) {
+            $jurosCentavos = (int) round(
+                (float) $conta->juros * 100
+            );
+
+            $multaCentavos = (int) round(
+                (float) $conta->multa * 100
+            );
+
+            $valorDevidoCentavos =
+                $valorOriginalCentavos
+                - $descontoCentavos
+                + $jurosCentavos
+                + $multaCentavos;
+
+            if ($valorDevidoCentavos <= 0) {
+                throw new InvalidArgumentException(
+                    'A conta possui um valor devido inválido.'
+                );
+            }
+
+            $valorRecebidoCentavos = (int) round(
+                (float) $conta->recebimentos()
+                    ->whereNull('estornado_em')
+                    ->sum('valor') * 100
+            );
+
+            if ($valorRecebidoCentavos <= 0) {
                 $status = 'aberta';
                 $dataQuitacao = null;
-            } elseif ($valorRecebido >= $valorDevido) {
+            } elseif ($valorRecebidoCentavos >= $valorDevidoCentavos) {
                 $status = 'quitada';
+
                 $dataQuitacao = $conta->recebimentos()
                     ->whereNull('estornado_em')
                     ->orderByDesc('data_pagamento')

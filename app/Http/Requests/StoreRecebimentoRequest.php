@@ -20,6 +20,12 @@ class StoreRecebimentoRequest extends FormRequest
                 'exists:contas_receber,id',
             ],
 
+            'parcela_conta_receber_id' => [
+                'required',
+                'integer',
+                'exists:parcelas_contas_receber,id',
+            ],
+
             'forma_pagamento_id' => [
                 'required',
                 'integer',
@@ -50,6 +56,9 @@ class StoreRecebimentoRequest extends FormRequest
         return [
             'conta_receber_id.required' => 'Informe a conta a receber.',
             'conta_receber_id.exists' => 'A conta a receber informada não existe.',
+
+            'parcela_conta_receber_id.required' => 'Informe a parcela da conta a receber.',
+            'parcela_conta_receber_id.exists' => 'A parcela informada não existe.',
 
             'forma_pagamento_id.required' => 'Informe a forma de pagamento.',
             'forma_pagamento_id.exists' => 'A forma de pagamento informada não existe.',

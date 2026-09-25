@@ -10,6 +10,8 @@ use App\Models\CategoriaFinanceira;
 use App\Models\Cliente;
 use App\Models\ContaReceber;
 use App\Models\Nota;
+use App\Models\ParcelaContaReceber;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -17,65 +19,98 @@ class ContaReceberController extends Controller
 {
     public function index(Request $request)
     {
-        $query = ContaReceber::query()
+        $hoje = now()->toDateString();
+
+        $aplicarFiltrosConta = function (Builder $query) use ($request, $hoje) {
+            if ($request->filled('cliente')) {
+                $cliente = $request->input('cliente');
+
+                $query->where(function (Builder $query) use ($cliente) {
+                    $query
+                        ->whereHas('cliente.pessoa', function (Builder $query) use ($cliente) {
+                            $query->where('nome', 'like', "%{$cliente}%");
+                        })
+                        ->orWhereHas('nota.cliente.pessoa', function (Builder $query) use ($cliente) {
+                            $query->where('nome', 'like', "%{$cliente}%");
+                        });
+                });
+            }
+
+            if ($request->filled('nota_id')) {
+                $query->where('nota_id', $request->input('nota_id'));
+            }
+
+            if ($request->filled('status')) {
+                $status = $request->input('status');
+
+                if ($status === 'vencida') {
+                    $query
+                        ->whereIn('status', ['aberta', 'parcial'])
+                        ->whereHas('parcelas', function (Builder $query) use ($hoje) {
+                            $query
+                                ->whereDate('data_vencimento', '<', $hoje)
+                                ->whereRaw(
+                                    'parcelas_contas_receber.valor > COALESCE((
+                                        SELECT SUM(recebimentos.valor)
+                                        FROM recebimentos
+                                        WHERE recebimentos.parcela_conta_receber_id = parcelas_contas_receber.id
+                                        AND recebimentos.estornado_em IS NULL
+                                    ), 0)'
+                                );
+                        });
+                } else {
+                    $query->where('status', $status);
+                }
+            } else {
+                $query->where('status', '!=', 'cancelada');
+            }
+
+            if ($request->filled('data_inicio')) {
+                $query->whereHas('parcelas', function (Builder $query) use ($request) {
+                    $query->whereDate(
+                        'data_vencimento',
+                        '>=',
+                        $request->input('data_inicio')
+                    );
+                });
+            }
+
+            if ($request->filled('data_fim')) {
+                $query->whereHas('parcelas', function (Builder $query) use ($request) {
+                    $query->whereDate(
+                        'data_vencimento',
+                        '<=',
+                        $request->input('data_fim')
+                    );
+                });
+            }
+        };
+
+        $queryContas = ContaReceber::query();
+        $aplicarFiltrosConta($queryContas);
+
+        $queryParcelas = ParcelaContaReceber::query()
             ->with([
-                'cliente.pessoa',
-                'nota.cliente.pessoa',
-                'categoriaFinanceira',
+                'contaReceber' => function ($query) {
+                    $query
+                        ->with([
+                            'cliente.pessoa',
+                            'nota.cliente.pessoa',
+                            'categoriaFinanceira',
+                        ])
+                        ->withExists('recebimentos')
+                        ->withCount('parcelas');
+                },
             ])
             ->withSum([
-                'recebimentos as valor_recebido' => function ($query) {
-                    $query->whereNull('estornado_em');
-                },
+                'recebimentosAtivos as valor_recebido',
             ], 'valor')
-            ->withExists('recebimentos');
-
-        if ($request->filled('cliente')) {
-            $cliente = $request->input('cliente');
-
-            $query->where(function ($query) use ($cliente) {
-                $query->whereHas(
-                    'cliente.pessoa',
-                    function ($q) use ($cliente) {
-                        $q->where(
-                            'nome',
-                            'like',
-                            "%{$cliente}%"
-                        );
-                    }
-                )->orWhereHas(
-                    'nota.cliente.pessoa',
-                    function ($q) use ($cliente) {
-                        $q->where(
-                            'nome',
-                            'like',
-                            "%{$cliente}%"
-                        );
-                    }
-                );
+            ->whereHas('contaReceber', function (Builder $query) use ($aplicarFiltrosConta) {
+                $aplicarFiltrosConta($query);
             });
-        }
-
-        if ($request->filled('status')) {
-            $status = $request->input('status');
-
-            if ($status === 'vencida') {
-                $query
-                    ->whereIn('status', ['aberta', 'parcial'])
-                    ->whereDate(
-                        'data_vencimento',
-                        '<',
-                        now()->toDateString()
-                    );
-            } else {
-                $query->where('status', $status);
-            }
-        } else {
-            $query->where('status', '!=', 'cancelada');
-        }
 
         if ($request->filled('data_inicio')) {
-            $query->whereDate(
+            $queryParcelas->whereDate(
                 'data_vencimento',
                 '>=',
                 $request->input('data_inicio')
@@ -83,24 +118,50 @@ class ContaReceberController extends Controller
         }
 
         if ($request->filled('data_fim')) {
-            $query->whereDate(
+            $queryParcelas->whereDate(
                 'data_vencimento',
                 '<=',
                 $request->input('data_fim')
             );
         }
 
-        if ($request->filled('nota_id')) {
-            $query->where(
-                'nota_id',
-                $request->input('nota_id')
-            );
+        if ($request->input('status') === 'vencida') {
+            $queryParcelas
+                ->whereDate('data_vencimento', '<', $hoje)
+                ->whereRaw(
+                    'parcelas_contas_receber.valor > COALESCE((
+                        SELECT SUM(recebimentos.valor)
+                        FROM recebimentos
+                        WHERE recebimentos.parcela_conta_receber_id = parcelas_contas_receber.id
+                        AND recebimentos.estornado_em IS NULL
+                    ), 0)'
+                );
         }
 
-        $resumo = [
-            'total' => (clone $query)->count(),
+        $queryParcelasVencidas = clone $queryParcelas;
 
-            'valor_total' => (clone $query)->sum(
+        $queryParcelasVencidas
+            ->whereDate(
+                'parcelas_contas_receber.data_vencimento',
+                '<',
+                $hoje
+            )
+            ->whereHas('contaReceber', function (Builder $query) {
+                $query->where('status', '!=', 'cancelada');
+            })
+            ->whereRaw(
+                'parcelas_contas_receber.valor > COALESCE((
+                    SELECT SUM(recebimentos.valor)
+                    FROM recebimentos
+                    WHERE recebimentos.parcela_conta_receber_id = parcelas_contas_receber.id
+                    AND recebimentos.estornado_em IS NULL
+                ), 0)'
+            );
+
+        $resumo = [
+            'total' => (clone $queryContas)->count(),
+
+            'valor_total' => (clone $queryContas)->sum(
                 DB::raw(
                     'COALESCE(valor_original, 0)
                     - COALESCE(desconto, 0)
@@ -109,58 +170,42 @@ class ContaReceberController extends Controller
                 )
             ),
 
-            'em_aberto' => (clone $query)
+            'em_aberto' => (clone $queryContas)
                 ->whereIn('status', ['aberta', 'parcial'])
                 ->count(),
 
-            'vencidas' => (clone $query)
-                ->whereIn('status', ['aberta', 'parcial'])
-                ->whereDate(
-                    'data_vencimento',
-                    '<',
-                    now()->toDateString()
-                )
-                ->count(),
+            'vencidas' => (clone $queryParcelasVencidas)->count(),
 
-            'total_vencido' => (clone $query)
-                ->whereIn('status', ['aberta', 'parcial'])
-                ->whereDate(
-                    'data_vencimento',
-                    '<',
-                    now()->toDateString()
-                )
-                ->sum(
-                    DB::raw(
-                        'GREATEST(
-                            COALESCE(valor_original, 0)
-                            - COALESCE(desconto, 0)
-                            + COALESCE(juros, 0)
-                            + COALESCE(multa, 0)
-                            - COALESCE(
-                                (
-                                    SELECT SUM(r.valor)
-                                    FROM recebimentos r
-                                    WHERE r.conta_receber_id = contas_receber.id
-                                    AND r.estornado_em IS NULL
-                                ),
-                                0
+            'total_vencido' => (clone $queryParcelasVencidas)->sum(
+                DB::raw(
+                    'GREATEST(
+                        parcelas_contas_receber.valor
+                        - COALESCE(
+                            (
+                                SELECT SUM(recebimentos.valor)
+                                FROM recebimentos
+                                WHERE recebimentos.parcela_conta_receber_id = parcelas_contas_receber.id
+                                AND recebimentos.estornado_em IS NULL
                             ),
                             0
-                        )'
-                    )
-                ),
+                        ),
+                        0
+                    )'
+                )
+            ),
         ];
 
-        $contasReceber = $query
-            ->orderByDesc('data_vencimento')
-            ->orderByDesc('id')
+        $parcelasReceber = $queryParcelas
+            ->orderBy('data_vencimento')
+            ->orderBy('conta_receber_id')
+            ->orderBy('numero')
             ->paginate(15)
             ->withQueryString();
 
         return view(
             'financeiro.contas_receber.index',
             compact(
-                'contasReceber',
+                'parcelasReceber',
                 'resumo'
             )
         );
@@ -217,43 +262,24 @@ class ContaReceberController extends Controller
             'cliente.pessoa',
             'nota.cliente.pessoa',
             'categoriaFinanceira',
+            'parcelas.recebimentosAtivos',
+            'recebimentos.parcela',
             'recebimentos.formaPagamento',
             'recebimentos.usuario',
         ]);
 
-        $valorDevido =
-            (float) $contaReceber->valor_original
+        $valorDevido = (float) $contaReceber->valor_original
             - (float) $contaReceber->desconto
             + (float) $contaReceber->juros
             + (float) $contaReceber->multa;
 
-        $valorRecebido = (float) $contaReceber
-            ->recebimentos
-            ->whereNull('estornado_em')
-            ->sum('valor');
+        $valorRecebido = (float) $contaReceber->recebimentos->whereNull('estornado_em')->sum('valor');
+        $saldo = max(0, round($valorDevido - $valorRecebido, 2));
 
-        $saldo = max(
-            0,
-            $valorDevido - $valorRecebido
-        );
+        $vencida = $contaReceber->status !== 'cancelada'
+            && $contaReceber->parcelas->contains(fn ($parcela) => !$parcela->estaQuitada() && $parcela->data_vencimento->isBefore(today()));
 
-        $vencida =
-            in_array(
-                $contaReceber->status,
-                ['aberta', 'parcial']
-            )
-            && $contaReceber->data_vencimento->isPast();
-
-        return view(
-            'financeiro.contas_receber.show',
-            compact(
-                'contaReceber',
-                'valorDevido',
-                'valorRecebido',
-                'saldo',
-                'vencida'
-            )
-        );
+        return view('financeiro.contas_receber.show', compact('contaReceber', 'valorDevido', 'valorRecebido', 'saldo', 'vencida'));
     }
 
     public function edit(ContaReceber $contaReceber)
@@ -343,4 +369,3 @@ class ContaReceberController extends Controller
             );
     }
 }
-

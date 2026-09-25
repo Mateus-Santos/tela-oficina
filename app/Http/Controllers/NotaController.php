@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Actions\Notas\CancelarNota;
 use App\Actions\Notas\FinalizarNota;
+use App\Http\Requests\FinalizarNotaRequest;
+use App\Models\CategoriaFinanceira;
 use App\Models\Nota;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -11,14 +13,21 @@ use InvalidArgumentException;
 
 class NotaController extends Controller
 {
-    public function finalizar(string $id, FinalizarNota $finalizarNota)
-    {
+    public function finalizar(
+        FinalizarNotaRequest $request,
+        string $id,
+        FinalizarNota $finalizarNota
+    ) {
         $nota = Nota::findOrFail($id);
 
         try {
-            $finalizarNota->execute($nota);
+            $finalizarNota->execute(
+                $nota,
+                $request->validated()
+            );
         } catch (InvalidArgumentException $e) {
             return back()
+                ->withInput()
                 ->withErrors([
                     'finalizacao' => $e->getMessage(),
                 ]);
@@ -26,11 +35,16 @@ class NotaController extends Controller
 
         return redirect()
             ->route('notas.show', $nota->id)
-            ->with('success', "Nota #{$nota->id} finalizada com sucesso!");
+            ->with(
+                'success',
+                "Nota #{$nota->id} finalizada com sucesso!"
+            );
     }
 
-    public function cancelar(string $id, CancelarNota $cancelarNota)
-    {
+    public function cancelar(
+        string $id,
+        CancelarNota $cancelarNota
+    ) {
         $nota = Nota::findOrFail($id);
 
         try {
@@ -44,7 +58,10 @@ class NotaController extends Controller
 
         return redirect()
             ->route('notas.show', $nota->id)
-            ->with('success', "Nota #{$nota->id} cancelada com sucesso e estoque revertido!");
+            ->with(
+                'success',
+                "Nota #{$nota->id} cancelada com sucesso e estoque revertido!"
+            );
     }
 
     public function gerarpdf(string $id)
@@ -55,10 +72,17 @@ class NotaController extends Controller
             'itens.itemable',
         ])->findOrFail($id);
 
-        $pdf = Pdf::loadView('pdf.nota', compact('nota'))
-            ->setPaper('a4', 'portrait');
+        $pdf = Pdf::loadView(
+            'pdf.nota',
+            compact('nota')
+        )->setPaper(
+            'a4',
+            'portrait'
+        );
 
-        return $pdf->stream("nota-{$nota->id}.pdf");
+        return $pdf->stream(
+            "nota-{$nota->id}.pdf"
+        );
     }
 
     public function index(Request $request)
@@ -108,12 +132,24 @@ class NotaController extends Controller
         $itens = $nota->itens;
 
         $valorTotal = $itens->sum(function ($item) {
-            return ($item->quantidade * $item->valor_unitario) - $item->desconto;
+            return ($item->quantidade * $item->valor_unitario)
+                - $item->desconto;
         });
+
+        $categoriasFinanceiras = CategoriaFinanceira::query()
+            ->where('tipo', 'entrada')
+            ->where('ativo', true)
+            ->orderBy('nome')
+            ->get();
 
         return view(
             'notas_item.show_notas_itens',
-            compact('nota', 'itens', 'valorTotal')
+            compact(
+                'nota',
+                'itens',
+                'valorTotal',
+                'categoriasFinanceiras'
+            )
         );
     }
 }
