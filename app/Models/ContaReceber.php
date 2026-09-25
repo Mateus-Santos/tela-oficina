@@ -57,6 +57,14 @@ class ContaReceber extends Model
         );
     }
 
+    public function parcelas(): HasMany
+    {
+        return $this->hasMany(
+            ParcelaContaReceber::class,
+            'conta_receber_id'
+        )->orderBy('numero');
+    }
+
     public function recebimentos(): HasMany
     {
         return $this->hasMany(
@@ -67,7 +75,9 @@ class ContaReceber extends Model
 
     public function estaVencida(): bool
     {
-        return in_array($this->status, ['aberta', 'parcial'])
-            && $this->data_vencimento->isPast();
+        return in_array(
+            $this->status,
+            ['aberta', 'parcial']
+        ) && $this->data_vencimento->isPast();
     }
 }

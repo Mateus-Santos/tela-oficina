@@ -14,6 +14,7 @@ class Recebimento extends Model
 
     protected $fillable = [
         'conta_receber_id',
+        'parcela_conta_receber_id',
         'forma_pagamento_id',
         'valor',
         'data_pagamento',
@@ -34,6 +35,14 @@ class Recebimento extends Model
         return $this->belongsTo(
             ContaReceber::class,
             'conta_receber_id'
+        );
+    }
+
+    public function parcela(): BelongsTo
+    {
+        return $this->belongsTo(
+            ParcelaContaReceber::class,
+            'parcela_conta_receber_id'
         );
     }
 
