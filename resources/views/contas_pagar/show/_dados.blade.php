@@ -6,6 +6,7 @@
 
     <div class="card-body">
         <div class="row g-3">
+
             <div class="col-md-6">
                 <div class="text-muted small">Descrição</div>
                 <div class="fw-semibold">{{ $conta->descricao }}</div>
@@ -60,6 +61,23 @@
                 </div>
             </div>
 
+            <div class="col-md-4">
+                <div class="text-muted small">Compra vinculada</div>
+                <div class="fw-semibold">
+                    @if ($conta->compra)
+                        <a
+                            href="{{ route('compras.show', $conta->compra) }}"
+                            class="text-decoration-none"
+                        >
+                            <i class="bi bi-box-arrow-up-right me-1"></i>
+                            #{{ str_pad($conta->compra->id, 6, '0', STR_PAD_LEFT) }}
+                        </a>
+                    @else
+                        Não vinculada
+                    @endif
+                </div>
+            </div>
+
             @if ($conta->observacoes)
                 <div class="col-12">
                     <div class="text-muted small">Observações</div>
@@ -68,6 +86,7 @@
                     </div>
                 </div>
             @endif
+
         </div>
     </div>
 </div>

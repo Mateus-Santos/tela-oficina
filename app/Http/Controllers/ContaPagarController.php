@@ -225,6 +225,11 @@ class ContaPagarController extends Controller
     public function show(ContaPagar $conta): View
     {
         $conta->load([
+            'compra' => fn ($query) => $query->with([
+                'anexosVinculos' => fn ($query) => $query
+                    ->with('anexo')
+                    ->latest(),
+            ]),
             'fornecedor',
             'nota',
             'categoriaFinanceira',

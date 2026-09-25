@@ -11,6 +11,7 @@ use App\Models\Compra;
 use App\Models\ContaPagar;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AnexoController extends Controller
@@ -65,6 +66,41 @@ class AnexoController extends Controller
         return redirect()
             ->route('contas-pagar.show', $conta)
             ->with('success', 'Anexo enviado com sucesso!');
+    }
+
+    public function show(Anexo $anexo): View
+    {
+        abort_unless(
+            Storage::disk('public')->exists($anexo->arquivo),
+            404
+        );
+
+        $anexo->load([
+            'vinculos.vinculavel',
+        ]);
+
+        return view(
+            'anexo.show',
+            compact('anexo')
+        );
+    }
+
+    public function preview(Anexo $anexo): StreamedResponse
+    {
+        abort_unless(
+            Storage::disk('public')->exists($anexo->arquivo),
+            404
+        );
+
+        return Storage::disk('public')->response(
+            $anexo->arquivo,
+            $anexo->nome_original,
+            [
+                'Content-Type' => $anexo->mime_type,
+                'Content-Disposition' => 'inline; filename="' . $anexo->nome_original . '"',
+                'X-Content-Type-Options' => 'nosniff',
+            ]
+        );
     }
 
     public function download(Anexo $anexo): StreamedResponse
