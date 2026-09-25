@@ -1,4 +1,4 @@
-@import '_colors.scss';
+@use './_colors.scss' as *;
 
 $espacamento: 1rem;
 .dropdown-hover-submenu {

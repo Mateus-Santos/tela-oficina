@@ -1,29 +1,28 @@
-@import '_colors.scss';
+@use './_colors.scss' as colors;
 
-
-.form-section{
+.form-section {
     display: none;
 }
 
-.form-section.current{
+.form-section.current {
     display: inline;
 }
 
-.parsley-errors-list{
-    color: $color_3;
+.parsley-errors-list {
+    color: colors.$color_3;
 }
 
-.step{
-    padding: 0.5rem 0.5rem 0.5rem 0.5rem;
+.step {
+    padding: 0.5rem;
     border-radius: 2rem;
 }
 
-.step_selected{
-    background-color: $color_2;
-    color: $color_5;
+.step_selected {
+    background-color: colors.$color_2;
+    color: colors.$color_5;
 }
 
-.next{
-    background-color: $color_2;
-    padding: 0.5rem 0.5rem 0.5rem 0.5rem;
+.next {
+    background-color: colors.$color_2;
+    padding: 0.5rem;
 }
