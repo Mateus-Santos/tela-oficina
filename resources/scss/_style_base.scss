@@ -1,4 +1,5 @@
-﻿@import 'colors.scss';
+﻿@use 'sass:color';
+@use './_colors.scss' as *;
 
 body {
 	height: 100%;
@@ -19,7 +20,7 @@ a {
 	font-family: $font-family_2;
 	color: $color_4;
 	text-decoration: none;
-	transition: 300ms;	
+	transition: 300ms;
 }a:hover {
 	color: $color_2;
 	transition: 300ms;

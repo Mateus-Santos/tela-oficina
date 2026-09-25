@@ -1,4 +1,5 @@
-@import './colors.scss';
+@use 'sass:color';
+@use './_colors.scss' as *;
 
 // ====================
 // Cabeçalho das Listagens
@@ -157,7 +158,7 @@
 
     &:focus {
       outline: none;
-      border-color: darken($color_3, 15%);
+      border-color: color.adjust($color_3, $lightness: -15%);
       box-shadow: 0 0 0 0.2rem rgba($color_3, 0.25);
     }
 
@@ -199,7 +200,7 @@
 
     &:focus {
       outline: none;
-      border-color: darken($color_3, 15%);
+      border-color: color.adjust($color_3, $lightness: -15%);
       box-shadow: 0 0 0 0.2rem rgba($color_3, 0.25);
     }
   }

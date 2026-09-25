@@ -25,13 +25,16 @@ class StoreContaReceberRequest extends FormRequest
             'nota_id' => [
                 'nullable',
                 'integer',
-                'exists:notas,id',
+                Rule::exists('notas', 'id')->where(fn ($query) => $query->where('status', 'Finalizado')),
+                Rule::unique('contas_receber', 'nota_id'),
             ],
 
             'categoria_financeira_id' => [
                 'required',
                 'integer',
-                'exists:categorias_financeiras,id',
+                Rule::exists('categorias_financeiras', 'id')->where(fn ($query) => $query
+                    ->where('tipo', 'entrada')
+                    ->where('ativo', true)),
             ],
 
             'descricao' => [
@@ -70,12 +73,32 @@ class StoreContaReceberRequest extends FormRequest
 
             'data_emissao' => [
                 'nullable',
-                'date',
+                'date_format:Y-m-d',
             ],
 
-            'data_vencimento' => [
+            'parcelas' => [
                 'required',
-                'date',
+                'array',
+                'min:1',
+            ],
+
+            'parcelas.*.numero' => [
+                'required',
+                'integer',
+                'min:1',
+                'distinct',
+            ],
+
+            'parcelas.*.valor' => [
+                'required',
+                'numeric',
+                'gt:0',
+                'decimal:0,2',
+            ],
+
+            'parcelas.*.data_vencimento' => [
+                'required',
+                'date_format:Y-m-d',
             ],
 
             'observacoes' => [
@@ -91,10 +114,11 @@ class StoreContaReceberRequest extends FormRequest
             'cliente_id.exists' => 'O cliente informado não existe.',
             'cliente_id.required_without' => 'Informe o cliente quando a conta não estiver vinculada a uma nota.',
 
-            'nota_id.exists' => 'A nota informada não existe.',
+            'nota_id.exists' => 'A nota informada não existe ou ainda não está finalizada.',
+            'nota_id.unique' => 'A nota informada já possui uma conta a receber.',
 
             'categoria_financeira_id.required' => 'Informe a categoria financeira.',
-            'categoria_financeira_id.exists' => 'A categoria financeira informada não existe.',
+            'categoria_financeira_id.exists' => 'A categoria financeira deve ser uma categoria de entrada ativa.',
 
             'descricao.required' => 'Informe a descrição da conta.',
             'descricao.max' => 'A descrição não pode ultrapassar 255 caracteres.',
@@ -116,9 +140,24 @@ class StoreContaReceberRequest extends FormRequest
             'multa.min' => 'A multa não pode ser negativa.',
             'multa.decimal' => 'A multa deve possuir no máximo duas casas decimais.',
 
-            'data_emissao.date' => 'A data de emissão é inválida.',
-            'data_vencimento.required' => 'Informe a data de vencimento.',
-            'data_vencimento.date' => 'A data de vencimento é inválida.',
+            'data_emissao.date_format' => 'A data de emissão é inválida.',
+
+            'parcelas.required' => 'Informe ao menos uma parcela.',
+            'parcelas.array' => 'As parcelas informadas são inválidas.',
+            'parcelas.min' => 'Informe ao menos uma parcela.',
+
+            'parcelas.*.numero.required' => 'Informe o número de todas as parcelas.',
+            'parcelas.*.numero.integer' => 'O número da parcela deve ser inteiro.',
+            'parcelas.*.numero.min' => 'O número da parcela deve ser maior que zero.',
+            'parcelas.*.numero.distinct' => 'Existem parcelas com números repetidos.',
+
+            'parcelas.*.valor.required' => 'Informe o valor de todas as parcelas.',
+            'parcelas.*.valor.numeric' => 'O valor da parcela deve ser numérico.',
+            'parcelas.*.valor.gt' => 'O valor da parcela deve ser maior que zero.',
+            'parcelas.*.valor.decimal' => 'O valor da parcela deve possuir no máximo duas casas decimais.',
+
+            'parcelas.*.data_vencimento.required' => 'Informe o vencimento de todas as parcelas.',
+            'parcelas.*.data_vencimento.date_format' => 'Existe uma data de vencimento inválida.',
 
             'observacoes.string' => 'As observações devem ser um texto.',
         ];

@@ -2,12 +2,7 @@ const LIMITE_MAXIMO_PARCELAS = 120;
 
 function totalEmCentavos(valor) {
     const numero = Number(valor);
-
-    if (!Number.isFinite(numero)) {
-        return 0;
-    }
-
-    return Math.round(numero * 100);
+    return Number.isFinite(numero) ? Math.round(numero * 100) : 0;
 }
 
 function formatarMoeda(valor) {
@@ -23,12 +18,7 @@ function formatarData(valor) {
     }
 
     const partes = valor.split('-');
-
-    if (partes.length !== 3) {
-        return '';
-    }
-
-    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : '';
 }
 
 function obterData(valor) {
@@ -37,30 +27,17 @@ function obterData(valor) {
     }
 
     const data = new Date(`${valor}T00:00:00`);
-
-    if (Number.isNaN(data.getTime())) {
-        return null;
-    }
-
-    return data;
+    return Number.isNaN(data.getTime()) ? null : data;
 }
 
 function formatarDataInput(data) {
-    if (
-        !(data instanceof Date) ||
-        Number.isNaN(data.getTime())
-    ) {
+    if (!(data instanceof Date) || Number.isNaN(data.getTime())) {
         return '';
     }
 
     const ano = data.getFullYear();
-    const mes = String(
-        data.getMonth() + 1
-    ).padStart(2, '0');
-
-    const dia = String(
-        data.getDate()
-    ).padStart(2, '0');
+    const mes = String(data.getMonth() + 1).padStart(2, '0');
+    const dia = String(data.getDate()).padStart(2, '0');
 
     return `${ano}-${mes}-${dia}`;
 }
@@ -72,9 +49,7 @@ function adicionarDias(valor, dias) {
         return '';
     }
 
-    data.setDate(
-        data.getDate() + dias
-    );
+    data.setDate(data.getDate() + dias);
 
     return formatarDataInput(data);
 }
@@ -84,19 +59,13 @@ function obterQuantidade(quantidadeInput) {
         return 1;
     }
 
-    const valor = Number.parseInt(
-        quantidadeInput.value || '1',
-        10
-    );
+    const valor = Number.parseInt(quantidadeInput.value || '1', 10);
 
     if (!Number.isFinite(valor)) {
         return 1;
     }
 
-    return Math.min(
-        LIMITE_MAXIMO_PARCELAS,
-        Math.max(1, valor)
-    );
+    return Math.min(LIMITE_MAXIMO_PARCELAS, Math.max(1, valor));
 }
 
 function obterIntervalo(intervaloInput) {
@@ -104,10 +73,7 @@ function obterIntervalo(intervaloInput) {
         return 30;
     }
 
-    const valor = Number.parseInt(
-        intervaloInput.value || '30',
-        10
-    );
+    const valor = Number.parseInt(intervaloInput.value || '30', 10);
 
     if (!Number.isFinite(valor)) {
         return 30;
@@ -117,86 +83,46 @@ function obterIntervalo(intervaloInput) {
 }
 
 function calcularValores(total, quantidade) {
-    const totalCentavos =
-        totalEmCentavos(total);
+    const totalCentavos = totalEmCentavos(total);
 
     if (quantidade <= 0) {
         return [];
     }
 
-    const valorBase = Math.floor(
-        totalCentavos / quantidade
-    );
-
-    const restante =
-        totalCentavos -
-        (valorBase * quantidade);
-
+    const valorBase = Math.floor(totalCentavos / quantidade);
+    const restante = totalCentavos - (valorBase * quantidade);
     const valores = [];
 
-    for (
-        let indice = 0;
-        indice < quantidade;
-        indice += 1
-    ) {
-        const valorCentavos =
-            valorBase +
-            (indice < restante ? 1 : 0);
-
-        valores.push(
-            valorCentavos / 100
-        );
+    for (let indice = 0; indice < quantidade; indice += 1) {
+        const valorCentavos = valorBase + (indice < restante ? 1 : 0);
+        valores.push(valorCentavos / 100);
     }
 
     return valores;
 }
 
-function calcularDatasAutomaticas(
-    quantidade,
-    primeiraData,
-    intervalo
-) {
+function calcularDatasAutomaticas(quantidade, primeiraData, intervalo) {
     const datas = [];
 
     if (!primeiraData) {
-        for (
-            let indice = 0;
-            indice < quantidade;
-            indice += 1
-        ) {
+        for (let indice = 0; indice < quantidade; indice += 1) {
             datas.push('');
         }
 
         return datas;
     }
 
-    for (
-        let indice = 0;
-        indice < quantidade;
-        indice += 1
-    ) {
-        datas.push(
-            adicionarDias(
-                primeiraData,
-                indice * intervalo
-            )
-        );
+    for (let indice = 0; indice < quantidade; indice += 1) {
+        datas.push(adicionarDias(primeiraData, indice * intervalo));
     }
 
     return datas;
 }
 
-function ajustarQuantidadePersonalizada(
-    datas,
-    quantidade
-) {
-    const resultado = Array.isArray(datas)
-        ? datas.slice(0, quantidade)
-        : [];
+function ajustarQuantidadePersonalizada(datas, quantidade) {
+    const resultado = Array.isArray(datas) ? datas.slice(0, quantidade) : [];
 
-    while (
-        resultado.length < quantidade
-    ) {
+    while (resultado.length < quantidade) {
         resultado.push('');
     }
 
@@ -220,46 +146,32 @@ function inicializarParcelas({
             obterParcelas: function () {
                 return [];
             },
-            atualizarDataPersonalizada:
-                function () {},
+            atualizarDataPersonalizada: function () {},
+            definirValorTotal: function () {},
             reset: function () {},
         };
     }
 
+    let valorTotalAtual = Number(valorTotal || 0);
     let personalizarVencimentos = false;
-
     let datasPersonalizadas = [];
-
-    let quantidadeAnterior =
-        obterQuantidade(quantidadeInput);
-
+    let quantidadeAnterior = obterQuantidade(quantidadeInput);
     let controlePersonalizacao = null;
-
     let checkboxPersonalizacao = null;
 
     function obterQuantidadeAtual() {
-        return obterQuantidade(
-            quantidadeInput
-        );
+        return obterQuantidade(quantidadeInput);
     }
 
     function obterIntervaloAtual() {
-        return obterIntervalo(
-            intervaloInput
-        );
+        return obterIntervalo(intervaloInput);
     }
 
     function obterPrimeiraDataAtual() {
-        if (!primeiraDataInput) {
-            return '';
-        }
-
-        return primeiraDataInput.value || '';
+        return primeiraDataInput ? primeiraDataInput.value || '' : '';
     }
 
-    function obterDatasAutomaticasAtuais(
-        quantidade
-    ) {
+    function obterDatasAutomaticasAtuais(quantidade) {
         return calcularDatasAutomaticas(
             quantidade,
             obterPrimeiraDataAtual(),
@@ -267,51 +179,37 @@ function inicializarParcelas({
         );
     }
 
-    function garantirQuantidadePersonalizada(
-        quantidade
-    ) {
-        datasPersonalizadas =
-            ajustarQuantidadePersonalizada(
-                datasPersonalizadas,
-                quantidade
-            );
+    function garantirQuantidadePersonalizada(quantidade) {
+        datasPersonalizadas = ajustarQuantidadePersonalizada(
+            datasPersonalizadas,
+            quantidade
+        );
     }
 
     function atualizarEstadoCamposAutomaticos() {
-        const desabilitado =
-            personalizarVencimentos;
+        const desabilitado = personalizarVencimentos;
 
         if (primeiraDataInput) {
-            primeiraDataInput.disabled =
-                desabilitado;
+            primeiraDataInput.disabled = desabilitado;
         }
 
         if (intervaloInput) {
-            intervaloInput.disabled =
-                desabilitado;
+            intervaloInput.disabled = desabilitado;
         }
     }
 
-    function validarDatasPersonalizadas(
-        exibirMensagem
-    ) {
+    function validarDatasPersonalizadas(exibirMensagem) {
         let primeiraDataInvalida = null;
 
-        for (
-            let indice = 0;
-            indice < datasPersonalizadas.length;
-            indice += 1
-        ) {
-            const valorAtual =
-                datasPersonalizadas[indice];
+        for (let indice = 0; indice < datasPersonalizadas.length; indice += 1) {
+            const valorAtual = datasPersonalizadas[indice];
 
             if (!valorAtual) {
                 primeiraDataInvalida = indice;
                 break;
             }
 
-            const dataAtual =
-                obterData(valorAtual);
+            const dataAtual = obterData(valorAtual);
 
             if (!dataAtual) {
                 primeiraDataInvalida = indice;
@@ -319,80 +217,50 @@ function inicializarParcelas({
             }
 
             if (indice > 0) {
-                const valorAnterior =
-                    datasPersonalizadas[
-                        indice - 1
-                    ];
+                const valorAnterior = datasPersonalizadas[indice - 1];
 
                 if (!valorAnterior) {
                     primeiraDataInvalida = indice;
                     break;
                 }
 
-                const dataAnterior =
-                    obterData(valorAnterior);
+                const dataAnterior = obterData(valorAnterior);
 
-                if (
-                    dataAnterior &&
-                    dataAtual.getTime() <
-                        dataAnterior.getTime()
-                ) {
+                if (dataAnterior && dataAtual.getTime() < dataAnterior.getTime()) {
                     primeiraDataInvalida = indice;
                     break;
                 }
             }
         }
 
-        const campos =
-            previewElement.querySelectorAll(
-                '[data-parcela-data-index]'
-            );
+        const campos = previewElement.querySelectorAll('[data-parcela-data-index]');
 
         campos.forEach(function (campo) {
-            campo.classList.remove(
-                'is-invalid'
-            );
+            campo.classList.remove('is-invalid');
         });
 
-        const mensagem =
-            previewElement.querySelector(
-                '[data-parcelas-validacao]'
+        const mensagem = previewElement.querySelector('[data-parcelas-validacao]');
+
+        if (primeiraDataInvalida !== null) {
+            const campo = previewElement.querySelector(
+                `[data-parcela-data-index="${primeiraDataInvalida}"]`
             );
 
-        if (
-            primeiraDataInvalida !== null
-        ) {
-            const campo =
-                previewElement.querySelector(
-                    `[data-parcela-data-index="${primeiraDataInvalida}"]`
-                );
-
             if (campo) {
-                campo.classList.add(
-                    'is-invalid'
-                );
+                campo.classList.add('is-invalid');
             }
 
-            if (
-                mensagem &&
-                exibirMensagem
-            ) {
+            if (mensagem && exibirMensagem) {
                 mensagem.textContent =
                     'Preencha todas as datas e mantenha as parcelas em ordem cronológica.';
-
-                mensagem.classList.remove(
-                    'd-none'
-                );
+                mensagem.classList.remove('d-none');
             }
 
             return false;
         }
 
         if (mensagem) {
-            mensagem.classList.add(
-                'd-none'
-            );
-
+            mensagem.classList.add('d-none');
             mensagem.textContent = '';
         }
 
@@ -400,17 +268,10 @@ function inicializarParcelas({
     }
 
     function criarMensagemValidacao() {
-        const mensagem =
-            document.createElement('div');
+        const mensagem = document.createElement('div');
 
-        mensagem.setAttribute(
-            'data-parcelas-validacao',
-            ''
-        );
-
-        mensagem.className =
-            'alert alert-danger py-2 mb-3 d-none';
-
+        mensagem.setAttribute('data-parcelas-validacao', '');
+        mensagem.className = 'alert alert-danger py-2 mb-3 d-none';
         mensagem.textContent =
             'Preencha todas as datas e mantenha as parcelas em ordem cronológica.';
 
@@ -422,123 +283,60 @@ function inicializarParcelas({
             return;
         }
 
-        controlePersonalizacao =
-            document.createElement('div');
+        controlePersonalizacao = document.createElement('div');
+        controlePersonalizacao.setAttribute('data-parcelas-personalizacao', '');
+        controlePersonalizacao.className = 'mb-3';
 
-        controlePersonalizacao.setAttribute(
-            'data-parcelas-personalizacao',
-            ''
-        );
+        const divSwitch = document.createElement('div');
+        divSwitch.className = 'form-check form-switch d-flex align-items-center gap-2';
 
-        controlePersonalizacao.className =
-            'mb-3';
-
-        const divSwitch =
-            document.createElement('div');
-
-        divSwitch.className =
-            'form-check form-switch d-flex align-items-center gap-2';
-
-        checkboxPersonalizacao =
-            document.createElement('input');
-
-        checkboxPersonalizacao.type =
-            'checkbox';
-
-        checkboxPersonalizacao.className =
-            'form-check-input';
-
+        checkboxPersonalizacao = document.createElement('input');
+        checkboxPersonalizacao.type = 'checkbox';
+        checkboxPersonalizacao.className = 'form-check-input';
         checkboxPersonalizacao.id =
             `personalizar-vencimentos-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+        checkboxPersonalizacao.checked = personalizarVencimentos;
 
-        checkboxPersonalizacao.checked =
-            personalizarVencimentos;
+        const label = document.createElement('label');
+        label.className = 'form-check-label';
+        label.setAttribute('for', checkboxPersonalizacao.id);
+        label.textContent = 'Personalizar data de vencimento de cada parcela';
 
-        const label =
-            document.createElement('label');
+        checkboxPersonalizacao.addEventListener('change', function () {
+            const quantidade = obterQuantidadeAtual();
 
-        label.className =
-            'form-check-label';
-
-        label.setAttribute(
-            'for',
-            checkboxPersonalizacao.id
-        );
-
-        label.textContent =
-            'Personalizar data de vencimento de cada parcela';
-
-        checkboxPersonalizacao.addEventListener(
-            'change',
-            function () {
-                const quantidade =
-                    obterQuantidadeAtual();
-
-                if (
-                    checkboxPersonalizacao.checked
-                ) {
-                    if (
-                        datasPersonalizadas.length ===
-                        0
-                    ) {
-                        datasPersonalizadas =
-                            obterDatasAutomaticasAtuais(
-                                quantidade
-                            );
-                    } else {
-                        garantirQuantidadePersonalizada(
-                            quantidade
-                        );
-                    }
-
-                    personalizarVencimentos =
-                        true;
+            if (checkboxPersonalizacao.checked) {
+                if (datasPersonalizadas.length === 0) {
+                    datasPersonalizadas = obterDatasAutomaticasAtuais(quantidade);
                 } else {
-                    personalizarVencimentos =
-                        false;
-
-                    datasPersonalizadas =
-                        obterDatasAutomaticasAtuais(
-                            quantidade
-                        );
+                    garantirQuantidadePersonalizada(quantidade);
                 }
 
-                atualizar();
+                personalizarVencimentos = true;
+            } else {
+                personalizarVencimentos = false;
+                datasPersonalizadas = obterDatasAutomaticasAtuais(quantidade);
             }
-        );
 
-        divSwitch.appendChild(
-            checkboxPersonalizacao
-        );
+            atualizar();
+        });
 
+        divSwitch.appendChild(checkboxPersonalizacao);
         divSwitch.appendChild(label);
+        controlePersonalizacao.appendChild(divSwitch);
 
-        controlePersonalizacao.appendChild(
-            divSwitch
-        );
-
-        const parentElement =
-            previewElement.parentElement;
+        const parentElement = previewElement.parentElement;
 
         if (!parentElement) {
             return;
         }
 
-        const referencia =
-            parentElement.querySelector(
-                '.card'
-            );
+        const referencia = parentElement.querySelector('.card');
 
         if (referencia) {
-            parentElement.insertBefore(
-                controlePersonalizacao,
-                referencia
-            );
+            parentElement.insertBefore(controlePersonalizacao, referencia);
         } else {
-            parentElement.insertBefore(
-                controlePersonalizacao,
-                previewElement
-            );
+            parentElement.insertBefore(controlePersonalizacao, previewElement);
         }
     }
 
@@ -546,31 +344,20 @@ function inicializarParcelas({
         criarControlePersonalizacao();
 
         if (checkboxPersonalizacao) {
-            checkboxPersonalizacao.checked =
-                personalizarVencimentos;
+            checkboxPersonalizacao.checked = personalizarVencimentos;
         }
 
         atualizarEstadoCamposAutomaticos();
     }
 
-    function renderizarAutomatico(
-        parcelas
-    ) {
-        const tabela =
-            document.createElement('div');
+    function renderizarAutomatico(parcelas) {
+        const tabela = document.createElement('div');
+        tabela.className = 'table-responsive';
 
-        tabela.className =
-            'table-responsive';
+        const table = document.createElement('table');
+        table.className = 'table table-sm table-bordered align-middle mb-0';
 
-        const table =
-            document.createElement('table');
-
-        table.className =
-            'table table-sm table-bordered align-middle mb-0';
-
-        const thead =
-            document.createElement('thead');
-
+        const thead = document.createElement('thead');
         thead.innerHTML = `
             <tr>
                 <th>Parcela</th>
@@ -579,12 +366,10 @@ function inicializarParcelas({
             </tr>
         `;
 
-        const tbody =
-            document.createElement('tbody');
+        const tbody = document.createElement('tbody');
 
         parcelas.forEach(function (parcela) {
-            const tr =
-                document.createElement('tr');
+            const tr = document.createElement('tr');
 
             tr.innerHTML = `
                 <td>${parcela.numero}</td>
@@ -598,126 +383,59 @@ function inicializarParcelas({
         table.appendChild(thead);
         table.appendChild(tbody);
         tabela.appendChild(table);
-
-        previewElement.appendChild(
-            tabela
-        );
+        previewElement.appendChild(tabela);
     }
 
-    function renderizarPersonalizado(
-        parcelas
-    ) {
-        const mensagem =
-            criarMensagemValidacao();
+    function renderizarPersonalizado(parcelas) {
+        const mensagem = criarMensagemValidacao();
+        previewElement.appendChild(mensagem);
 
-        previewElement.appendChild(
-            mensagem
-        );
+        const tabela = document.createElement('div');
+        tabela.className = 'table-responsive';
 
-        const tabela =
-            document.createElement('div');
+        const table = document.createElement('table');
+        table.className = 'table table-sm table-bordered align-middle mb-0';
 
-        tabela.className =
-            'table-responsive';
-
-        const table =
-            document.createElement('table');
-
-        table.className =
-            'table table-sm table-bordered align-middle mb-0';
-
-        const thead =
-            document.createElement('thead');
-
+        const thead = document.createElement('thead');
         thead.innerHTML = `
             <tr>
-                <th style="width: 90px;">
-                    Parcela
-                </th>
-                <th>
-                    Data de vencimento
-                </th>
-                <th class="text-end">
-                    Valor
-                </th>
+                <th style="width: 90px;">Parcela</th>
+                <th>Data de vencimento</th>
+                <th class="text-end">Valor</th>
             </tr>
         `;
 
-        const tbody =
-            document.createElement('tbody');
+        const tbody = document.createElement('tbody');
 
-        parcelas.forEach(function (
-            parcela,
-            indice
-        ) {
-            const tr =
-                document.createElement('tr');
+        parcelas.forEach(function (parcela, indice) {
+            const tr = document.createElement('tr');
 
-            const tdNumero =
-                document.createElement('td');
+            const tdNumero = document.createElement('td');
+            tdNumero.textContent = parcela.numero;
 
-            tdNumero.textContent =
-                parcela.numero;
+            const tdData = document.createElement('td');
 
-            const tdData =
-                document.createElement('td');
-
-            const input =
-                document.createElement('input');
-
+            const input = document.createElement('input');
             input.type = 'date';
+            input.className = 'form-control form-control-sm';
+            input.value = datasPersonalizadas[indice] || '';
+            input.setAttribute('data-parcela-data-index', String(indice));
 
-            input.className =
-                'form-control form-control-sm';
+            input.addEventListener('change', function () {
+                datasPersonalizadas[indice] = input.value || '';
+                validarDatasPersonalizadas(true);
+            });
 
-            input.value =
-                datasPersonalizadas[
-                    indice
-                ] || '';
-
-            input.setAttribute(
-                'data-parcela-data-index',
-                String(indice)
-            );
-
-            input.addEventListener(
-                'change',
-                function () {
-                    datasPersonalizadas[
-                        indice
-                    ] = input.value || '';
-
-                    validarDatasPersonalizadas(
-                        true
-                    );
-                }
-            );
-
-            input.addEventListener(
-                'input',
-                function () {
-                    datasPersonalizadas[
-                        indice
-                    ] = input.value || '';
-
-                    validarDatasPersonalizadas(
-                        false
-                    );
-                }
-            );
+            input.addEventListener('input', function () {
+                datasPersonalizadas[indice] = input.value || '';
+                validarDatasPersonalizadas(false);
+            });
 
             tdData.appendChild(input);
 
-            const tdValor =
-                document.createElement('td');
-
-            tdValor.className =
-                'text-end';
-
-            tdValor.textContent =
-                formatarMoeda(
-                    parcela.valor
-                );
+            const tdValor = document.createElement('td');
+            tdValor.className = 'text-end';
+            tdValor.textContent = formatarMoeda(parcela.valor);
 
             tr.appendChild(tdNumero);
             tr.appendChild(tdData);
@@ -728,60 +446,37 @@ function inicializarParcelas({
 
         table.appendChild(thead);
         table.appendChild(tbody);
-
         tabela.appendChild(table);
+        previewElement.appendChild(tabela);
 
-        previewElement.appendChild(
-            tabela
-        );
-
-        validarDatasPersonalizadas(
-            false
-        );
+        validarDatasPersonalizadas(false);
     }
 
     function calcularParcelas() {
-        const quantidade =
-            obterQuantidadeAtual();
+        const quantidade = obterQuantidadeAtual();
 
         if (quantidade <= 0) {
             return [];
         }
 
-        const valores =
-            calcularValores(
-                valorTotal,
-                quantidade
-            );
+        const valores = calcularValores(valorTotalAtual, quantidade);
 
         let datas;
 
         if (personalizarVencimentos) {
-            garantirQuantidadePersonalizada(
-                quantidade
-            );
-
-            datas =
-                datasPersonalizadas.slice();
+            garantirQuantidadePersonalizada(quantidade);
+            datas = datasPersonalizadas.slice();
         } else {
-            datas =
-                obterDatasAutomaticasAtuais(
-                    quantidade
-                );
+            datas = obterDatasAutomaticasAtuais(quantidade);
         }
 
         const parcelas = [];
 
-        for (
-            let indice = 0;
-            indice < quantidade;
-            indice += 1
-        ) {
+        for (let indice = 0; indice < quantidade; indice += 1) {
             parcelas.push({
                 numero: indice + 1,
                 valor: valores[indice],
-                data_vencimento:
-                    datas[indice] || '',
+                data_vencimento: datas[indice] || '',
             });
         }
 
@@ -789,44 +484,33 @@ function inicializarParcelas({
     }
 
     function renderizar() {
-        const quantidade =
-            obterQuantidadeAtual();
+        const quantidade = obterQuantidadeAtual();
 
         if (
-            quantidade !==
-                quantidadeAnterior &&
+            quantidade !== quantidadeAnterior &&
             personalizarVencimentos
         ) {
-            garantirQuantidadePersonalizada(
-                quantidade
-            );
+            garantirQuantidadePersonalizada(quantidade);
         }
 
-        quantidadeAnterior =
-            quantidade;
+        quantidadeAnterior = quantidade;
 
         sincronizarControlePersonalizacao();
 
         previewElement.innerHTML = '';
 
-        const parcelas =
-            calcularParcelas();
+        const parcelas = calcularParcelas();
 
         if (!parcelas.length) {
             previewElement.innerHTML =
                 '<div class="alert alert-warning mb-0">Nenhuma parcela configurada.</div>';
-
             return;
         }
 
         if (personalizarVencimentos) {
-            renderizarPersonalizado(
-                parcelas
-            );
+            renderizarPersonalizado(parcelas);
         } else {
-            renderizarAutomatico(
-                parcelas
-            );
+            renderizarAutomatico(parcelas);
         }
     }
 
@@ -834,109 +518,77 @@ function inicializarParcelas({
         renderizar();
 
         if (totalElement) {
-            totalElement.textContent =
-                formatarMoeda(valorTotal);
+            totalElement.textContent = formatarMoeda(valorTotalAtual);
         }
     }
 
-    function atualizarDataPersonalizada(
-        indice,
-        valor
-    ) {
+    function atualizarDataPersonalizada(indice, valor) {
         if (!personalizarVencimentos) {
             return;
         }
 
-        if (
-            indice < 0 ||
-            indice >=
-                datasPersonalizadas.length
-        ) {
+        if (indice < 0 || indice >= datasPersonalizadas.length) {
             return;
         }
 
-        datasPersonalizadas[indice] =
-            valor || '';
-
+        datasPersonalizadas[indice] = valor || '';
         renderizar();
     }
 
+    function definirValorTotal(valor) {
+        const numero = Number(valor);
+
+        valorTotalAtual = Number.isFinite(numero)
+            ? Math.max(0, numero)
+            : 0;
+
+        atualizar();
+    }
+
     function reset() {
-        personalizarVencimentos =
-            false;
-
+        personalizarVencimentos = false;
         datasPersonalizadas = [];
-
-        quantidadeAnterior =
-            obterQuantidade(
-                quantidadeInput
-            );
+        quantidadeAnterior = obterQuantidade(quantidadeInput);
 
         if (quantidadeInput) {
-            quantidadeInput.value =
-                quantidadeAnterior;
+            quantidadeInput.value = quantidadeAnterior;
         }
 
         if (checkboxPersonalizacao) {
-            checkboxPersonalizacao.checked =
-                false;
+            checkboxPersonalizacao.checked = false;
         }
 
         atualizar();
     }
 
     if (quantidadeInput) {
-        quantidadeInput.addEventListener(
-            'input',
-            function () {
-                const quantidade =
-                    obterQuantidadeAtual();
+        quantidadeInput.addEventListener('input', function () {
+            const quantidade = obterQuantidadeAtual();
+            quantidadeInput.value = quantidade;
+            atualizar();
+        });
 
-                quantidadeInput.value =
-                    quantidade;
-
-                atualizar();
-            }
-        );
-
-        quantidadeInput.addEventListener(
-            'change',
-            function () {
-                const quantidade =
-                    obterQuantidadeAtual();
-
-                quantidadeInput.value =
-                    quantidade;
-
-                atualizar();
-            }
-        );
+        quantidadeInput.addEventListener('change', function () {
+            const quantidade = obterQuantidadeAtual();
+            quantidadeInput.value = quantidade;
+            atualizar();
+        });
     }
 
     if (primeiraDataInput) {
-        primeiraDataInput.addEventListener(
-            'change',
-            function () {
-                if (
-                    !personalizarVencimentos
-                ) {
-                    atualizar();
-                }
+        primeiraDataInput.addEventListener('change', function () {
+            if (!personalizarVencimentos) {
+                atualizar();
             }
-        );
+        });
     }
 
     if (intervaloInput) {
-        intervaloInput.addEventListener(
-            'change',
-            function () {
-                if (
-                    !personalizarVencimentos
-                ) {
-                    atualizar();
-                }
+        intervaloInput.addEventListener('change', function () {
+            if (!personalizarVencimentos) {
+                atualizar();
             }
-        );
+        });
     }
 
     atualizar();
@@ -944,9 +596,9 @@ function inicializarParcelas({
     return {
         atualizar,
         calcularParcelas,
-        obterParcelas:
-            calcularParcelas,
+        obterParcelas: calcularParcelas,
         atualizarDataPersonalizada,
+        definirValorTotal,
         reset,
     };
 }

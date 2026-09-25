@@ -1,4 +1,5 @@
-@import './colors.scss';
+@use 'sass:color';
+@use './_colors.scss' as *;
 
 .produto-container {
     position: relative;
@@ -306,7 +307,7 @@
 @mixin button-style(
     $bg,
     $text,
-    $hover-bg: darken($bg, 10%),
+    $hover-bg: color.adjust($bg, $lightness: -10%),
     $hover-text: $color_5
 ) {
     padding: $spacing-unit * 0.75 $spacing-unit * 1.25;
