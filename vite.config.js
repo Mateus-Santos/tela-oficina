@@ -2,6 +2,9 @@ import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 
 export default defineConfig({
+    css: {
+        preprocessorMaxWorkers: 0,
+    },
     plugins: [
         laravel({
             input: [
@@ -29,6 +32,7 @@ export default defineConfig({
                 'resources/js/notaitem/descontos.js',
                 'resources/js/components/barcode.js',
                 'resources/js/conta-pagar.js',
+                'resources/js/conta-receber.js',
                 'resources/js/nota-show.js',
                 'resources/js/compras/show.js',
             ],

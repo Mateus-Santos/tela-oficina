@@ -18,7 +18,7 @@ export default class BuscaItens {
             config.debounce || 350;
 
         this.minimoCaracteres =
-            config.minimoCaracteres || 1;
+            config.minimoCaracteres ?? 1;
 
         this.obterParametros =
             config.obterParametros ||
