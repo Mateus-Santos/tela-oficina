@@ -38,6 +38,7 @@
                     {{-- ETAPA 1: APROVAÇÃO --}}
                     <div
                         id="aprovacao-compra-etapa-inicial"
+                        data-aprovacao-etapa="inicial"
                     >
                         <div class="alert alert-success">
                             <i class="bi bi-check-circle"></i>
@@ -55,6 +56,7 @@
                     <div
                         id="aprovacao-compra-etapa-parcelas"
                         class="d-none"
+                        data-aprovacao-etapa="parcelas"
                     >
                         <div class="alert alert-info">
                             <i class="bi bi-info-circle"></i>
