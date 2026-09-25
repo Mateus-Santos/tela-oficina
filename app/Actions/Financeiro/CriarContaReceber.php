@@ -19,6 +19,12 @@ class CriarContaReceber
                     ->lockForUpdate()
                     ->findOrFail($dados['nota_id']);
 
+                if ($nota->status !== 'Finalizado') {
+                    throw ValidationException::withMessages([
+                        'nota_id' => "A Nota #{$nota->id} precisa estar finalizada para gerar uma conta a receber.",
+                    ]);
+                }
+
                 $contaExistente = ContaReceber::query()
                     ->where('nota_id', $nota->id)
                     ->exists();

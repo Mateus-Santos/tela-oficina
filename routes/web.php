@@ -25,6 +25,8 @@ use App\Http\Controllers\MovimentacaoEstoqueController;
 use App\Http\Controllers\ContaPagarController;
 use App\Http\Controllers\Api\NotaItemBuscaController;
 use App\Http\Controllers\Api\ProdutoBuscaController;
+use App\Http\Controllers\Api\ClienteContaReceberBuscaController;
+use App\Http\Controllers\Api\NotaContaReceberBuscaController;
 
 // use App\Http\Controllers\ChatController;
 
@@ -161,6 +163,8 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         Route::post('contas-pagar/{conta}/cancelar', [ContaPagarController::class, 'cancelar'])->name('contas-pagar.cancelar');
 
         Route::post('contas-receber/{contaReceber}/recebimentos/{recebimento}/estornar', [RecebimentoController::class, 'estornar'])->name('recebimentos.estornar');
+        Route::get('/api/contas-receber/clientes/buscar', ClienteContaReceberBuscaController::class)->name('api.contas-receber.clientes.buscar');
+        Route::get('/api/contas-receber/notas/buscar', NotaContaReceberBuscaController::class)->name('api.contas-receber.notas.buscar');
     });
 });
 

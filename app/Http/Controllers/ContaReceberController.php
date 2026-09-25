@@ -213,31 +213,13 @@ class ContaReceberController extends Controller
 
     public function create()
     {
-        $clientes = Cliente::query()
-            ->with('pessoa')
-            ->whereHas('pessoa')
-            ->get()
-            ->sortBy('pessoa.nome');
-
-        $notas = Nota::query()
-            ->with('cliente.pessoa')
-            ->orderByDesc('id')
-            ->get();
-
         $categorias = CategoriaFinanceira::query()
             ->where('tipo', 'entrada')
             ->where('ativo', true)
             ->orderBy('nome')
             ->get();
 
-        return view(
-            'financeiro.contas_receber.create',
-            compact(
-                'clientes',
-                'notas',
-                'categorias'
-            )
-        );
+        return view('financeiro.contas_receber.create', compact('categorias'));
     }
 
     public function store(
