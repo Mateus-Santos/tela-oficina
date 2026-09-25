@@ -142,7 +142,12 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         Route::post('contas-pagar/{conta}/anexos', [AnexoController::class, 'storeContaPagar'])->name('contas-pagar.anexos.store');
 
         // Anexos
+        Route::get('anexos/{anexo}', [AnexoController::class, 'show'])->name('anexos.show');
+
+        Route::get('anexos/{anexo}/preview', [AnexoController::class, 'preview'])->name('anexos.preview');
+
         Route::get('anexos/{anexo}/download', [AnexoController::class, 'download'])->name('anexos.download');
+
         Route::delete('anexos/{vinculo}', [AnexoController::class, 'destroy'])->name('anexos.destroy');
 
         // Contas a Pagar
