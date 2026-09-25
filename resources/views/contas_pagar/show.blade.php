@@ -4,7 +4,10 @@
 
 <div class="container cadastro">
 
-    <x-list-header title="DETALHES DA CONTA A PAGAR" icon="bi-wallet2" />
+    <x-list-header
+        title="DETALHES DA CONTA A PAGAR"
+        icon="bi-wallet2"
+    />
 
     <div class="d-flex justify-content-end gap-2 mb-4">
 
@@ -17,7 +20,6 @@
         </a>
 
         @if ($conta->status !== 'cancelada' && !$conta->estaPaga())
-
             <a
                 href="{{ route('contas-pagar.edit', $conta) }}"
                 class="btn btn-primary"
@@ -25,7 +27,21 @@
                 <i class="bi bi-pencil-square"></i>
                 Editar conta
             </a>
+        @endif
 
+        @if (
+            $conta->status !== 'cancelada'
+            && (float) $conta->valor_pago <= 0
+        )
+            <button
+                type="button"
+                class="btn btn-danger"
+                data-bs-toggle="modal"
+                data-bs-target="#modalCancelarConta"
+            >
+                <i class="bi bi-x-circle"></i>
+                Cancelar conta
+            </button>
         @endif
 
     </div>
@@ -38,9 +54,9 @@
 
     @include('contas_pagar.show._pagamentos')
 
-    @include('contas_pagar.show._modais')
-
 </div>
+
+@include('contas_pagar.show._modais')
 
 @vite('resources/js/conta-pagar.js')
 

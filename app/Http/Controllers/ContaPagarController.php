@@ -22,6 +22,7 @@ use App\Models\Nota;
 use App\Models\PagamentoContaPagar;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
+use InvalidArgumentException;
 
 class ContaPagarController extends Controller
 {
@@ -40,6 +41,7 @@ class ContaPagarController extends Controller
 
         if (request()->filled('descricao')) {
             $descricao = trim(request('descricao'));
+
             $query->where(
                 'descricao',
                 'like',
@@ -223,6 +225,11 @@ class ContaPagarController extends Controller
     public function show(ContaPagar $conta): View
     {
         $conta->load([
+            'compra' => fn ($query) => $query->with([
+                'anexosVinculos' => fn ($query) => $query
+                    ->with('anexo')
+                    ->latest(),
+            ]),
             'fornecedor',
             'nota',
             'categoriaFinanceira',
@@ -326,10 +333,19 @@ class ContaPagarController extends Controller
         ContaPagar $conta,
         AtualizarContaPagar $action
     ): RedirectResponse {
-        $action->execute(
-            $conta,
-            $request->validated()
-        );
+        try {
+            $action->execute(
+                $conta,
+                $request->validated()
+            );
+        } catch (InvalidArgumentException $exception) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->withErrors([
+                    'conta' => $exception->getMessage(),
+                ]);
+        }
 
         return redirect()
             ->route(

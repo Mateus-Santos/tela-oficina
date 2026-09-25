@@ -6,8 +6,10 @@
     <div class="alert alert-danger">
         <div class="d-flex align-items-start gap-2">
             <i class="bi bi-exclamation-triangle"></i>
+
             <div>
                 <strong>Não foi possível salvar a compra.</strong>
+
                 <ul class="mb-0 mt-2">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -19,7 +21,6 @@
 @endif
 
 {{-- DADOS DA COMPRA --}}
-
 <div class="row g-3">
 
     {{-- FORNECEDOR --}}
@@ -101,9 +102,10 @@
             id="chave_nf"
             class="form-control"
             value="{{ old('chave_nf', $compra->chave_nf ?? '') }}"
-            maxlength="44"
             minlength="44"
             inputmode="numeric"
+            pattern="[0-9]{44}"
+            autocomplete="off"
             placeholder="44 dígitos"
         >
 
@@ -154,27 +156,21 @@
             required
         >
     </div>
-
 </div>
 
 {{-- ITENS --}}
-
 <div class="mt-4">
-
     <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
-
         <h2 class="h5 mb-0">
             <i class="bi bi-box-seam"></i>
             Produtos da compra
         </h2>
-
     </div>
 
     <div
         id="itens-container"
         class="d-flex flex-column gap-3"
     >
-
         @php
             $itens = old('itens');
 
@@ -196,10 +192,8 @@
         @endphp
 
         @foreach ($itens as $index => $item)
-
             @php
                 $produtoSelecionado = $item['produto'] ?? null;
-
                 $valorUnitario = $item['valor_unitario'] ?? '';
 
                 if (
@@ -220,11 +214,8 @@
                 class="card shadow-sm compra-item"
                 data-item-index="{{ $index }}"
             >
-
                 <div class="card-body">
-
                     <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
-
                         <h3 class="h6 mb-0">
                             <i class="bi bi-box"></i>
                             Item
@@ -240,21 +231,18 @@
                         >
                             <i class="bi bi-trash"></i>
                         </button>
-
                     </div>
 
                     <div class="row g-3">
 
                         {{-- PRODUTO --}}
                         <div class="col-12 col-md-6">
-
                             <label class="form-label">
                                 <i class="bi bi-box-seam"></i>
                                 Produto *
                             </label>
 
                             <div class="position-relative">
-
                                 <input
                                     type="text"
                                     class="form-control item-produto-busca"
@@ -267,7 +255,6 @@
                                     class="list-group position-absolute w-100 shadow-sm item-produto-resultados"
                                     style="z-index: 1050;"
                                 ></div>
-
                             </div>
 
                             <input
@@ -281,38 +268,27 @@
                             <div
                                 class="mt-2 item-produto-selecionado {{ empty($item['produto_id']) ? 'd-none' : '' }}"
                             >
-
                                 <div class="alert alert-light border mb-0 py-2">
-
                                     <div class="d-flex align-items-center justify-content-between gap-2">
-
                                         <div class="item-produto-info">
-
                                             @if ($produtoSelecionado)
-
                                                 <div class="fw-semibold">
                                                     <i class="bi bi-box-seam"></i>
                                                     {{ $produtoSelecionado['nome'] ?? $produtoSelecionado->nome }}
                                                 </div>
 
                                                 @if ($produtoSelecionado['codigo_fabricante'] ?? $produtoSelecionado->codigo_fabricante ?? null)
-
                                                     <small class="text-muted">
                                                         Código:
                                                         {{ $produtoSelecionado['codigo_fabricante'] ?? $produtoSelecionado->codigo_fabricante }}
                                                     </small>
-
                                                 @endif
-
                                             @elseif (!empty($item['produto_id']))
-
                                                 <div class="fw-semibold">
                                                     <i class="bi bi-box-seam"></i>
                                                     Produto #{{ $item['produto_id'] }}
                                                 </div>
-
                                             @endif
-
                                         </div>
 
                                         <button
@@ -322,18 +298,13 @@
                                         >
                                             <i class="bi bi-x-lg"></i>
                                         </button>
-
                                     </div>
-
                                 </div>
-
                             </div>
-
                         </div>
 
                         {{-- DESCRIÇÃO --}}
                         <div class="col-12 col-md-6">
-
                             <label class="form-label">
                                 <i class="bi bi-card-text"></i>
                                 Descrição *
@@ -347,12 +318,10 @@
                                 maxlength="255"
                                 required
                             >
-
                         </div>
 
                         {{-- QUANTIDADE --}}
                         <div class="col-12 col-md-4">
-
                             <label class="form-label">
                                 <i class="bi bi-boxes"></i>
                                 Quantidade *
@@ -367,12 +336,10 @@
                                 step="0.001"
                                 required
                             >
-
                         </div>
 
                         {{-- VALOR UNITÁRIO --}}
                         <div class="col-12 col-md-4">
-
                             <label class="form-label">
                                 <i class="bi bi-currency-dollar"></i>
                                 Valor unitário *
@@ -386,12 +353,10 @@
                                 value="{{ $valorUnitario }}"
                                 required
                             >
-
                         </div>
 
                         {{-- DESCONTO --}}
                         <div class="col-12 col-md-4">
-
                             <label class="form-label">
                                 <i class="bi bi-percent"></i>
                                 Desconto
@@ -405,16 +370,12 @@
                                 min="0"
                                 step="0.01"
                             >
-
                         </div>
 
                         {{-- TOTAL ITEM --}}
                         <div class="col-12">
-
                             <div class="d-flex justify-content-end">
-
                                 <div class="text-end">
-
                                     <small class="text-muted">
                                         Total do item
                                     </small>
@@ -428,9 +389,7 @@
                                             '.'
                                         ) }}
                                     </div>
-
                                 </div>
-
                             </div>
 
                             <input
@@ -439,21 +398,15 @@
                                 class="item-valor-total-input"
                                 value="{{ $item['valor_total'] ?? 0 }}"
                             >
-
                         </div>
 
                     </div>
-
                 </div>
-
             </div>
-
         @endforeach
-
     </div>
 
     <div class="mt-3">
-
         <button
             type="button"
             id="btn-adicionar-item"
@@ -462,17 +415,12 @@
             <i class="bi bi-plus-lg"></i>
             Adicionar produto
         </button>
-
     </div>
-
 </div>
 
 {{-- VALORES --}}
-
 <div class="card shadow-sm mt-4">
-
     <div class="card-body">
-
         <h2 class="h5 mb-3">
             <i class="bi bi-calculator"></i>
             Valores da compra
@@ -482,7 +430,6 @@
 
             {{-- VALOR PRODUTOS --}}
             <div class="col-12 col-md-3">
-
                 <label for="valor_produtos" class="form-label">
                     <i class="bi bi-box-seam"></i>
                     Valor dos produtos
@@ -501,12 +448,10 @@
                     step="0.01"
                     readonly
                 >
-
             </div>
 
             {{-- DESCONTO --}}
             <div class="col-12 col-md-3">
-
                 <label for="desconto" class="form-label">
                     <i class="bi bi-tag"></i>
                     Desconto
@@ -524,12 +469,10 @@
                     min="0"
                     step="0.01"
                 >
-
             </div>
 
             {{-- FRETE --}}
             <div class="col-12 col-md-3">
-
                 <label for="frete" class="form-label">
                     <i class="bi bi-truck"></i>
                     Frete
@@ -547,12 +490,10 @@
                     min="0"
                     step="0.01"
                 >
-
             </div>
 
             {{-- OUTRAS DESPESAS --}}
             <div class="col-12 col-md-3">
-
                 <label for="outras_despesas" class="form-label">
                     <i class="bi bi-plus-circle"></i>
                     Outras despesas
@@ -570,16 +511,12 @@
                     min="0"
                     step="0.01"
                 >
-
             </div>
 
             {{-- TOTAL --}}
             <div class="col-12">
-
                 <div class="d-flex justify-content-end">
-
                     <div class="text-end">
-
                         <span class="text-muted">
                             Valor total da compra
                         </span>
@@ -599,9 +536,7 @@
                                 '.'
                             ) }}
                         </div>
-
                     </div>
-
                 </div>
 
                 <input
@@ -613,19 +548,14 @@
                         $compra->valor_total ?? 0
                     ) }}"
                 >
-
             </div>
 
         </div>
-
     </div>
-
 </div>
 
 {{-- OBSERVAÇÕES --}}
-
 <div class="mt-4">
-
     <label for="observacoes" class="form-label">
         <i class="bi bi-chat-left-text"></i>
         Observações
@@ -638,21 +568,14 @@
         rows="4"
         placeholder="Observações sobre a compra..."
     >{{ old('observacoes', $compra->observacoes ?? '') }}</textarea>
-
 </div>
 
 {{-- ANEXOS --}}
-
 @if (!$isEdit)
-
     <div class="card shadow-sm mt-4">
-
         <div class="card-body">
-
             <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
-
                 <div>
-
                     <h2 class="h5 mb-1">
                         <i class="bi bi-paperclip"></i>
                         Documentos e anexos
@@ -661,7 +584,6 @@
                     <small class="text-muted">
                         Adicione a NF, XML ou outros documentos relacionados à compra.
                     </small>
-
                 </div>
 
                 <button
@@ -676,23 +598,18 @@
                     Adicionar anexos
                     <i class="bi bi-chevron-down ms-1"></i>
                 </button>
-
             </div>
 
             <div
                 id="anexos-compra"
                 class="collapse mt-4"
             >
-
                 <div id="anexos-container">
-
                     <div class="anexo-item border rounded p-3 mb-3">
-
                         <div class="row g-3 align-items-end">
 
                             {{-- TIPO --}}
                             <div class="col-12 col-md-4">
-
                                 <label class="form-label">
                                     <i class="bi bi-file-earmark"></i>
                                     Tipo do documento
@@ -716,12 +633,10 @@
                                     <option value="recibo">Recibo</option>
                                     <option value="outro">Outro</option>
                                 </select>
-
                             </div>
 
                             {{-- ARQUIVO --}}
                             <div class="col-12 col-md-5">
-
                                 <label class="form-label">
                                     <i class="bi bi-upload"></i>
                                     Arquivo
@@ -733,12 +648,10 @@
                                     class="form-control"
                                     accept=".pdf,.jpg,.jpeg,.png,.webp,.xml"
                                 >
-
                             </div>
 
                             {{-- REMOVER --}}
                             <div class="col-12 col-md-3">
-
                                 <button
                                     type="button"
                                     class="btn btn-outline-danger btn-remover-anexo"
@@ -746,12 +659,10 @@
                                     <i class="bi bi-trash"></i>
                                     Remover
                                 </button>
-
                             </div>
 
                             {{-- OBSERVAÇÕES DO ANEXO --}}
                             <div class="col-12">
-
                                 <label class="form-label">
                                     <i class="bi bi-chat-left-text"></i>
                                     Observações
@@ -764,17 +675,13 @@
                                     maxlength="1000"
                                     placeholder="Observações sobre o documento..."
                                 >
-
                             </div>
 
                         </div>
-
                     </div>
-
                 </div>
 
                 <div class="d-flex align-items-center gap-2 flex-wrap">
-
                     <button
                         type="button"
                         id="btn-adicionar-anexo"
@@ -783,28 +690,19 @@
                         <i class="bi bi-plus-lg"></i>
                         Adicionar outro arquivo
                     </button>
-
                 </div>
 
                 <div class="alert alert-light border mt-3 mb-0">
-
                     <i class="bi bi-info-circle"></i>
                     PDF, XML, JPG, JPEG ou WEBP — máximo de 2 MB por arquivo.
-
                 </div>
-
             </div>
-
         </div>
-
     </div>
-
 @endif
 
 {{-- AÇÕES --}}
-
 <div class="d-flex justify-content-end gap-2 mt-4">
-
     <a
         href="{{ $isEdit
             ? route('compras.show', $compra)
@@ -822,5 +720,4 @@
         <i class="bi bi-check-lg"></i>
         {{ $isEdit ? 'Atualizar Compra' : 'Cadastrar Compra' }}
     </button>
-
 </div>
