@@ -29,6 +29,7 @@ export default defineConfig({
                 'resources/js/notaitem/descontos.js',
                 'resources/js/components/barcode.js',
                 'resources/js/conta-pagar.js',
+                'resources/js/nota-show.js',
                 'resources/js/compras/show.js',
             ],
             refresh: true,

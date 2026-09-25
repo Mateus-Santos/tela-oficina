@@ -3,9 +3,7 @@
 namespace App\Livewire;
 
 use App\Actions\Notas\CancelarNota;
-use App\Actions\Notas\FinalizarNota;
 use App\Models\Nota;
-use App\Models\OrdemServico;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Livewire\Component;
@@ -23,34 +21,47 @@ class StatusNotaSelector extends Component
 
     public function solicitarTrocaStatus(string $status)
     {
-        if (!in_array($status, ['Finalizado', 'Cancelado'])) {
-            $this->atualizarStatus($status);
+        if ($status === 'Finalizado') {
+            return $this->redirectRoute(
+                'notas.show',
+                ['nota' => $this->nota->id]
+            );
+        }
+
+        if ($status === 'Cancelado') {
+            $this->novoStatus = $status;
+            $this->confirmingStatusChange = true;
             return;
         }
 
-        $this->novoStatus = $status;
-        $this->confirmingStatusChange = true;
+        $this->atualizarStatus($status);
     }
 
-    public function confirmarTrocaStatus(FinalizarNota $finalizarNota, CancelarNota $cancelarNota)
-    {
+    public function confirmarTrocaStatus(
+        CancelarNota $cancelarNota
+    ) {
         $this->nota->refresh();
 
         try {
-            if ($this->novoStatus === 'Finalizado') {
-                $finalizarNota->execute($this->nota);
-            } elseif ($this->novoStatus === 'Cancelado') {
+            if ($this->novoStatus === 'Cancelado') {
                 $cancelarNota->execute($this->nota);
             }
 
             $this->nota->refresh();
             $this->confirmingStatusChange = false;
             $this->novoStatus = '';
-            $this->dispatch('status-nota-atualizado');
+
+            $this->dispatch(
+                'status-nota-atualizado'
+            );
         } catch (InvalidArgumentException $e) {
             $this->confirmingStatusChange = false;
             $this->novoStatus = '';
-            $this->addError('status', $e->getMessage());
+
+            $this->addError(
+                'status',
+                $e->getMessage()
+            );
         }
     }
 
@@ -67,11 +78,16 @@ class StatusNotaSelector extends Component
         });
 
         $this->nota->refresh();
-        $this->dispatch('status-nota-atualizado');
+
+        $this->dispatch(
+            'status-nota-atualizado'
+        );
     }
 
     public function render()
     {
-        return view('livewire.status-nota-selector');
+        return view(
+            'livewire.status-nota-selector'
+        );
     }
 }
