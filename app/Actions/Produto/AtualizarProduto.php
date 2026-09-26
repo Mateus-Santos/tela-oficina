@@ -28,6 +28,7 @@ class AtualizarProduto
 
                 $produto->update([
                     'nome' => $dados['nome'],
+                    'marca' => $marca->nome,
                     'marca_id' => $marca->id,
                     'descricao' => $dados['descricao'],
                     'preco_uni' => $dados['preco_uni'],
