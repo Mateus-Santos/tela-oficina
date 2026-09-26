@@ -33,6 +33,88 @@
         </div>
     @endif
 
+    <x-filtros-container
+        action="{{ route('marcas.index') }}"
+        id="filtros-marcas"
+        :collapsible="true"
+        :expanded="request()->hasAny(['status'])"
+    >
+        <x-slot:primary>
+            <div class="row g-3">
+                <div class="col-12 col-md-4">
+                    <label for="nome" class="form-label">
+                        Marca
+                    </label>
+
+                    <input
+                        type="text"
+                        name="nome"
+                        id="nome"
+                        class="filtros-container__input"
+                        placeholder="Digite o nome da marca"
+                        value="{{ request('nome') }}"
+                        autocomplete="off"
+                    >
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="filtros-container__actions">
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                        >
+                            <i class="bi bi-search"></i>
+                            Filtrar
+                        </button>
+
+                        <a
+                            href="{{ route('marcas.index') }}"
+                            class="btn btn-secondary"
+                            title="Limpar filtros"
+                        >
+                            <i class="bi bi-x-lg"></i>
+                            Limpar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </x-slot:primary>
+
+        <x-slot:advanced>
+            <div class="row g-3">
+                <div class="col-12 col-md-4">
+                    <label for="status" class="form-label">
+                        Status
+                    </label>
+
+                    <select
+                        name="status"
+                        id="status"
+                        class="filtros-container__input"
+                    >
+                        <option value="">Todos</option>
+
+                        <option
+                            value="1"
+                            @selected(request('status') === '1')
+                        >
+                            Ativas
+                        </option>
+
+                        <option
+                            value="0"
+                            @selected(request('status') === '0')
+                        >
+                            Inativas
+                        </option>
+                    </select>
+                </div>
+            </div>
+        </x-slot:advanced>
+    </x-filtros-container>
+
     <div class="card shadow-sm">
         <div class="card-body p-0">
             @if($marcas->count() > 0)
@@ -44,7 +126,9 @@
                                 <th>Marca</th>
                                 <th class="text-center">Produtos</th>
                                 <th class="text-center">Status</th>
-                                <th class="text-end" style="width: 220px;">Ações</th>
+                                <th class="text-end" style="width: 220px;">
+                                    Ações
+                                </th>
                             </tr>
                         </thead>
 
@@ -152,23 +236,43 @@
                 @endif
             @else
                 <div class="text-center py-5">
-                    <i class="bi bi-tags fs-1 text-muted"></i>
+                    @if(request()->hasAny(['nome', 'status']))
+                        <i class="bi bi-search fs-1 text-muted"></i>
 
-                    <h5 class="mt-3">
-                        Nenhuma marca cadastrada
-                    </h5>
+                        <h5 class="mt-3">
+                            Nenhuma marca encontrada
+                        </h5>
 
-                    <p class="text-muted">
-                        Cadastre a primeira marca para começar a utilizá-la nos produtos.
-                    </p>
+                        <p class="text-muted">
+                            Nenhuma marca corresponde aos filtros informados.
+                        </p>
 
-                    <a
-                        href="{{ route('marcas.create') }}"
-                        class="btn btn-success"
-                    >
-                        <i class="bi bi-plus-lg me-1"></i>
-                        Cadastrar Marca
-                    </a>
+                        <a
+                            href="{{ route('marcas.index') }}"
+                            class="btn btn-secondary"
+                        >
+                            <i class="bi bi-x-lg me-1"></i>
+                            Limpar filtros
+                        </a>
+                    @else
+                        <i class="bi bi-tags fs-1 text-muted"></i>
+
+                        <h5 class="mt-3">
+                            Nenhuma marca cadastrada
+                        </h5>
+
+                        <p class="text-muted">
+                            Cadastre a primeira marca para começar a utilizá-la nos produtos.
+                        </p>
+
+                        <a
+                            href="{{ route('marcas.create') }}"
+                            class="btn btn-success"
+                        >
+                            <i class="bi bi-plus-lg me-1"></i>
+                            Cadastrar Marca
+                        </a>
+                    @endif
                 </div>
             @endif
         </div>

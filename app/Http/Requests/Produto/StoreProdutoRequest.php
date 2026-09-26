@@ -14,6 +14,44 @@ class StoreProdutoRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $dados = [
+            'nome' => $this->nome
+                ? mb_strtoupper(trim($this->nome))
+                : null,
+
+            'descricao' => $this->descricao
+                ? trim($this->descricao)
+                : null,
+
+            'codigo_fabricante' => $this->codigo_fabricante
+                ? trim($this->codigo_fabricante)
+                : null,
+
+            'codigo_barras' => $this->codigo_barras
+                ? trim($this->codigo_barras)
+                : null,
+
+            'ncm' => $this->ncm
+                ? trim($this->ncm)
+                : null,
+
+            'cest' => $this->cest
+                ? trim($this->cest)
+                : null,
+
+            'ex_tipi' => $this->ex_tipi
+                ? trim($this->ex_tipi)
+                : null,
+
+            'unidade_comercial' => $this->unidade_comercial
+                ? trim($this->unidade_comercial)
+                : null,
+
+            'unidade_tributavel' => $this->unidade_tributavel
+                ? trim($this->unidade_tributavel)
+                : null,
+        ];
+
         if ($this->filled('preco_uni')) {
             $preco = $this->input('preco_uni');
 
@@ -22,10 +60,10 @@ class StoreProdutoRequest extends FormRequest
                 $preco = str_replace(',', '.', $preco);
             }
 
-            $this->merge([
-                'preco_uni' => $preco,
-            ]);
+            $dados['preco_uni'] = $preco;
         }
+
+        $this->merge($dados);
     }
 
     public function rules(): array
@@ -79,6 +117,59 @@ class StoreProdutoRequest extends FormRequest
                 'max:2048',
             ],
 
+            'ncm' => [
+                'nullable',
+                'string',
+                'max:20',
+            ],
+
+            'cest' => [
+                'nullable',
+                'string',
+                'max:20',
+            ],
+
+            'ex_tipi' => [
+                'nullable',
+                'string',
+                'max:20',
+            ],
+
+            'origem_mercadoria' => [
+                'nullable',
+                'integer',
+            ],
+
+            'unidade_comercial' => [
+                'nullable',
+                'string',
+                'max:10',
+            ],
+
+            'unidade_tributavel' => [
+                'nullable',
+                'string',
+                'max:10',
+            ],
+
+            'fator_conversao' => [
+                'nullable',
+                'numeric',
+                'min:0',
+            ],
+
+            'peso_liquido' => [
+                'nullable',
+                'numeric',
+                'min:0',
+            ],
+
+            'peso_bruto' => [
+                'nullable',
+                'numeric',
+                'min:0',
+            ],
+
             'veiculos' => [
                 'required',
                 'array',
@@ -120,6 +211,32 @@ class StoreProdutoRequest extends FormRequest
 
             'img.image' => 'O arquivo informado deve ser uma imagem.',
             'img.max' => 'A imagem não pode ter mais de 2 MB.',
+
+            'ncm.string' => 'O NCM informado é inválido.',
+            'ncm.max' => 'O NCM não pode ultrapassar 20 caracteres.',
+
+            'cest.string' => 'O CEST informado é inválido.',
+            'cest.max' => 'O CEST não pode ultrapassar 20 caracteres.',
+
+            'ex_tipi.string' => 'O EX-TIPI informado é inválido.',
+            'ex_tipi.max' => 'O EX-TIPI não pode ultrapassar 20 caracteres.',
+
+            'origem_mercadoria.integer' => 'A origem da mercadoria é inválida.',
+
+            'unidade_comercial.string' => 'A unidade comercial é inválida.',
+            'unidade_comercial.max' => 'A unidade comercial não pode ultrapassar 10 caracteres.',
+
+            'unidade_tributavel.string' => 'A unidade tributável é inválida.',
+            'unidade_tributavel.max' => 'A unidade tributável não pode ultrapassar 10 caracteres.',
+
+            'fator_conversao.numeric' => 'O fator de conversão deve ser um valor numérico.',
+            'fator_conversao.min' => 'O fator de conversão não pode ser negativo.',
+
+            'peso_liquido.numeric' => 'O peso líquido deve ser um valor numérico.',
+            'peso_liquido.min' => 'O peso líquido não pode ser negativo.',
+
+            'peso_bruto.numeric' => 'O peso bruto deve ser um valor numérico.',
+            'peso_bruto.min' => 'O peso bruto não pode ser negativo.',
 
             'veiculos.required' => 'Selecione pelo menos um veículo.',
             'veiculos.array' => 'Os veículos selecionados são inválidos.',
