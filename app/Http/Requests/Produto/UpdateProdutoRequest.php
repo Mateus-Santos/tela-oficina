@@ -30,7 +30,10 @@ class UpdateProdutoRequest extends FormRequest
 
     public function rules(): array
     {
-        $produtoId = $this->route('produto');
+        $produto = $this->route('produto');
+        $produtoId = $produto instanceof \App\Models\Produto
+            ? $produto->id
+            : $produto;
 
         return [
             'nome' => [
@@ -39,9 +42,11 @@ class UpdateProdutoRequest extends FormRequest
                 'max:150',
             ],
 
-            'marca' => [
+            'marca_id' => [
                 'required',
-                'string',
+                'integer',
+                Rule::exists('marcas', 'id')
+                    ->where('ativo', true),
             ],
 
             'descricao' => [
@@ -99,8 +104,9 @@ class UpdateProdutoRequest extends FormRequest
             'nome.string' => 'O nome do produto é inválido.',
             'nome.max' => 'O nome do produto não pode ter mais de 150 caracteres.',
 
-            'marca.required' => 'A marca do produto é obrigatória.',
-            'marca.string' => 'A marca do produto é inválida.',
+            'marca_id.required' => 'A marca do produto é obrigatória.',
+            'marca_id.integer' => 'A marca selecionada é inválida.',
+            'marca_id.exists' => 'A marca selecionada não existe ou está inativa.',
 
             'descricao.required' => 'A descrição do produto é obrigatória.',
             'descricao.string' => 'A descrição do produto é inválida.',

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Nota;
 use App\Models\NotasItem;
 use App\Models\OrdemServico;
 use App\Models\Produto;
@@ -34,10 +33,15 @@ class NotaItemBuscaController extends Controller
     private function buscarProdutos(string $busca): JsonResponse
     {
         if ($busca === '') {
-            return response()->json(['data' => []]);
+            return response()->json([
+                'data' => [],
+            ]);
         }
 
         $produtos = Produto::query()
+            ->with([
+                'marcaRelacionada:id,nome',
+            ])
             ->select([
                 'id',
                 'nome',
@@ -45,7 +49,7 @@ class NotaItemBuscaController extends Controller
                 'preco_uni',
                 'codigo_fabricante',
                 'codigo_barras',
-                'marca',
+                'marca_id',
             ])
             ->where('status', true)
             ->where(function ($query) use ($busca) {
@@ -68,15 +72,17 @@ class NotaItemBuscaController extends Controller
                     'preco' => (float) $produto->preco_uni,
                     'codigo_fabricante' => $produto->codigo_fabricante,
                     'codigo_barras' => $produto->codigo_barras,
-                    'marca' => $produto->marca,
+                    'marca' => $produto->marcaRelacionada?->nome,
                     'disponivel' => true,
                 ];
             })->values(),
         ]);
     }
 
-    private function buscarOrdensServico(string $busca, ?int $veiculoClienteId): JsonResponse
-    {
+    private function buscarOrdensServico(
+        string $busca,
+        ?int $veiculoClienteId
+    ): JsonResponse {
         $ordensServico = OrdemServico::query()
             ->select([
                 'id',

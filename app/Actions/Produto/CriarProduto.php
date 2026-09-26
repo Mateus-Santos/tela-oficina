@@ -2,6 +2,7 @@
 
 namespace App\Actions\Produto;
 
+use App\Models\Marca;
 use App\Models\Produto;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -22,9 +23,12 @@ class CriarProduto
 
         try {
             return DB::transaction(function () use ($dados, $imagem) {
+                $marca = Marca::query()->findOrFail($dados['marca_id']);
+
                 $produto = Produto::create([
                     'nome' => $dados['nome'],
-                    'marca' => $dados['marca'],
+                    'marca' => $marca->nome,
+                    'marca_id' => $marca->id,
                     'descricao' => $dados['descricao'],
                     'preco_uni' => $dados['preco_uni'],
                     'quantidade' => $dados['quantidade'] ?? 0,

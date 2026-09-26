@@ -1,18 +1,20 @@
 <div class="campos">
+
     {{-- =========================================================
          DADOS PRINCIPAIS + IDENTIFICAÇÃO
          ========================================================= --}}
     <div class="formulario-secao">
+
         <div class="formulario-secao__titulo">
             <i class="bi bi-box-seam"></i>
             <span>Dados principais e identificação</span>
         </div>
+
         <div class="row mb-3">
-            {{-- Nome --}}
+
             <div class="col-md-5">
-                <label class="form-label" for="nome">
-                    Nome:*
-                </label>
+                <label class="form-label" for="nome">Nome:*</label>
+
                 <input
                     type="text"
                     class="form-control"
@@ -23,27 +25,151 @@
                     required
                 >
             </div>
-            {{-- Marca --}}
-            <div class="col-md-4">
-                <label class="form-label" for="marca">
-                    Marca:*
-                </label>
-                <input
-                    type="text"
-                    class="form-control"
-                    id="marca"
-                    name="marca"
-                    value="{{ old('marca', $produto->marca ?? '') }}"
-                    required
-                >
+
+            {{-- MARCA --}}
+            <div class="col-md-5">
+                <label class="form-label" for="marca_id">Marca:*</label>
+
+                <div class="input-group">
+                    <select
+                        class="form-select @error('marca_id') is-invalid @enderror"
+                        id="marca_id"
+                        name="marca_id"
+                        wire:model="marcaSelecionada"
+                        required
+                    >
+                        <option value="">Selecione uma marca</option>
+
+                        @foreach($marcas as $marca)
+                            <option value="{{ $marca->id }}">
+                                {{ $marca->nome }}
+
+                                @if(!$marca->ativo)
+                                    - Inativa
+                                @endif
+                            </option>
+                        @endforeach
+                    </select>
+
+                    <button
+                        type="button"
+                        class="btn btn-outline-primary"
+                        wire:click="abrirCadastroMarca"
+                        title="Cadastrar nova marca"
+                    >
+                        <i class="bi bi-plus-lg"></i>
+                        Nova
+                    </button>
+                </div>
+
+                @error('marca_id')
+                    <div class="invalid-feedback d-block">
+                        {{ $message }}
+                    </div>
+                @enderror
+
+                @if($mensagemMarca)
+                    <div class="alert alert-success py-2 mt-2 mb-0">
+                        <i class="bi bi-check-circle me-1"></i>
+                        {{ $mensagemMarca }}
+                    </div>
+                @endif
+
+                {{-- CADASTRO RÁPIDO DE MARCA --}}
+                @if($mostrarCadastroMarca)
+                    <div class="card border-primary mt-3">
+                        <div class="card-body">
+
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="fw-semibold">
+                                    <i class="bi bi-tag me-1"></i>
+                                    Nova marca
+                                </div>
+
+                                <button
+                                    type="button"
+                                    class="btn-close"
+                                    wire:click="fecharCadastroMarca"
+                                    aria-label="Fechar"
+                                ></button>
+                            </div>
+
+                            <div class="mb-3">
+                                <label
+                                    for="nova_marca_nome"
+                                    class="form-label"
+                                >
+                                    Nome da marca:*
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="nova_marca_nome"
+                                    class="form-control @error('novaMarcaNome') is-invalid @enderror"
+                                    wire:model="novaMarcaNome"
+                                    wire:keydown.enter.prevent="criarMarcaRapida"
+                                    maxlength="150"
+                                    autocomplete="off"
+                                    placeholder="Ex.: WEGA"
+                                >
+
+                                @error('novaMarcaNome')
+                                    <div class="invalid-feedback">
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
+
+                            <div class="d-flex justify-content-end gap-2">
+                                <button
+                                    type="button"
+                                    class="btn btn-secondary btn-sm"
+                                    wire:click="fecharCadastroMarca"
+                                    wire:loading.attr="disabled"
+                                    wire:target="criarMarcaRapida"
+                                >
+                                    <i class="bi bi-x-lg me-1"></i>
+                                    Cancelar
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="btn btn-success btn-sm"
+                                    wire:click="criarMarcaRapida"
+                                    wire:loading.attr="disabled"
+                                    wire:target="criarMarcaRapida"
+                                >
+                                    <span
+                                        wire:loading.remove
+                                        wire:target="criarMarcaRapida"
+                                    >
+                                        <i class="bi bi-check-lg me-1"></i>
+                                        Cadastrar
+                                    </span>
+
+                                    <span
+                                        wire:loading
+                                        wire:target="criarMarcaRapida"
+                                    >
+                                        Cadastrando...
+                                    </span>
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                @endif
             </div>
+
         </div>
+
         <div class="row">
-            {{-- Código do fabricante --}}
+
             <div class="col-md-4">
                 <label class="form-label" for="codigo_fabricante">
                     Código do Fabricante:*
                 </label>
+
                 <input
                     type="text"
                     class="form-control @if($codigoFabricanteDuplicado) is-invalid @endif"
@@ -52,20 +178,22 @@
                     wire:model.live.debounce.500ms="codigoFabricante"
                     required
                 >
+
                 @if($codigoFabricanteDuplicado)
                     <div
                         class="invalid-feedback d-block"
-                        style="background-color: #fff; padding: 4px 8px; border-radius: 4px;"
+                        style="background-color:#fff;padding:4px 8px;border-radius:4px;"
                     >
                         Este código de fabricante já está cadastrado.
                     </div>
                 @endif
             </div>
-            {{-- Código de barras --}}
+
             <div class="col-md-4">
                 <label class="form-label" for="codigo_barras">
                     Código de Barras:
                 </label>
+
                 <input
                     type="text"
                     class="form-control @if($codigoBarrasDuplicado) is-invalid @endif"
@@ -73,34 +201,39 @@
                     name="codigo_barras"
                     wire:model.live.debounce.500ms="codigoBarras"
                 >
+
                 @if($codigoBarrasDuplicado)
                     <div
                         class="invalid-feedback d-block"
-                        style="background-color: #fff; padding: 4px 8px; border-radius: 4px;"
+                        style="background-color:#fff;padding:4px 8px;border-radius:4px;"
                     >
                         Este código de barras já está cadastrado.
                     </div>
                 @endif
             </div>
+
         </div>
+
     </div>
 
     {{-- =========================================================
          APLICAÇÕES + DESCRIÇÃO
          ========================================================= --}}
     <div class="formulario-secao">
+
         <div class="formulario-secao__titulo">
             <i class="bi bi-car-front"></i>
             <span>Aplicações e descrição</span>
         </div>
 
         <div class="formulario-secao__descricao">
-            Selecione os veículos compatíveis e informe a descrição do produto.
+            Busque e selecione todos os veículos compatíveis com o produto.
         </div>
 
         {{-- Importação --}}
         <div class="row mb-3">
             <div class="col-12">
+
                 <button
                     type="button"
                     id="btn-importar-aplicacoes"
@@ -123,12 +256,14 @@
                         {{ $mensagemImportacao }}
                     </div>
                 @endif
+
             </div>
         </div>
 
         {{-- Prévia da importação --}}
         @if($mostrarPreviaImportacao)
             <div class="alert alert-warning">
+
                 <div class="fw-bold mb-2">
                     <i class="bi bi-eye"></i>
                     Prévia da importação
@@ -143,6 +278,7 @@
                 @if(!empty($previsaoImportacao['montadoras']))
                     <div class="mb-3">
                         <strong>Montadoras:</strong>
+
                         <ul class="mb-0">
                             @foreach($previsaoImportacao['montadoras'] as $montadora)
                                 <li>
@@ -166,6 +302,7 @@
                 @if(!empty($previsaoImportacao['veiculos_existentes']))
                     <div class="mb-3">
                         <strong>Veículos já cadastrados:</strong>
+
                         <ul class="mb-0">
                             @foreach($previsaoImportacao['veiculos_existentes'] as $veiculo)
                                 <li>
@@ -180,6 +317,7 @@
                 @if(!empty($previsaoImportacao['veiculos_novos']))
                     <div class="mb-3">
                         <strong>Veículos novos:</strong>
+
                         <ul class="mb-0">
                             @foreach($previsaoImportacao['veiculos_novos'] as $veiculo)
                                 <li>
@@ -196,12 +334,14 @@
                         <i class="bi bi-info-circle"></i>
                         Observação:
                     </strong>
+
                     os dados técnicos da tabela, como ano, motor, válvulas,
                     cilindrada e combustível, foram preservados durante a
                     importação, mas ainda não são gravados na estrutura atual.
                 </div>
 
                 <div class="d-flex gap-2 mt-3">
+
                     <button
                         type="button"
                         class="btn btn-success"
@@ -209,12 +349,18 @@
                         wire:loading.attr="disabled"
                         wire:target="confirmarImportacao"
                     >
-                        <span wire:loading.remove wire:target="confirmarImportacao">
+                        <span
+                            wire:loading.remove
+                            wire:target="confirmarImportacao"
+                        >
                             <i class="bi bi-check-lg"></i>
                             Confirmar importação
                         </span>
 
-                        <span wire:loading wire:target="confirmarImportacao">
+                        <span
+                            wire:loading
+                            wire:target="confirmarImportacao"
+                        >
                             Importando...
                         </span>
                     </button>
@@ -229,75 +375,104 @@
                         <i class="bi bi-x-lg"></i>
                         Cancelar
                     </button>
+
                 </div>
             </div>
         @endif
 
+        {{-- Busca única de veículos --}}
         <div class="row mb-3">
-            {{-- Montadora --}}
-            <div class="col-md-4">
-                <label class="form-label" for="montadora_select">
-                    Montadora:
-                </label>
-                <select
-                    id="montadora_select"
-                    class="form-control"
-                    wire:model.live="montadoraSelecionada"
-                >
-                    <option value="">
-                        Escolha uma Montadora
-                    </option>
+            <div class="col-md-9">
 
-                    @foreach($montadoras as $montadora)
-                        <option value="{{ $montadora->id }}">
-                            {{ $montadora->nome }}
-                        </option>
-                    @endforeach
-                </select>
-
-                <div
-                    wire:loading
-                    wire:target="montadoraSelecionada"
-                    class="small text-muted mt-1"
-                >
-                    Carregando veículos...
-                </div>
-            </div>
-
-            {{-- Veículos --}}
-            <div class="col-md-5">
-                <label class="form-label" for="veiculo_select">
+                <label class="form-label" for="busca_veiculo">
                     Veículo(s):*
                 </label>
 
-                <select
-                    id="veiculo_select"
-                    class="form-control"
-                    wire:change="adicionarVeiculo($event.target.value)"
-                    @disabled(empty($montadoraSelecionada) || empty($veiculos))
-                >
-                    <option value="">
-                        @if(empty($montadoraSelecionada))
-                            Selecione uma montadora primeiro
-                        @elseif(empty($veiculos))
-                            Nenhum veículo encontrado
-                        @else
-                            Selecione um veículo
-                        @endif
-                    </option>
+                <div class="position-relative">
 
-                    @foreach($veiculos as $veiculo)
-                        <option value="{{ $veiculo['id'] }}">
-                            {{ $veiculo['nome'] }}
-                        </option>
-                    @endforeach
-                </select>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bi bi-search"></i>
+                        </span>
+
+                        <input
+                            type="text"
+                            id="busca_veiculo"
+                            class="form-control"
+                            placeholder="Digite veículo ou montadora..."
+                            autocomplete="off"
+                            wire:model.live.debounce.300ms="buscaVeiculo"
+                        >
+                    </div>
+
+                    <div
+                        wire:loading
+                        wire:target="buscaVeiculo"
+                        class="small text-muted mt-1"
+                    >
+                        Buscando veículos...
+                    </div>
+
+                    @if(mb_strlen(trim($buscaVeiculo)) >= 2 && count($resultadosVeiculos) > 0)
+                        <div class="list-group mt-1 shadow-sm">
+
+                            @foreach($resultadosVeiculos as $veiculo)
+                                <button
+                                    type="button"
+                                    class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                                    wire:key="resultado-veiculo-{{ $veiculo['id'] }}"
+                                    wire:click="adicionarVeiculo({{ $veiculo['id'] }})"
+                                    @disabled($veiculo['selecionado'])
+                                >
+                                    <span>
+                                        <i class="bi bi-car-front me-2"></i>
+
+                                        <strong>{{ $veiculo['nome'] }}</strong>
+
+                                        @if(!empty($veiculo['montadora']))
+                                            <span class="text-muted">
+                                                — {{ $veiculo['montadora'] }}
+                                            </span>
+                                        @endif
+                                    </span>
+
+                                    @if($veiculo['selecionado'])
+                                        <span class="badge text-bg-success">
+                                            Selecionado
+                                        </span>
+                                    @else
+                                        <i class="bi bi-plus-lg"></i>
+                                    @endif
+                                </button>
+                            @endforeach
+
+                        </div>
+                    @elseif(mb_strlen(trim($buscaVeiculo)) >= 2 && count($resultadosVeiculos) === 0)
+                        <div class="small text-muted mt-2">
+                            Nenhum veículo encontrado.
+                        </div>
+                    @elseif(trim($buscaVeiculo) !== '')
+                        <div class="small text-muted mt-2">
+                            Digite pelo menos 2 caracteres para pesquisar.
+                        </div>
+                    @endif
+
+                </div>
 
                 @if(count($veiculosSelecionados) > 0)
-                    <div class="mt-2">
+                    <div class="mt-3">
+
+                        <div class="small text-muted mb-2">
+                            Veículos selecionados:
+                        </div>
+
                         <div class="tags-container">
+
                             @foreach($veiculosSelecionados as $veiculo)
-                                <div class="tag">
+                                <div
+                                    class="tag"
+                                    wire:key="veiculo-selecionado-{{ $veiculo['id'] }}"
+                                >
                                     {{ $veiculo['nome'] }}
 
                                     @if(!empty($veiculo['montadora']))
@@ -320,7 +495,12 @@
                                     value="{{ $veiculo['id'] }}"
                                 >
                             @endforeach
+
                         </div>
+                    </div>
+                @else
+                    <div class="small text-muted mt-2">
+                        Nenhum veículo selecionado.
                     </div>
                 @endif
 
@@ -335,12 +515,14 @@
                         {{ $message }}
                     </div>
                 @enderror
+
             </div>
         </div>
 
         {{-- Descrição --}}
         <div class="row">
             <div class="col-12">
+
                 <label class="form-label" for="descricao">
                     Descrição:*
                 </label>
@@ -351,14 +533,17 @@
                     name="descricao"
                     required
                 >{{ old('descricao', $produto->descricao ?? '') }}</textarea>
+
             </div>
         </div>
+
     </div>
 
     {{-- =========================================================
          ESTOQUE E PREÇO + IMAGEM
          ========================================================= --}}
     <div class="formulario-secao">
+
         <div class="formulario-secao__titulo">
             <i class="bi bi-cash-stack"></i>
             <span>Estoque, preço e imagem</span>
@@ -366,7 +551,7 @@
         </div>
 
         <div class="row">
-            {{-- Preço --}}
+
             <div class="col-md-3">
                 <label class="form-label" for="preco_uni">
                     Preço Unitário (R$):*
@@ -388,7 +573,6 @@
                 >
             </div>
 
-            {{-- Quantidade --}}
             <div class="col-md-2">
                 <label class="form-label" for="quantidade">
                     Quantidade:*
@@ -405,7 +589,6 @@
                 >
             </div>
 
-            {{-- Imagem --}}
             <div class="col-md-5" wire:ignore>
                 <label class="form-label" for="img">
                     Imagem:
@@ -417,7 +600,7 @@
                             id="img-current"
                             src="{{ asset('storage/' . $produto->img) }}"
                             alt="Imagem atual"
-                            style="max-width: 100px; border-radius: 10px;"
+                            style="max-width:100px;border-radius:10px;"
                         >
                     </div>
                 @endif
@@ -426,7 +609,7 @@
                     <img
                         id="img-preview"
                         alt="Pré-visualização da imagem"
-                        style="display:none; max-width: 120px; border-radius: 10px;"
+                        style="display:none;max-width:120px;border-radius:10px;"
                     >
                 </div>
 
@@ -438,6 +621,9 @@
                     accept="image/*"
                 >
             </div>
+
         </div>
+
     </div>
+
 </div>

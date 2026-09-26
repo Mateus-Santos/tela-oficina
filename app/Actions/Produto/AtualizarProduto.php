@@ -2,6 +2,7 @@
 
 namespace App\Actions\Produto;
 
+use App\Models\Marca;
 use App\Models\Produto;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -23,9 +24,12 @@ class AtualizarProduto
 
         try {
             $produto = DB::transaction(function () use ($produto, $dados, $novaImagem) {
+                $marca = Marca::query()->findOrFail($dados['marca_id']);
+
                 $produto->update([
                     'nome' => $dados['nome'],
-                    'marca' => $dados['marca'],
+                    'marca' => $marca->nome,
+                    'marca_id' => $marca->id,
                     'descricao' => $dados['descricao'],
                     'preco_uni' => $dados['preco_uni'],
                     'quantidade' => $dados['quantidade'],
@@ -36,7 +40,10 @@ class AtualizarProduto
 
                 $produto->veiculos()->sync($dados['veiculos']);
 
-                return $produto->fresh();
+                return $produto->fresh([
+                    'marcaRelacionada',
+                    'veiculos',
+                ]);
             });
         } catch (\Throwable $e) {
             if ($novaImagem) {

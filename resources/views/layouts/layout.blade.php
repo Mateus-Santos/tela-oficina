@@ -47,7 +47,6 @@
 
 <!-- ======= Header ======= -->
 <nav id="header" class="navbar navbar-expand-lg fixed-top">
-
     <div class="container-fluid">
 
         <!-- Logo -->
@@ -71,7 +70,6 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbarNavDropdown">
-
             <ul class="navbar-nav ms-auto align-items-lg-center">
 
                 {{-- ========================================================= --}}
@@ -79,7 +77,6 @@
                 {{-- ========================================================= --}}
 
                 @guest
-
                     <li class="nav-item">
                         <a class="nav-link active" href="/">
                             <i class="bi bi-house-door-fill"></i>
@@ -114,9 +111,7 @@
                             Cadastre-se
                         </a>
                     </li>
-
                 @endguest
-
 
                 {{-- ========================================================= --}}
                 {{-- USUÁRIO AUTENTICADO --}}
@@ -135,7 +130,6 @@
                         {{-- ================================================= --}}
 
                         <li class="nav-item dropdown">
-
                             <a
                                 class="nav-link dropdown-toggle"
                                 href="#"
@@ -148,7 +142,6 @@
                             </a>
 
                             <ul class="dropdown-menu">
-
                                 <li>
                                     <a
                                         href="{{ route('clientes.index') }}"
@@ -198,18 +191,14 @@
                                         Histórico
                                     </a>
                                 </li>
-
                             </ul>
-
                         </li>
-
 
                         {{-- ================================================= --}}
                         {{-- OPERAÇÕES --}}
                         {{-- ================================================= --}}
 
                         <li class="nav-item dropdown">
-
                             <a
                                 class="nav-link dropdown-toggle"
                                 href="#"
@@ -222,7 +211,6 @@
                             </a>
 
                             <ul class="dropdown-menu">
-
                                 <li>
                                     <a
                                         href="{{ route('compras.index') }}"
@@ -262,18 +250,14 @@
                                         Movimentações de Estoque
                                     </a>
                                 </li>
-
                             </ul>
-
                         </li>
-
 
                         {{-- ================================================= --}}
                         {{-- FINANCEIRO --}}
                         {{-- ================================================= --}}
 
                         <li class="nav-item dropdown">
-
                             <a
                                 class="nav-link dropdown-toggle"
                                 href="#"
@@ -286,7 +270,6 @@
                             </a>
 
                             <ul class="dropdown-menu">
-
                                 <li>
                                     <a
                                         href="{{ route('contas-receber.index') }}"
@@ -326,18 +309,14 @@
                                         Relatórios
                                     </a>
                                 </li>
-
                             </ul>
-
                         </li>
-
 
                         {{-- ================================================= --}}
                         {{-- CADASTROS --}}
                         {{-- ================================================= --}}
 
                         <li class="nav-item dropdown">
-
                             <a
                                 class="nav-link dropdown-toggle"
                                 href="#"
@@ -360,6 +339,18 @@
                                     >
                                         <i class="bi bi-building me-2"></i>
                                         Fornecedores
+                                    </a>
+                                </li>
+
+                                {{-- MARCAS --}}
+
+                                <li>
+                                    <a
+                                        href="{{ route('marcas.index') }}"
+                                        class="dropdown-item"
+                                    >
+                                        <i class="bi bi-tags me-2"></i>
+                                        Marcas
                                     </a>
                                 </li>
 
@@ -456,13 +447,10 @@
                                         Colaboradores
                                     </a>
                                 </li>
-
                             </ul>
-
                         </li>
 
                     @endif
-
 
                     {{-- ===================================================== --}}
                     {{-- PERMISSÃO 2 --}}
@@ -473,7 +461,6 @@
                         {{-- ATENDIMENTO --}}
 
                         <li class="nav-item dropdown">
-
                             <a
                                 class="nav-link dropdown-toggle"
                                 href="#"
@@ -486,7 +473,6 @@
                             </a>
 
                             <ul class="dropdown-menu">
-
                                 <li>
                                     <a
                                         href="{{ route('veiculosclientes.index') }}"
@@ -506,20 +492,16 @@
                                         Históricos
                                     </a>
                                 </li>
-
                             </ul>
-
                         </li>
 
                     @endif
-
 
                     {{-- ===================================================== --}}
                     {{-- USUÁRIO --}}
                     {{-- ===================================================== --}}
 
                     <li class="nav-item dropdown ms-lg-2">
-
                         <a
                             class="nav-link dropdown-toggle"
                             href="#"
@@ -532,7 +514,6 @@
                         </a>
 
                         <ul class="dropdown-menu dropdown-menu-end">
-
                             <li>
                                 <a
                                     href="/perfil"
@@ -548,7 +529,6 @@
                             </li>
 
                             <li>
-
                                 <form action="/logout" method="POST">
                                     @csrf
 
@@ -556,39 +536,27 @@
                                         <i class="bi bi-box-arrow-right me-2"></i>
                                         Sair
                                     </button>
-
                                 </form>
-
                             </li>
-
                         </ul>
-
                     </li>
 
                 @endauth
 
             </ul>
-
         </div>
-
     </div>
-
 </nav>
-
 
 @include('errors.error-message')
 
 @yield('content')
 
-
 <!-- ======= Footer ======= -->
 
 <footer id="footer">
-
     <div class="container footer-bottom clearfix">
-
         <div class="copyright">
-
             &copy; Copyright 2026
 
             <strong>
@@ -596,16 +564,11 @@
             </strong>.
 
             All Rights Reserved
-
         </div>
-
     </div>
-
 </footer>
 
-
 <div id="preloader"></div>
-
 
 <!-- ======= Back To Top ======= -->
 
@@ -619,21 +582,14 @@
     >
 </a>
 
-
 <!-- ======= Vendor JS Files ======= -->
 
 <script src="{{ asset('/vendor/aos/aos.js') }}"></script>
-
 <script src="{{ asset('/vendor/glightbox/js/glightbox.min.js') }}"></script>
-
 <script src="{{ asset('/vendor/isotope-layout/isotope.pkgd.min.js') }}"></script>
-
 <script src="{{ asset('/vendor/php-email-form/validate.js') }}"></script>
-
 <script src="{{ asset('/vendor/swiper/swiper-bundle.min.js') }}"></script>
-
 <script src="{{ asset('/vendor/waypoints/noframework.waypoints.js') }}"></script>
-
 
 <!-- jQuery -->
 
@@ -643,7 +599,6 @@
     crossorigin="anonymous"
 ></script>
 
-
 <!-- Bootstrap JS -->
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
@@ -651,5 +606,4 @@
 @yield('scripts')
 
 </body>
-
 </html>

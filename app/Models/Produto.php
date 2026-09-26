@@ -24,6 +24,7 @@ class Produto extends Model
         'status',
         'fornecedor_id',
         'marca',
+        'marca_id',
         'ncm',
         'cest',
         'ex_tipi',
@@ -36,6 +37,7 @@ class Produto extends Model
     ];
 
     protected $casts = [
+        'status' => 'boolean',
         'origem_mercadoria' => 'integer',
         'fator_conversao' => 'decimal:6',
         'peso_liquido' => 'decimal:3',
@@ -55,15 +57,16 @@ class Produto extends Model
                 $q->where('codigo_fabricante', $v)
             )
             ->when($filtros['marca'] ?? null, fn ($q, $v) =>
-                $q->where('marca', 'like', "%{$v}%")
+                $q->whereHas('marcaRelacionada', function ($marcaQuery) use ($v) {
+                    $marcaQuery->where('nome', 'like', "%{$v}%");
+                })
             )
             ->when($filtros['fornecedor_id'] ?? null, fn ($q, $v) =>
                 $q->where('fornecedor_id', $v)
             )
             ->when(
                 isset($filtros['status']) && $filtros['status'] !== '',
-                fn ($q) =>
-                    $q->where('status', (bool) $filtros['status'])
+                fn ($q) => $q->where('status', (bool) $filtros['status'])
             )
             ->when($filtros['estoque'] ?? null, function ($q, $v) {
                 return match ($v) {
@@ -77,6 +80,11 @@ class Produto extends Model
                     default => $q,
                 };
             });
+    }
+
+    public function marcaRelacionada(): BelongsTo
+    {
+        return $this->belongsTo(Marca::class, 'marca_id');
     }
 
     public function veiculos(): BelongsToMany

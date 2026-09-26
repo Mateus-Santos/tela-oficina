@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Estoque\RegistrarAjuste;
 use App\Actions\Estoque\RegistrarSaida;
 use App\Models\Produto;
 use Illuminate\Http\Request;
 use InvalidArgumentException;
-use App\Actions\Estoque\RegistrarAjuste;
 
 class EstoqueController extends Controller
 {
@@ -17,14 +17,19 @@ class EstoqueController extends Controller
 
     public function index(Request $request)
     {
-        $query = Produto::query();
+        $query = Produto::query()
+            ->with('marcaRelacionada');
 
         $query->when($request->filled('nome'), function ($q) use ($request) {
             $q->where('nome', 'like', '%' . $request->nome . '%');
         });
 
         $query->when($request->filled('codigo_fabricante'), function ($q) use ($request) {
-            $q->where('codigo_fabricante', 'like', '%' . $request->codigo_fabricante . '%');
+            $q->where(
+                'codigo_fabricante',
+                'like',
+                '%' . $request->codigo_fabricante . '%'
+            );
         });
 
         $query->when($request->filled('codigo_barras'), function ($q) use ($request) {
@@ -36,7 +41,11 @@ class EstoqueController extends Controller
                 'zerado' => $q->where('quantidade', '<=', 0),
                 'baixo' => $q->where('quantidade', '>', 0)
                     ->whereColumn('quantidade', '<=', 'estoque_minimo'),
-                'normal' => $q->whereColumn('quantidade', '>', 'estoque_minimo'),
+                'normal' => $q->whereColumn(
+                    'quantidade',
+                    '>',
+                    'estoque_minimo'
+                ),
                 default => null,
             };
         });
@@ -48,14 +57,25 @@ class EstoqueController extends Controller
 
         $totalProdutos = Produto::count();
 
-        $produtosZerados = Produto::where('quantidade', '<=', 0)->count();
+        $produtosZerados = Produto::where(
+            'quantidade',
+            '<=',
+            0
+        )->count();
 
-        $produtosBaixoEstoque = Produto::where('quantidade', '>', 0)
+        $produtosBaixoEstoque = Produto::where(
+            'quantidade',
+            '>',
+            0
+        )
             ->whereColumn('quantidade', '<=', 'estoque_minimo')
             ->count();
 
-        $produtosEstoqueNormal = Produto::whereColumn('quantidade', '>', 'estoque_minimo')
-            ->count();
+        $produtosEstoqueNormal = Produto::whereColumn(
+            'quantidade',
+            '>',
+            'estoque_minimo'
+        )->count();
 
         return view('estoque.index', compact(
             'produtos',
@@ -71,8 +91,11 @@ class EstoqueController extends Controller
         return view('estoque.saida', compact('produto'));
     }
 
-    public function registrarSaida(Request $request, Produto $produto, RegistrarSaida $registrarSaida)
-    {
+    public function registrarSaida(
+        Request $request,
+        Produto $produto,
+        RegistrarSaida $registrarSaida
+    ) {
         $request->validate([
             'quantidade' => 'required|numeric|min:0.001',
             'observacoes' => 'nullable|string|max:1000',

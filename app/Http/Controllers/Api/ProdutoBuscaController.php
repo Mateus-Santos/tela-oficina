@@ -39,7 +39,7 @@ class ProdutoBuscaController extends Controller
                 'preco_uni',
                 'codigo_fabricante',
                 'codigo_barras',
-                'marca',
+                'marca_id',
             ])
             ->where('status', true)
             ->where(function ($query) use ($busca) {
@@ -74,7 +74,7 @@ class ProdutoBuscaController extends Controller
                     'preco' => (float) $produto->preco_uni,
                     'codigo_fabricante' => $produto->codigo_fabricante,
                     'codigo_barras' => $produto->codigo_barras,
-                    'marca' => $produto->marca,
+                    'marca' => $produto->marcaRelacionada?->nome,
                 ];
             })->values(),
         ]);

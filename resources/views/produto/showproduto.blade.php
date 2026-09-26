@@ -119,7 +119,9 @@
 
                         <div class="col-12 col-md-6">
                             <span class="text-muted d-block">Marca</span>
-                            <strong>{{ $produto->marca }}</strong>
+                            <strong>
+                                {{ $produto->marcaRelacionada?->nome ?: 'Não informada' }}
+                            </strong>
                         </div>
 
                         <div class="col-12 col-md-6">

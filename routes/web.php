@@ -27,6 +27,7 @@ use App\Http\Controllers\Api\NotaItemBuscaController;
 use App\Http\Controllers\Api\ProdutoBuscaController;
 use App\Http\Controllers\Api\ClienteContaReceberBuscaController;
 use App\Http\Controllers\Api\NotaContaReceberBuscaController;
+use App\Http\Controllers\MarcaController;
 
 // use App\Http\Controllers\ChatController;
 
@@ -86,6 +87,9 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
 
         // Produtos
         Route::resource('produtos', ProdutoController::class);
+
+        // Marcas
+        Route::resource('marcas', MarcaController::class);
 
         // Colaboradores
         Route::resource('colaboradores', ColaboradorController::class);
