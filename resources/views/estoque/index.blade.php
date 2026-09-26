@@ -182,8 +182,10 @@
                             <td>
                                 <div class="fw-semibold">{{ $produto->nome }}</div>
 
-                                @if($produto->marca)
-                                    <small class="text-muted">{{ $produto->marca }}</small>
+                                @if($produto->marcaRelacionada?->nome)
+                                    <small class="text-muted">
+                                        {{ $produto->marcaRelacionada->nome }}
+                                    </small>
                                 @endif
                             </td>
 

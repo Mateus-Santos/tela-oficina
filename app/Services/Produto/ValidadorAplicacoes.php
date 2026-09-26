@@ -46,8 +46,8 @@ class ValidadorAplicacoes
                 );
             }
 
-            $montadora = $this->normalizarTexto($colunas[0]);
-            $veiculo = $this->normalizarTexto($colunas[1]);
+            $montadora = $colunas[0];
+            $veiculo = $colunas[1];
 
             if ($montadora === '' || $veiculo === '') {
                 return $this->erro(
@@ -82,19 +82,18 @@ class ValidadorAplicacoes
 
     private function normalizarLinhas(string $texto): array
     {
-        $texto = str_replace(
-            ["\r\n", "\r"],
-            "\n",
-            $texto
-        );
+        $texto = str_replace(["\r\n", "\r"], "\n", $texto);
+        $linhas = explode("\n", $texto);
 
+        /*
+         * Preserva TABs existentes no começo/final da linha.
+         *
+         * Eles representam células vazias da tabela copiada.
+         */
         return array_values(
             array_filter(
-                array_map(
-                    fn (string $linha) => trim($linha),
-                    explode("\n", $texto)
-                ),
-                fn (string $linha) => $linha !== ''
+                $linhas,
+                fn (string $linha) => trim($linha) !== ''
             )
         );
     }
@@ -102,13 +101,15 @@ class ValidadorAplicacoes
     private function separarColunas(string $linha): array
     {
         return array_map(
-            fn (string $coluna) => trim($coluna),
+            fn (string $coluna) => $this->normalizarTexto($coluna),
             explode("\t", $linha)
         );
     }
 
     private function normalizarTexto(string $texto): string
     {
+        $texto = preg_replace('/^\xEF\xBB\xBF/', '', $texto) ?? $texto;
+
         return trim(
             preg_replace('/\s+/', ' ', $texto) ?? ''
         );

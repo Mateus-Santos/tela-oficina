@@ -42,10 +42,7 @@ class ParserAplicacoes
 
             $aplicacao = $this->montarAplicacao($colunas);
 
-            if (
-                $aplicacao['montadora'] === ''
-                || $aplicacao['veiculo'] === ''
-            ) {
+            if ($aplicacao['montadora'] === '' || $aplicacao['veiculo'] === '') {
                 continue;
             }
 
@@ -57,21 +54,20 @@ class ParserAplicacoes
 
     private function normalizarLinhas(string $texto): array
     {
-        $texto = str_replace(
-            ["\r\n", "\r"],
-            "\n",
-            $texto
-        );
-
+        $texto = str_replace(["\r\n", "\r"], "\n", $texto);
         $linhas = explode("\n", $texto);
 
+        /*
+         * Não usar trim() na linha antes de separar as colunas.
+         *
+         * Uma linha pode terminar em TAB quando a última coluna
+         * estiver vazia. Remover esse TAB faria uma tabela válida
+         * de 10 colunas parecer possuir somente 9.
+         */
         return array_values(
             array_filter(
-                array_map(
-                    fn (string $linha) => trim($linha),
-                    $linhas
-                ),
-                fn (string $linha) => $linha !== ''
+                $linhas,
+                fn (string $linha) => trim($linha) !== ''
             )
         );
     }
@@ -79,7 +75,7 @@ class ParserAplicacoes
     private function separarColunas(string $linha): array
     {
         return array_map(
-            fn (string $coluna) => trim($coluna),
+            fn (string $coluna) => $this->normalizarTexto($coluna),
             explode("\t", $linha)
         );
     }
@@ -89,9 +85,7 @@ class ParserAplicacoes
         $aplicacao = [];
 
         foreach (self::COLUNAS_ESPERADAS as $indice => $campo) {
-            $aplicacao[$campo] = $this->normalizarTexto(
-                $colunas[$indice] ?? ''
-            );
+            $aplicacao[$campo] = $colunas[$indice] ?? '';
         }
 
         return $aplicacao;
@@ -99,6 +93,8 @@ class ParserAplicacoes
 
     private function normalizarTexto(string $texto): string
     {
+        $texto = preg_replace('/^\xEF\xBB\xBF/', '', $texto) ?? $texto;
+
         return trim(
             preg_replace('/\s+/', ' ', $texto) ?? ''
         );

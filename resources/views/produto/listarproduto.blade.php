@@ -261,7 +261,7 @@
                         <div class="produto-identificacao-info">
 
                             <span class="produto-marca">
-                                {{ $produto->marca ?: 'Marca não informada' }}
+                                {{ $produto->marcaRelacionada?->nome ?: 'Marca não informada' }}
                             </span>
 
                             <span class="produto-nome">

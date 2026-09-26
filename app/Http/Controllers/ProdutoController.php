@@ -25,7 +25,10 @@ class ProdutoController extends Controller
             ->orderBy('codigo_fabricante')
             ->pluck('codigo_fabricante');
 
-        $produtos = Produto::with(['veiculos'])
+        $produtos = Produto::with([
+            'veiculos',
+            'marcaRelacionada',
+        ])
             ->filtro($request->all())
             ->orderBy('nome')
             ->paginate(20)
@@ -47,10 +50,12 @@ class ProdutoController extends Controller
     public function show(Produto $produto)
     {
         $produto->load([
+            'marcaRelacionada',
             'fornecedor',
             'veiculos.montadora',
             'anexosVinculos.anexo',
         ]);
+
         return view('produto.showproduto', compact('produto'));
     }
 
