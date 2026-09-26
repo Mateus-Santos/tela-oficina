@@ -46,15 +46,7 @@
                 .replace(/[^A-Z0-9]/g, '');
         }
 
-        function limparDadosVeiculo() {
-            if (clienteNome) {
-                clienteNome.value = '';
-            }
-
-            if (clienteId) {
-                clienteId.value = '';
-            }
-
+        function limparVeiculo() {
             if (idVeiculo) {
                 idVeiculo.value = '';
             }
@@ -230,7 +222,7 @@
 
                 ultimaPlacaBuscada = '';
 
-                limparDadosVeiculo();
+                limparVeiculo();
 
                 return;
             }
@@ -286,7 +278,7 @@
                         placa
                     );
 
-                    limparDadosVeiculo();
+                    limparVeiculo();
 
                     return;
                 }
@@ -306,7 +298,7 @@
                         data
                     );
 
-                    limparDadosVeiculo();
+                    limparVeiculo();
 
                     return;
                 }
@@ -341,7 +333,7 @@
                     error
                 );
 
-                limparDadosVeiculo();
+                limparVeiculo();
 
             } finally {
                 buscaPlacaController = null;
@@ -417,7 +409,7 @@
                     // limpa os dados vinculados.
 
                     if (!placa) {
-                        limparDadosVeiculo();
+                        limparVeiculo();
                     }
                 }
             );

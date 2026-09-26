@@ -127,6 +127,7 @@ class NotaController extends Controller
             'cliente.pessoa',
             'veiculosCliente',
             'itens.itemable',
+            'contaReceber',
         ])->findOrFail($id);
 
         $itens = $nota->itens;

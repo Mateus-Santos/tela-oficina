@@ -37,20 +37,20 @@
 
         <div class="d-flex gap-2 flex-wrap">
             @if($podeFinalizarNota)
-                <a
-                    href="{{ route('notasitem.edit', $nota->id) }}"
-                    class="btn btn-primary"
-                >
+                <a href="{{ route('notasitem.edit', $nota->id) }}" class="btn btn-primary">
                     <i class="bi bi-pencil-square"></i>
                     Editar nota
                 </a>
             @endif
 
-            <a
-                href="{{ route('notas.pdf', $nota->id) }}"
-                target="_blank"
-                class="btn btn-danger"
-            >
+            @if($nota->contaReceber)
+                <a href="{{ route('contas-receber.show', $nota->contaReceber) }}" class="btn btn-success">
+                    <i class="bi bi-cash-coin"></i>
+                    Conta a Receber #{{ $nota->contaReceber->id }}
+                </a>
+            @endif
+
+            <a href="{{ route('notas.pdf', $nota->id) }}" target="_blank" class="btn btn-danger">
                 <i class="bi bi-file-earmark-pdf"></i>
                 PDF
             </a>

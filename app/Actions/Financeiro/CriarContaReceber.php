@@ -47,7 +47,7 @@ class CriarContaReceber
                 $dados['cliente_id'] = $nota->cliente_id;
             }
 
-            if (empty($dados['cliente_id'])) {
+            if (!$nota && empty($dados['cliente_id'])) {
                 throw ValidationException::withMessages([
                     'cliente_id' => 'É necessário informar um cliente ou uma nota vinculada.',
                 ]);

@@ -19,14 +19,9 @@ class FinalizarNota
     ) {
     }
 
-    public function execute(
-        Nota $nota,
-        array $dadosFinanceiros
-    ): Nota {
-        return DB::transaction(function () use (
-            $nota,
-            $dadosFinanceiros
-        ) {
+    public function execute(Nota $nota, array $dadosFinanceiros): Nota
+    {
+        return DB::transaction(function () use ($nota, $dadosFinanceiros) {
             $nota = Nota::query()
                 ->lockForUpdate()
                 ->with([
@@ -47,15 +42,7 @@ class FinalizarNota
                 );
             }
 
-            if (!$nota->cliente_id) {
-                throw new InvalidArgumentException(
-                    'Não é possível finalizar uma nota sem cliente.'
-                );
-            }
-
-            $valorNotaCentavos = $this->paraCentavos(
-                $nota->total
-            );
+            $valorNotaCentavos = $this->paraCentavos($nota->total);
 
             if ($valorNotaCentavos <= 0) {
                 throw new InvalidArgumentException(
@@ -69,9 +56,7 @@ class FinalizarNota
                 );
             }
 
-            $categoriaFinanceiraId =
-                $dadosFinanceiros['categoria_financeira_id']
-                ?? null;
+            $categoriaFinanceiraId = $dadosFinanceiros['categoria_financeira_id'] ?? null;
 
             if (!$categoriaFinanceiraId) {
                 throw ValidationException::withMessages([
@@ -113,9 +98,7 @@ class FinalizarNota
                     ]);
                 }
 
-                $valorCentavos = $this->paraCentavos(
-                    $parcela['valor'] ?? 0
-                );
+                $valorCentavos = $this->paraCentavos($parcela['valor'] ?? 0);
 
                 if ($valorCentavos <= 0) {
                     throw ValidationException::withMessages([
@@ -123,14 +106,9 @@ class FinalizarNota
                     ]);
                 }
 
-                $dataVencimento =
-                    $parcela['data_vencimento']
-                    ?? null;
+                $dataVencimento = $parcela['data_vencimento'] ?? null;
 
-                if (
-                    !$dataVencimento
-                    || !$this->dataValida($dataVencimento)
-                ) {
+                if (!$dataVencimento || !$this->dataValida($dataVencimento)) {
                     throw ValidationException::withMessages([
                         "parcelas.{$indice}.data_vencimento" => 'A data de vencimento da parcela é inválida.',
                     ]);
@@ -143,12 +121,7 @@ class FinalizarNota
                 throw ValidationException::withMessages([
                     'parcelas' => sprintf(
                         'A soma das parcelas deve ser igual ao total da nota. Valor esperado: R$ %s.',
-                        number_format(
-                            $valorNotaCentavos / 100,
-                            2,
-                            ',',
-                            '.'
-                        )
+                        number_format($valorNotaCentavos / 100, 2, ',', '.')
                     ),
                 ]);
             }
@@ -192,6 +165,16 @@ class FinalizarNota
                 );
             }
 
+            /*
+             * A nota precisa estar finalizada antes da criação da conta a receber.
+             *
+             * Como toda a operação está dentro da mesma transação, qualquer erro
+             * posterior desfaz também esta alteração de status.
+             */
+            $nota->update([
+                'status' => 'Finalizado',
+            ]);
+
             $this->criarContaReceber->execute([
                 'cliente_id' => $nota->cliente_id,
                 'nota_id' => $nota->id,
@@ -206,10 +189,6 @@ class FinalizarNota
                 'parcelas' => $parcelas,
             ]);
 
-            $nota->update([
-                'status' => 'Finalizado',
-            ]);
-
             return $nota->fresh([
                 'contaReceber.parcelas',
             ]);
@@ -218,9 +197,7 @@ class FinalizarNota
 
     private function paraCentavos(mixed $valor): int
     {
-        return (int) round(
-            (float) $valor * 100
-        );
+        return (int) round((float) $valor * 100);
     }
 
     private function dataValida(mixed $data): bool
@@ -229,10 +206,7 @@ class FinalizarNota
             return false;
         }
 
-        $objeto = \DateTimeImmutable::createFromFormat(
-            '!Y-m-d',
-            $data
-        );
+        $objeto = \DateTimeImmutable::createFromFormat('!Y-m-d', $data);
 
         return $objeto !== false
             && $objeto->format('Y-m-d') === $data;
