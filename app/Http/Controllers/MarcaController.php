@@ -8,14 +8,33 @@ use App\Http\Requests\Marca\StoreMarcaRequest;
 use App\Http\Requests\Marca\UpdateMarcaRequest;
 use App\Models\Marca;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class MarcaController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        logger()->info('FILTROS MARCAS', $request->query());
+
         $marcas = Marca::query()
             ->withCount('produtos')
+            ->when($request->filled('nome'), function ($query) use ($request) {
+                $query->where(
+                    'nome',
+                    'like',
+                    '%' . trim($request->input('nome')) . '%'
+                );
+            })
+            ->when(
+                $request->filled('status'),
+                function ($query) use ($request) {
+                    $query->where(
+                        'ativo',
+                        (int) $request->input('status')
+                    );
+                }
+            )
             ->orderBy('nome')
             ->paginate(20)
             ->withQueryString();
@@ -58,7 +77,10 @@ class MarcaController extends Controller
         Marca $marca,
         AtualizarMarca $atualizarMarca
     ): RedirectResponse {
-        $atualizarMarca->execute($marca, $request->validated());
+        $atualizarMarca->execute(
+            $marca,
+            $request->validated()
+        );
 
         return redirect()
             ->route('marcas.edit', $marca)

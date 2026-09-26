@@ -23,7 +23,6 @@ class Produto extends Model
         'codigo_barras',
         'status',
         'fornecedor_id',
-        'marca',
         'marca_id',
         'ncm',
         'cest',

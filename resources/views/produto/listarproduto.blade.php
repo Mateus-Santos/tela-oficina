@@ -253,9 +253,23 @@
                     {{-- Identificação do produto --}}
                     <div class="produto-identificacao">
 
-                        {{-- Espaço reservado para futura logo da marca --}}
+                        {{-- Logo da marca --}}
                         <div class="produto-marca-logo">
-                            <i class="bi bi-image"></i>
+                            @if($produto->marcaRelacionada?->logo_path)
+                                <img
+                                    src="{{ asset('storage/' . $produto->marcaRelacionada->logo_path) }}"
+                                    alt="Logo {{ $produto->marcaRelacionada->nome }}"
+                                    class="img-fluid"
+                                >
+                            @elseif($produto->marcaRelacionada?->logo_url)
+                                <img
+                                    src="{{ $produto->marcaRelacionada->logo_url }}"
+                                    alt="Logo {{ $produto->marcaRelacionada->nome }}"
+                                    class="img-fluid"
+                                >
+                            @else
+                                <i class="bi bi-image"></i>
+                            @endif
                         </div>
 
                         <div class="produto-identificacao-info">

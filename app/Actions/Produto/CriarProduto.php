@@ -27,7 +27,6 @@ class CriarProduto
 
                 $produto = Produto::create([
                     'nome' => $dados['nome'],
-                    'marca' => $marca->nome,
                     'marca_id' => $marca->id,
                     'descricao' => $dados['descricao'],
                     'preco_uni' => $dados['preco_uni'],
