@@ -8,7 +8,10 @@ use App\Http\Requests\Produto\StoreProdutoRequest;
 use App\Http\Requests\Produto\UpdateProdutoRequest;
 use App\Models\Montadora;
 use App\Models\Produto;
+use App\Models\ProdutoImagem;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class ProdutoController extends Controller
@@ -28,6 +31,7 @@ class ProdutoController extends Controller
         $produtos = Produto::with([
             'veiculos',
             'marcaRelacionada',
+            'imagens',
         ])
             ->filtro($request->all())
             ->orderBy('nome')
@@ -53,6 +57,7 @@ class ProdutoController extends Controller
             'marcaRelacionada',
             'fornecedor',
             'veiculos.montadora',
+            'imagens',
             'anexosVinculos.anexo',
         ]);
 
@@ -72,6 +77,11 @@ class ProdutoController extends Controller
 
     public function edit(Produto $produto)
     {
+        $produto->load([
+            'imagens',
+            'veiculos.montadora',
+        ]);
+
         $montadoras = Montadora::select('id', 'nome')->get();
 
         return view('produto.editarproduto', compact(
@@ -95,17 +105,68 @@ class ProdutoController extends Controller
             ->with('success', 'Produto atualizado com sucesso!');
     }
 
+    public function destroyImagem(
+        Produto $produto,
+        ProdutoImagem $imagem
+    ): JsonResponse {
+        abort_unless(
+            (int) $imagem->produto_id === (int) $produto->id,
+            404
+        );
+
+        $caminho = $imagem->caminho;
+
+        DB::transaction(function () use (
+            $produto,
+            $imagem
+        ) {
+            $imagem->delete();
+
+            $produto
+                ->imagens()
+                ->get()
+                ->values()
+                ->each(function ($imagemRestante, $ordem) {
+                    if ((int) $imagemRestante->ordem === $ordem) {
+                        return;
+                    }
+
+                    $imagemRestante->update([
+                        'ordem' => $ordem,
+                    ]);
+                });
+        });
+
+        if (
+            $caminho
+            && Storage::disk('public')->exists($caminho)
+        ) {
+            Storage::disk('public')->delete($caminho);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Imagem removida com sucesso.',
+        ]);
+    }
+
     public function destroy(Produto $produto)
     {
-        if (
-            $produto->img
-            && Storage::disk('public')->exists($produto->img)
-        ) {
-            Storage::disk('public')->delete($produto->img);
-        }
+        $produto->load('imagens');
+
+        $caminhos = $produto->imagens
+            ->pluck('caminho')
+            ->filter()
+            ->values();
 
         $produto->veiculos()->detach();
         $produto->delete();
+
+        foreach ($caminhos as $caminho) {
+            if (Storage::disk('public')->exists($caminho)) {
+                Storage::disk('public')->delete($caminho);
+            }
+        }
 
         return redirect()
             ->route('produtos.index')

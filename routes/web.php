@@ -86,6 +86,11 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         Route::resource('clientes', ClienteController::class);
 
         // Produtos
+        Route::delete(
+            '/produtos/{produto}/imagens/{imagem}',
+            [ProdutoController::class, 'destroyImagem']
+        )->name('produtos.imagens.destroy');
+
         Route::resource('produtos', ProdutoController::class);
 
         // Marcas

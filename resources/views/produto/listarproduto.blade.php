@@ -16,15 +16,20 @@
         action="{{ route('produtos.index') }}"
         id="filtros-produtos"
         :collapsible="true"
-        :expanded="request()->hasAny(['marca', 'status', 'estoque'])"
+        :expanded="request()->hasAny(['marca', 'status', 'estoque', 'imagem'])"
     >
+
         <x-slot:primary>
 
             <div class="row g-3 align-items-end">
 
                 {{-- Código do fabricante --}}
-                <div class="col-12 col-md-4">
-                    <label for="codigo_fabricante" class="form-label">
+                <div class="col-12 col-md-3">
+
+                    <label
+                        for="codigo_fabricante"
+                        class="form-label"
+                    >
                         Código do fabricante
                     </label>
 
@@ -37,11 +42,16 @@
                         value="{{ request('codigo_fabricante') }}"
                         autocomplete="off"
                     >
+
                 </div>
 
                 {{-- Código de barras --}}
-                <div class="col-12 col-md-4">
-                    <label for="codigo_barras" class="form-label">
+                <div class="col-12 col-md-3">
+
+                    <label
+                        for="codigo_barras"
+                        class="form-label"
+                    >
                         Código de barras
                     </label>
 
@@ -54,11 +64,16 @@
                         value="{{ request('codigo_barras') }}"
                         autocomplete="off"
                     >
+
                 </div>
 
                 {{-- Nome --}}
-                <div class="col-12 col-md-4">
-                    <label for="nome" class="form-label">
+                <div class="col-12 col-md-3">
+
+                    <label
+                        for="nome"
+                        class="form-label"
+                    >
                         Nome do produto
                     </label>
 
@@ -71,6 +86,44 @@
                         value="{{ request('nome') }}"
                         autocomplete="off"
                     >
+
+                </div>
+
+                {{-- Imagem --}}
+                <div class="col-12 col-md-3">
+
+                    <label
+                        for="imagem"
+                        class="form-label"
+                    >
+                        Imagem
+                    </label>
+
+                    <select
+                        name="imagem"
+                        id="imagem"
+                        class="filtros-container__input"
+                    >
+                        <option value="">
+                            Todos
+                        </option>
+
+                        <option
+                            value="com_imagem"
+                            @selected(request('imagem') === 'com_imagem')
+                        >
+                            Com imagem
+                        </option>
+
+                        <option
+                            value="sem_imagem"
+                            @selected(request('imagem') === 'sem_imagem')
+                        >
+                            Sem imagem
+                        </option>
+
+                    </select>
+
                 </div>
 
             </div>
@@ -81,7 +134,10 @@
 
                     <div class="filtros-container__actions">
 
-                        <button type="submit" class="btn btn-primary">
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                        >
                             <i class="bi bi-search"></i>
                             Filtrar
                         </button>
@@ -109,7 +165,11 @@
 
                 {{-- Marca --}}
                 <div class="col-12 col-md-4">
-                    <label for="marca" class="form-label">
+
+                    <label
+                        for="marca"
+                        class="form-label"
+                    >
                         Marca
                     </label>
 
@@ -122,11 +182,16 @@
                         value="{{ request('marca') }}"
                         autocomplete="off"
                     >
+
                 </div>
 
                 {{-- Status --}}
                 <div class="col-12 col-md-4">
-                    <label for="status" class="form-label">
+
+                    <label
+                        for="status"
+                        class="form-label"
+                    >
                         Status
                     </label>
 
@@ -135,7 +200,9 @@
                         id="status"
                         class="filtros-container__input"
                     >
-                        <option value="">Todos</option>
+                        <option value="">
+                            Todos
+                        </option>
 
                         <option
                             value="1"
@@ -150,12 +217,18 @@
                         >
                             Inativos
                         </option>
+
                     </select>
+
                 </div>
 
                 {{-- Estoque --}}
                 <div class="col-12 col-md-4">
-                    <label for="estoque" class="form-label">
+
+                    <label
+                        for="estoque"
+                        class="form-label"
+                    >
                         Situação do estoque
                     </label>
 
@@ -164,7 +237,9 @@
                         id="estoque"
                         class="filtros-container__input"
                     >
-                        <option value="">Todos</option>
+                        <option value="">
+                            Todos
+                        </option>
 
                         <option
                             value="com_estoque"
@@ -186,22 +261,41 @@
                         >
                             Estoque baixo
                         </option>
+
                     </select>
+
                 </div>
 
             </div>
 
         </x-slot:advanced>
+
     </x-filtros-container>
 
-    {{-- Resultado da busca --}}
+    {{-- RESULTADO DA BUSCA --}}
     @if($produtos->isEmpty())
 
-        <div class="alert alert-{{ request()->hasAny(['nome', 'codigo_barras', 'codigo_fabricante', 'marca', 'status', 'estoque']) ? 'warning' : 'info' }}">
+        @php
+            $temFiltros = request()->hasAny([
+                'nome',
+                'codigo_barras',
+                'codigo_fabricante',
+                'marca',
+                'status',
+                'estoque',
+                'imagem',
+            ]);
+        @endphp
 
-            <i class="bi {{ request()->hasAny(['nome', 'codigo_barras', 'codigo_fabricante', 'marca', 'status', 'estoque']) ? 'bi-exclamation-triangle' : 'bi-info-circle' }}"></i>
+        <div class="alert alert-{{ $temFiltros ? 'warning' : 'info' }}">
 
-            {{ request()->hasAny(['nome', 'codigo_barras', 'codigo_fabricante', 'marca', 'status', 'estoque'])
+            <i
+                class="bi {{ $temFiltros
+                    ? 'bi-exclamation-triangle'
+                    : 'bi-info-circle' }}"
+            ></i>
+
+            {{ $temFiltros
                 ? 'Nenhum produto encontrado com os filtros informados.'
                 : 'Nenhum produto cadastrado.' }}
 
@@ -209,8 +303,18 @@
 
     @endif
 
-    {{-- Listagem --}}
+    {{-- LISTAGEM --}}
     @foreach($produtos as $produto)
+
+        @php
+            $imagemProduto = $produto
+                ->imagens
+                ->first()?->caminho;
+
+            $totalImagens = $produto
+                ->imagens
+                ->count();
+        @endphp
 
         <div class="produto-container">
 
@@ -220,62 +324,87 @@
 
             <div class="produto-item">
 
-                {{-- Imagem --}}
-                @if($produto->img)
+                {{-- IMAGEM --}}
+                <div class="position-relative">
 
-                    <img
-                        class="produto-item-img"
-                        src="{{ asset('storage/' . $produto->img) }}"
-                        alt="{{ $produto->nome }}"
-                    >
+                    @if($imagemProduto)
 
-                @else
+                        <img
+                            class="produto-item-img"
+                            src="{{ asset('storage/' . $imagemProduto) }}"
+                            alt="{{ $produto->nome }}"
+                        >
 
-                    <div class="produto-item-img d-flex align-items-center justify-content-center bg-light">
+                        @if($totalImagens > 1)
 
-                        <div class="text-center text-muted">
+                            <span
+                                class="badge text-bg-dark position-absolute bottom-0 end-0 m-2"
+                                title="{{ $totalImagens }} imagens cadastradas"
+                            >
+                                <i class="bi bi-images me-1"></i>
+                                {{ $totalImagens }}
+                            </span>
 
-                            <i class="bi bi-image fs-1"></i>
+                        @endif
 
-                            <div>
-                                Sem imagem
+                    @else
+
+                        <div class="produto-item-img d-flex align-items-center justify-content-center bg-light">
+
+                            <div class="text-center text-dark-emphasis">
+
+                                <i class="bi bi-image fs-1"></i>
+
+                                <div class="fw-medium">
+                                    Sem imagem
+                                </div>
+
                             </div>
 
                         </div>
 
-                    </div>
+                    @endif
 
-                @endif
+                </div>
 
-                {{-- Atributos --}}
+                {{-- ATRIBUTOS --}}
                 <div class="produto-atributos">
 
-                    {{-- Identificação do produto --}}
+                    {{-- IDENTIFICAÇÃO --}}
                     <div class="produto-identificacao">
 
-                        {{-- Logo da marca --}}
+                        {{-- LOGO DA MARCA --}}
                         <div class="produto-marca-logo">
+
                             @if($produto->marcaRelacionada?->logo_path)
+
                                 <img
                                     src="{{ asset('storage/' . $produto->marcaRelacionada->logo_path) }}"
                                     alt="Logo {{ $produto->marcaRelacionada->nome }}"
                                     class="img-fluid"
                                 >
+
                             @elseif($produto->marcaRelacionada?->logo_url)
+
                                 <img
                                     src="{{ $produto->marcaRelacionada->logo_url }}"
                                     alt="Logo {{ $produto->marcaRelacionada->nome }}"
                                     class="img-fluid"
                                 >
+
                             @else
-                                <i class="bi bi-image"></i>
+
+                                <i class="bi bi-tag"></i>
+
                             @endif
+
                         </div>
 
                         <div class="produto-identificacao-info">
 
                             <span class="produto-marca">
-                                {{ $produto->marcaRelacionada?->nome ?: 'Marca não informada' }}
+                                {{ $produto->marcaRelacionada?->nome
+                                    ?: 'Marca não informada' }}
                             </span>
 
                             <span class="produto-nome">
@@ -286,10 +415,10 @@
 
                     </div>
 
-                    {{-- Resumo do produto --}}
+                    {{-- RESUMO --}}
                     <div class="produto-resumo">
 
-                        {{-- Código de barras --}}
+                        {{-- CÓDIGO DE BARRAS --}}
                         @if($produto->codigo_barras)
 
                             <div class="produto-barcode-card">
@@ -323,7 +452,7 @@
 
                         @endif
 
-                        {{-- Estoque e valor --}}
+                        {{-- ESTOQUE, VALOR E STATUS --}}
                         <div class="produto-resumo-dados">
 
                             <div class="produto-resumo-dado">
@@ -347,8 +476,36 @@
                                 </span>
 
                                 <strong>
-                                    R$ {{ number_format($produto->preco_uni, 2, ',', '.') }}
+                                    R$ {{ number_format(
+                                        $produto->preco_uni,
+                                        2,
+                                        ',',
+                                        '.'
+                                    ) }}
                                 </strong>
+
+                            </div>
+
+                            <div class="produto-resumo-dado">
+
+                                <span class="produto-resumo-label">
+                                    <i class="bi bi-power"></i>
+                                    Status
+                                </span>
+
+                                @if($produto->status)
+
+                                    <span class="badge text-bg-success">
+                                        Ativo
+                                    </span>
+
+                                @else
+
+                                    <span class="badge text-bg-secondary">
+                                        Inativo
+                                    </span>
+
+                                @endif
 
                             </div>
 
@@ -358,7 +515,7 @@
 
                 </div>
 
-                {{-- Descrição --}}
+                {{-- DESCRIÇÃO --}}
                 <div class="produto-description">
 
                     <a>
@@ -373,7 +530,7 @@
 
             </div>
 
-            {{-- Ações --}}
+            {{-- AÇÕES --}}
             <div class="produto-acoes">
 
                 <a
@@ -423,7 +580,7 @@
 
     @endforeach
 
-    {{-- Paginação --}}
+    {{-- PAGINAÇÃO --}}
     @if($produtos->hasPages())
 
         <div class="d-flex justify-content-center mt-4">
@@ -438,6 +595,6 @@
 
 @section('scripts')
 
-@vite(['resources/js/components/barcode.js'])
+@vite(['resources/js/produto/barcode.js'])
 
 @endsection

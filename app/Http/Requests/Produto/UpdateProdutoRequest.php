@@ -106,30 +106,55 @@ class UpdateProdutoRequest extends FormRequest
                 'min:0',
             ],
 
+            'estoque_minimo' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+
+            'status' => [
+                'required',
+                'boolean',
+            ],
+
             'codigo_fabricante' => [
                 'required',
                 'string',
-                Rule::unique('produtos', 'codigo_fabricante')
-                    ->ignore($produtoId),
+                Rule::unique(
+                    'produtos',
+                    'codigo_fabricante'
+                )->ignore($produtoId),
             ],
 
             'codigo_barras' => [
                 'nullable',
                 'string',
-                Rule::unique('produtos', 'codigo_barras')
-                    ->ignore($produtoId),
+                Rule::unique(
+                    'produtos',
+                    'codigo_barras'
+                )->ignore($produtoId),
             ],
 
-            'img' => [
+            'imagens' => [
                 'nullable',
+                'array',
+                'max:8',
+            ],
+
+            'imagens.*' => [
                 'image',
                 'max:2048',
+            ],
+
+            'ordem_imagens' => [
+                'nullable',
+                'json',
             ],
 
             'ncm' => [
                 'nullable',
                 'string',
-                'max:20',
+                'max:8',
             ],
 
             'cest' => [
@@ -147,6 +172,7 @@ class UpdateProdutoRequest extends FormRequest
             'origem_mercadoria' => [
                 'nullable',
                 'integer',
+                'between:0,8',
             ],
 
             'unidade_comercial' => [
@@ -190,6 +216,40 @@ class UpdateProdutoRequest extends FormRequest
         ];
     }
 
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            $produto = $this->route('produto');
+
+            if (!$produto instanceof Produto) {
+                return;
+            }
+
+            $novasImagens = $this->file('imagens', []);
+
+            if (!is_array($novasImagens)) {
+                $novasImagens = [];
+            }
+
+            $existentes = $produto
+                ->imagens()
+                ->count();
+
+            if ($existentes + count($novasImagens) > 8) {
+                $disponiveis = max(
+                    0,
+                    8 - $existentes
+                );
+
+                $validator->errors()->add(
+                    'imagens',
+                    "Este produto já possui {$existentes} imagem(ns). "
+                    . "Você pode adicionar no máximo mais {$disponiveis}."
+                );
+            }
+        });
+    }
+
     public function messages(): array
     {
         return [
@@ -212,6 +272,12 @@ class UpdateProdutoRequest extends FormRequest
             'quantidade.integer' => 'A quantidade deve ser um número inteiro.',
             'quantidade.min' => 'A quantidade não pode ser negativa.',
 
+            'estoque_minimo.integer' => 'O estoque mínimo deve ser um número inteiro.',
+            'estoque_minimo.min' => 'O estoque mínimo não pode ser negativo.',
+
+            'status.required' => 'Informe o status do produto.',
+            'status.boolean' => 'O status informado é inválido.',
+
             'codigo_fabricante.required' => 'O código do fabricante é obrigatório.',
             'codigo_fabricante.string' => 'O código do fabricante é inválido.',
             'codigo_fabricante.unique' => 'Já existe outro produto cadastrado com este código de fabricante.',
@@ -219,19 +285,24 @@ class UpdateProdutoRequest extends FormRequest
             'codigo_barras.string' => 'O código de barras é inválido.',
             'codigo_barras.unique' => 'Já existe outro produto cadastrado com este código de barras.',
 
-            'img.image' => 'O arquivo informado deve ser uma imagem.',
-            'img.max' => 'A imagem não pode ter mais de 2 MB.',
+            'imagens.array' => 'As imagens enviadas são inválidas.',
+            'imagens.max' => 'Você pode cadastrar no máximo 8 imagens.',
+            'imagens.*.image' => 'Um dos arquivos enviados não é uma imagem válida.',
+            'imagens.*.max' => 'Cada imagem pode ter no máximo 2 MB.',
+
+            'ordem_imagens.json' => 'A ordem das imagens enviada é inválida.',
 
             'ncm.string' => 'O NCM informado é inválido.',
-            'ncm.max' => 'O NCM não pode ultrapassar 20 caracteres.',
+            'ncm.max' => 'O NCM não pode ultrapassar 8 caracteres.',
 
             'cest.string' => 'O CEST informado é inválido.',
-            'cest.max' => 'O CEST não pode ultrapassar 20 caracteres.',
+            'cest.max' => 'O CEST não pode ultrapassar 8 caracteres.',
 
             'ex_tipi.string' => 'O EX-TIPI informado é inválido.',
-            'ex_tipi.max' => 'O EX-TIPI não pode ultrapassar 20 caracteres.',
+            'ex_tipi.max' => 'O EX-TIPI não pode ultrapassar 8 caracteres.',
 
             'origem_mercadoria.integer' => 'A origem da mercadoria é inválida.',
+            'origem_mercadoria.between' => 'A origem da mercadoria deve estar entre 0 e 8.',
 
             'unidade_comercial.string' => 'A unidade comercial é inválida.',
             'unidade_comercial.max' => 'A unidade comercial não pode ultrapassar 10 caracteres.',
