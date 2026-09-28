@@ -251,6 +251,7 @@
                     wire:target="buscaVeiculo"
                     class="small text-dark fw-semibold mt-1"
                 >
+                    <i class="bi bi-arrow-repeat me-1"></i>
                     Buscando veículos...
                 </div>
 
@@ -259,51 +260,81 @@
                     && count($resultadosVeiculos) > 0
                 )
 
-                    <div class="list-group mt-1 shadow-sm">
+                    <div class="busca-selecao mt-1 shadow-sm">
 
-                        @foreach($resultadosVeiculos as $veiculo)
+                        <div class="busca-selecao__cabecalho">
 
-                            <button
-                                type="button"
-                                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
-                                wire:key="resultado-veiculo-{{ $veiculo['id'] }}"
-                                wire:click="adicionarVeiculo({{ $veiculo['id'] }})"
-                                @disabled($veiculo['selecionado'])
-                            >
+                            <span>
+                                <i class="bi bi-search me-1"></i>
+                                Resultados encontrados
+                            </span>
 
-                                <span>
+                            <span class="badge text-bg-secondary">
+                                {{ count($resultadosVeiculos) }}
+                            </span>
 
-                                    <i class="bi bi-car-front me-2"></i>
+                        </div>
 
-                                    <strong>
-                                        {{ $veiculo['nome'] }}
-                                    </strong>
+                        <div class="busca-selecao__resultados">
 
-                                    @if(!empty($veiculo['montadora']))
+                            @foreach($resultadosVeiculos as $veiculo)
 
-                                        <span class="text-dark fw-medium">
-                                            — {{ $veiculo['montadora'] }}
+                                <button
+                                    type="button"
+                                    class="list-group-item list-group-item-action busca-selecao__item d-flex justify-content-between align-items-center gap-3"
+                                    wire:key="resultado-veiculo-{{ $veiculo['id'] }}"
+                                    wire:click="adicionarVeiculo({{ $veiculo['id'] }})"
+                                    @disabled($veiculo['selecionado'])
+                                >
+
+                                    <span class="d-flex align-items-center text-start">
+
+                                        <i class="bi bi-car-front me-2 flex-shrink-0"></i>
+
+                                        <span>
+
+                                            <strong>
+                                                {{ $veiculo['nome'] }}
+                                            </strong>
+
+                                            @if(!empty($veiculo['montadora']))
+
+                                                <span class="text-dark fw-medium">
+                                                    — {{ $veiculo['montadora'] }}
+                                                </span>
+
+                                            @endif
+
                                         </span>
+
+                                    </span>
+
+                                    @if($veiculo['selecionado'])
+
+                                        <span class="badge text-bg-success flex-shrink-0">
+                                            <i class="bi bi-check-lg me-1"></i>
+                                            Selecionado
+                                        </span>
+
+                                    @else
+
+                                        <i class="bi bi-plus-lg flex-shrink-0"></i>
 
                                     @endif
 
-                                </span>
+                                </button>
 
-                                @if($veiculo['selecionado'])
+                            @endforeach
 
-                                    <span class="badge text-bg-success">
-                                        Selecionado
-                                    </span>
+                        </div>
 
-                                @else
+                        <div class="busca-selecao__rodape">
 
-                                    <i class="bi bi-plus-lg"></i>
+                            <i class="bi bi-mouse me-1"></i>
 
-                                @endif
+                            Role a lista para visualizar todos os resultados.
 
-                            </button>
-
-                        @endforeach
+                        </div>
 
                     </div>
 
@@ -313,12 +344,14 @@
                 )
 
                     <div class="small text-dark fw-semibold mt-2">
+                        <i class="bi bi-search me-1"></i>
                         Nenhum veículo encontrado.
                     </div>
 
                 @elseif(trim($buscaVeiculo) !== '')
 
                     <div class="small text-dark fw-semibold mt-2">
+                        <i class="bi bi-info-circle me-1"></i>
                         Digite pelo menos 2 caracteres para pesquisar.
                     </div>
 
@@ -326,12 +359,21 @@
 
             </div>
 
+            {{-- VEÍCULOS SELECIONADOS --}}
             @if(count($veiculosSelecionados) > 0)
 
                 <div class="mt-3">
 
-                    <div class="small fw-bold text-dark mb-2">
-                        Veículos selecionados:
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+
+                        <div class="small fw-bold text-dark">
+                            Veículos selecionados:
+                        </div>
+
+                        <span class="badge text-bg-primary">
+                            {{ count($veiculosSelecionados) }}
+                        </span>
+
                     </div>
 
                     <div class="tags-container">
@@ -342,6 +384,7 @@
                                 class="tag"
                                 wire:key="veiculo-selecionado-{{ $veiculo['id'] }}"
                             >
+
                                 {{ $veiculo['nome'] }}
 
                                 @if(!empty($veiculo['montadora']))
@@ -380,15 +423,19 @@
             @endif
 
             @error('veiculos')
+
                 <div class="text-danger small fw-semibold mt-1">
                     {{ $message }}
                 </div>
+
             @enderror
 
             @error('veiculos.*')
+
                 <div class="text-danger small fw-semibold mt-1">
                     {{ $message }}
                 </div>
+
             @enderror
 
         </div>
@@ -415,9 +462,11 @@
             >{{ old('descricao', $produto->descricao ?? '') }}</textarea>
 
             @error('descricao')
+
                 <div class="invalid-feedback">
                     {{ $message }}
                 </div>
+
             @enderror
 
         </div>

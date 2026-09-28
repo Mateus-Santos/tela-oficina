@@ -154,36 +154,130 @@ class FormProduto extends Component
 
         if (mb_strlen($busca) < 2) {
             $this->resultadosVeiculos = [];
+
             return;
         }
 
-        $termos = preg_split('/\s+/', $busca, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $termos = collect(
+            preg_split(
+                '/\s+/',
+                $busca,
+                -1,
+                PREG_SPLIT_NO_EMPTY
+            ) ?: []
+        )
+            ->map(fn ($termo) => trim($termo))
+            ->filter()
+            ->unique(
+                fn ($termo) => mb_strtolower($termo)
+            )
+            ->values()
+            ->all();
+
+        $idsSelecionados = array_map(
+            'intval',
+            array_column(
+                $this->veiculosSelecionados,
+                'id'
+            )
+        );
 
         $query = Veiculo::query()
-            ->with('montadora')
-            ->select('veiculos.*');
+            ->with([
+                'montadora:id,nome',
+            ])
+            ->select([
+                'id',
+                'nome',
+                'montadora_id',
+            ]);
 
         foreach ($termos as $termo) {
-            $query->where(function ($q) use ($termo) {
-                $q->where('nome', 'like', "%{$termo}%")
-                    ->orWhereHas('montadora', function ($montadoraQuery) use ($termo) {
-                        $montadoraQuery->where('nome', 'like', "%{$termo}%");
-                    });
+            $query->where(function ($query) use ($termo) {
+                $query
+                    ->where(
+                        'nome',
+                        'like',
+                        "%{$termo}%"
+                    )
+                    ->orWhereHas(
+                        'montadora',
+                        function ($montadoraQuery) use ($termo) {
+                            $montadoraQuery->where(
+                                'nome',
+                                'like',
+                                "%{$termo}%"
+                            );
+                        }
+                    );
             });
         }
 
+        $buscaNormalizada = mb_strtolower(
+            preg_replace('/\s+/', ' ', $busca)
+        );
+
         $this->resultadosVeiculos = $query
-            ->orderBy('nome')
-            ->limit(20)
             ->get()
+            ->sortBy(function ($veiculo) use ($buscaNormalizada) {
+                $nome = mb_strtolower(
+                    trim($veiculo->nome)
+                );
+
+                $montadora = mb_strtolower(
+                    trim($veiculo->montadora?->nome ?? '')
+                );
+
+                $completo = trim(
+                    "{$montadora} {$nome}"
+                );
+
+                if ($completo === $buscaNormalizada) {
+                    return 0;
+                }
+
+                if ($nome === $buscaNormalizada) {
+                    return 1;
+                }
+
+                if ($montadora === $buscaNormalizada) {
+                    return 2;
+                }
+
+                if (str_starts_with(
+                    $completo,
+                    $buscaNormalizada
+                )) {
+                    return 3;
+                }
+
+                if (str_starts_with(
+                    $nome,
+                    $buscaNormalizada
+                )) {
+                    return 4;
+                }
+
+                if (str_starts_with(
+                    $montadora,
+                    $buscaNormalizada
+                )) {
+                    return 5;
+                }
+
+                return 6;
+            })
+            ->values()
             ->map(fn ($veiculo) => [
                 'id' => $veiculo->id,
                 'nome' => $veiculo->nome,
                 'montadora' => $veiculo->montadora?->nome,
-                'selecionado' => collect($this->veiculosSelecionados)
-                    ->contains('id', $veiculo->id),
+                'selecionado' => in_array(
+                    (int) $veiculo->id,
+                    $idsSelecionados,
+                    true
+                ),
             ])
-            ->values()
             ->toArray();
     }
 
