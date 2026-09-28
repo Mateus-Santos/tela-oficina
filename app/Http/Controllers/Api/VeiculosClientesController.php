@@ -10,38 +10,138 @@ class VeiculosClientesController extends Controller
 {
     public function buscarPorPlaca(string $placa): JsonResponse
     {
-        $placaLimpa = strtoupper(preg_replace('/[^A-Z0-9]/i', '', $placa));
+        $placaLimpa = strtoupper(
+            preg_replace(
+                '/[^A-Z0-9]/i',
+                '',
+                $placa
+            )
+        );
 
         if (empty($placaLimpa)) {
-            return response()->json(['message' => 'Placa inválida.'], 422);
+            return response()->json(
+                [
+                    'message' => 'Placa inválida.',
+                ],
+                422
+            );
         }
 
-        $veiculo = VeiculosCliente::with([
-            'cliente.pessoa',
-            'ordensServico' => function ($query) {
-                // Traz apenas OSs abertas/em andamento se necessário, ou ordene por mais recente
-                $query->orderBy('created_at', 'desc');
-            }
-        ])
-        ->where('placa', $placaLimpa)
-        ->first();
+        $veiculo = VeiculosCliente::query()
+            ->with([
+                'veiculo.montadora',
+                'clientes.pessoa',
+                'ordensServico.cliente.pessoa',
+            ])
+            ->where(
+                'placa',
+                $placaLimpa
+            )
+            ->first();
 
         if (!$veiculo) {
-            return response()->json(['message' => 'Veículo não encontrado.'], 404);
+            return response()->json(
+                [
+                    'message' => 'Veículo não encontrado.',
+                ],
+                404
+            );
         }
 
-        return response()->json([
-            'veiculo_id'     => $veiculo->id,
-            'placa'          => $veiculo->placa,
-            'cliente_id'     => $veiculo->cliente_id,
-            'cliente_nome'   => $veiculo->cliente?->pessoa?->nome ?? 'Cliente não informado',
-            'ordens_servico' => $veiculo->ordensServico->map(function ($os) {
-                return [
-                    'id' => $os->id,
-                    // Garante um texto padrão caso o campo descricao esteja vazio
-                    'descricao' => $os->descricao ?: 'OS #' . $os->id . ' (' . ($os->status ?? 'Aberta') . ')',
-                ];
-            }),
-        ], 200);
+        return response()->json(
+            [
+                'veiculo_cliente_id' => $veiculo->id,
+
+                'placa' => $veiculo->placa,
+
+                'ano' => $veiculo->ano,
+
+                'cor' => $veiculo->cor,
+
+                'veiculo' => [
+                    'id' => $veiculo->veiculo?->id,
+
+                    'nome' =>
+                        $veiculo->veiculo?->nome,
+
+                    'montadora' => [
+                        'id' =>
+                            $veiculo
+                                ->veiculo
+                                ?->montadora
+                                ?->id,
+
+                        'nome' =>
+                            $veiculo
+                                ->veiculo
+                                ?->montadora
+                                ?->nome,
+                    ],
+                ],
+
+                'clientes' => $veiculo
+                    ->clientes
+                    ->map(
+                        function ($cliente) {
+                            return [
+                                'id' => $cliente->id,
+
+                                'nome' =>
+                                    $cliente
+                                        ->pessoa
+                                        ?->nome
+                                    ?? 'Cliente não informado',
+
+                                'cpf' =>
+                                    $cliente
+                                        ->pessoa
+                                        ?->cpf,
+
+                                'telefone' =>
+                                    $cliente
+                                        ->pessoa
+                                        ?->telefone_1
+                                    ?: $cliente
+                                        ->pessoa
+                                        ?->telefone_2,
+                            ];
+                        }
+                    )
+                    ->values(),
+
+                'ordens_servico' => $veiculo
+                    ->ordensServico
+                    ->map(
+                        function ($os) {
+                            return [
+                                'id' => $os->id,
+
+                                'cliente_id' =>
+                                    $os->cliente_id,
+
+                                'cliente_nome' =>
+                                    $os
+                                        ->cliente
+                                        ?->pessoa
+                                        ?->nome
+                                    ?? 'Cliente não informado',
+
+                                'status' =>
+                                    $os->status,
+
+                                'descricao' =>
+                                    $os->descricao
+                                    ?: 'OS #'
+                                        . $os->id
+                                        . ' ('
+                                        . ($os->status ?? 'Aberta')
+                                        . ')',
+                            ];
+                        }
+                    )
+                    ->values(),
+            ],
+            200
+        );
     }
 }
