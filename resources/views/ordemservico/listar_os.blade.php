@@ -13,24 +13,50 @@
     />
 
     @if (session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
+
+        <div class="alert alert-success">
+            <i class="bi bi-check-circle"></i>
+            {{ session('success') }}
+        </div>
+
     @endif
 
     @if (session('error'))
-        <div class="alert alert-danger">{{ session('error') }}</div>
+
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle"></i>
+            {{ session('error') }}
+        </div>
+
     @endif
 
     <x-filtros-container
         action="{{ route('ordemservicos.index') }}"
         id="filtros-os"
         :collapsible="true"
-        :expanded="request()->hasAny(['id', 'setor', 'descricao', 'data_inicio', 'data_fim'])"
+        :expanded="request()->hasAny([
+            'id',
+            'setor',
+            'descricao',
+            'data_inicio',
+            'data_fim'
+        ])"
     >
+
         <x-slot:primary>
+
             <div class="row g-3 align-items-end">
 
                 <div class="col-12 col-md-4">
-                    <label for="cliente" class="form-label">Cliente</label>
+
+                    <label
+                        for="cliente"
+                        class="form-label"
+                    >
+                        <i class="bi bi-person"></i>
+                        Cliente
+                    </label>
+
                     <input
                         type="text"
                         name="cliente"
@@ -39,10 +65,19 @@
                         value="{{ request('cliente') }}"
                         placeholder="Nome do cliente"
                     >
+
                 </div>
 
                 <div class="col-12 col-md-3">
-                    <label for="placa" class="form-label">Placa do veículo</label>
+
+                    <label
+                        for="placa"
+                        class="form-label"
+                    >
+                        <i class="bi bi-credit-card-2-front"></i>
+                        Placa do veículo
+                    </label>
+
                     <input
                         type="text"
                         name="placa"
@@ -51,24 +86,88 @@
                         value="{{ request('placa') }}"
                         placeholder="Placa do veículo"
                     >
+
                 </div>
 
                 <div class="col-12 col-md-3">
-                    <label for="status" class="form-label">Status</label>
-                    <select name="status" id="status" class="filtros-container__select">
-                        <option value="">Todos os status</option>
-                        <option value="aberta" @selected(request('status') === 'aberta')>Aberta</option>
-                        <option value="em_andamento" @selected(request('status') === 'em_andamento')>Em andamento</option>
-                        <option value="aguardando_aprovacao" @selected(request('status') === 'aguardando_aprovacao')>Aguardando aprovação</option>
-                        <option value="finalizada" @selected(request('status') === 'finalizada')>Finalizada</option>
-                        <option value="cancelada" @selected(request('status') === 'cancelada')>Cancelada</option>
+
+                    <label
+                        for="status"
+                        class="form-label"
+                    >
+                        <i class="bi bi-activity"></i>
+                        Status
+                    </label>
+
+                    <select
+                        name="status"
+                        id="status"
+                        class="filtros-container__select"
+                    >
+
+                        <option value="">
+                            Todos os status
+                        </option>
+
+                        <option
+                            value="aberta"
+                            @selected(
+                                request('status') === 'aberta'
+                            )
+                        >
+                            Aberta
+                        </option>
+
+                        <option
+                            value="em_andamento"
+                            @selected(
+                                request('status') === 'em_andamento'
+                            )
+                        >
+                            Em andamento
+                        </option>
+
+                        <option
+                            value="aguardando_aprovacao"
+                            @selected(
+                                request('status') === 'aguardando_aprovacao'
+                            )
+                        >
+                            Aguardando aprovação
+                        </option>
+
+                        <option
+                            value="finalizada"
+                            @selected(
+                                request('status') === 'finalizada'
+                            )
+                        >
+                            Finalizada
+                        </option>
+
+                        <option
+                            value="cancelada"
+                            @selected(
+                                request('status') === 'cancelada'
+                            )
+                        >
+                            Cancelada
+                        </option>
+
                     </select>
+
                 </div>
 
                 <div class="col-12 col-md-2">
+
                     <div class="filtros-container__actions">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-search"></i> Filtrar
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                        >
+                            <i class="bi bi-search"></i>
+                            Filtrar
                         </button>
 
                         <a
@@ -78,17 +177,28 @@
                         >
                             <i class="bi bi-x-lg"></i>
                         </a>
+
                     </div>
+
                 </div>
 
             </div>
+
         </x-slot:primary>
 
         <x-slot:advanced>
+
             <div class="row g-3">
 
                 <div class="col-12 col-md-6 col-lg-3">
-                    <label for="id" class="form-label">ID</label>
+
+                    <label
+                        for="id"
+                        class="form-label"
+                    >
+                        ID
+                    </label>
+
                     <input
                         type="number"
                         name="id"
@@ -97,26 +207,55 @@
                         value="{{ request('id') }}"
                         placeholder="Número da OS"
                     >
+
                 </div>
 
                 <div class="col-12 col-md-6 col-lg-3">
-                    <label for="setor" class="form-label">Setor</label>
-                    <select name="setor" id="setor" class="filtros-container__select">
-                        <option value="">Todos os setores</option>
+
+                    <label
+                        for="setor"
+                        class="form-label"
+                    >
+                        Setor
+                    </label>
+
+                    <select
+                        name="setor"
+                        id="setor"
+                        class="filtros-container__select"
+                    >
+
+                        <option value="">
+                            Todos os setores
+                        </option>
 
                         @foreach ($setorservicos as $setor)
+
                             <option
                                 value="{{ $setor->id }}"
-                                @selected((string) request('setor') === (string) $setor->id)
+                                @selected(
+                                    (string) request('setor')
+                                    === (string) $setor->id
+                                )
                             >
                                 {{ $setor->setor }}
                             </option>
+
                         @endforeach
+
                     </select>
+
                 </div>
 
                 <div class="col-12 col-md-6 col-lg-3">
-                    <label for="descricao" class="form-label">Descrição</label>
+
+                    <label
+                        for="descricao"
+                        class="form-label"
+                    >
+                        Descrição
+                    </label>
+
                     <input
                         type="text"
                         name="descricao"
@@ -125,10 +264,18 @@
                         value="{{ request('descricao') }}"
                         placeholder="Descrição da OS"
                     >
+
                 </div>
 
                 <div class="col-12 col-md-6 col-lg-3">
-                    <label for="data_inicio" class="form-label">Data inicial</label>
+
+                    <label
+                        for="data_inicio"
+                        class="form-label"
+                    >
+                        Data inicial
+                    </label>
+
                     <input
                         type="date"
                         name="data_inicio"
@@ -136,10 +283,18 @@
                         class="filtros-container__input"
                         value="{{ request('data_inicio') }}"
                     >
+
                 </div>
 
                 <div class="col-12 col-md-6 col-lg-3">
-                    <label for="data_fim" class="form-label">Data final</label>
+
+                    <label
+                        for="data_fim"
+                        class="form-label"
+                    >
+                        Data final
+                    </label>
+
                     <input
                         type="date"
                         name="data_fim"
@@ -147,26 +302,62 @@
                         class="filtros-container__input"
                         value="{{ request('data_fim') }}"
                     >
+
                 </div>
 
             </div>
+
         </x-slot:advanced>
+
     </x-filtros-container>
 
-    @if ($ordemservicos->isEmpty())
-        <div class="alert alert-{{ request()->hasAny(['id', 'status', 'cliente', 'placa', 'setor', 'descricao', 'data_inicio', 'data_fim']) ? 'warning' : 'info' }}">
-            <i class="bi {{ request()->hasAny(['id', 'status', 'cliente', 'placa', 'setor', 'descricao', 'data_inicio', 'data_fim']) ? 'bi-exclamation-triangle' : 'bi-info-circle' }}"></i>
+    @php
 
-            {{ request()->hasAny(['id', 'status', 'cliente', 'placa', 'setor', 'descricao', 'data_inicio', 'data_fim'])
+        $possuiFiltros = request()->hasAny([
+            'id',
+            'status',
+            'cliente',
+            'placa',
+            'setor',
+            'descricao',
+            'data_inicio',
+            'data_fim',
+        ]);
+
+    @endphp
+
+    @if ($ordemservicos->isEmpty())
+
+        <div
+            class="alert alert-{{ $possuiFiltros
+                ? 'warning'
+                : 'info' }}"
+        >
+
+            <i
+                class="bi {{ $possuiFiltros
+                    ? 'bi-exclamation-triangle'
+                    : 'bi-info-circle' }}"
+            ></i>
+
+            {{ $possuiFiltros
                 ? 'Nenhuma ordem de serviço encontrada com os filtros informados.'
                 : 'Nenhuma ordem de serviço cadastrada.' }}
+
         </div>
+
     @endif
 
     @if ($ordemservicos->isNotEmpty())
+
         <div class="table-responsive">
-            <table class="table table-striped table-hover align-middle">
+
+            <table
+                class="table table-striped table-hover align-middle"
+            >
+
                 <thead>
+
                     <tr>
                         <th>ID</th>
                         <th>STATUS</th>
@@ -178,45 +369,97 @@
                         <th>SETOR</th>
                         <th>EXCLUIR</th>
                     </tr>
+
                 </thead>
 
                 <tbody>
+
                     @foreach ($ordemservicos as $ordemservico)
+
                         <tr>
-                            <td>{{ $ordemservico->id }}</td>
 
                             <td>
+                                {{ $ordemservico->id }}
+                            </td>
+
+                            <td>
+
                                 <livewire:status-ordem-servico-selector
                                     :ordem-servico="$ordemservico"
                                     :key="'status-os-' . $ordemservico->id"
                                 />
+
                             </td>
 
                             <td>
-                                {{ \Carbon\Carbon::parse($ordemservico->data_abertura)->format('d/m/Y H\:i') }}
+
+                                {{ \Carbon\Carbon::parse(
+                                    $ordemservico->data_abertura
+                                )->format('d/m/Y H:i') }}
+
                             </td>
 
                             <td>
-                                {{ $ordemservico->veiculosCliente?->cliente?->pessoa?->nome ?? 'N/A' }}
+
+                                <i class="bi bi-person me-1"></i>
+
+                                {{ $ordemservico
+                                    ->cliente
+                                    ?->pessoa
+                                    ?->nome
+                                    ?? 'N/A' }}
+
                             </td>
 
                             <td>
-                                @if ($ordemservico->veiculosCliente?->veiculo)
-                                    {{ $ordemservico->veiculosCliente->veiculo->nome }}
 
-                                    @if ($ordemservico->veiculosCliente->veiculo->montadora)
+                                @if(
+                                    $ordemservico
+                                        ->veiculosCliente
+                                        ?->veiculo
+                                )
+
+                                    {{ $ordemservico
+                                        ->veiculosCliente
+                                        ->veiculo
+                                        ->nome }}
+
+                                    @if(
+                                        $ordemservico
+                                            ->veiculosCliente
+                                            ->veiculo
+                                            ->montadora
+                                    )
+
                                         <br>
+
                                         <small class="text-muted">
-                                            {{ $ordemservico->veiculosCliente->veiculo->montadora->nome }}
+
+                                            {{ $ordemservico
+                                                ->veiculosCliente
+                                                ->veiculo
+                                                ->montadora
+                                                ->nome }}
+
                                         </small>
+
                                     @endif
+
                                 @else
+
                                     N/A
+
                                 @endif
+
                             </td>
 
                             <td>
-                                {{ $ordemservico->veiculosCliente?->placa ?? 'N/A' }}
+
+                                {{ $ordemservico
+                                    ->veiculosCliente
+                                    ?->placa
+                                    ?? 'N/A' }}
+
                             </td>
 
                             <td>
@@ -224,15 +467,25 @@
                             </td>
 
                             <td>
-                                {{ $ordemservico->setorServico?->setor ?? 'N/A' }}
+                                {{ $ordemservico
+                                    ->setorServico
+                                    ?->setor
+                                    ?? 'N/A' }}
                             </td>
 
                             <td>
+
                                 <form
-                                    action="{{ route('ordemservicos.destroy', $ordemservico->id) }}"
+                                    action="{{ route(
+                                        'ordemservicos.destroy',
+                                        $ordemservico->id
+                                    ) }}"
                                     method="POST"
-                                    onsubmit="return confirm('Tem certeza que deseja excluir esta ordem de serviço?');"
+                                    onsubmit="return confirm(
+                                        'Tem certeza que deseja excluir esta ordem de serviço?'
+                                    );"
                                 >
+
                                     @csrf
                                     @method('DELETE')
 
@@ -243,19 +496,29 @@
                                     >
                                         <i class="bi bi-trash"></i>
                                     </button>
+
                                 </form>
+
                             </td>
+
                         </tr>
+
                     @endforeach
+
                 </tbody>
+
             </table>
+
         </div>
 
         @if ($ordemservicos->hasPages())
+
             <div class="d-flex justify-content-center mt-4">
                 {{ $ordemservicos->links() }}
             </div>
+
         @endif
+
     @endif
 
 </div>
