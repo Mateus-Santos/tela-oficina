@@ -94,9 +94,20 @@ class StoreProdutoRequest extends FormRequest
             ],
 
             'quantidade' => [
+                'required',
+                'integer',
+                'min:0',
+            ],
+
+            'estoque_minimo' => [
                 'nullable',
                 'integer',
                 'min:0',
+            ],
+
+            'status' => [
+                'required',
+                'boolean',
             ],
 
             'codigo_fabricante' => [
@@ -111,16 +122,26 @@ class StoreProdutoRequest extends FormRequest
                 Rule::unique('produtos', 'codigo_barras'),
             ],
 
-            'img' => [
+            'imagens' => [
                 'nullable',
+                'array',
+                'max:8',
+            ],
+
+            'imagens.*' => [
                 'image',
                 'max:2048',
+            ],
+
+            'ordem_imagens' => [
+                'nullable',
+                'json',
             ],
 
             'ncm' => [
                 'nullable',
                 'string',
-                'max:20',
+                'max:8',
             ],
 
             'cest' => [
@@ -138,6 +159,7 @@ class StoreProdutoRequest extends FormRequest
             'origem_mercadoria' => [
                 'nullable',
                 'integer',
+                'between:0,8',
             ],
 
             'unidade_comercial' => [
@@ -199,21 +221,32 @@ class StoreProdutoRequest extends FormRequest
             'preco_uni.numeric' => 'O preço unitário deve ser um valor numérico.',
             'preco_uni.min' => 'O preço unitário não pode ser negativo.',
 
+            'quantidade.required' => 'A quantidade do produto é obrigatória.',
             'quantidade.integer' => 'A quantidade deve ser um número inteiro.',
             'quantidade.min' => 'A quantidade não pode ser negativa.',
+
+            'estoque_minimo.integer' => 'O estoque mínimo deve ser um número inteiro.',
+            'estoque_minimo.min' => 'O estoque mínimo não pode ser negativo.',
+
+            'status.required' => 'Informe o status do produto.',
+            'status.boolean' => 'O status informado é inválido.',
 
             'codigo_fabricante.required' => 'O código do fabricante é obrigatório.',
             'codigo_fabricante.string' => 'O código do fabricante é inválido.',
             'codigo_fabricante.unique' => 'Já existe um produto cadastrado com este código de fabricante.',
 
             'codigo_barras.string' => 'O código de barras é inválido.',
-            'codigo_barras.unique' => 'Já existe um produto cadastrado com este código de barras.',
+            'codigo_barras.unique' => 'Já existe outro produto cadastrado com este código de barras.',
 
-            'img.image' => 'O arquivo informado deve ser uma imagem.',
-            'img.max' => 'A imagem não pode ter mais de 2 MB.',
+            'imagens.array' => 'As imagens enviadas são inválidas.',
+            'imagens.max' => 'Você pode cadastrar no máximo 8 imagens.',
+            'imagens.*.image' => 'Um dos arquivos enviados não é uma imagem válida.',
+            'imagens.*.max' => 'Cada imagem pode ter no máximo 2 MB.',
+
+            'ordem_imagens.json' => 'A ordem das imagens enviada é inválida.',
 
             'ncm.string' => 'O NCM informado é inválido.',
-            'ncm.max' => 'O NCM não pode ultrapassar 20 caracteres.',
+            'ncm.max' => 'O NCM não pode ultrapassar 8 caracteres.',
 
             'cest.string' => 'O CEST informado é inválido.',
             'cest.max' => 'O CEST não pode ultrapassar 20 caracteres.',
@@ -222,6 +255,7 @@ class StoreProdutoRequest extends FormRequest
             'ex_tipi.max' => 'O EX-TIPI não pode ultrapassar 20 caracteres.',
 
             'origem_mercadoria.integer' => 'A origem da mercadoria é inválida.',
+            'origem_mercadoria.between' => 'A origem da mercadoria deve estar entre 0 e 8.',
 
             'unidade_comercial.string' => 'A unidade comercial é inválida.',
             'unidade_comercial.max' => 'A unidade comercial não pode ultrapassar 10 caracteres.',
