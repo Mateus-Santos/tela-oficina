@@ -6,6 +6,7 @@ use App\Models\Nota;
 use App\Models\NotasItem;
 use App\Models\OrdemServico;
 use App\Models\Produto;
+use App\Models\VeiculosCliente;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -21,7 +22,7 @@ class NotasItemController extends Controller
         $notas = Nota::with([
             'cliente.pessoa',
             'itens',
-            'veiculoscliente',
+            'veiculosCliente',
         ])
             ->where('status', '!=', 'Cancelado')
             ->get();
@@ -51,37 +52,39 @@ class NotasItemController extends Controller
          * =========================================================
          * 0. NORMALIZAR DADOS RECEBIDOS DO FORMULÁRIO
          * =========================================================
-         *
-         * O frontend pode enviar:
-         *
-         * produto
-         * os
-         *
-         * ou:
-         *
-         * App\Models\Produto
-         * App\Models\OrdemServico
-         *
-         * O backend sempre trabalha com as classes completas.
-         *
-         * Também convertemos números brasileiros:
-         *
-         * 222,22     -> 222.22
-         * 1.234,56   -> 1234.56
-         * 0,00       -> 0.00
          */
         $this->normalizarItens($request);
 
         $request->validate([
-            'cliente_id' => 'nullable|integer',
+            'cliente_id' => [
+                'nullable',
+                'integer',
+                'exists:clientes,id',
+            ],
 
-            'veiculo_cliente_id' => 'nullable|integer',
+            'veiculo_cliente_id' => [
+                'nullable',
+                'integer',
+                'exists:veiculos_clientes,id',
+            ],
 
-            'km' => 'nullable|integer|min:0',
+            'km' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
 
-            'km_proxima_troca_oleo' => 'nullable|integer|min:0',
+            'km_proxima_troca_oleo' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
 
-            'itens' => 'required|array|min:1',
+            'itens' => [
+                'required',
+                'array',
+                'min:1',
+            ],
 
             'itens.*.itemable_type' => [
                 'required',
@@ -129,7 +132,10 @@ class NotasItemController extends Controller
             ],
         ]);
 
-        $itensEnviados = $request->input('itens', []);
+        $itensEnviados = $request->input(
+            'itens',
+            []
+        );
 
         DB::beginTransaction();
 
@@ -139,37 +145,21 @@ class NotasItemController extends Controller
              * 1. VALIDAR CLIENTE E VEÍCULO
              * =========================================================
              */
+            $this->validarClienteVeiculo(
+                $request->filled('cliente_id')
+                    ? (int) $request->input('cliente_id')
+                    : null,
 
-            if ($request->filled('cliente_id')) {
-                $clienteExiste = DB::table('clientes')
-                    ->where('id', $request->cliente_id)
-                    ->exists();
-
-                if (!$clienteExiste) {
-                    throw new Exception(
-                        'O cliente informado não existe.'
-                    );
-                }
-            }
-
-            if ($request->filled('veiculo_cliente_id')) {
-                $veiculoExiste = DB::table('veiculos_clientes')
-                    ->where('id', $request->veiculo_cliente_id)
-                    ->exists();
-
-                if (!$veiculoExiste) {
-                    throw new Exception(
-                        'O veículo informado não existe.'
-                    );
-                }
-            }
+                $request->filled('veiculo_cliente_id')
+                    ? (int) $request->input('veiculo_cliente_id')
+                    : null
+            );
 
             /*
              * =========================================================
              * 2. VALIDAR TODOS OS ITENS ANTES DE CRIAR A NOTA
              * =========================================================
              */
-
             $subtotalGeral = 0;
             $descontoGeral = 0;
 
@@ -182,60 +172,62 @@ class NotasItemController extends Controller
 
                 $valorUnitario = (float) $dadosItem['valor_unitario'];
 
-                $desconto = (float) ($dadosItem['desconto'] ?? 0);
+                $desconto = (float) (
+                    $dadosItem['desconto']
+                    ?? 0
+                );
 
                 /*
-                 * Verifica se o Produto realmente existe.
+                 * Verifica Produto.
                  */
                 if ($tipo === Produto::class) {
-                    $itemExiste = Produto::where(
-                        'id',
-                        $itemId
-                    )->exists();
+                    $itemExiste = Produto::query()
+                        ->where(
+                            'id',
+                            $itemId
+                        )
+                        ->exists();
 
                     if (!$itemExiste) {
                         throw new Exception(
-                            'O produto informado no item ' .
-                            ($index + 1) .
-                            ' não existe.'
+                            'O produto informado no item '
+                            . ($index + 1)
+                            . ' não existe.'
                         );
                     }
                 }
 
                 /*
-                 * Verifica se a O.S. realmente existe.
+                 * Verifica O.S.
                  */
                 if ($tipo === OrdemServico::class) {
-                    $itemExiste = OrdemServico::where(
-                        'id',
-                        $itemId
-                    )->exists();
-
-                    if (!$itemExiste) {
-                        throw new Exception(
-                            'A Ordem de Serviço informada no item ' .
-                            ($index + 1) .
-                            ' não existe.'
-                        );
-                    }
+                    $this->validarOrdemServicoDaNota(
+                        $itemId,
+                        $index,
+                        $request
+                    );
                 }
 
                 /*
                  * Validação financeira.
                  */
-                $subtotalItem = $quantidade * $valorUnitario;
+                $subtotalItem =
+                    $quantidade
+                    * $valorUnitario;
 
                 if ($desconto > $subtotalItem) {
                     throw new Exception(
-                        'O desconto do item ' .
-                        ($index + 1) .
-                        ' não pode ser maior que o valor do item.'
+                        'O desconto do item '
+                        . ($index + 1)
+                        . ' não pode ser maior que o valor do item.'
                     );
                 }
 
-                $subtotalGeral += $subtotalItem;
+                $subtotalGeral +=
+                    $subtotalItem;
 
-                $descontoGeral += $desconto;
+                $descontoGeral +=
+                    $desconto;
             }
 
             /*
@@ -243,7 +235,6 @@ class NotasItemController extends Controller
              * 3. CALCULAR TOTAL DA NOTA
              * =========================================================
              */
-
             $totalGeral = max(
                 0,
                 $subtotalGeral - $descontoGeral
@@ -254,14 +245,15 @@ class NotasItemController extends Controller
              * 4. CRIAR A NOTA
              * =========================================================
              */
-
             $nota = new Nota();
 
             $nota->cliente_id =
-                $request->input('cliente_id') ?: null;
+                $request->input('cliente_id')
+                ?: null;
 
             $nota->veiculo_cliente_id =
-                $request->input('veiculo_cliente_id') ?: null;
+                $request->input('veiculo_cliente_id')
+                ?: null;
 
             $nota->tipo = 'Venda';
 
@@ -273,23 +265,33 @@ class NotasItemController extends Controller
              */
             $nota->status = 'Aberto';
 
-            // KM do veículo na chegada
+            /*
+             * KM do veículo na chegada.
+             */
             $nota->km =
-                $request->input('km') ?: null;
-
-            // KM previsto para próxima troca
-            $nota->km_proxima_troca_oleo =
-                $request->input('km_proxima_troca_oleo') ?: null;
-
-            $nota->subtotal = $subtotalGeral;
+                $request->input('km')
+                ?: null;
 
             /*
-             * O campo desconto representa a soma
-             * dos descontos existentes nos itens.
+             * KM previsto para próxima troca.
              */
-            $nota->desconto = $descontoGeral;
+            $nota->km_proxima_troca_oleo =
+                $request->input(
+                    'km_proxima_troca_oleo'
+                )
+                ?: null;
 
-            $nota->total = $totalGeral;
+            $nota->subtotal =
+                $subtotalGeral;
+
+            /*
+             * Soma dos descontos dos itens.
+             */
+            $nota->desconto =
+                $descontoGeral;
+
+            $nota->total =
+                $totalGeral;
 
             $nota->save();
 
@@ -298,7 +300,6 @@ class NotasItemController extends Controller
              * 5. CRIAR OS ITENS DA NOTA
              * =========================================================
              */
-
             foreach ($itensEnviados as $dadosItem) {
                 $quantidade =
                     (int) $dadosItem['quantidade'];
@@ -307,16 +308,23 @@ class NotasItemController extends Controller
                     (float) $dadosItem['valor_unitario'];
 
                 $desconto =
-                    (float) ($dadosItem['desconto'] ?? 0);
+                    (float) (
+                        $dadosItem['desconto']
+                        ?? 0
+                    );
 
                 $valorTotal = max(
                     0,
-                    ($quantidade * $valorUnitario) - $desconto
+                    (
+                        $quantidade
+                        * $valorUnitario
+                    ) - $desconto
                 );
 
                 $item = new NotasItem();
 
-                $item->nota_id = $nota->id;
+                $item->nota_id =
+                    $nota->id;
 
                 $item->itemable_type =
                     $dadosItem['itemable_type'];
@@ -343,9 +351,11 @@ class NotasItemController extends Controller
                  * Garantia.
                  */
                 if (
-                    isset($dadosItem['garantia_dias']) &&
-                    $dadosItem['garantia_dias'] !== '' &&
-                    (int) $dadosItem['garantia_dias'] > 0
+                    isset(
+                        $dadosItem['garantia_dias']
+                    )
+                    && $dadosItem['garantia_dias'] !== ''
+                    && (int) $dadosItem['garantia_dias'] > 0
                 ) {
                     $garantiaDias =
                         (int) $dadosItem['garantia_dias'];
@@ -374,16 +384,15 @@ class NotasItemController extends Controller
              * 6. CONFIRMAR TRANSACTION
              * =========================================================
              */
-
             DB::commit();
 
             return redirect()
                 ->route('notasitem.index')
                 ->with(
                     'success',
-                    'Nota Fiscal criada com ' .
-                    count($itensEnviados) .
-                    ' itens!'
+                    'Nota Fiscal criada com '
+                    . count($itensEnviados)
+                    . ' itens!'
                 );
         } catch (Exception $e) {
             DB::rollBack();
@@ -392,8 +401,8 @@ class NotasItemController extends Controller
                 ->back()
                 ->withErrors([
                     'erro_banco' =>
-                        'Falha ao salvar a venda: ' .
-                        $e->getMessage(),
+                        'Falha ao salvar a venda: '
+                        . $e->getMessage(),
                 ])
                 ->withInput();
         }
@@ -406,16 +415,20 @@ class NotasItemController extends Controller
     {
         $nota = Nota::with([
             'cliente.pessoa',
-            'veiculosCliente',
+            'veiculosCliente.veiculo.montadora',
             'itens.itemable',
         ])->findOrFail($id);
 
         /*
-         * Notas finalizadas ou canceladas não podem ser editadas.
+         * Notas finalizadas ou canceladas
+         * não podem ser editadas.
          */
         if ($nota->status !== 'Aberto') {
             return redirect()
-                ->route('notas.show', $nota->id)
+                ->route(
+                    'notas.show',
+                    $nota->id
+                )
                 ->withErrors([
                     'nota' =>
                         'Notas finalizadas ou canceladas não podem ser editadas.',
@@ -431,8 +444,10 @@ class NotasItemController extends Controller
     /**
      * Atualiza uma Nota existente.
      */
-    public function update(Request $request, string $id)
-    {
+    public function update(
+        Request $request,
+        string $id
+    ) {
         $nota = Nota::findOrFail($id);
 
         /*
@@ -440,10 +455,12 @@ class NotasItemController extends Controller
          * PROTEÇÃO DE STATUS
          * =========================================================
          */
-
         if ($nota->status !== 'Aberto') {
             return redirect()
-                ->route('notas.show', $nota->id)
+                ->route(
+                    'notas.show',
+                    $nota->id
+                )
                 ->withErrors([
                     'nota' =>
                         'Somente notas com status Aberto podem ser editadas.',
@@ -456,17 +473,40 @@ class NotasItemController extends Controller
         $this->normalizarItens($request);
 
         $request->validate([
-            'cliente_id' => 'nullable|integer',
+            'cliente_id' => [
+                'nullable',
+                'integer',
+                'exists:clientes,id',
+            ],
 
-            'veiculo_cliente_id' => 'nullable|integer',
+            'veiculo_cliente_id' => [
+                'nullable',
+                'integer',
+                'exists:veiculos_clientes,id',
+            ],
 
-            'km' => 'nullable|integer|min:0',
+            'km' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
 
-            'km_proxima_troca_oleo' => 'nullable|integer|min:0',
+            'km_proxima_troca_oleo' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
 
-            'itens' => 'required|array|min:1',
+            'itens' => [
+                'required',
+                'array',
+                'min:1',
+            ],
 
-            'itens.*.id' => 'nullable|integer',
+            'itens.*.id' => [
+                'nullable',
+                'integer',
+            ],
 
             'itens.*.itemable_type' => [
                 'required',
@@ -514,7 +554,11 @@ class NotasItemController extends Controller
             ],
         ]);
 
-        $itensEnviados = $request->input('itens', []);
+        $itensEnviados =
+            $request->input(
+                'itens',
+                []
+            );
 
         DB::beginTransaction();
 
@@ -524,7 +568,6 @@ class NotasItemController extends Controller
              * 1. REVALIDAR A NOTA DENTRO DA TRANSACTION
              * =========================================================
              */
-
             $nota = Nota::query()
                 ->lockForUpdate()
                 ->findOrFail($id);
@@ -540,37 +583,21 @@ class NotasItemController extends Controller
              * 2. VALIDAR CLIENTE E VEÍCULO
              * =========================================================
              */
+            $this->validarClienteVeiculo(
+                $request->filled('cliente_id')
+                    ? (int) $request->input('cliente_id')
+                    : null,
 
-            if ($request->filled('cliente_id')) {
-                $clienteExiste = DB::table('clientes')
-                    ->where('id', $request->cliente_id)
-                    ->exists();
-
-                if (!$clienteExiste) {
-                    throw new Exception(
-                        'O cliente informado não existe.'
-                    );
-                }
-            }
-
-            if ($request->filled('veiculo_cliente_id')) {
-                $veiculoExiste = DB::table('veiculos_clientes')
-                    ->where('id', $request->veiculo_cliente_id)
-                    ->exists();
-
-                if (!$veiculoExiste) {
-                    throw new Exception(
-                        'O veículo informado não existe.'
-                    );
-                }
-            }
+                $request->filled('veiculo_cliente_id')
+                    ? (int) $request->input('veiculo_cliente_id')
+                    : null
+            );
 
             /*
              * =========================================================
              * 3. VALIDAR TODOS OS ITENS
              * =========================================================
              */
-
             $subtotalGeral = 0;
             $descontoGeral = 0;
 
@@ -588,22 +615,28 @@ class NotasItemController extends Controller
                     (float) $dadosItem['valor_unitario'];
 
                 $desconto =
-                    (float) ($dadosItem['desconto'] ?? 0);
+                    (float) (
+                        $dadosItem['desconto']
+                        ?? 0
+                    );
 
                 /*
                  * Verifica Produto.
                  */
                 if ($tipo === Produto::class) {
-                    if (
-                        !Produto::where(
-                            'id',
-                            $itemId
-                        )->exists()
-                    ) {
+                    $itemExiste =
+                        Produto::query()
+                            ->where(
+                                'id',
+                                $itemId
+                            )
+                            ->exists();
+
+                    if (!$itemExiste) {
                         throw new Exception(
-                            'O produto informado no item ' .
-                            ($index + 1) .
-                            ' não existe.'
+                            'O produto informado no item '
+                            . ($index + 1)
+                            . ' não existe.'
                         );
                     }
                 }
@@ -612,31 +645,25 @@ class NotasItemController extends Controller
                  * Verifica O.S.
                  */
                 if ($tipo === OrdemServico::class) {
-                    if (
-                        !OrdemServico::where(
-                            'id',
-                            $itemId
-                        )->exists()
-                    ) {
-                        throw new Exception(
-                            'A Ordem de Serviço informada no item ' .
-                            ($index + 1) .
-                            ' não existe.'
-                        );
-                    }
+                    $this->validarOrdemServicoDaNota(
+                        $itemId,
+                        $index,
+                        $request
+                    );
                 }
 
                 /*
                  * Validação do desconto.
                  */
                 $subtotalItem =
-                    $quantidade * $valorUnitario;
+                    $quantidade
+                    * $valorUnitario;
 
                 if ($desconto > $subtotalItem) {
                     throw new Exception(
-                        'O desconto do item ' .
-                        ($index + 1) .
-                        ' não pode ser maior que o valor do item.'
+                        'O desconto do item '
+                        . ($index + 1)
+                        . ' não pode ser maior que o valor do item.'
                     );
                 }
 
@@ -652,32 +679,37 @@ class NotasItemController extends Controller
              * 4. ATUALIZAR DADOS DA NOTA
              * =========================================================
              */
-
             $nota->cliente_id =
-                $request->input('cliente_id') ?: null;
+                $request->input('cliente_id')
+                ?: null;
 
             $nota->veiculo_cliente_id =
-                $request->input('veiculo_cliente_id') ?: null;
+                $request->input(
+                    'veiculo_cliente_id'
+                )
+                ?: null;
 
             $nota->km =
-                $request->input('km') ?: null;
+                $request->input('km')
+                ?: null;
 
             $nota->km_proxima_troca_oleo =
-                $request->input('km_proxima_troca_oleo') ?: null;
+                $request->input(
+                    'km_proxima_troca_oleo'
+                )
+                ?: null;
 
             $nota->subtotal =
                 $subtotalGeral;
 
-            /*
-             * Soma de todos os descontos dos itens.
-             */
             $nota->desconto =
                 $descontoGeral;
 
             $nota->total =
                 max(
                     0,
-                    $subtotalGeral - $descontoGeral
+                    $subtotalGeral
+                    - $descontoGeral
                 );
 
             $nota->save();
@@ -687,17 +719,20 @@ class NotasItemController extends Controller
              * 5. IDENTIFICAR ITENS EXISTENTES
              * =========================================================
              */
-
-            $idsEnviados = collect($itensEnviados)
-                ->pluck('id')
-                ->filter()
-                ->map(fn ($id) => (int) $id)
-                ->values()
-                ->all();
+            $idsEnviados =
+                collect($itensEnviados)
+                    ->pluck('id')
+                    ->filter()
+                    ->map(
+                        fn ($id) =>
+                            (int) $id
+                    )
+                    ->values()
+                    ->all();
 
             /*
-             * Remove somente os itens pertencentes
-             * a esta Nota que não foram enviados novamente.
+             * Remove somente itens desta Nota
+             * que não foram enviados novamente.
              */
             if (!empty($idsEnviados)) {
                 $nota->itens()
@@ -707,7 +742,8 @@ class NotasItemController extends Controller
                     )
                     ->delete();
             } else {
-                $nota->itens()->delete();
+                $nota->itens()
+                    ->delete();
             }
 
             /*
@@ -715,10 +751,10 @@ class NotasItemController extends Controller
              * 6. ATUALIZAR / CRIAR ITENS
              * =========================================================
              */
-
             foreach ($itensEnviados as $dadosItem) {
                 $itemId =
-                    $dadosItem['id'] ?? null;
+                    $dadosItem['id']
+                    ?? null;
 
                 $quantidade =
                     (int) $dadosItem['quantidade'];
@@ -727,12 +763,18 @@ class NotasItemController extends Controller
                     (float) $dadosItem['valor_unitario'];
 
                 $desconto =
-                    (float) ($dadosItem['desconto'] ?? 0);
+                    (float) (
+                        $dadosItem['desconto']
+                        ?? 0
+                    );
 
                 $valorTotal =
                     max(
                         0,
-                        ($quantidade * $valorUnitario) - $desconto
+                        (
+                            $quantidade
+                            * $valorUnitario
+                        ) - $desconto
                     );
 
                 $dataToSave = [
@@ -774,9 +816,11 @@ class NotasItemController extends Controller
                  * Garantia.
                  */
                 if (
-                    isset($dadosItem['garantia_dias']) &&
-                    $dadosItem['garantia_dias'] !== '' &&
-                    (int) $dadosItem['garantia_dias'] > 0
+                    isset(
+                        $dadosItem['garantia_dias']
+                    )
+                    && $dadosItem['garantia_dias'] !== ''
+                    && (int) $dadosItem['garantia_dias'] > 0
                 ) {
                     $garantiaDias =
                         (int) $dadosItem['garantia_dias'];
@@ -797,27 +841,29 @@ class NotasItemController extends Controller
                  * Atualiza item existente.
                  */
                 if ($itemId) {
-                    $itemAtualizado = NotasItem::where(
-                        'id',
-                        $itemId
-                    )
-                        ->where(
-                            'nota_id',
-                            $nota->id
-                        )
-                        ->update($dataToSave);
+                    $itemAtualizado =
+                        NotasItem::query()
+                            ->where(
+                                'id',
+                                $itemId
+                            )
+                            ->where(
+                                'nota_id',
+                                $nota->id
+                            )
+                            ->update(
+                                $dataToSave
+                            );
 
                     if ($itemAtualizado === 0) {
                         throw new Exception(
                             'Um dos itens enviados para atualização não pertence a esta Nota.'
                         );
                     }
-                }
-
-                /*
-                 * Cria item novo.
-                 */
-                else {
+                } else {
+                    /*
+                     * Cria item novo.
+                     */
                     NotasItem::create(
                         $dataToSave
                     );
@@ -829,16 +875,15 @@ class NotasItemController extends Controller
              * 7. CONFIRMAR TRANSACTION
              * =========================================================
              */
-
             DB::commit();
 
             return redirect()
                 ->route('notasitem.index')
                 ->with(
                     'success',
-                    'Nota Fiscal #' .
-                    $nota->id .
-                    ' atualizada com sucesso!'
+                    'Nota Fiscal #'
+                    . $nota->id
+                    . ' atualizada com sucesso!'
                 );
         } catch (Exception $e) {
             DB::rollBack();
@@ -847,8 +892,8 @@ class NotasItemController extends Controller
                 ->back()
                 ->withErrors([
                     'erro_banco' =>
-                        'Falha ao atualizar a Nota: ' .
-                        $e->getMessage(),
+                        'Falha ao atualizar a Nota: '
+                        . $e->getMessage(),
                 ])
                 ->withInput();
         }
@@ -867,11 +912,14 @@ class NotasItemController extends Controller
 
         /*
          * Itens somente podem ser removidos
-         * enquanto a nota estiver aberta.
+         * enquanto a Nota estiver aberta.
          */
         if ($nota->status !== 'Aberto') {
             return redirect()
-                ->route('notas.show', $nota->id)
+                ->route(
+                    'notas.show',
+                    $nota->id
+                )
                 ->withErrors([
                     'nota' =>
                         'Não é possível remover itens de uma nota finalizada ou cancelada.',
@@ -881,23 +929,26 @@ class NotasItemController extends Controller
         $item->delete();
 
         /*
-         * Recalcula os valores da nota após remover o item.
+         * Recalcula os valores da Nota.
          */
         $nota->load('itens');
 
-        $subtotalGeral = $nota->itens->sum(
-            function ($item) {
-                return
-                    (float) $item->quantidade *
-                    (float) $item->valor_unitario;
-            }
-        );
+        $subtotalGeral =
+            $nota->itens->sum(
+                function ($item) {
+                    return
+                        (float) $item->quantidade
+                        * (float) $item->valor_unitario;
+                }
+            );
 
-        $descontoGeral = $nota->itens->sum(
-            function ($item) {
-                return (float) $item->desconto;
-            }
-        );
+        $descontoGeral =
+            $nota->itens->sum(
+                function ($item) {
+                    return
+                        (float) $item->desconto;
+                }
+            );
 
         $nota->update([
             'subtotal' =>
@@ -909,16 +960,134 @@ class NotasItemController extends Controller
             'total' =>
                 max(
                     0,
-                    $subtotalGeral - $descontoGeral
+                    $subtotalGeral
+                    - $descontoGeral
                 ),
         ]);
 
         return redirect()
-            ->route('notas.show', $nota->id)
+            ->route(
+                'notas.show',
+                $nota->id
+            )
             ->with(
                 'success',
                 'Item removido da nota com sucesso!'
             );
+    }
+
+    /**
+     * Valida o vínculo entre cliente e veículo da Nota.
+     *
+     * Regras:
+     *
+     * - Sem veículo: cliente pode ser null.
+     * - Com veículo: precisa existir um cliente responsável.
+     * - O cliente precisa estar vinculado ao veículo.
+     */
+    private function validarClienteVeiculo(
+        ?int $clienteId,
+        ?int $veiculoClienteId
+    ): void {
+        /*
+         * Venda de balcão ou Nota somente com cliente.
+         */
+        if (!$veiculoClienteId) {
+            return;
+        }
+
+        /*
+         * Veículo selecionado exige cliente responsável.
+         */
+        if (!$clienteId) {
+            throw new Exception(
+                'Selecione o cliente responsável pelo veículo.'
+            );
+        }
+
+        $vinculoExiste =
+            VeiculosCliente::query()
+                ->where(
+                    'id',
+                    $veiculoClienteId
+                )
+                ->whereHas(
+                    'clientes',
+                    function ($query) use ($clienteId) {
+                        $query->where(
+                            'clientes.id',
+                            $clienteId
+                        );
+                    }
+                )
+                ->exists();
+
+        if (!$vinculoExiste) {
+            throw new Exception(
+                'O cliente informado não está vinculado ao veículo selecionado.'
+            );
+        }
+    }
+
+    /**
+     * Valida se uma O.S. adicionada à Nota
+     * pertence ao mesmo cliente e veículo selecionados.
+     */
+    private function validarOrdemServicoDaNota(
+        int $ordemServicoId,
+        int $index,
+        Request $request
+    ): void {
+        $ordemServico =
+            OrdemServico::query()
+                ->select([
+                    'id',
+                    'cliente_id',
+                    'veiculo_cliente_id',
+                ])
+                ->find($ordemServicoId);
+
+        if (!$ordemServico) {
+            throw new Exception(
+                'A Ordem de Serviço informada no item '
+                . ($index + 1)
+                . ' não existe.'
+            );
+        }
+
+        /*
+         * Se a Nota possui cliente,
+         * a O.S. precisa pertencer ao mesmo cliente.
+         */
+        if (
+            $request->filled('cliente_id')
+            && $ordemServico->cliente_id
+            && (int) $ordemServico->cliente_id
+                !== (int) $request->input('cliente_id')
+        ) {
+            throw new Exception(
+                'A Ordem de Serviço do item '
+                . ($index + 1)
+                . ' pertence a outro cliente.'
+            );
+        }
+
+        /*
+         * Se a Nota possui veículo,
+         * a O.S. precisa pertencer ao mesmo veículo.
+         */
+        if (
+            $request->filled('veiculo_cliente_id')
+            && $ordemServico->veiculo_cliente_id
+            && (int) $ordemServico->veiculo_cliente_id
+                !== (int) $request->input('veiculo_cliente_id')
+        ) {
+            throw new Exception(
+                'A Ordem de Serviço do item '
+                . ($index + 1)
+                . ' pertence a outro veículo.'
+            );
+        }
     }
 
     /**
@@ -929,12 +1098,14 @@ class NotasItemController extends Controller
      * 1. Converter "produto" para Produto::class.
      * 2. Converter "os" para OrdemServico::class.
      * 3. Corrigir barras duplicadas no namespace.
-     * 4. Converter números brasileiros para números aceitos pelo Laravel.
-     * 5. Normalizar quantidade quando vier como 1.00.
+     * 4. Converter números brasileiros.
+     * 5. Normalizar quantidade.
      */
-    private function normalizarItens(Request $request): void
-    {
-        $itens = $request->input('itens');
+    private function normalizarItens(
+        Request $request
+    ): void {
+        $itens =
+            $request->input('itens');
 
         if (!is_array($itens)) {
             return;
@@ -950,15 +1121,17 @@ class NotasItemController extends Controller
              * ITEMABLE TYPE
              * =========================================================
              */
-
-            if (isset($item['itemable_type'])) {
+            if (
+                isset(
+                    $item['itemable_type']
+                )
+            ) {
                 $tipo = trim(
                     (string) $item['itemable_type']
                 );
 
                 /*
-                 * Corrige barras duplicadas caso algum frontend
-                 * tenha enviado App\\Models\\Produto literalmente.
+                 * Corrige barras duplicadas.
                  */
                 $tipo = str_replace(
                     '\\\\',
@@ -967,20 +1140,20 @@ class NotasItemController extends Controller
                 );
 
                 /*
-                 * Aceita os aliases usados pelo JavaScript.
+                 * Aceita aliases usados pelo JavaScript.
                  */
                 if (
-                    $tipo === 'produto' ||
-                    $tipo === 'Produto' ||
-                    $tipo === Produto::class
+                    $tipo === 'produto'
+                    || $tipo === 'Produto'
+                    || $tipo === Produto::class
                 ) {
                     $item['itemable_type'] =
                         Produto::class;
                 } elseif (
-                    $tipo === 'os' ||
-                    $tipo === 'OS' ||
-                    $tipo === 'OrdemServico' ||
-                    $tipo === OrdemServico::class
+                    $tipo === 'os'
+                    || $tipo === 'OS'
+                    || $tipo === 'OrdemServico'
+                    || $tipo === OrdemServico::class
                 ) {
                     $item['itemable_type'] =
                         OrdemServico::class;
@@ -992,7 +1165,6 @@ class NotasItemController extends Controller
              * VALOR UNITÁRIO
              * =========================================================
              */
-
             if (
                 array_key_exists(
                     'valor_unitario',
@@ -1010,7 +1182,6 @@ class NotasItemController extends Controller
              * DESCONTO
              * =========================================================
              */
-
             if (
                 array_key_exists(
                     'desconto',
@@ -1022,10 +1193,6 @@ class NotasItemController extends Controller
                         $item['desconto']
                     );
 
-                /*
-                 * Campo nullable:
-                 * string vazia vira null.
-                 */
                 $item['desconto'] =
                     $valorDesconto === ''
                         ? null
@@ -1036,14 +1203,14 @@ class NotasItemController extends Controller
              * =========================================================
              * QUANTIDADE
              * =========================================================
-             *
-             * Se o frontend enviar 1.00, transformamos em 1.
-             * Não aceitamos quantidade fracionada.
              */
-
             if (
-                isset($item['quantidade']) &&
-                is_numeric($item['quantidade'])
+                isset(
+                    $item['quantidade']
+                )
+                && is_numeric(
+                    $item['quantidade']
+                )
             ) {
                 $quantidade =
                     (float) str_replace(
@@ -1053,8 +1220,8 @@ class NotasItemController extends Controller
                     );
 
                 if (
-                    $quantidade >= 1 &&
-                    floor($quantidade) === $quantidade
+                    $quantidade >= 1
+                    && floor($quantidade) === $quantidade
                 ) {
                     $item['quantidade'] =
                         (int) $quantidade;
@@ -1066,11 +1233,14 @@ class NotasItemController extends Controller
              * GARANTIA
              * =========================================================
              */
-
             if (
-                isset($item['garantia_dias']) &&
-                $item['garantia_dias'] !== '' &&
-                is_numeric($item['garantia_dias'])
+                isset(
+                    $item['garantia_dias']
+                )
+                && $item['garantia_dias'] !== ''
+                && is_numeric(
+                    $item['garantia_dias']
+                )
             ) {
                 $item['garantia_dias'] =
                     (int) $item['garantia_dias'];
@@ -1085,18 +1255,18 @@ class NotasItemController extends Controller
     }
 
     /**
-     * Converte números em formato brasileiro para formato numérico
-     * aceito pelo Laravel/PHP.
+     * Converte número brasileiro para formato aceito pelo PHP.
      *
      * Exemplos:
      *
-     * 222,22     => 222.22
-     * 1.234,56   => 1234.56
-     * 1000.50    => 1000.50
-     * 0,00       => 0.00
+     * 222,22   => 222.22
+     * 1.234,56 => 1234.56
+     * 1000.50  => 1000.50
+     * 0,00     => 0.00
      */
-    private function normalizarNumero($valor): string
-    {
+    private function normalizarNumero(
+        $valor
+    ): string {
         if ($valor === null) {
             return '';
         }
@@ -1119,16 +1289,19 @@ class NotasItemController extends Controller
         );
 
         /*
-         * Caso tenha ponto e vírgula:
+         * Formato:
          *
          * 1.234,56
-         *
-         * o ponto é separador de milhar
-         * e a vírgula é decimal.
          */
         if (
-            str_contains($valor, '.') &&
-            str_contains($valor, ',')
+            str_contains(
+                $valor,
+                '.'
+            )
+            && str_contains(
+                $valor,
+                ','
+            )
         ) {
             $valor = str_replace(
                 '.',
@@ -1146,15 +1319,16 @@ class NotasItemController extends Controller
         }
 
         /*
-         * Caso tenha somente vírgula:
+         * Formato:
          *
          * 222,22
-         *
-         * converte para:
-         *
-         * 222.22
          */
-        if (str_contains($valor, ',')) {
+        if (
+            str_contains(
+                $valor,
+                ','
+            )
+        ) {
             return str_replace(
                 ',',
                 '.',
@@ -1163,7 +1337,7 @@ class NotasItemController extends Controller
         }
 
         /*
-         * Já está no padrão americano:
+         * Já está no padrão:
          *
          * 222.22
          */

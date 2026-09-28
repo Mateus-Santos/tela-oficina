@@ -2,70 +2,94 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\OrdemServico;
 use App\Models\SetorServico;
+use App\Models\VeiculosCliente;
+use Illuminate\Http\Request;
 
 class OrdemServicoController extends Controller
 {
-
     public function index(Request $request)
     {
-        $query = OrdemServico::with([
-            'veiculosCliente.cliente.pessoa',
-            'veiculosCliente.veiculo.montadora',
-            'setorServico',
-        ]);
+        $query = OrdemServico::query()
+            ->with([
+                'cliente.pessoa',
+                'veiculosCliente.clientes.pessoa',
+                'veiculosCliente.veiculo.montadora',
+                'setorServico',
+            ]);
 
-        // Filtro por ID da OS
         if ($request->filled('id')) {
-            $query->where('id', $request->input('id'));
+            $query->where(
+                'id',
+                $request->input('id')
+            );
         }
 
-        // Filtro por status
         if ($request->filled('status')) {
-            $query->where('status', $request->input('status'));
+            $query->where(
+                'status',
+                $request->input('status')
+            );
         }
 
-        // Filtro por cliente
         if ($request->filled('cliente')) {
-            $cliente = $request->input('cliente');
+            $cliente = trim(
+                (string) $request->input('cliente')
+            );
 
             $query->whereHas(
-                'veiculosCliente.cliente.pessoa',
-                function ($q) use ($cliente) {
-                    $q->where('nome', 'like', '%' . $cliente . '%');
+                'cliente.pessoa',
+                function ($pessoaQuery) use ($cliente) {
+                    $pessoaQuery->where(
+                        'nome',
+                        'like',
+                        "%{$cliente}%"
+                    );
                 }
             );
         }
 
-        // Filtro por placa
         if ($request->filled('placa')) {
-            $placa = $request->input('placa');
+            $placa = strtoupper(
+                preg_replace(
+                    '/[^A-Z0-9]/',
+                    '',
+                    $request->input('placa')
+                )
+            );
 
             $query->whereHas(
                 'veiculosCliente',
-                function ($q) use ($placa) {
-                    $q->where('placa', 'like', '%' . $placa . '%');
+                function ($veiculoClienteQuery) use ($placa) {
+                    $veiculoClienteQuery->where(
+                        'placa',
+                        'like',
+                        "%{$placa}%"
+                    );
                 }
             );
         }
 
-        // Filtro por setor
         if ($request->filled('setor')) {
-            $query->where('setor_servico_id', $request->input('setor'));
-        }
-
-        // Filtro por descrição
-        if ($request->filled('descricao')) {
             $query->where(
-                'descricao',
-                'like',
-                '%' . $request->input('descricao') . '%'
+                'setor_servico_id',
+                $request->input('setor')
             );
         }
 
-        // Filtro por data inicial
+        if ($request->filled('descricao')) {
+            $descricao = trim(
+                (string) $request->input('descricao')
+            );
+
+            $query->where(
+                'descricao',
+                'like',
+                "%{$descricao}%"
+            );
+        }
+
         if ($request->filled('data_inicio')) {
             $query->whereDate(
                 'data_abertura',
@@ -74,7 +98,6 @@ class OrdemServicoController extends Controller
             );
         }
 
-        // Filtro por data final
         if ($request->filled('data_fim')) {
             $query->whereDate(
                 'data_abertura',
@@ -88,47 +111,185 @@ class OrdemServicoController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        $setorservicos = SetorServico::orderBy('setor')->get();
+        $setorservicos = SetorServico::query()
+            ->orderBy('setor')
+            ->get();
 
         return view(
             'ordemservico.listar_os',
-            compact('ordemservicos', 'setorservicos')
+            compact(
+                'ordemservicos',
+                'setorservicos'
+            )
         );
     }
 
     public function create()
     {
-        $setorservicos = SetorServico::all();
-        return view('ordemservico.cadastro_os', compact('setorservicos'));
+        $setorservicos = SetorServico::query()
+            ->orderBy('setor')
+            ->get();
+
+        return view(
+            'ordemservico.cadastro_os',
+            compact('setorservicos')
+        );
     }
 
     public function store(Request $request)
     {
-        $valor = str_replace('.', '', $request->valor);
-        $valor = str_replace(',', '.', $valor);
-        $ordemservico = new ordemservico();
+        $dados = $request->validate(
+            [
+                'cliente_id' => [
+                    'required',
+                    'integer',
+                    'exists:clientes,id',
+                ],
+
+                'veiculo_cliente_id' => [
+                    'required',
+                    'integer',
+                    'exists:veiculos_clientes,id',
+                ],
+
+                'setor_servico_id' => [
+                    'required',
+                    'integer',
+                    'exists:setor_servicos,id',
+                ],
+
+                'descricao' => [
+                    'nullable',
+                    'string',
+                ],
+
+                'valor' => [
+                    'required',
+                ],
+            ],
+            [
+                'cliente_id.required' =>
+                    'Selecione o cliente responsável pela OS.',
+
+                'cliente_id.integer' =>
+                    'O cliente selecionado é inválido.',
+
+                'cliente_id.exists' =>
+                    'O cliente selecionado não existe.',
+
+                'veiculo_cliente_id.required' =>
+                    'Selecione o veículo.',
+
+                'veiculo_cliente_id.integer' =>
+                    'O veículo selecionado é inválido.',
+
+                'veiculo_cliente_id.exists' =>
+                    'O veículo selecionado não existe.',
+
+                'setor_servico_id.required' =>
+                    'Selecione o setor de serviço.',
+
+                'setor_servico_id.integer' =>
+                    'O setor selecionado é inválido.',
+
+                'setor_servico_id.exists' =>
+                    'O setor selecionado não existe.',
+
+                'valor.required' =>
+                    'Informe o valor da ordem de serviço.',
+            ]
+        );
+
+        $veiculoCliente = VeiculosCliente::query()
+            ->where(
+                'id',
+                $dados['veiculo_cliente_id']
+            )
+            ->whereHas(
+                'clientes',
+                function ($clientesQuery) use ($dados) {
+                    $clientesQuery->where(
+                        'clientes.id',
+                        $dados['cliente_id']
+                    );
+                }
+            )
+            ->first();
+
+        if (!$veiculoCliente) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'veiculo_cliente_id' =>
+                        'O veículo selecionado não está vinculado ao cliente informado.',
+                ]);
+        }
+
+        $valor = str_replace(
+            '.',
+            '',
+            (string) $dados['valor']
+        );
+
+        $valor = str_replace(
+            ',',
+            '.',
+            $valor
+        );
+
+        $ordemservico = new OrdemServico();
+
         $ordemservico->data_abertura = now();
-        $ordemservico->setor_servico_id = $request->input("setor_servico_id");
-        $ordemservico->veiculo_cliente_id = $request->input("veiculo_cliente_id");
-        $ordemservico->descricao = $request->input("descricao");
+
+        $ordemservico->cliente_id =
+            $dados['cliente_id'];
+
+        $ordemservico->veiculo_cliente_id =
+            $dados['veiculo_cliente_id'];
+
+        $ordemservico->setor_servico_id =
+            $dados['setor_servico_id'];
+
+        $ordemservico->descricao =
+            $dados['descricao'] ?? null;
+
         $ordemservico->valor = $valor;
+
         $ordemservico->save();
-        return redirect()->route('ordemservicos.index');
+
+        return redirect()
+            ->route('ordemservicos.index')
+            ->with(
+                'success',
+                'Ordem de serviço cadastrada com sucesso!'
+            );
     }
 
     public function edit(string $id)
     {
-
+        //
     }
 
-    public function update(Request $request, string $id)
-    {
-
+    public function update(
+        Request $request,
+        string $id
+    ) {
+        //
     }
 
     public function destroy(string $id)
     {
-        $ordemservico = OrdemServico::where('id', $id)->delete();
-        return redirect()->route('ordemservicos.index');
+        $ordemservico = OrdemServico::findOrFail(
+            $id
+        );
+
+        $ordemservico->delete();
+
+        return redirect()
+            ->route('ordemservicos.index')
+            ->with(
+                'success',
+                'Ordem de serviço excluída com sucesso!'
+            );
     }
 }

@@ -13,32 +13,45 @@
     />
 
     @if (session('success'))
+
         <div class="alert alert-success">
             <i class="bi bi-check-circle"></i>
             {{ session('success') }}
         </div>
+
     @endif
 
     @if (session('error'))
+
         <div class="alert alert-danger">
             <i class="bi bi-exclamation-triangle"></i>
             {{ session('error') }}
         </div>
+
     @endif
 
     <x-filtros-container
         action="{{ route('veiculosclientes.index') }}"
         id="filtros-veiculos-clientes"
         :collapsible="true"
-        :expanded="request()->hasAny(['montadora', 'ano', 'cor'])"
+        :expanded="request()->hasAny([
+            'montadora',
+            'ano',
+            'cor'
+        ])"
     >
 
         <x-slot:primary>
 
             <div class="row g-3 align-items-end">
 
+                {{-- CLIENTE --}}
                 <div class="col-12 col-md-4">
-                    <label for="cliente" class="form-label">
+
+                    <label
+                        for="cliente"
+                        class="form-label"
+                    >
                         <i class="bi bi-person"></i>
                         Cliente
                     </label>
@@ -51,10 +64,16 @@
                         placeholder="Nome do cliente"
                         value="{{ request('cliente') }}"
                     >
+
                 </div>
 
+                {{-- PLACA --}}
                 <div class="col-12 col-md-4">
-                    <label for="placa" class="form-label">
+
+                    <label
+                        for="placa"
+                        class="form-label"
+                    >
                         <i class="bi bi-credit-card-2-front"></i>
                         Placa
                     </label>
@@ -67,10 +86,16 @@
                         placeholder="Placa do veículo"
                         value="{{ request('placa') }}"
                     >
+
                 </div>
 
+                {{-- VEÍCULO --}}
                 <div class="col-12 col-md-4">
-                    <label for="veiculo" class="form-label">
+
+                    <label
+                        for="veiculo"
+                        class="form-label"
+                    >
                         <i class="bi bi-car-front"></i>
                         Veículo
                     </label>
@@ -83,6 +108,7 @@
                         placeholder="Nome do veículo"
                         value="{{ request('veiculo') }}"
                     >
+
                 </div>
 
             </div>
@@ -93,8 +119,13 @@
 
             <div class="row g-3 align-items-end">
 
+                {{-- MONTADORA --}}
                 <div class="col-12 col-md-3">
-                    <label for="montadora" class="form-label">
+
+                    <label
+                        for="montadora"
+                        class="form-label"
+                    >
                         <i class="bi bi-building"></i>
                         Montadora
                     </label>
@@ -104,21 +135,36 @@
                         id="montadora"
                         class="filtros-container__select"
                     >
-                        <option value="">Todas as montadoras</option>
+
+                        <option value="">
+                            Todas as montadoras
+                        </option>
 
                         @foreach ($montadoras as $montadora)
+
                             <option
                                 value="{{ $montadora->id }}"
-                                @selected(request('montadora') == $montadora->id)
+                                @selected(
+                                    request('montadora')
+                                    == $montadora->id
+                                )
                             >
                                 {{ $montadora->nome }}
                             </option>
+
                         @endforeach
+
                     </select>
+
                 </div>
 
+                {{-- ANO --}}
                 <div class="col-12 col-md-3">
-                    <label for="ano" class="form-label">
+
+                    <label
+                        for="ano"
+                        class="form-label"
+                    >
                         <i class="bi bi-calendar3"></i>
                         Ano
                     </label>
@@ -131,10 +177,16 @@
                         placeholder="Ano"
                         value="{{ request('ano') }}"
                     >
+
                 </div>
 
+                {{-- COR --}}
                 <div class="col-12 col-md-3">
-                    <label for="cor" class="form-label">
+
+                    <label
+                        for="cor"
+                        class="form-label"
+                    >
                         <i class="bi bi-palette"></i>
                         Cor
                     </label>
@@ -147,9 +199,12 @@
                         placeholder="Cor"
                         value="{{ request('cor') }}"
                     >
+
                 </div>
 
+                {{-- AÇÕES --}}
                 <div class="col-12 col-md-3">
+
                     <div class="filtros-container__actions">
 
                         <button
@@ -170,6 +225,7 @@
                         </a>
 
                     </div>
+
                 </div>
 
             </div>
@@ -185,18 +241,26 @@
             'veiculo',
             'montadora',
             'ano',
-            'cor'
+            'cor',
         ]);
     @endphp
 
     @if ($veiculosclientes->isEmpty())
 
-        <div class="alert alert-{{ $possuiFiltros ? 'warning' : 'info' }}">
-            <i class="bi {{ $possuiFiltros ? 'bi-exclamation-triangle' : 'bi-info-circle' }}"></i>
+        <div
+            class="alert alert-{{ $possuiFiltros ? 'warning' : 'info' }}"
+        >
+
+            <i
+                class="bi {{ $possuiFiltros
+                    ? 'bi-exclamation-triangle'
+                    : 'bi-info-circle' }}"
+            ></i>
 
             {{ $possuiFiltros
                 ? 'Nenhum veículo encontrado com os filtros informados.'
                 : 'Nenhum veículo de cliente cadastrado.' }}
+
         </div>
 
     @endif
@@ -205,9 +269,12 @@
 
         <div class="table-responsive">
 
-            <table class="table table-striped table-hover align-middle">
+            <table
+                class="table table-striped table-hover align-middle"
+            >
 
                 <thead>
+
                     <tr>
                         <th scope="col">ID</th>
                         <th scope="col">VEÍCULO</th>
@@ -215,10 +282,21 @@
                         <th scope="col">PLACA</th>
                         <th scope="col">ANO</th>
                         <th scope="col">COR</th>
-                        <th scope="col">RESPONSÁVEL</th>
-                        <th scope="col" class="text-center">EDITAR</th>
-                        <th scope="col" class="text-center">EXCLUIR</th>
+                        <th scope="col">RESPONSÁVEIS</th>
+                        <th
+                            scope="col"
+                            class="text-center"
+                        >
+                            EDITAR
+                        </th>
+                        <th
+                            scope="col"
+                            class="text-center"
+                        >
+                            EXCLUIR
+                        </th>
                     </tr>
+
                 </thead>
 
                 <tbody>
@@ -227,44 +305,120 @@
 
                         <tr>
 
+                            {{-- ID --}}
                             <th scope="row">
                                 {{ $veiculoscliente->id }}
                             </th>
 
+                            {{-- VEÍCULO --}}
                             <td>
-                                <i class="bi bi-car-front"></i>
-                                {{ $veiculoscliente->veiculo?->nome ?? 'N/A' }}
+
+                                <i class="bi bi-car-front me-1"></i>
+
+                                {{ $veiculoscliente
+                                    ->veiculo
+                                    ?->nome
+                                    ?? 'N/A' }}
+
                             </td>
 
+                            {{-- MONTADORA --}}
                             <td>
-                                <i class="bi bi-building"></i>
-                                {{ $veiculoscliente->veiculo?->montadora?->nome ?? 'N/A' }}
+
+                                <i class="bi bi-building me-1"></i>
+
+                                {{ $veiculoscliente
+                                    ->veiculo
+                                    ?->montadora
+                                    ?->nome
+                                    ?? 'N/A' }}
+
                             </td>
 
+                            {{-- PLACA --}}
                             <td>
-                                <i class="bi bi-credit-card-2-front"></i>
+
+                                <i class="bi bi-credit-card-2-front me-1"></i>
+
                                 {{ $veiculoscliente->placa ?? 'N/A' }}
+
                             </td>
 
+                            {{-- ANO --}}
                             <td>
-                                <i class="bi bi-calendar3"></i>
+
+                                <i class="bi bi-calendar3 me-1"></i>
+
                                 {{ $veiculoscliente->ano ?? 'N/A' }}
+
                             </td>
 
+                            {{-- COR --}}
                             <td>
-                                <i class="bi bi-palette"></i>
+
+                                <i class="bi bi-palette me-1"></i>
+
                                 {{ $veiculoscliente->cor ?? 'N/A' }}
+
                             </td>
 
+                            {{-- RESPONSÁVEIS --}}
                             <td>
-                                <i class="bi bi-person"></i>
-                                {{ $veiculoscliente->cliente?->pessoa?->nome ?? 'N/A' }}
+
+                                @if(
+                                    $veiculoscliente
+                                        ->clientes
+                                        ->isNotEmpty()
+                                )
+
+                                    <div
+                                        class="d-flex flex-wrap gap-1"
+                                    >
+
+                                        @foreach(
+                                            $veiculoscliente->clientes
+                                            as $cliente
+                                        )
+
+                                            <span
+                                                class="badge text-bg-secondary"
+                                                title="Cliente vinculado"
+                                            >
+
+                                                <i class="bi bi-person me-1"></i>
+
+                                                {{ $cliente
+                                                    ->pessoa
+                                                    ?->nome
+                                                    ?? 'Cliente sem nome' }}
+
+                                            </span>
+
+                                        @endforeach
+
+                                    </div>
+
+                                @else
+
+                                    <span
+                                        class="text-body-secondary"
+                                    >
+                                        <i class="bi bi-person-x me-1"></i>
+                                        Nenhum responsável
+                                    </span>
+
+                                @endif
+
                             </td>
 
+                            {{-- EDITAR --}}
                             <td class="text-center">
 
                                 <a
-                                    href="{{ route('veiculosclientes.edit', $veiculoscliente->id) }}"
+                                    href="{{ route(
+                                        'veiculosclientes.edit',
+                                        $veiculoscliente->id
+                                    ) }}"
                                     class="btn btn-sm btn-primary"
                                     title="Editar veículo"
                                 >
@@ -273,13 +427,20 @@
 
                             </td>
 
+                            {{-- EXCLUIR --}}
                             <td class="text-center">
 
                                 <form
-                                    action="{{ route('veiculosclientes.destroy', $veiculoscliente->id) }}"
+                                    action="{{ route(
+                                        'veiculosclientes.destroy',
+                                        $veiculoscliente->id
+                                    ) }}"
                                     method="POST"
-                                    onsubmit="return confirm('Tem certeza que deseja excluir este veículo?');"
+                                    onsubmit="return confirm(
+                                        'Tem certeza que deseja excluir este veículo?'
+                                    );"
                                 >
+
                                     @csrf
                                     @method('DELETE')
 
@@ -305,10 +466,14 @@
 
         </div>
 
-        @if (method_exists($veiculosclientes, 'hasPages') && $veiculosclientes->hasPages())
-            <div class="d-flex justify-content-center mt-4">
+        @if ($veiculosclientes->hasPages())
+
+            <div
+                class="d-flex justify-content-center mt-4"
+            >
                 {{ $veiculosclientes->links() }}
             </div>
+
         @endif
 
     @endif

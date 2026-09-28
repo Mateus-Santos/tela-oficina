@@ -6,18 +6,27 @@ use App\Actions\VeiculosClientes\AtualizarVeiculoCliente;
 use App\Actions\VeiculosClientes\CriarVeiculoCliente;
 use App\Http\Requests\VeiculosClientes\StoreVeiculosClienteRequest;
 use App\Http\Requests\VeiculosClientes\UpdateVeiculosClienteRequest;
-use App\Models\Cliente;
 use App\Models\Montadora;
 use App\Models\VeiculosCliente;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class VeiculosClientesController extends Controller
 {
     public function veiculosPorCliente($id)
     {
-        $veiculos = VeiculosCliente::where('cliente_id', $id)
-            ->with(['veiculo.montadora'])
+        $veiculos = VeiculosCliente::query()
+            ->whereHas(
+                'clientes',
+                function ($query) use ($id) {
+                    $query->where(
+                        'clientes.id',
+                        $id
+                    );
+                }
+            )
+            ->with([
+                'veiculo.montadora',
+            ])
             ->get();
 
         return response()->json($veiculos);
@@ -27,104 +36,154 @@ class VeiculosClientesController extends Controller
     {
         $user = auth()->user();
 
-        $query = VeiculosCliente::with([
-            'veiculo.montadora',
-            'cliente.pessoa'
-        ]);
+        $query = VeiculosCliente::query()
+            ->with([
+                'veiculo.montadora',
+                'clientes.pessoa',
+            ]);
 
         if ($user->permitions == 2) {
-            $clienteId = $user->pessoa?->cliente?->id;
+            $clienteId = $user
+                ->pessoa
+                ?->cliente
+                ?->id;
 
             if (!$clienteId) {
                 $query->whereRaw('1 = 0');
             } else {
-                $query->where('cliente_id', $clienteId);
+                $query->whereHas(
+                    'clientes',
+                    function ($clientesQuery) use ($clienteId) {
+                        $clientesQuery->where(
+                            'clientes.id',
+                            $clienteId
+                        );
+                    }
+                );
             }
         }
 
         $query
-            ->when($request->filled('cliente'), function ($query) use ($request) {
-                $query->whereHas('cliente.pessoa', function ($query) use ($request) {
-                    $query->where(
-                        'nome',
-                        'like',
-                        '%' . $request->cliente . '%'
+            ->when(
+                $request->filled('cliente'),
+                function ($query) use ($request) {
+                    $cliente = trim(
+                        (string) $request->cliente
                     );
-                });
-            })
-            ->when($request->filled('placa'), function ($query) use ($request) {
-                $placa = strtoupper(
-                    preg_replace('/[^A-Z0-9]/', '', $request->placa)
-                );
 
-                $query->where('placa', 'like', '%' . $placa . '%');
-            })
-            ->when($request->filled('veiculo'), function ($query) use ($request) {
-                $query->whereHas('veiculo', function ($query) use ($request) {
+                    $query->whereHas(
+                        'clientes.pessoa',
+                        function ($pessoaQuery) use ($cliente) {
+                            $pessoaQuery->where(
+                                'nome',
+                                'like',
+                                "%{$cliente}%"
+                            );
+                        }
+                    );
+                }
+            )
+            ->when(
+                $request->filled('placa'),
+                function ($query) use ($request) {
+                    $placa = strtoupper(
+                        preg_replace(
+                            '/[^A-Z0-9]/',
+                            '',
+                            $request->placa
+                        )
+                    );
+
                     $query->where(
-                        'nome',
+                        'placa',
                         'like',
-                        '%' . $request->veiculo . '%'
+                        "%{$placa}%"
                     );
-                });
-            })
-            ->when($request->filled('montadora'), function ($query) use ($request) {
-                $query->whereHas('veiculo', function ($query) use ($request) {
+                }
+            )
+            ->when(
+                $request->filled('veiculo'),
+                function ($query) use ($request) {
+                    $veiculo = trim(
+                        (string) $request->veiculo
+                    );
+
+                    $query->whereHas(
+                        'veiculo',
+                        function ($veiculoQuery) use ($veiculo) {
+                            $veiculoQuery->where(
+                                'nome',
+                                'like',
+                                "%{$veiculo}%"
+                            );
+                        }
+                    );
+                }
+            )
+            ->when(
+                $request->filled('montadora'),
+                function ($query) use ($request) {
+                    $query->whereHas(
+                        'veiculo',
+                        function ($veiculoQuery) use ($request) {
+                            $veiculoQuery->where(
+                                'montadora_id',
+                                $request->montadora
+                            );
+                        }
+                    );
+                }
+            )
+            ->when(
+                $request->filled('ano'),
+                function ($query) use ($request) {
                     $query->where(
-                        'montadora_id',
-                        $request->montadora
+                        'ano',
+                        $request->ano
                     );
-                });
-            })
-            ->when($request->filled('ano'), function ($query) use ($request) {
-                $query->where('ano', $request->ano);
-            })
-            ->when($request->filled('cor'), function ($query) use ($request) {
-                $query->where(
-                    'cor',
-                    'like',
-                    '%' . $request->cor . '%'
-                );
-            });
+                }
+            )
+            ->when(
+                $request->filled('cor'),
+                function ($query) use ($request) {
+                    $cor = trim(
+                        (string) $request->cor
+                    );
+
+                    $query->where(
+                        'cor',
+                        'like',
+                        "%{$cor}%"
+                    );
+                }
+            );
 
         $veiculosclientes = $query
             ->latest()
             ->paginate(10)
             ->withQueryString();
 
-        $montadoras = Montadora::select('id', 'nome')
+        $montadoras = Montadora::query()
+            ->select([
+                'id',
+                'nome',
+            ])
             ->orderBy('nome')
             ->get();
 
         return view(
             'veiculosclientes.listarveiculosclientes',
-            compact('veiculosclientes', 'montadoras')
+            compact(
+                'veiculosclientes',
+                'montadoras'
+            )
         );
     }
 
     public function create()
     {
-        $montadoras = Montadora::select('id', 'nome')
-            ->orderBy('nome')
-            ->get();
-
-        $userLogado = Auth::user();
-
-        if ($userLogado->permitions == 1) {
-            $clientes = Cliente::with('pessoa')
-                ->orderBy('id', 'desc')
-                ->get();
-        } else {
-            $clientes = Cliente::whereHas('pessoa.user', function ($query) use ($userLogado) {
-                $query->where('id', $userLogado->id);
-            })
-                ->with('pessoa')
-                ->get();
-        }
-
         return view(
-            'veiculosclientes.cadastroveiculosclientes',
-            compact('clientes', 'montadoras')
+            'veiculosclientes.cadastroveiculosclientes'
         );
     }
 
@@ -152,39 +211,43 @@ class VeiculosClientesController extends Controller
         $userLogado = auth()->user();
 
         $veiculoscliente = VeiculosCliente::with([
-            'cliente.pessoa',
-            'veiculo.montadora'
+            'clientes.pessoa',
+            'veiculo.montadora',
         ])->findOrFail($id);
 
         if ($userLogado->permitions != 1) {
-            $clienteIdLogado = $userLogado->pessoa?->cliente?->id;
+            $clienteIdLogado = $userLogado
+                ->pessoa
+                ?->cliente
+                ?->id;
 
-            if (
-                !$clienteIdLogado ||
-                $veiculoscliente->cliente_id !== $clienteIdLogado
-            ) {
-                abort(403, 'Ação não autorizada.');
+            if (!$clienteIdLogado) {
+                abort(
+                    403,
+                    'Ação não autorizada.'
+                );
             }
-        }
 
-        $montadoras = Montadora::select('id', 'nome')
-            ->orderBy('nome')
-            ->get();
+            $possuiAcesso = $veiculoscliente
+                ->clientes()
+                ->where(
+                    'clientes.id',
+                    $clienteIdLogado
+                )
+                ->exists();
 
-        $clientes = collect();
-
-        if ($userLogado->permitions == 1) {
-            $clientes = Cliente::with('pessoa')
-                ->orderBy('id', 'desc')
-                ->get();
+            if (!$possuiAcesso) {
+                abort(
+                    403,
+                    'Ação não autorizada.'
+                );
+            }
         }
 
         return view(
             'veiculosclientes.editarveiculosclientes',
             compact(
-                'veiculoscliente',
-                'montadoras',
-                'clientes'
+                'veiculoscliente'
             )
         );
     }
@@ -218,13 +281,27 @@ class VeiculosClientesController extends Controller
             ->where('id', $id);
 
         if ($user->permitions != 1) {
-            $clienteId = $user->pessoa?->cliente?->id;
+            $clienteId = $user
+                ->pessoa
+                ?->cliente
+                ?->id;
 
             if (!$clienteId) {
-                abort(403, 'Ação não autorizada.');
+                abort(
+                    403,
+                    'Ação não autorizada.'
+                );
             }
 
-            $query->where('cliente_id', $clienteId);
+            $query->whereHas(
+                'clientes',
+                function ($clientesQuery) use ($clienteId) {
+                    $clientesQuery->where(
+                        'clientes.id',
+                        $clienteId
+                    );
+                }
+            );
         }
 
         $veiculoCliente = $query->firstOrFail();

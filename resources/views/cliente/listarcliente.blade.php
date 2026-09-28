@@ -4,251 +4,323 @@
 
 <section class="container cadastro">
 
-<x-list-header
-    title="LISTAR CLIENTES"
-    icon="bi-people"
-    create-route="clientes.create"
-    create-text="Novo Cliente"
-    create-icon="bi-plus-lg"
-/>
+    <x-list-header
+        title="LISTAR CLIENTES"
+        icon="bi-people"
+        create-route="clientes.create"
+        create-text="Novo Cliente"
+        create-icon="bi-plus-lg"
+    />
 
-@if ($errors->any())
+    @if ($errors->any())
 
-    <div class="alert alert-danger mensseger_error_container">
+        <div class="alert alert-danger mensseger_error_container">
 
-        <ul class="mb-0">
+            <ul class="mb-0">
 
-            @foreach ($errors->all() as $error)
+                @foreach ($errors->all() as $error)
 
-                <li>{{ $error }}</li>
+                    <li>{{ $error }}</li>
 
-            @endforeach
+                @endforeach
 
-        </ul>
-
-    </div>
-
-@endif
-
-@if (session('success'))
-
-    <div class="alert alert-success">
-
-        {{ session('success') }}
-
-    </div>
-
-@endif
-
-@if (session('error'))
-
-    <div class="alert alert-danger">
-
-        {{ session('error') }}
-
-    </div>
-
-@endif
-
-<x-filtros-container
-    action="{{ route('clientes.index') }}"
-    id="filtros-clientes"
-    :collapsible="false"
->
-
-    <div class="row g-3 align-items-end">
-
-        <div class="col-12 col-md-6">
-
-            <label for="nome" class="form-label">
-
-                <i class="bi bi-person"></i> Nome
-
-            </label>
-
-            <input
-                type="text"
-                id="nome"
-                name="nome"
-                class="filtros-container__input"
-                placeholder="Nome do cliente"
-                value="{{ request('nome') }}"
-            >
+            </ul>
 
         </div>
 
-        <div class="col-12 col-md-6">
+    @endif
 
-            <div class="filtros-container__actions">
+    @if (session('success'))
 
-                <button
-                    type="submit"
-                    class="btn btn-primary"
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+
+    @endif
+
+    @if (session('error'))
+
+        <div class="alert alert-danger">
+            {{ session('error') }}
+        </div>
+
+    @endif
+
+    <x-filtros-container
+        action="{{ route('clientes.index') }}"
+        id="filtros-clientes"
+        :collapsible="false"
+    >
+
+        <div class="row g-3 align-items-end">
+
+            {{-- NOME --}}
+            <div class="col-12 col-md-4">
+
+                <label
+                    for="nome"
+                    class="form-label"
+                >
+                    <i class="bi bi-person"></i>
+                    Nome
+                </label>
+
+                <input
+                    type="text"
+                    id="nome"
+                    name="nome"
+                    class="filtros-container__input"
+                    placeholder="Nome do cliente"
+                    value="{{ request('nome') }}"
                 >
 
-                    <i class="bi bi-search"></i>
+            </div>
 
-                    Filtrar
+            {{-- CPF --}}
+            <div class="col-12 col-md-3">
 
-                </button>
+                <label
+                    for="cpf"
+                    class="form-label"
+                >
+                    <i class="bi bi-person-vcard"></i>
+                    CPF
+                </label>
 
-                <a
-                    href="{{ route('clientes.index') }}"
-                    class="btn btn-secondary"
-                    title="Limpar filtros"
+                <input
+                    type="text"
+                    id="cpf"
+                    name="cpf"
+                    class="filtros-container__input"
+                    placeholder="CPF"
+                    value="{{ request('cpf') }}"
                 >
 
-                    <i class="bi bi-x-lg"></i>
+            </div>
 
-                </a>
+            {{-- TELEFONE --}}
+            <div class="col-12 col-md-3">
+
+                <label
+                    for="telefone"
+                    class="form-label"
+                >
+                    <i class="bi bi-telephone"></i>
+                    Telefone
+                </label>
+
+                <input
+                    type="text"
+                    id="telefone"
+                    name="telefone"
+                    class="filtros-container__input"
+                    placeholder="Telefone"
+                    value="{{ request('telefone') }}"
+                >
+
+            </div>
+
+            {{-- AÇÕES --}}
+            <div class="col-12 col-md-2">
+
+                <div class="filtros-container__actions">
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        title="Aplicar filtros"
+                    >
+                        <i class="bi bi-search"></i>
+                        Filtrar
+                    </button>
+
+                    <a
+                        href="{{ route('clientes.index') }}"
+                        class="btn btn-secondary"
+                        title="Limpar filtros"
+                    >
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+
+                </div>
 
             </div>
 
         </div>
 
-    </div>
+    </x-filtros-container>
 
-</x-filtros-container>
+    <div class="table-responsive">
 
-<div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
 
-    <table class="table table-striped table-hover align-middle">
-
-        <thead>
-
-            <tr>
-
-                <th scope="col">ID</th>
-
-                <th scope="col">NOME</th>
-
-                <th scope="col">PONTOS</th>
-
-                <th scope="col">AÇÕES</th>
-
-            </tr>
-
-        </thead>
-
-        <tbody>
-
-            @forelse ($clientes as $cliente)
+            <thead>
 
                 <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">NOME</th>
+                    <th scope="col">CPF</th>
+                    <th scope="col">TELEFONE</th>
+                    <th scope="col">PONTOS</th>
+                    <th scope="col">AÇÕES</th>
+                </tr>
 
-                    <td>
+            </thead>
 
-                        {{ str_pad($cliente->id, 6, '0', STR_PAD_LEFT) }}
+            <tbody>
 
-                    </td>
+                @forelse ($clientes as $cliente)
 
-                    <td>
+                    <tr>
 
-                        {{ $cliente->pessoa?->nome ?? 'Sem nome cadastrado' }}
+                        <td>
+                            {{ str_pad(
+                                $cliente->id,
+                                6,
+                                '0',
+                                STR_PAD_LEFT
+                            ) }}
+                        </td>
 
-                    </td>
+                        <td>
+                            <strong>
+                                {{ $cliente->pessoa?->nome
+                                    ?? 'Sem nome cadastrado' }}
+                            </strong>
+                        </td>
 
-                    <td>
+                        <td>
+                            {{ $cliente->pessoa?->cpf
+                                ?: 'Não informado' }}
+                        </td>
 
-                        {{ $cliente->pontos ?? 'Sem pontos cadastrados' }}
+                        <td>
 
-                    </td>
+                            @if($cliente->pessoa?->telefone_1)
 
-                    <td>
+                                <div>
+                                    <i class="bi bi-telephone me-1"></i>
 
-                        <div class="d-flex gap-1">
+                                    {{ $cliente->pessoa->telefone_1 }}
+                                </div>
 
-                            {{-- Visualizar --}}
-                            <a
-                                href="{{ route('clientes.show', $cliente->id) }}"
-                                class="btn btn-primary btn-sm"
-                                title="Visualizar cliente"
-                            >
+                            @else
 
-                                <i class="bi bi-eye"></i>
+                                <span class="text-body-secondary">
+                                    Não informado
+                                </span>
 
-                            </a>
+                            @endif
 
-                            {{-- Editar --}}
-                            <a
-                                href="{{ route('clientes.edit', $cliente->id) }}"
-                                class="btn btn-warning btn-sm"
-                                title="Editar cliente"
-                            >
+                        </td>
 
-                                <i class="bi bi-pencil-square"></i>
+                        <td>
+                            {{ $cliente->pontos ?? 0 }}
+                        </td>
 
-                            </a>
+                        <td>
 
-                            {{-- Excluir --}}
-                            <form
-                                action="{{ route('clientes.destroy', $cliente->id) }}"
-                                method="POST"
-                                onsubmit="return confirm('Tem certeza que deseja excluir este cliente?');"
-                            >
+                            <div class="d-flex gap-1">
 
-                                @csrf
+                                {{-- VISUALIZAR --}}
+                                <a
+                                    href="{{ route(
+                                        'clientes.show',
+                                        $cliente->id
+                                    ) }}"
+                                    class="btn btn-primary btn-sm"
+                                    title="Visualizar cliente"
+                                >
+                                    <i class="bi bi-eye"></i>
+                                </a>
 
-                                @method('DELETE')
+                                {{-- EDITAR --}}
+                                <a
+                                    href="{{ route(
+                                        'clientes.edit',
+                                        $cliente->id
+                                    ) }}"
+                                    class="btn btn-warning btn-sm"
+                                    title="Editar cliente"
+                                >
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
 
-                                <button
-                                    type="submit"
-                                    class="btn btn-danger btn-sm"
-                                    title="Excluir cliente"
+                                {{-- EXCLUIR --}}
+                                <form
+                                    action="{{ route(
+                                        'clientes.destroy',
+                                        $cliente->id
+                                    ) }}"
+                                    method="POST"
+                                    onsubmit="return confirm(
+                                        'Tem certeza que deseja excluir este cliente?'
+                                    );"
                                 >
 
-                                    <i class="bi bi-trash3"></i>
+                                    @csrf
+                                    @method('DELETE')
 
-                                </button>
+                                    <button
+                                        type="submit"
+                                        class="btn btn-danger btn-sm"
+                                        title="Excluir cliente"
+                                    >
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
 
-                            </form>
+                                </form>
 
-                        </div>
+                            </div>
 
-                    </td>
+                        </td>
 
-                </tr>
+                    </tr>
 
-            @empty
+                @empty
 
-                <tr>
+                    <tr>
 
-                    <td colspan="4" class="text-center">
+                        <td
+                            colspan="6"
+                            class="text-center py-4"
+                        >
 
-                        <i class="bi bi-info-circle"></i>
+                            <i class="bi bi-info-circle me-1"></i>
 
-                        @if (request()->filled('nome'))
+                            @if(
+                                request()->filled('nome')
+                                || request()->filled('cpf')
+                                || request()->filled('telefone')
+                            )
 
-                            Nenhum cliente encontrado para o filtro informado.
+                                Nenhum cliente encontrado para os filtros informados.
 
-                        @else
+                            @else
 
-                            Nenhum cliente cadastrado.
+                                Nenhum cliente cadastrado.
 
-                        @endif
+                            @endif
 
-                    </td>
+                        </td>
 
-                </tr>
+                    </tr>
 
-            @endforelse
+                @endforelse
 
-        </tbody>
+            </tbody>
 
-    </table>
-
-</div>
-
-@if (method_exists($clientes, 'hasPages') && $clientes->hasPages())
-
-    <div class="d-flex justify-content-center mt-4">
-
-        {{ $clientes->links() }}
+        </table>
 
     </div>
 
-@endif
+    @if($clientes->hasPages())
 
+        <div class="d-flex justify-content-center mt-4">
+            {{ $clientes->links() }}
+        </div>
+
+    @endif
 
 </section>
 
