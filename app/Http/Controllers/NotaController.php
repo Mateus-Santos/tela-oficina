@@ -29,12 +29,16 @@ class NotaController extends Controller
             return back()
                 ->withInput()
                 ->withErrors([
-                    'finalizacao' => $e->getMessage(),
+                    'finalizacao' =>
+                        $e->getMessage(),
                 ]);
         }
 
         return redirect()
-            ->route('notas.show', $nota->id)
+            ->route(
+                'notas.show',
+                $nota->id
+            )
             ->with(
                 'success',
                 "Nota #{$nota->id} finalizada com sucesso!"
@@ -48,16 +52,22 @@ class NotaController extends Controller
         $nota = Nota::findOrFail($id);
 
         try {
-            $cancelarNota->execute($nota);
+            $cancelarNota->execute(
+                $nota
+            );
         } catch (InvalidArgumentException $e) {
             return back()
                 ->withErrors([
-                    'cancelamento' => $e->getMessage(),
+                    'cancelamento' =>
+                        $e->getMessage(),
                 ]);
         }
 
         return redirect()
-            ->route('notas.show', $nota->id)
+            ->route(
+                'notas.show',
+                $nota->id
+            )
             ->with(
                 'success',
                 "Nota #{$nota->id} cancelada com sucesso e estoque revertido!"
@@ -87,14 +97,23 @@ class NotaController extends Controller
 
     public function index(Request $request)
     {
-        $notas = Nota::with([
-            'cliente.pessoa',
-            'veiculosCliente',
-            'itens',
-        ])
-            ->filtro($request->all())
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $notas = Nota::query()
+            ->with([
+                'cliente.pessoa',
+                'itens.itemable',
+                'veiculosCliente.veiculo.montadora',
+            ])
+            ->filtro(
+                $request->all()
+            )
+            ->orderByDesc(
+                'created_at'
+            )
+            ->orderByDesc(
+                'id'
+            )
+            ->paginate(15)
+            ->withQueryString();
 
         return view(
             'notas_item.listar_notas_itens',
@@ -108,17 +127,24 @@ class NotaController extends Controller
 
         if ($nota->status !== 'Aberto') {
             return redirect()
-                ->route('notas.show', $nota->id)
+                ->route(
+                    'notas.show',
+                    $nota->id
+                )
                 ->withErrors([
-                    'nota' => 'Notas finalizadas ou canceladas não podem ser excluídas.',
+                    'nota' =>
+                        'Notas finalizadas ou canceladas não podem ser excluídas.',
                 ]);
         }
 
         $nota->delete();
 
         return redirect()
-            ->route('notasitem.index')
-            ->with('success', 'Nota removida!');
+            ->route('notas.index')
+            ->with(
+                'success',
+                'Nota removida!'
+            );
     }
 
     public function show(string $id)
@@ -132,16 +158,27 @@ class NotaController extends Controller
 
         $itens = $nota->itens;
 
-        $valorTotal = $itens->sum(function ($item) {
-            return ($item->quantidade * $item->valor_unitario)
-                - $item->desconto;
-        });
+        $valorTotal = $itens->sum(
+            function ($item) {
+                return (
+                    $item->quantidade
+                    * $item->valor_unitario
+                ) - $item->desconto;
+            }
+        );
 
-        $categoriasFinanceiras = CategoriaFinanceira::query()
-            ->where('tipo', 'entrada')
-            ->where('ativo', true)
-            ->orderBy('nome')
-            ->get();
+        $categoriasFinanceiras =
+            CategoriaFinanceira::query()
+                ->where(
+                    'tipo',
+                    'entrada'
+                )
+                ->where(
+                    'ativo',
+                    true
+                )
+                ->orderBy('nome')
+                ->get();
 
         return view(
             'notas_item.show_notas_itens',
