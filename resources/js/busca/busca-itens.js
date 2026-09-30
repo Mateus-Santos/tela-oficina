@@ -148,8 +148,11 @@ export default class BuscaItens {
             return;
         }
 
-        this.controlador =
+        const controlador =
             new AbortController();
+
+        this.controlador =
+            controlador;
 
         this.definirStatus(
             'Buscando...'
@@ -173,8 +176,7 @@ export default class BuscaItens {
                         },
 
                         signal:
-                            this.controlador
-                                .signal
+                            controlador.signal
                     }
                 );
 
@@ -187,6 +189,13 @@ export default class BuscaItens {
 
             const data =
                 await response.json();
+
+            if (
+                this.controlador
+                !== controlador
+            ) {
+                return;
+            }
 
             const itens =
                 Array.isArray(data.data)
@@ -220,6 +229,13 @@ export default class BuscaItens {
                 return;
             }
 
+            if (
+                this.controlador
+                !== controlador
+            ) {
+                return;
+            }
+
             console.error(
                 '[SOS Mecânica] Erro ao realizar busca:',
                 error
@@ -233,7 +249,12 @@ export default class BuscaItens {
 
             this.aoErro(error);
         } finally {
-            this.controlador = null;
+            if (
+                this.controlador
+                === controlador
+            ) {
+                this.controlador = null;
+            }
         }
     }
 

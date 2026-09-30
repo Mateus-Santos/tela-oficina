@@ -5,13 +5,11 @@
     aria-labelledby="modalAdicionarItemLabel"
     aria-hidden="true"
 >
-
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
 
         <div class="modal-content">
 
             <div class="modal-header">
-
                 <h5
                     class="modal-title"
                     id="modalAdicionarItemLabel"
@@ -26,15 +24,25 @@
                     data-bs-dismiss="modal"
                     aria-label="Fechar"
                 ></button>
-
             </div>
-
 
             <div class="modal-body">
 
-                {{-- Tipo --}}
-                <div class="mb-3">
+                {{-- =====================================================
+                     AVISOS
+                ====================================================== --}}
 
+                <div
+                    id="builder_alertas"
+                    class="mb-3 d-none"
+                    aria-live="polite"
+                ></div>
+
+                {{-- =====================================================
+                     TIPO
+                ====================================================== --}}
+
+                <div class="mb-3">
                     <label
                         for="builder_type"
                         class="form-label"
@@ -46,7 +54,6 @@
                         id="builder_type"
                         class="form-select"
                     >
-
                         <option value="produto">
                             Produto
                         </option>
@@ -54,15 +61,14 @@
                         <option value="os">
                             Ordem de Serviço
                         </option>
-
                     </select>
-
                 </div>
 
+                {{-- =====================================================
+                     PESQUISA
+                ====================================================== --}}
 
-                {{-- Pesquisa --}}
                 <div class="mb-3">
-
                     <label
                         for="builder_item_busca"
                         class="form-label"
@@ -85,29 +91,52 @@
                     >
                         Digite para pesquisar.
                     </div>
-
                 </div>
 
+                {{-- =====================================================
+                     RESULTADOS
+                ====================================================== --}}
 
-                {{-- Resultados --}}
                 <div
                     id="builder_resultados"
                     class="list-group mb-4"
                     aria-live="polite"
                 ></div>
 
-
-                {{-- ID do item selecionado --}}
                 <input
                     type="hidden"
                     id="builder_item_id"
                     value=""
                 >
 
+                {{-- =====================================================
+                     ITEM SELECIONADO
+                ====================================================== --}}
 
-                {{-- Descrição --}}
+                <div
+                    id="builder_item_codigo_wrapper"
+                    class="alert alert-light border d-none mb-3"
+                >
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-upc-scan"></i>
+
+                        <div>
+                            <small class="text-muted d-block">
+                                Código
+                            </small>
+
+                            <strong id="builder_item_codigo">
+                                —
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- =====================================================
+                     DESCRIÇÃO
+                ====================================================== --}}
+
                 <div class="mb-3">
-
                     <label
                         for="builder_descricao"
                         class="form-label"
@@ -121,15 +150,13 @@
                         rows="3"
                         placeholder="Descrição do item"
                     ></textarea>
-
                 </div>
-
 
                 <div class="row">
 
-                    {{-- Quantidade --}}
-                    <div class="col-md-4 mb-3">
+                    {{-- QUANTIDADE --}}
 
+                    <div class="col-md-4 mb-3">
                         <label
                             for="builder_quantidade"
                             class="form-label"
@@ -142,16 +169,14 @@
                             id="builder_quantidade"
                             class="form-control"
                             value="1"
-                            min="0.01"
-                            step="0.01"
+                            min="1"
+                            step="1"
                         >
-
                     </div>
 
+                    {{-- VALOR UNITÁRIO --}}
 
-                    {{-- Valor unitário --}}
                     <div class="col-md-4 mb-3">
-
                         <label
                             for="builder_valor_unitario"
                             class="form-label"
@@ -167,13 +192,11 @@
                             min="0"
                             step="0.01"
                         >
-
                     </div>
 
+                    {{-- DESCONTO --}}
 
-                    {{-- Desconto --}}
                     <div class="col-md-4 mb-3">
-
                         <label
                             for="builder_desconto"
                             class="form-label"
@@ -189,15 +212,15 @@
                             min="0"
                             step="0.01"
                         >
-
                     </div>
 
                 </div>
 
+                {{-- =====================================================
+                     GARANTIA
+                ====================================================== --}}
 
-                {{-- Garantia --}}
                 <div class="mb-3">
-
                     <label
                         for="builder_garantia_dias"
                         class="form-label"
@@ -213,18 +236,17 @@
                         min="0"
                         step="1"
                     >
-
                 </div>
 
+                {{-- =====================================================
+                     PRÉVIA
+                ====================================================== --}}
 
-                {{-- Prévia do total --}}
                 <div
                     id="builder_previa"
                     class="alert alert-secondary mb-0"
                 >
-
                     <div class="d-flex justify-content-between gap-3">
-
                         <span>
                             Total do item:
                         </span>
@@ -232,13 +254,10 @@
                         <strong id="builder_total">
                             R$ 0,00
                         </strong>
-
                     </div>
-
                 </div>
 
             </div>
-
 
             <div class="modal-footer">
 
@@ -265,5 +284,4 @@
         </div>
 
     </div>
-
 </div>
