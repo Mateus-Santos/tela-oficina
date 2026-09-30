@@ -25,16 +25,40 @@ class StoreContaReceberRequest extends FormRequest
             'nota_id' => [
                 'nullable',
                 'integer',
-                Rule::exists('notas', 'id')->where(fn ($query) => $query->where('status', 'Finalizado')),
-                Rule::unique('contas_receber', 'nota_id'),
+
+                Rule::exists('notas', 'id')
+                    ->where(
+                        fn ($query) => $query->where(
+                            'status',
+                            '!=',
+                            'Cancelado'
+                        )
+                    ),
+
+                Rule::unique(
+                    'contas_receber',
+                    'nota_id'
+                ),
             ],
 
             'categoria_financeira_id' => [
                 'required',
                 'integer',
-                Rule::exists('categorias_financeiras', 'id')->where(fn ($query) => $query
-                    ->where('tipo', 'entrada')
-                    ->where('ativo', true)),
+
+                Rule::exists(
+                    'categorias_financeiras',
+                    'id'
+                )->where(
+                    fn ($query) => $query
+                        ->where(
+                            'tipo',
+                            'entrada'
+                        )
+                        ->where(
+                            'ativo',
+                            true
+                        )
+                ),
             ],
 
             'descricao' => [
@@ -111,55 +135,113 @@ class StoreContaReceberRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'cliente_id.exists' => 'O cliente informado não existe.',
-            'cliente_id.required_without' => 'Informe o cliente quando a conta não estiver vinculada a uma nota.',
+            'cliente_id.exists' =>
+                'O cliente informado não existe.',
 
-            'nota_id.exists' => 'A nota informada não existe ou ainda não está finalizada.',
-            'nota_id.unique' => 'A nota informada já possui uma conta a receber.',
+            'cliente_id.required_without' =>
+                'Informe o cliente quando a conta não estiver vinculada a uma nota.',
 
-            'categoria_financeira_id.required' => 'Informe a categoria financeira.',
-            'categoria_financeira_id.exists' => 'A categoria financeira deve ser uma categoria de entrada ativa.',
+            'nota_id.exists' =>
+                'A nota informada não existe ou está cancelada.',
 
-            'descricao.required' => 'Informe a descrição da conta.',
-            'descricao.max' => 'A descrição não pode ultrapassar 255 caracteres.',
+            'nota_id.unique' =>
+                'A nota informada já possui uma conta a receber.',
 
-            'valor_original.required' => 'Informe o valor original.',
-            'valor_original.numeric' => 'O valor original deve ser numérico.',
-            'valor_original.gt' => 'O valor original deve ser maior que zero.',
-            'valor_original.decimal' => 'O valor original deve possuir no máximo duas casas decimais.',
+            'categoria_financeira_id.required' =>
+                'Informe a categoria financeira.',
 
-            'desconto.numeric' => 'O desconto deve ser numérico.',
-            'desconto.min' => 'O desconto não pode ser negativo.',
-            'desconto.decimal' => 'O desconto deve possuir no máximo duas casas decimais.',
+            'categoria_financeira_id.exists' =>
+                'A categoria financeira deve ser uma categoria de entrada ativa.',
 
-            'juros.numeric' => 'Os juros devem ser numéricos.',
-            'juros.min' => 'Os juros não podem ser negativos.',
-            'juros.decimal' => 'Os juros devem possuir no máximo duas casas decimais.',
+            'descricao.required' =>
+                'Informe a descrição da conta.',
 
-            'multa.numeric' => 'A multa deve ser numérica.',
-            'multa.min' => 'A multa não pode ser negativa.',
-            'multa.decimal' => 'A multa deve possuir no máximo duas casas decimais.',
+            'descricao.max' =>
+                'A descrição não pode ultrapassar 255 caracteres.',
 
-            'data_emissao.date_format' => 'A data de emissão é inválida.',
+            'valor_original.required' =>
+                'Informe o valor original.',
 
-            'parcelas.required' => 'Informe ao menos uma parcela.',
-            'parcelas.array' => 'As parcelas informadas são inválidas.',
-            'parcelas.min' => 'Informe ao menos uma parcela.',
+            'valor_original.numeric' =>
+                'O valor original deve ser numérico.',
 
-            'parcelas.*.numero.required' => 'Informe o número de todas as parcelas.',
-            'parcelas.*.numero.integer' => 'O número da parcela deve ser inteiro.',
-            'parcelas.*.numero.min' => 'O número da parcela deve ser maior que zero.',
-            'parcelas.*.numero.distinct' => 'Existem parcelas com números repetidos.',
+            'valor_original.gt' =>
+                'O valor original deve ser maior que zero.',
 
-            'parcelas.*.valor.required' => 'Informe o valor de todas as parcelas.',
-            'parcelas.*.valor.numeric' => 'O valor da parcela deve ser numérico.',
-            'parcelas.*.valor.gt' => 'O valor da parcela deve ser maior que zero.',
-            'parcelas.*.valor.decimal' => 'O valor da parcela deve possuir no máximo duas casas decimais.',
+            'valor_original.decimal' =>
+                'O valor original deve possuir no máximo duas casas decimais.',
 
-            'parcelas.*.data_vencimento.required' => 'Informe o vencimento de todas as parcelas.',
-            'parcelas.*.data_vencimento.date_format' => 'Existe uma data de vencimento inválida.',
+            'desconto.numeric' =>
+                'O desconto deve ser numérico.',
 
-            'observacoes.string' => 'As observações devem ser um texto.',
+            'desconto.min' =>
+                'O desconto não pode ser negativo.',
+
+            'desconto.decimal' =>
+                'O desconto deve possuir no máximo duas casas decimais.',
+
+            'juros.numeric' =>
+                'Os juros devem ser numéricos.',
+
+            'juros.min' =>
+                'Os juros não podem ser negativos.',
+
+            'juros.decimal' =>
+                'Os juros devem possuir no máximo duas casas decimais.',
+
+            'multa.numeric' =>
+                'A multa deve ser numérica.',
+
+            'multa.min' =>
+                'A multa não pode ser negativa.',
+
+            'multa.decimal' =>
+                'A multa deve possuir no máximo duas casas decimais.',
+
+            'data_emissao.date_format' =>
+                'A data de emissão é inválida.',
+
+            'parcelas.required' =>
+                'Informe ao menos uma parcela.',
+
+            'parcelas.array' =>
+                'As parcelas informadas são inválidas.',
+
+            'parcelas.min' =>
+                'Informe ao menos uma parcela.',
+
+            'parcelas.*.numero.required' =>
+                'Informe o número de todas as parcelas.',
+
+            'parcelas.*.numero.integer' =>
+                'O número da parcela deve ser inteiro.',
+
+            'parcelas.*.numero.min' =>
+                'O número da parcela deve ser maior que zero.',
+
+            'parcelas.*.numero.distinct' =>
+                'Existem parcelas com números repetidos.',
+
+            'parcelas.*.valor.required' =>
+                'Informe o valor de todas as parcelas.',
+
+            'parcelas.*.valor.numeric' =>
+                'O valor da parcela deve ser numérico.',
+
+            'parcelas.*.valor.gt' =>
+                'O valor da parcela deve ser maior que zero.',
+
+            'parcelas.*.valor.decimal' =>
+                'O valor da parcela deve possuir no máximo duas casas decimais.',
+
+            'parcelas.*.data_vencimento.required' =>
+                'Informe o vencimento de todas as parcelas.',
+
+            'parcelas.*.data_vencimento.date_format' =>
+                'Existe uma data de vencimento inválida.',
+
+            'observacoes.string' =>
+                'As observações devem ser um texto.',
         ];
     }
 }

@@ -2,6 +2,37 @@
 
 @section('content')
 
+@php
+    $clienteInicialId = old(
+        'cliente_id',
+        $notaSelecionada?->cliente_id
+    );
+
+    $notaInicialId = old(
+        'nota_id',
+        $notaSelecionada?->id
+    );
+
+    $valorInicial = old(
+        'valor_original',
+        $notaSelecionada
+            ? number_format(
+                (float) $notaSelecionada->total,
+                2,
+                '.',
+                ''
+            )
+            : ''
+    );
+
+    $descricaoInicial = old(
+        'descricao',
+        $notaSelecionada
+            ? "Conta a receber da Nota #{$notaSelecionada->id}."
+            : ''
+    );
+@endphp
+
 <section
     class="container cadastro"
     id="cadastro-conta-receber"
@@ -29,8 +60,16 @@
         </div>
     @endif
 
-    <form action="{{ route('contas-receber.store') }}" method="POST" id="form-conta-receber">
+    <form
+        action="{{ route('contas-receber.store') }}"
+        method="POST"
+        id="form-conta-receber"
+    >
         @csrf
+
+        {{-- =========================================================
+             CLIENTE E NOTA
+        ========================================================== --}}
 
         <div class="card mb-4">
             <div class="card-header">
@@ -45,7 +84,10 @@
 
                     {{-- BUSCA CLIENTE --}}
                     <div class="col-md-6">
-                        <label for="cliente_busca" class="form-label">
+                        <label
+                            for="cliente_busca"
+                            class="form-label"
+                        >
                             <i class="bi bi-person-search"></i>
                             Cliente
                         </label>
@@ -81,23 +123,63 @@
                             ></div>
                         </div>
 
-                        <div id="cliente-status" class="small text-muted mt-1">
-                            Digite para pesquisar.
+                        <div
+                            id="cliente-status"
+                            class="small text-muted mt-1"
+                        >
+                            @if($notaSelecionada?->cliente_id)
+                                Cliente carregado através da Nota.
+                            @elseif($notaSelecionada)
+                                Esta Nota é uma venda de balcão.
+                            @else
+                                Digite para pesquisar.
+                            @endif
                         </div>
 
-                        <div id="cliente-selecionado" class="mt-2 d-none"></div>
+                        <div
+                            id="cliente-selecionado"
+                            class="mt-2 {{ $notaSelecionada?->cliente_id ? '' : 'd-none' }}"
+                        >
+                            @if($notaSelecionada?->cliente_id)
+                                <div class="alert alert-success py-2 mb-0">
+                                    <i class="bi bi-person-check"></i>
+
+                                    <strong>
+                                        Cliente selecionado:
+                                    </strong>
+
+                                    {{ $notaSelecionada->cliente?->pessoa?->nome ?? 'Cliente sem nome' }}
+                                </div>
+                            @endif
+                        </div>
+
+                        @if($notaSelecionada && !$notaSelecionada->cliente_id)
+                            <div class="alert alert-light border mt-2 mb-0">
+                                <i class="bi bi-shop me-1"></i>
+
+                                <strong>Venda de balcão</strong>
+
+                                <div class="small text-muted">
+                                    A Nota #{{ $notaSelecionada->id }}
+                                    não possui cliente vinculado.
+                                </div>
+                            </div>
+                        @endif
 
                         <input
                             type="hidden"
                             name="cliente_id"
                             id="cliente_id"
-                            value="{{ old('cliente_id') }}"
+                            value="{{ $clienteInicialId }}"
                         >
                     </div>
 
                     {{-- BUSCA NOTA --}}
                     <div class="col-md-6">
-                        <label for="nota_busca" class="form-label">
+                        <label
+                            for="nota_busca"
+                            class="form-label"
+                        >
                             <i class="bi bi-receipt"></i>
                             Nota
                         </label>
@@ -114,6 +196,15 @@
                                     id="nota_busca"
                                     placeholder="Digite o número da nota ou selecione um cliente..."
                                     autocomplete="off"
+                                    value="{{ $notaSelecionada
+                                        ? '#' . str_pad(
+                                            (string) $notaSelecionada->id,
+                                            6,
+                                            '0',
+                                            STR_PAD_LEFT
+                                        )
+                                        : ''
+                                    }}"
                                 >
 
                                 <button
@@ -133,17 +224,63 @@
                             ></div>
                         </div>
 
-                        <div id="nota-status" class="small text-muted mt-1">
-                            Busque uma nota ou selecione primeiro um cliente.
+                        <div
+                            id="nota-status"
+                            class="small text-muted mt-1"
+                        >
+                            @if($notaSelecionada)
+                                Nota carregada automaticamente.
+                            @else
+                                Busque uma nota ou selecione primeiro um cliente.
+                            @endif
                         </div>
 
-                        <div id="nota-selecionada" class="mt-2 d-none"></div>
+                        <div
+                            id="nota-selecionada"
+                            class="mt-2 {{ $notaSelecionada ? '' : 'd-none' }}"
+                        >
+                            @if($notaSelecionada)
+                                <div class="alert alert-primary py-2 mb-0">
+                                    <div
+                                        class="d-flex justify-content-between align-items-center flex-wrap gap-2"
+                                    >
+                                        <div>
+                                            <i class="bi bi-receipt"></i>
+
+                                            <strong>
+                                                Nota #{{ str_pad(
+                                                    (string) $notaSelecionada->id,
+                                                    6,
+                                                    '0',
+                                                    STR_PAD_LEFT
+                                                ) }}
+                                            </strong>
+
+                                            -
+
+                                            {{ $notaSelecionada->cliente?->pessoa?->nome
+                                                ?? 'Venda de balcão'
+                                            }}
+                                        </div>
+
+                                        <strong>
+                                            R$ {{ number_format(
+                                                (float) $notaSelecionada->total,
+                                                2,
+                                                ',',
+                                                '.'
+                                            ) }}
+                                        </strong>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
 
                         <input
                             type="hidden"
                             name="nota_id"
                             id="nota_id"
-                            value="{{ old('nota_id') }}"
+                            value="{{ $notaInicialId }}"
                         >
                     </div>
 
@@ -151,11 +288,21 @@
 
                 <div class="alert alert-light border mt-3 mb-0">
                     <i class="bi bi-info-circle"></i>
-                    A Nota é opcional. Ao selecionar uma Nota, o cliente e o valor original serão preenchidos automaticamente.
-                    Apenas Notas finalizadas e sem Conta a Receber existente podem ser vinculadas.
+
+                    A Nota é opcional. Ao selecionar uma Nota,
+                    o cliente e o valor original serão preenchidos
+                    automaticamente.
+
+                    Notas abertas ou finalizadas podem ser vinculadas,
+                    desde que não estejam canceladas e ainda não possuam
+                    uma Conta a Receber.
                 </div>
             </div>
         </div>
+
+        {{-- =========================================================
+             DADOS DA CONTA
+        ========================================================== --}}
 
         <div class="card mb-4">
             <div class="card-header">
@@ -169,7 +316,10 @@
                 <div class="row g-3">
 
                     <div class="col-md-4">
-                        <label for="categoria_financeira_id" class="form-label">
+                        <label
+                            for="categoria_financeira_id"
+                            class="form-label"
+                        >
                             Categoria Financeira *
                         </label>
 
@@ -179,7 +329,9 @@
                             name="categoria_financeira_id"
                             required
                         >
-                            <option value="">Selecione uma categoria</option>
+                            <option value="">
+                                Selecione uma categoria
+                            </option>
 
                             @foreach ($categorias as $categoria)
                                 <option
@@ -193,7 +345,10 @@
                     </div>
 
                     <div class="col-md-8">
-                        <label for="descricao" class="form-label">
+                        <label
+                            for="descricao"
+                            class="form-label"
+                        >
                             Descrição *
                         </label>
 
@@ -202,14 +357,17 @@
                             class="form-control"
                             id="descricao"
                             name="descricao"
-                            value="{{ old('descricao') }}"
+                            value="{{ $descricaoInicial }}"
                             maxlength="255"
                             required
                         >
                     </div>
 
                     <div class="col-md-3">
-                        <label for="valor_original" class="form-label">
+                        <label
+                            for="valor_original"
+                            class="form-label"
+                        >
                             Valor Original (R$) *
                         </label>
 
@@ -220,13 +378,17 @@
                             class="form-control"
                             id="valor_original"
                             name="valor_original"
-                            value="{{ old('valor_original') }}"
+                            value="{{ $valorInicial }}"
+                            {{ $notaSelecionada ? 'readonly' : '' }}
                             required
                         >
                     </div>
 
                     <div class="col-md-3">
-                        <label for="desconto" class="form-label">
+                        <label
+                            for="desconto"
+                            class="form-label"
+                        >
                             Desconto (R$)
                         </label>
 
@@ -242,7 +404,10 @@
                     </div>
 
                     <div class="col-md-3">
-                        <label for="juros" class="form-label">
+                        <label
+                            for="juros"
+                            class="form-label"
+                        >
                             Juros (R$)
                         </label>
 
@@ -258,7 +423,10 @@
                     </div>
 
                     <div class="col-md-3">
-                        <label for="multa" class="form-label">
+                        <label
+                            for="multa"
+                            class="form-label"
+                        >
                             Multa (R$)
                         </label>
 
@@ -274,7 +442,10 @@
                     </div>
 
                     <div class="col-md-3">
-                        <label for="data_emissao" class="form-label">
+                        <label
+                            for="data_emissao"
+                            class="form-label"
+                        >
                             Data de Emissão
                         </label>
 
@@ -283,12 +454,18 @@
                             class="form-control"
                             id="data_emissao"
                             name="data_emissao"
-                            value="{{ old('data_emissao', now()->format('Y-m-d')) }}"
+                            value="{{ old(
+                                'data_emissao',
+                                now()->format('Y-m-d')
+                            ) }}"
                         >
                     </div>
 
                     <div class="col-12">
-                        <label for="observacoes" class="form-label">
+                        <label
+                            for="observacoes"
+                            class="form-label"
+                        >
                             Observações
                         </label>
 
@@ -304,7 +481,10 @@
             </div>
         </div>
 
-        {{-- PARCELAMENTO --}}
+        {{-- =========================================================
+             PARCELAMENTO
+        ========================================================== --}}
+
         <div class="card mb-4">
             <div class="card-header">
                 <h5 class="mb-0">
@@ -317,7 +497,10 @@
                 <div class="row g-3 mb-4">
 
                     <div class="col-md-4">
-                        <label for="parcelas_quantidade" class="form-label">
+                        <label
+                            for="parcelas_quantidade"
+                            class="form-label"
+                        >
                             Quantidade de parcelas *
                         </label>
 
@@ -335,7 +518,10 @@
                     </div>
 
                     <div class="col-md-4">
-                        <label for="primeira_data_vencimento" class="form-label">
+                        <label
+                            for="primeira_data_vencimento"
+                            class="form-label"
+                        >
                             Primeiro vencimento *
                         </label>
 
@@ -344,13 +530,19 @@
                             class="form-control"
                             id="primeira_data_vencimento"
                             name="primeira_data_vencimento"
-                            value="{{ old('primeira_data_vencimento', now()->addDays(30)->format('Y-m-d')) }}"
+                            value="{{ old(
+                                'primeira_data_vencimento',
+                                now()->addDays(30)->format('Y-m-d')
+                            ) }}"
                             required
                         >
                     </div>
 
                     <div class="col-md-4">
-                        <label for="intervalo_parcelas" class="form-label">
+                        <label
+                            for="intervalo_parcelas"
+                            class="form-label"
+                        >
                             Intervalo entre parcelas
                         </label>
 
@@ -362,7 +554,10 @@
                                 name="intervalo_parcelas"
                                 min="1"
                                 step="1"
-                                value="{{ old('intervalo_parcelas', 30) }}"
+                                value="{{ old(
+                                    'intervalo_parcelas',
+                                    30
+                                ) }}"
                             >
 
                             <span class="input-group-text">
@@ -373,17 +568,26 @@
 
                 </div>
 
-                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                <div
+                    class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3"
+                >
                     <div>
-                        <strong>Prévia das parcelas</strong>
+                        <strong>
+                            Prévia das parcelas
+                        </strong>
+
                         <div class="text-muted small">
-                            Confira os valores e vencimentos antes de cadastrar.
+                            Confira os valores e vencimentos antes
+                            de cadastrar.
                         </div>
                     </div>
 
                     <div class="fs-5">
                         Total:
-                        <strong id="parcelas-total">R$ 0,00</strong>
+
+                        <strong id="parcelas-total">
+                            R$ 0,00
+                        </strong>
                     </div>
                 </div>
 
@@ -393,13 +597,36 @@
             </div>
         </div>
 
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
-            <a href="{{ route('contas-receber.index') }}" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i>
-                Voltar
-            </a>
+        {{-- =========================================================
+             AÇÕES
+        ========================================================== --}}
 
-            <button type="submit" class="btn btn-success" id="btn-cadastrar-conta">
+        <div
+            class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4"
+        >
+            @if($notaSelecionada)
+                <a
+                    href="{{ route('notas.show', $notaSelecionada->id) }}"
+                    class="btn btn-secondary"
+                >
+                    <i class="bi bi-arrow-left"></i>
+                    Voltar para Nota
+                </a>
+            @else
+                <a
+                    href="{{ route('contas-receber.index') }}"
+                    class="btn btn-secondary"
+                >
+                    <i class="bi bi-arrow-left"></i>
+                    Voltar
+                </a>
+            @endif
+
+            <button
+                type="submit"
+                class="btn btn-success"
+                id="btn-cadastrar-conta"
+            >
                 <i class="bi bi-check-circle"></i>
                 Cadastrar Conta
             </button>

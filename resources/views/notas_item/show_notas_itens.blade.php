@@ -44,10 +44,31 @@
             @endif
 
             @if($nota->contaReceber)
-                <a href="{{ route('contas-receber.show', $nota->contaReceber) }}" class="btn btn-success">
+
+                <a
+                    href="{{ route('contas-receber.show', $nota->contaReceber) }}"
+                    class="btn btn-success"
+                >
                     <i class="bi bi-cash-coin"></i>
                     Conta a Receber #{{ $nota->contaReceber->id }}
                 </a>
+
+            @elseif(
+                $nota->status !== 'Cancelado'
+                && auth()->user()
+                && auth()->user()->permitions != 2
+            )
+
+                <a
+                    href="{{ route('contas-receber.create', [
+                        'nota_id' => $nota->id,
+                    ]) }}"
+                    class="btn btn-outline-success"
+                >
+                    <i class="bi bi-cash-stack"></i>
+                    Gerar Conta a Receber
+                </a>
+
             @endif
 
             <a href="{{ route('notas.pdf', $nota->id) }}" target="_blank" class="btn btn-danger">
