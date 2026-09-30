@@ -41,12 +41,16 @@ class ContaReceber extends Model
 
     public function cliente(): BelongsTo
     {
-        return $this->belongsTo(Cliente::class);
+        return $this->belongsTo(
+            Cliente::class
+        );
     }
 
     public function nota(): BelongsTo
     {
-        return $this->belongsTo(Nota::class);
+        return $this->belongsTo(
+            Nota::class
+        );
     }
 
     public function categoriaFinanceira(): BelongsTo
@@ -73,11 +77,21 @@ class ContaReceber extends Model
         );
     }
 
+    public function recebimentosAtivos(): HasMany
+    {
+        return $this->recebimentos()
+            ->whereNull('estornado_em');
+    }
+
     public function estaVencida(): bool
     {
         return in_array(
             $this->status,
-            ['aberta', 'parcial']
+            [
+                'aberta',
+                'parcial',
+            ],
+            true
         ) && $this->data_vencimento->isPast();
     }
 }

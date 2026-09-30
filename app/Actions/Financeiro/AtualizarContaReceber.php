@@ -18,11 +18,12 @@ class AtualizarContaReceber
                 $contaReceber,
                 $dados
             ) {
-                $contaReceber = ContaReceber::query()
-                    ->lockForUpdate()
-                    ->findOrFail(
-                        $contaReceber->id
-                    );
+                $contaReceber =
+                    ContaReceber::query()
+                        ->lockForUpdate()
+                        ->findOrFail(
+                            $contaReceber->id
+                        );
 
                 if (
                     in_array(
@@ -40,24 +41,27 @@ class AtualizarContaReceber
                     ]);
                 }
 
+                /*
+                 * Somente recebimentos ATIVOS impedem
+                 * a edição manual do financeiro.
+                 *
+                 * Recebimentos já estornados permanecem apenas
+                 * como histórico e não devem bloquear a conta.
+                 */
                 if (
                     $contaReceber
                         ->recebimentos()
+                        ->whereNull('estornado_em')
                         ->exists()
                 ) {
                     throw ValidationException::withMessages([
                         'contaReceber' =>
-                            'Contas que possuem recebimentos não podem ser alteradas.',
+                            'Contas que possuem recebimentos ativos não podem ser alteradas manualmente.',
                     ]);
                 }
 
                 $nota = null;
 
-                /*
-                 * =====================================================
-                 * NOTA VINCULADA
-                 * =====================================================
-                 */
                 if (!empty($dados['nota_id'])) {
                     $nota = Nota::query()
                         ->lockForUpdate()
@@ -65,10 +69,6 @@ class AtualizarContaReceber
                             $dados['nota_id']
                         );
 
-                    /*
-                     * Nota aberta e finalizada são permitidas.
-                     * Apenas Nota cancelada é bloqueada.
-                     */
                     if (
                         $nota->status
                         === 'Cancelado'
@@ -79,21 +79,18 @@ class AtualizarContaReceber
                         ]);
                     }
 
-                    /*
-                     * Uma Nota só pode possuir
-                     * uma Conta a Receber.
-                     */
-                    $outraConta = ContaReceber::query()
-                        ->where(
-                            'nota_id',
-                            $nota->id
-                        )
-                        ->where(
-                            'id',
-                            '!=',
-                            $contaReceber->id
-                        )
-                        ->exists();
+                    $outraConta =
+                        ContaReceber::query()
+                            ->where(
+                                'nota_id',
+                                $nota->id
+                            )
+                            ->where(
+                                'id',
+                                '!=',
+                                $contaReceber->id
+                            )
+                            ->exists();
 
                     if ($outraConta) {
                         throw ValidationException::withMessages([
@@ -102,13 +99,6 @@ class AtualizarContaReceber
                         ]);
                     }
 
-                    /*
-                     * Se a Nota possui cliente, o cliente informado
-                     * precisa ser o mesmo.
-                     *
-                     * Venda de balcão possui cliente_id NULL
-                     * e continua sendo válida.
-                     */
                     if (
                         !empty($dados['cliente_id'])
                         && (int) $dados['cliente_id']
@@ -120,23 +110,10 @@ class AtualizarContaReceber
                         ]);
                     }
 
-                    /*
-                     * A Nota é a fonte de verdade do cliente.
-                     *
-                     * Em venda de balcão isso resultará em NULL,
-                     * o que é permitido.
-                     */
                     $dados['cliente_id'] =
                         $nota->cliente_id;
                 }
 
-                /*
-                 * Sem Nota, cliente é obrigatório.
-                 *
-                 * ATENÇÃO:
-                 * não podemos simplesmente exigir cliente_id,
-                 * porque uma Nota de balcão pode possuir cliente NULL.
-                 */
                 if (
                     !$nota
                     && empty($dados['cliente_id'])
@@ -199,10 +176,6 @@ class AtualizarContaReceber
                     ]);
                 }
 
-                /*
-                 * Se existe Nota vinculada, o valor original
-                 * deve continuar correspondendo ao total da Nota.
-                 */
                 if ($nota) {
                     $valorOriginalCentavos =
                         $this->paraCentavos(

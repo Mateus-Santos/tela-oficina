@@ -5,6 +5,7 @@ namespace App\Actions\Notas;
 use App\Actions\Estoque\RegistrarSaida;
 use App\Actions\Financeiro\CriarContaReceber;
 use App\Models\CategoriaFinanceira;
+use App\Models\ContaReceber;
 use App\Models\Nota;
 use App\Models\Produto;
 use Illuminate\Support\Facades\DB;
@@ -68,10 +69,6 @@ class FinalizarNota
                  * =====================================================
                  * 2. VERIFICAR SE A NOTA JÁ POSSUI CONTA A RECEBER
                  * =====================================================
-                 *
-                 * Se já existe Conta a Receber, não devemos criar
-                 * outra e também não precisamos validar novamente
-                 * categoria e parcelas.
                  */
                 $jaPossuiContaReceber =
                     $nota->contaReceber !== null;
@@ -81,11 +78,25 @@ class FinalizarNota
 
                 /*
                  * =====================================================
-                 * 3. VALIDAR FINANCEIRO SOMENTE SE PRECISAR CRIAR
-                 *    CONTA A RECEBER
+                 * 3. VALIDAR FINANCEIRO
                  * =====================================================
+                 *
+                 * Existem dois cenários:
+                 *
+                 * A) Nota ainda não possui Conta a Receber:
+                 *    validamos categoria e parcelas que serão usadas
+                 *    para criar a conta.
+                 *
+                 * B) Nota já possui Conta a Receber:
+                 *    validamos a conta existente e suas parcelas antes
+                 *    de permitir qualquer baixa de estoque.
                  */
-                if (!$jaPossuiContaReceber) {
+                if ($jaPossuiContaReceber) {
+                    $this->validarContaReceberExistente(
+                        $nota,
+                        $valorNotaCentavos
+                    );
+                } else {
                     $categoriaFinanceiraId =
                         $dadosFinanceiros[
                             'categoria_financeira_id'
@@ -286,9 +297,6 @@ class FinalizarNota
                  * =====================================================
                  * 7. FINALIZAR NOTA
                  * =====================================================
-                 *
-                 * A alteração continua dentro da transaction.
-                 * Qualquer erro posterior desfaz também o status.
                  */
                 $nota->update([
                     'status' => 'Finalizado',
@@ -346,6 +354,158 @@ class FinalizarNota
                 ]);
             }
         );
+    }
+
+    /*
+     * =============================================================
+     * VALIDAR CONTA A RECEBER JÁ EXISTENTE
+     * =============================================================
+     *
+     * Uma Nota aberta pode possuir uma Conta a Receber criada
+     * anteriormente.
+     *
+     * Como a Nota pode ter sido alterada posteriormente, não podemos
+     * simplesmente confiar que a conta e suas parcelas continuam
+     * compatíveis com o valor atual da Nota.
+     */
+    private function validarContaReceberExistente(
+        Nota $nota,
+        int $valorNotaCentavos
+    ): void {
+        if (!$nota->contaReceber) {
+            throw ValidationException::withMessages([
+                'finalizacao' =>
+                    'A Conta a Receber vinculada à Nota não foi encontrada.',
+            ]);
+        }
+
+        /*
+         * Trava a Conta a Receber durante a finalização para evitar
+         * que ela seja alterada simultaneamente por outro processo.
+         */
+        $contaReceber =
+            ContaReceber::query()
+                ->lockForUpdate()
+                ->findOrFail(
+                    $nota->contaReceber->id
+                );
+
+        if (
+            (int) $contaReceber->nota_id
+            !== (int) $nota->id
+        ) {
+            throw ValidationException::withMessages([
+                'finalizacao' =>
+                    'A Conta a Receber vinculada não pertence à Nota que está sendo finalizada.',
+            ]);
+        }
+
+        /*
+         * Uma conta cancelada não pode servir como financeiro
+         * de uma Nota que está sendo finalizada.
+         */
+        if ($contaReceber->status === 'cancelada') {
+            throw ValidationException::withMessages([
+                'finalizacao' =>
+                    'A Conta a Receber vinculada à Nota está cancelada. Regularize o financeiro antes de finalizar.',
+            ]);
+        }
+
+        /*
+         * O valor original precisa continuar correspondendo
+         * exatamente ao total atual da Nota.
+         */
+        $valorContaCentavos =
+            $this->paraCentavos(
+                $contaReceber->valor_original
+            );
+
+        if (
+            $valorContaCentavos
+            !== $valorNotaCentavos
+        ) {
+            throw ValidationException::withMessages([
+                'finalizacao' => sprintf(
+                    'A Conta a Receber vinculada está com valor diferente do total atual da Nota. Nota: R$ %s. Conta: R$ %s.',
+                    number_format(
+                        $valorNotaCentavos / 100,
+                        2,
+                        ',',
+                        '.'
+                    ),
+                    number_format(
+                        $valorContaCentavos / 100,
+                        2,
+                        ',',
+                        '.'
+                    )
+                ),
+            ]);
+        }
+
+        /*
+         * Também travamos as parcelas existentes durante
+         * a conferência financeira.
+         */
+        $parcelas =
+            $contaReceber
+                ->parcelas()
+                ->lockForUpdate()
+                ->get();
+
+        if ($parcelas->isEmpty()) {
+            throw ValidationException::withMessages([
+                'finalizacao' =>
+                    'A Conta a Receber vinculada não possui parcelas. Regularize o financeiro antes de finalizar.',
+            ]);
+        }
+
+        $totalParcelasCentavos = 0;
+
+        foreach ($parcelas as $parcela) {
+            $valorParcelaCentavos =
+                $this->paraCentavos(
+                    $parcela->valor
+                );
+
+            if ($valorParcelaCentavos <= 0) {
+                throw ValidationException::withMessages([
+                    'finalizacao' =>
+                        "A parcela #{$parcela->numero} da Conta a Receber possui valor inválido.",
+                ]);
+            }
+
+            $totalParcelasCentavos +=
+                $valorParcelaCentavos;
+        }
+
+        /*
+         * Para uma Conta vinculada à Nota, as parcelas precisam
+         * continuar somando exatamente o valor original da conta,
+         * que por sua vez já foi validado contra o total da Nota.
+         */
+        if (
+            $totalParcelasCentavos
+            !== $valorContaCentavos
+        ) {
+            throw ValidationException::withMessages([
+                'finalizacao' => sprintf(
+                    'As parcelas da Conta a Receber não correspondem ao valor da Nota. Total das parcelas: R$ %s. Valor esperado: R$ %s.',
+                    number_format(
+                        $totalParcelasCentavos / 100,
+                        2,
+                        ',',
+                        '.'
+                    ),
+                    number_format(
+                        $valorContaCentavos / 100,
+                        2,
+                        ',',
+                        '.'
+                    )
+                ),
+            ]);
+        }
     }
 
     private function paraCentavos(
