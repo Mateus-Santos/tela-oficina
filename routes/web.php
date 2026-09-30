@@ -77,7 +77,7 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         Route::resource('ordemservicos', OrdemServicoController::class);
 
         // Itens das Notas
-        Route::resource('notasitem', NotasItemController::class);
+        Route::resource('notasitem', NotasItemController::class)->except(['show']);
 
         // Usuários
         Route::resource('users', UserController::class);
