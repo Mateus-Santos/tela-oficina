@@ -1,8 +1,23 @@
 @php
+
     $itensFormulario = isset($itens)
         ? $itens
         : (isset($nota) && $nota->itens ? $nota->itens : collect());
+
+    $contaReceberFormulario =
+        isset($nota)
+            ? $nota->contaReceber
+            : null;
+
+    $valorRecebidoFormulario =
+        $contaReceberFormulario
+            ? (float) $contaReceberFormulario
+                ->recebimentosAtivos()
+                ->sum('valor')
+            : 0;
+
 @endphp
+
 
 {{-- =========================================================
      1. IDENTIFICAÇÃO DA NOTA / O.S.
@@ -11,15 +26,18 @@
 <div class="card mb-4">
 
     <div class="card-header">
+
         <h5 class="mb-0">
             <i class="bi bi-file-earmark-text"></i>
             Identificação da Nota / O.S.
         </h5>
+
     </div>
 
     <div class="card-body">
 
         <livewire:nota.seletor-cliente-veiculo
+
             :cliente-selecionado-id="
                 old(
                     'cliente_id',
@@ -31,6 +49,7 @@
                     )
                     : null
             "
+
             :veiculo-selecionado-id="
                 old(
                     'veiculo_cliente_id',
@@ -147,8 +166,9 @@
 
 </div>
 
+
 {{-- =========================================================
-     2. ITENS DA NOTA / O.S.
+     2. RESUMO FINANCEIRO
 ========================================================= --}}
 
 <div class="card mb-4">
@@ -156,8 +176,262 @@
     <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
 
         <h5 class="mb-0">
+            <i class="bi bi-calculator"></i>
+            Resumo da nota
+        </h5>
+
+        @if($contaReceberFormulario)
+
+            <span class="badge bg-success">
+
+                <i class="bi bi-cash-coin"></i>
+
+                Conta a Receber
+                #{{ $contaReceberFormulario->id }}
+
+            </span>
+
+        @endif
+
+    </div>
+
+    <div class="card-body">
+
+        @if($contaReceberFormulario)
+
+            <div class="alert alert-info">
+
+                <div class="fw-semibold mb-1">
+
+                    <i class="bi bi-info-circle"></i>
+                    Financeiro vinculado
+
+                </div>
+
+                Esta Nota já possui uma Conta a Receber.
+
+                Ao salvar alterações, o valor da conta e suas parcelas
+                serão sincronizados automaticamente.
+
+                @if($valorRecebidoFormulario > 0)
+
+                    <div class="mt-2">
+
+                        <strong>
+                            Recebimentos ativos:
+                        </strong>
+
+                        R$
+                        {{
+                            number_format(
+                                $valorRecebidoFormulario,
+                                2,
+                                ',',
+                                '.'
+                            )
+                        }}
+
+                    </div>
+
+                    <div class="small mt-1">
+
+                        A Nota não poderá ser reduzida para um valor
+                        inferior ao total já recebido sem antes estornar
+                        os recebimentos necessários.
+
+                    </div>
+
+                @endif
+
+            </div>
+
+        @endif
+
+        <div class="row g-3">
+
+            {{-- PEÇAS --}}
+            <div class="col-md-6">
+
+                <div class="border rounded p-3 h-100">
+
+                    <h6 class="mb-3">
+
+                        <i class="bi bi-box-seam"></i>
+                        Peças / Produtos
+
+                    </h6>
+
+                    <div class="d-flex justify-content-between mb-2">
+
+                        <span>
+                            Total bruto:
+                        </span>
+
+                        <strong id="resumo-pecas-bruto">
+                            R$ 0,00
+                        </strong>
+
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+
+                        <span>
+                            Descontos:
+                        </span>
+
+                        <strong id="resumo-pecas-desconto">
+                            R$ 0,00
+                        </strong>
+
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between">
+
+                        <span>
+                            Total líquido:
+                        </span>
+
+                        <strong id="resumo-pecas-liquido">
+                            R$ 0,00
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            {{-- SERVIÇOS --}}
+            <div class="col-md-6">
+
+                <div class="border rounded p-3 h-100">
+
+                    <h6 class="mb-3">
+
+                        <i class="bi bi-tools"></i>
+                        Serviços / O.S.
+
+                    </h6>
+
+                    <div class="d-flex justify-content-between mb-2">
+
+                        <span>
+                            Total bruto:
+                        </span>
+
+                        <strong id="resumo-servicos-bruto">
+                            R$ 0,00
+                        </strong>
+
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+
+                        <span>
+                            Descontos:
+                        </span>
+
+                        <strong id="resumo-servicos-desconto">
+                            R$ 0,00
+                        </strong>
+
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between">
+
+                        <span>
+                            Total líquido:
+                        </span>
+
+                        <strong id="resumo-servicos-liquido">
+                            R$ 0,00
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {{-- TOTAL DE DESCONTOS --}}
+        <div class="row mt-3">
+
+            <div class="col-12">
+
+                <div class="d-flex justify-content-between">
+
+                    <span>
+
+                        <i class="bi bi-percent"></i>
+                        Total de descontos:
+
+                    </span>
+
+                    <strong id="resumo-total-descontos">
+                        R$ 0,00
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {{-- TOTAL FINAL --}}
+        <div class="row mt-3">
+
+            <div class="col-12">
+
+                <div class="border rounded p-3">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <span class="fs-5">
+
+                            <i class="bi bi-cash-stack"></i>
+                            TOTAL DA NOTA
+
+                        </span>
+
+                        <strong
+                            id="valor-geral-os"
+                            class="fs-4"
+                        >
+                            R$ 0,00
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+{{-- =========================================================
+     3. ITENS DA NOTA / O.S.
+========================================================= --}}
+
+<div class="card mb-4">
+
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+
+        <h5 class="mb-0">
+
             <i class="bi bi-cart3"></i>
             Itens da Nota / O.S.
+
         </h5>
 
         <button
@@ -166,8 +440,10 @@
             data-bs-toggle="modal"
             data-bs-target="#modalAdicionarItem"
         >
+
             <i class="bi bi-plus-circle"></i>
             Adicionar item
+
         </button>
 
     </div>
@@ -228,18 +504,95 @@
                         @foreach($itensFormulario as $index => $item)
 
                             @php
-                                $itemableType = $item->itemable_type ?? '';
-                                $itemableId = $item->itemable_id ?? '';
-                                $descricaoItem = $item->descricao ?? '';
-                                $quantidadeItem = $item->quantidade ?? 1;
-                                $valorUnitarioItem = $item->valor_unitario ?? 0;
-                                $descontoItem = $item->desconto ?? 0;
-                                $garantiaDiasItem = $item->garantia_dias ?? 0;
+
+                                $itemableType =
+                                    $item->itemable_type ?? '';
+
+                                $itemableId =
+                                    $item->itemable_id ?? '';
+
+                                $descricaoItem =
+                                    $item->descricao ?? '';
+
+                                $quantidadeItem =
+                                    $item->quantidade ?? 1;
+
+                                $valorUnitarioItem =
+                                    $item->valor_unitario ?? 0;
+
+                                $descontoItem =
+                                    $item->desconto ?? 0;
+
+                                $garantiaDiasItem =
+                                    $item->garantia_dias ?? 0;
+
+                                $codigoItem = '';
+
+                                $estoqueAtualItem = null;
+
+                                $estoqueMinimoItem = null;
+
+                                $estoqueSemItem = false;
+
+                                $estoqueInsuficienteItem = false;
+
+                                $estoqueBaixoItem = false;
+
+                                if (
+                                    $itemableType
+                                        === \App\Models\Produto::class
+                                    && $item->itemable
+                                ) {
+
+                                    $codigoItem =
+                                        $item->itemable->codigo_fabricante
+                                        ?: $item->itemable->codigo_barras
+                                        ?: '';
+
+                                    $estoqueAtualItem =
+                                        (float) (
+                                            $item->itemable->quantidade
+                                            ?? 0
+                                        );
+
+                                    $estoqueMinimoItem =
+                                        (float) (
+                                            $item->itemable->estoque_minimo
+                                            ?? 0
+                                        );
+
+                                    $estoqueSemItem =
+                                        $estoqueAtualItem <= 0;
+
+                                    $estoqueInsuficienteItem =
+                                        !$estoqueSemItem
+                                        && (float) $quantidadeItem
+                                            > $estoqueAtualItem;
+
+                                    $estoqueBaixoItem =
+                                        !$estoqueSemItem
+                                        && !$estoqueInsuficienteItem
+                                        && $estoqueAtualItem
+                                            <= $estoqueMinimoItem;
+                                }
+
+                                if (
+                                    $itemableType
+                                    === \App\Models\OrdemServico::class
+                                ) {
+
+                                    $codigoItem =
+                                        '#' . $itemableId;
+                                }
 
                                 $totalItem = max(
                                     0,
-                                    ($quantidadeItem * $valorUnitarioItem) - $descontoItem
+                                    (
+                                        $quantidadeItem
+                                        * $valorUnitarioItem
+                                    ) - $descontoItem
                                 );
+
                             @endphp
 
                             <tr
@@ -271,13 +624,19 @@
                                         class="itemable-id"
                                     >
 
-                                    @if($itemableType === 'App\Models\Produto')
+                                    @if(
+                                        $itemableType
+                                        === \App\Models\Produto::class
+                                    )
 
                                         <span class="badge bg-primary">
                                             Produto
                                         </span>
 
-                                    @elseif($itemableType === 'App\Models\OrdemServico')
+                                    @elseif(
+                                        $itemableType
+                                        === \App\Models\OrdemServico::class
+                                    )
 
                                         <span class="badge bg-warning text-dark">
                                             O.S.
@@ -288,6 +647,75 @@
                                         <span class="badge bg-secondary">
                                             Item
                                         </span>
+
+                                    @endif
+
+                                    @if($codigoItem)
+
+                                        <div class="small text-muted mt-1">
+
+                                            <i class="bi bi-upc-scan"></i>
+
+                                            {{ $codigoItem }}
+
+                                        </div>
+
+                                    @endif
+
+                                    @if(
+                                        $itemableType
+                                        === \App\Models\Produto::class
+                                    )
+
+                                        @if($estoqueSemItem)
+
+                                            <div class="mt-2">
+
+                                                <span
+                                                    class="badge bg-danger"
+                                                    title="Produto sem estoque disponível."
+                                                >
+
+                                                    <i class="bi bi-exclamation-octagon"></i>
+                                                    Sem estoque
+
+                                                </span>
+
+                                            </div>
+
+                                        @elseif($estoqueInsuficienteItem)
+
+                                            <div class="mt-2">
+
+                                                <span
+                                                    class="badge bg-danger"
+                                                    title="Quantidade da Nota maior que o estoque disponível."
+                                                >
+
+                                                    <i class="bi bi-exclamation-triangle"></i>
+                                                    Estoque insuficiente
+
+                                                </span>
+
+                                            </div>
+
+                                        @elseif($estoqueBaixoItem)
+
+                                            <div class="mt-2">
+
+                                                <span
+                                                    class="badge bg-warning text-dark"
+                                                    title="Produto no estoque mínimo."
+                                                >
+
+                                                    <i class="bi bi-exclamation-triangle"></i>
+                                                    Estoque baixo
+
+                                                </span>
+
+                                            </div>
+
+                                        @endif
 
                                     @endif
 
@@ -391,12 +819,16 @@
                                 <td>
 
                                     <span class="valor-total-item fw-bold">
-                                        {{ 'R$ ' . number_format(
-                                            $totalItem,
-                                            2,
-                                            ',',
-                                            '.'
-                                        ) }}
+
+                                        {{
+                                            'R$ ' . number_format(
+                                                $totalItem,
+                                                2,
+                                                ',',
+                                                '.'
+                                            )
+                                        }}
+
                                     </span>
 
                                 </td>
@@ -409,7 +841,9 @@
                                         class="btn btn-danger btn-sm btn-remover-item"
                                         title="Remover item"
                                     >
+
                                         <i class="bi bi-trash"></i>
+
                                     </button>
 
                                 </td>
@@ -426,8 +860,10 @@
                                 colspan="8"
                                 class="text-center text-muted py-4"
                             >
+
                                 <i class="bi bi-info-circle"></i>
                                 Nenhum item adicionado à nota.
+
                             </td>
 
                         </tr>
@@ -444,185 +880,6 @@
 
 </div>
 
-{{-- =========================================================
-     3. RESUMO FINANCEIRO
-========================================================= --}}
-
-<div class="card mb-4">
-
-    <div class="card-header">
-
-        <h5 class="mb-0">
-            <i class="bi bi-calculator"></i>
-            Resumo financeiro
-        </h5>
-
-    </div>
-
-    <div class="card-body">
-
-        <div class="row g-3">
-
-            {{-- PEÇAS --}}
-            <div class="col-md-6">
-
-                <div class="border rounded p-3 h-100">
-
-                    <h6 class="mb-3">
-                        <i class="bi bi-box-seam"></i>
-                        Peças / Produtos
-                    </h6>
-
-                    <div class="d-flex justify-content-between mb-2">
-
-                        <span>
-                            Total bruto:
-                        </span>
-
-                        <strong id="resumo-pecas-bruto">
-                            R$ 0,00
-                        </strong>
-
-                    </div>
-
-                    <div class="d-flex justify-content-between mb-2">
-
-                        <span>
-                            Descontos:
-                        </span>
-
-                        <strong id="resumo-pecas-desconto">
-                            R$ 0,00
-                        </strong>
-
-                    </div>
-
-                    <hr>
-
-                    <div class="d-flex justify-content-between">
-
-                        <span>
-                            Total líquido:
-                        </span>
-
-                        <strong id="resumo-pecas-liquido">
-                            R$ 0,00
-                        </strong>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            {{-- SERVIÇOS --}}
-            <div class="col-md-6">
-
-                <div class="border rounded p-3 h-100">
-
-                    <h6 class="mb-3">
-                        <i class="bi bi-tools"></i>
-                        Serviços / O.S.
-                    </h6>
-
-                    <div class="d-flex justify-content-between mb-2">
-
-                        <span>
-                            Total bruto:
-                        </span>
-
-                        <strong id="resumo-servicos-bruto">
-                            R$ 0,00
-                        </strong>
-
-                    </div>
-
-                    <div class="d-flex justify-content-between mb-2">
-
-                        <span>
-                            Descontos:
-                        </span>
-
-                        <strong id="resumo-servicos-desconto">
-                            R$ 0,00
-                        </strong>
-
-                    </div>
-
-                    <hr>
-
-                    <div class="d-flex justify-content-between">
-
-                        <span>
-                            Total líquido:
-                        </span>
-
-                        <strong id="resumo-servicos-liquido">
-                            R$ 0,00
-                        </strong>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        {{-- TOTAL DE DESCONTOS --}}
-        <div class="row mt-3">
-
-            <div class="col-12">
-
-                <div class="d-flex justify-content-between">
-
-                    <span>
-                        <i class="bi bi-percent"></i>
-                        Total de descontos:
-                    </span>
-
-                    <strong id="resumo-total-descontos">
-                        R$ 0,00
-                    </strong>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        {{-- TOTAL FINAL --}}
-        <div class="row mt-3">
-
-            <div class="col-12">
-
-                <div class="border rounded p-3">
-
-                    <div class="d-flex justify-content-between align-items-center">
-
-                        <span class="fs-5">
-                            <i class="bi bi-cash-stack"></i>
-                            TOTAL DA NOTA
-                        </span>
-
-                        <strong
-                            id="valor-geral-os"
-                            class="fs-4"
-                        >
-                            R$ 0,00
-                        </strong>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
 
 {{-- =========================================================
      4. DESCONTOS GERAIS
@@ -633,8 +890,10 @@
     <div class="card-header">
 
         <h5 class="mb-0">
+
             <i class="bi bi-percent"></i>
             Descontos
+
         </h5>
 
     </div>
@@ -650,7 +909,9 @@
                 </strong>
 
                 <div class="text-muted">
+
                     Aplique um desconto sobre os produtos e serviços da nota.
+
                 </div>
 
             </div>
@@ -661,8 +922,10 @@
                 data-bs-toggle="modal"
                 data-bs-target="#modalDescontos"
             >
+
                 <i class="bi bi-percent"></i>
                 Gerenciar descontos
+
             </button>
 
         </div>
@@ -671,6 +934,7 @@
 
 </div>
 
+
 {{-- =========================================================
      5. BOTÕES
 ========================================================= --}}
@@ -678,11 +942,13 @@
 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
 
     <a
-        href="{{ route('notasitem.index') }}"
+        href="{{ route('notas.index') }}"
         class="btn btn-secondary"
     >
+
         <i class="bi bi-arrow-left"></i>
         Voltar
+
     </a>
 
     <button
@@ -690,8 +956,10 @@
         class="btn btn-success"
         id="btn-salvar-nota"
     >
+
         <i class="bi bi-check-circle"></i>
         Salvar nota
+
     </button>
 
 </div>

@@ -181,23 +181,48 @@ function iniciarContaReceber() {
             alterandoProgramaticamente = false;
         }
 
-        const cliente = {
-            id: nota.cliente_id,
-            nome: nota.cliente_nome,
-        };
+        if (nota.cliente_id) {
+            const cliente = {
+                id: nota.cliente_id,
+                nome: nota.cliente_nome,
+            };
 
-        selecionarCliente(cliente, {
-            manterNota: true,
-        });
+            selecionarCliente(cliente, {
+                manterNota: true,
+            });
+        } else {
+            clienteAtual = null;
 
-        if (valorOriginal) {
-            valorOriginal.value = Number(nota.total).toFixed(2);
-            valorOriginal.readOnly = true;
-            parcelas.definirValorTotal(Number(nota.total));
+            if (clienteId) {
+                clienteId.value = '';
+            }
+
+            if (clienteBusca) {
+                alterandoProgramaticamente = true;
+                clienteBusca.value = '';
+                alterandoProgramaticamente = false;
+            }
+
+            renderizarCliente(null);
         }
 
-        if (descricao && descricao.value.trim() === '') {
-            descricao.value = `Nota #${nota.numero} - ${nota.cliente_nome}`;
+        if (valorOriginal) {
+            valorOriginal.value =
+                Number(nota.total).toFixed(2);
+
+            valorOriginal.readOnly = true;
+
+            parcelas.definirValorTotal(
+                Number(nota.total)
+            );
+        }
+
+        if (
+            descricao &&
+            descricao.value.trim() === ''
+        ) {
+            descricao.value =
+                `Conta a receber da Nota #${nota.numero}.`;
         }
 
         renderizarNota(nota);

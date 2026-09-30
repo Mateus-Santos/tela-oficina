@@ -211,7 +211,7 @@ class ContaReceberController extends Controller
         );
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $categorias = CategoriaFinanceira::query()
             ->where('tipo', 'entrada')
@@ -219,7 +219,46 @@ class ContaReceberController extends Controller
             ->orderBy('nome')
             ->get();
 
-        return view('financeiro.contas_receber.create', compact('categorias'));
+        $notaSelecionada = null;
+
+        if ($request->filled('nota_id')) {
+            $notaSelecionada = Nota::query()
+                ->with([
+                    'cliente.pessoa',
+                    'contaReceber',
+                ])
+                ->whereKey($request->input('nota_id'))
+                ->where('status', '!=', 'Cancelado')
+                ->first();
+
+            if (!$notaSelecionada) {
+                return redirect()
+                    ->route('contas-receber.create')
+                    ->withErrors([
+                        'nota_id' => 'A Nota informada não existe ou está cancelada.',
+                    ]);
+            }
+
+            if ($notaSelecionada->contaReceber) {
+                return redirect()
+                    ->route(
+                        'contas-receber.show',
+                        $notaSelecionada->contaReceber
+                    )
+                    ->with(
+                        'error',
+                        "A Nota #{$notaSelecionada->id} já possui uma Conta a Receber."
+                    );
+            }
+        }
+
+        return view(
+            'financeiro.contas_receber.create',
+            compact(
+                'categorias',
+                'notaSelecionada'
+            )
+        );
     }
 
     public function store(

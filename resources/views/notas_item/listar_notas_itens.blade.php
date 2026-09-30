@@ -20,7 +20,11 @@
         <div class="row g-3 align-items-end">
 
             <div class="col-12 col-md-5">
-                <label for="cliente" class="form-label">
+
+                <label
+                    for="cliente"
+                    class="form-label"
+                >
                     <i class="bi bi-person"></i>
                     Cliente
                 </label>
@@ -33,10 +37,15 @@
                     placeholder="Nome do cliente"
                     value="{{ request('cliente') }}"
                 >
+
             </div>
 
             <div class="col-12 col-md-5">
-                <label for="status" class="form-label">
+
+                <label
+                    for="status"
+                    class="form-label"
+                >
                     <i class="bi bi-clipboard-check"></i>
                     Status
                 </label>
@@ -65,10 +74,10 @@
                     </option>
 
                     <option
-                        value="Concluido"
-                        @selected(request('status') === 'Concluido')
+                        value="Finalizado"
+                        @selected(request('status') === 'Finalizado')
                     >
-                        Concluído
+                        Finalizado
                     </option>
 
                     <option
@@ -78,9 +87,11 @@
                         Cancelado
                     </option>
                 </select>
+
             </div>
 
             <div class="col-12 col-md-2">
+
                 <div class="filtros-container__actions">
 
                     <button
@@ -101,21 +112,27 @@
                     </a>
 
                 </div>
+
             </div>
 
         </div>
+
     </x-filtros-container>
 
     @if ($notas->isEmpty())
 
-        <div class="alert alert-{{ request()->hasAny(['cliente', 'status']) ? 'warning' : 'info' }}">
+        <div
+            class="alert alert-{{ request()->hasAny(['cliente', 'status']) ? 'warning' : 'info' }}"
+        >
+            <i
+                class="bi {{ request()->hasAny(['cliente', 'status']) ? 'bi-exclamation-triangle' : 'bi-info-circle' }}"
+            ></i>
 
-            <i class="bi {{ request()->hasAny(['cliente', 'status']) ? 'bi-exclamation-triangle' : 'bi-info-circle' }}"></i>
-
-            {{ request()->hasAny(['cliente', 'status'])
-                ? 'Nenhuma nota encontrada com os filtros informados.'
-                : 'Nenhuma nota cadastrada.' }}
-
+            {{
+                request()->hasAny(['cliente', 'status'])
+                    ? 'Nenhuma nota encontrada com os filtros informados.'
+                    : 'Nenhuma nota cadastrada.'
+            }}
         </div>
 
     @endif
@@ -127,50 +144,386 @@
             <table class="table table-striped table-hover align-middle">
 
                 <thead>
+
                     <tr>
-                        <th scope="col">ID</th>
-                        <th scope="col">STATUS</th>
-                        <th scope="col">CLIENTE</th>
-                        <th scope="col">VEÍCULO</th>
-                        <th scope="col">PLACA</th>
-                        <th scope="col">IMPRIMIR</th>
-                        <th scope="col">VER</th>
-                        <th scope="col">EXCLUIR</th>
+
+                        <th scope="col">
+                            ID
+                        </th>
+
+                        <th scope="col">
+                            STATUS
+                        </th>
+
+                        <th scope="col">
+                            CLIENTE
+                        </th>
+
+                        <th scope="col">
+                            VEÍCULO
+                        </th>
+
+                        <th scope="col">
+                            PLACA
+                        </th>
+
+                        <th
+                            scope="col"
+                            class="text-end"
+                        >
+                            VALOR
+                        </th>
+
+                        <th
+                            scope="col"
+                            class="text-center"
+                        >
+                            ESTOQUE
+                        </th>
+
+                        <th
+                            scope="col"
+                            class="text-center"
+                        >
+                            IMPRIMIR
+                        </th>
+
+                        <th
+                            scope="col"
+                            class="text-center"
+                        >
+                            VER
+                        </th>
+
+                        <th
+                            scope="col"
+                            class="text-center"
+                        >
+                            EXCLUIR
+                        </th>
+
                     </tr>
+
                 </thead>
 
                 <tbody>
 
                     @foreach ($notas as $nota)
 
+                        @php
+                            /*
+                             * =====================================================
+                             * ANÁLISE DE ESTOQUE DA NOTA
+                             * =====================================================
+                             *
+                             * Só analisamos Notas abertas.
+                             *
+                             * Após a finalização, o estoque já foi movimentado,
+                             * portanto o saldo atual não representa a
+                             * disponibilidade existente no momento da venda.
+                             */
+
+                            $quantidadeSemEstoque = 0;
+                            $quantidadeInsuficiente = 0;
+                            $quantidadeEstoqueBaixo = 0;
+
+                            $possuiProduto = false;
+
+                            if ($nota->status === 'Aberto') {
+
+                                foreach ($nota->itens as $item) {
+
+                                    if (
+                                        $item->itemable_type
+                                            !== \App\Models\Produto::class
+                                        || !$item->itemable
+                                    ) {
+                                        continue;
+                                    }
+
+                                    $possuiProduto = true;
+
+                                    $produto = $item->itemable;
+
+                                    $estoqueAtual =
+                                        (float) (
+                                            $produto->quantidade
+                                            ?? 0
+                                        );
+
+                                    $estoqueMinimo =
+                                        (float) (
+                                            $produto->estoque_minimo
+                                            ?? 0
+                                        );
+
+                                    $quantidadeSolicitada =
+                                        (float) $item->quantidade;
+
+                                    /*
+                                     * Sem nenhuma unidade disponível.
+                                     */
+                                    if ($estoqueAtual <= 0) {
+
+                                        $quantidadeSemEstoque++;
+
+                                        continue;
+                                    }
+
+                                    /*
+                                     * Existe estoque, mas não é suficiente
+                                     * para atender esta Nota.
+                                     */
+                                    if (
+                                        $quantidadeSolicitada
+                                        > $estoqueAtual
+                                    ) {
+
+                                        $quantidadeInsuficiente++;
+
+                                        continue;
+                                    }
+
+                                    /*
+                                     * Há estoque suficiente para a Nota,
+                                     * porém o Produto está no estoque mínimo.
+                                     */
+                                    if (
+                                        $estoqueAtual
+                                        <= $estoqueMinimo
+                                    ) {
+
+                                        $quantidadeEstoqueBaixo++;
+                                    }
+                                }
+
+                            } else {
+
+                                /*
+                                 * Para Notas não abertas precisamos apenas
+                                 * descobrir se existia Produto, para manter
+                                 * a informação estrutural disponível caso
+                                 * seja necessária posteriormente.
+                                 */
+                                $possuiProduto =
+                                    $nota->itens->contains(
+                                        function ($item) {
+                                            return
+                                                $item->itemable_type
+                                                === \App\Models\Produto::class;
+                                        }
+                                    );
+                            }
+                        @endphp
+
                         <tr>
 
+                            {{-- ID --}}
                             <td>
-                                {{ $nota->id }}
+
+                                <strong>
+                                    #{{ $nota->id }}
+                                </strong>
+
                             </td>
 
+                            {{-- STATUS --}}
                             <td>
+
                                 @livewire(
                                     'status-nota-selector',
                                     ['nota' => $nota],
                                     key('status-nota-' . $nota->id)
                                 )
+
                             </td>
 
+                            {{-- CLIENTE --}}
                             <td>
-                                {{ $nota->cliente?->pessoa?->nome ?? 'Cliente Geral / Balcão' }}
+
+                                {{
+                                    $nota->cliente?->pessoa?->nome
+                                    ?? 'Cliente Geral / Balcão'
+                                }}
+
                             </td>
 
+                            {{-- VEÍCULO --}}
                             <td>
-                                {{ $nota->veiculoscliente?->veiculo?->nome ?? 'N/A' }}
-                                ({{ $nota->veiculoscliente?->veiculo?->montadora?->nome ?? 'N/A' }})
+
+                                @if($nota->veiculosCliente?->veiculo)
+
+                                    {{
+                                        $nota
+                                            ->veiculosCliente
+                                            ->veiculo
+                                            ->nome
+                                    }}
+
+                                    @if(
+                                        $nota
+                                            ->veiculosCliente
+                                            ->veiculo
+                                            ->montadora
+                                    )
+
+                                        <div class="small text-muted">
+
+                                            {{
+                                                $nota
+                                                    ->veiculosCliente
+                                                    ->veiculo
+                                                    ->montadora
+                                                    ->nome
+                                            }}
+
+                                        </div>
+
+                                    @endif
+
+                                @else
+
+                                    <span class="text-muted">
+                                        N/A
+                                    </span>
+
+                                @endif
+
                             </td>
 
+                            {{-- PLACA --}}
                             <td>
-                                {{ $nota->veiculoscliente?->placa ?? 'N/A' }}
+
+                                @if($nota->veiculosCliente?->placa)
+
+                                    <span class="badge bg-light text-dark border">
+
+                                        <i class="bi bi-car-front"></i>
+
+                                        {{
+                                            $nota
+                                                ->veiculosCliente
+                                                ->placa
+                                        }}
+
+                                    </span>
+
+                                @else
+
+                                    <span class="text-muted">
+                                        N/A
+                                    </span>
+
+                                @endif
+
                             </td>
 
-                            <td>
+                            {{-- VALOR --}}
+                            <td class="text-end">
+
+                                <strong class="text-nowrap">
+
+                                    R$
+                                    {{
+                                        number_format(
+                                            (float) $nota->total,
+                                            2,
+                                            ',',
+                                            '.'
+                                        )
+                                    }}
+
+                                </strong>
+
+                            </td>
+
+                            {{-- ESTOQUE --}}
+                            <td class="text-center">
+
+                                @if($nota->status !== 'Aberto')
+
+                                    <span
+                                        class="badge bg-secondary"
+                                        title="O estoque já não precisa ser analisado para esta Nota."
+                                    >
+                                        <i class="bi bi-dash-circle"></i>
+                                        N/A
+                                    </span>
+
+                                @elseif(!$possuiProduto)
+
+                                    <span
+                                        class="badge bg-light text-dark border"
+                                        title="Esta Nota não possui produtos."
+                                    >
+                                        <i class="bi bi-dash"></i>
+                                        Sem produtos
+                                    </span>
+
+                                @elseif($quantidadeSemEstoque > 0)
+
+                                    <span
+                                        class="badge bg-danger"
+                                        title="Existe produto sem estoque nesta Nota."
+                                    >
+                                        <i class="bi bi-exclamation-octagon"></i>
+                                        Sem estoque
+
+                                        @if($quantidadeSemEstoque > 1)
+
+                                            ({{ $quantidadeSemEstoque }})
+
+                                        @endif
+                                    </span>
+
+                                @elseif($quantidadeInsuficiente > 0)
+
+                                    <span
+                                        class="badge bg-danger"
+                                        title="A quantidade disponível de um ou mais produtos é menor que a quantidade informada na Nota."
+                                    >
+                                        <i class="bi bi-exclamation-triangle"></i>
+                                        Insuficiente
+
+                                        @if($quantidadeInsuficiente > 1)
+
+                                            ({{ $quantidadeInsuficiente }})
+
+                                        @endif
+                                    </span>
+
+                                @elseif($quantidadeEstoqueBaixo > 0)
+
+                                    <span
+                                        class="badge bg-warning text-dark"
+                                        title="Existe produto no estoque mínimo nesta Nota."
+                                    >
+                                        <i class="bi bi-exclamation-triangle"></i>
+                                        Estoque baixo
+
+                                        @if($quantidadeEstoqueBaixo > 1)
+
+                                            ({{ $quantidadeEstoqueBaixo }})
+
+                                        @endif
+                                    </span>
+
+                                @else
+
+                                    <span
+                                        class="badge bg-success"
+                                        title="Os produtos desta Nota possuem estoque suficiente."
+                                    >
+                                        <i class="bi bi-check-circle"></i>
+                                        OK
+                                    </span>
+
+                                @endif
+
+                            </td>
+
+                            {{-- PDF --}}
+                            <td class="text-center">
 
                                 <a
                                     href="{{ route('notas.pdf', $nota->id) }}"
@@ -184,7 +537,8 @@
 
                             </td>
 
-                            <td>
+                            {{-- VER --}}
+                            <td class="text-center">
 
                                 <a
                                     href="{{ route('notas.show', $nota->id) }}"
@@ -196,26 +550,42 @@
 
                             </td>
 
-                            <td>
+                            {{-- EXCLUIR --}}
+                            <td class="text-center">
 
-                                <form
-                                    action="{{ route('notas.destroy', $nota->id) }}"
-                                    method="POST"
-                                    onsubmit="return confirm('Deseja realmente excluir esta nota?');"
-                                >
+                                @if($nota->status === 'Aberto')
 
-                                    @csrf
-                                    @method('DELETE')
+                                    <form
+                                        action="{{ route('notas.destroy', $nota->id) }}"
+                                        method="POST"
+                                        onsubmit="return confirm('Deseja realmente excluir esta nota?');"
+                                    >
+
+                                        @csrf
+                                        @method('DELETE')
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-danger"
+                                            title="Excluir nota"
+                                        >
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
+
+                                    </form>
+
+                                @else
 
                                     <button
-                                        type="submit"
-                                        class="btn btn-danger"
-                                        title="Excluir nota"
+                                        type="button"
+                                        class="btn btn-secondary"
+                                        title="Somente Notas abertas podem ser excluídas"
+                                        disabled
                                     >
-                                        <i class="bi bi-trash3"></i>
+                                        <i class="bi bi-lock"></i>
                                     </button>
 
-                                </form>
+                                @endif
 
                             </td>
 
@@ -229,10 +599,12 @@
 
         </div>
 
-        @if (method_exists($notas, 'hasPages') && $notas->hasPages())
+        @if($notas->hasPages())
 
             <div class="d-flex justify-content-center mt-4">
+
                 {{ $notas->links() }}
+
             </div>
 
         @endif

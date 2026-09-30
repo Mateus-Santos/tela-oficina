@@ -39,7 +39,10 @@ class Nota extends Model
 
     public function itens(): HasMany
     {
-        return $this->hasMany(NotasItem::class, 'nota_id');
+        return $this->hasMany(
+            NotasItem::class,
+            'nota_id'
+        );
     }
 
     public function veiculosCliente(): BelongsTo
@@ -66,20 +69,26 @@ class Nota extends Model
         );
     }
 
-    public function scopeFiltro(Builder $query, array $filters)
-    {
+    public function scopeFiltro(
+        Builder $query,
+        array $filters
+    ): Builder {
         /*
          * FILTRO POR CLIENTE
+         *
          * Nota -> Cliente -> Pessoa -> nome
          */
         if (!empty($filters['cliente'])) {
-            $query->whereHas('cliente.pessoa', function ($q) use ($filters) {
-                $q->where(
-                    'nome',
-                    'like',
-                    '%' . $filters['cliente'] . '%'
-                );
-            });
+            $query->whereHas(
+                'cliente.pessoa',
+                function ($query) use ($filters) {
+                    $query->where(
+                        'nome',
+                        'like',
+                        '%' . $filters['cliente'] . '%'
+                    );
+                }
+            );
         }
 
         /*
@@ -94,13 +103,32 @@ class Nota extends Model
 
         /*
          * FILTRO POR STATUS
+         *
+         * "Finalizado" é o status atual.
+         *
+         * "Concluido" permanece suportado como legado,
+         * permitindo que registros antigos apareçam
+         * junto dos registros finalizados atuais.
          */
         if (!empty($filters['status'])) {
-            $query->where(
-                'status',
-                $filters['status']
-            );
+            if ($filters['status'] === 'Finalizado') {
+                $query->whereIn(
+                    'status',
+                    [
+                        'Finalizado',
+                        'Concluido',
+                    ]
+                );
+            } else {
+                $query->where(
+                    'status',
+                    $filters['status']
+                );
+            }
         } else {
+            /*
+             * Por padrão, notas canceladas não aparecem.
+             */
             $query->where(
                 'status',
                 '!=',

@@ -9,232 +9,406 @@ use Illuminate\Validation\ValidationException;
 
 class CriarContaReceber
 {
-    public function execute(array $dados): ContaReceber
-    {
-        return DB::transaction(function () use ($dados) {
-            $nota = null;
+    public function execute(
+        array $dados
+    ): ContaReceber {
+        return DB::transaction(
+            function () use ($dados) {
+                $nota = null;
 
-            if (!empty($dados['nota_id'])) {
-                $nota = Nota::query()
-                    ->lockForUpdate()
-                    ->findOrFail($dados['nota_id']);
+                /*
+                 * =====================================================
+                 * NOTA VINCULADA
+                 * =====================================================
+                 */
+                if (!empty($dados['nota_id'])) {
+                    $nota = Nota::query()
+                        ->lockForUpdate()
+                        ->findOrFail(
+                            $dados['nota_id']
+                        );
 
-                if ($nota->status !== 'Finalizado') {
-                    throw ValidationException::withMessages([
-                        'nota_id' => "A Nota #{$nota->id} precisa estar finalizada para gerar uma conta a receber.",
-                    ]);
+                    /*
+                     * Nota Aberta ou Finalizada pode gerar
+                     * Conta a Receber.
+                     *
+                     * Apenas Nota Cancelada é proibida.
+                     */
+                    if (
+                        $nota->status
+                        === 'Cancelado'
+                    ) {
+                        throw ValidationException::withMessages([
+                            'nota_id' =>
+                                "A Nota #{$nota->id} está cancelada e não pode gerar uma conta a receber.",
+                        ]);
+                    }
+
+                    /*
+                     * Impede uma segunda Conta a Receber
+                     * para a mesma Nota.
+                     */
+                    $contaExistente =
+                        ContaReceber::query()
+                            ->where(
+                                'nota_id',
+                                $nota->id
+                            )
+                            ->exists();
+
+                    if ($contaExistente) {
+                        throw ValidationException::withMessages([
+                            'nota_id' =>
+                                "A Nota #{$nota->id} já possui uma conta a receber.",
+                        ]);
+                    }
+
+                    /*
+                     * Caso algum cliente tenha sido enviado,
+                     * precisa corresponder ao cliente da Nota.
+                     *
+                     * Para venda de balcão cliente_id pode ser NULL.
+                     */
+                    if (
+                        !empty($dados['cliente_id'])
+                        && (int) $dados['cliente_id']
+                            !== (int) $nota->cliente_id
+                    ) {
+                        throw ValidationException::withMessages([
+                            'cliente_id' =>
+                                'O cliente informado não corresponde ao cliente da nota.',
+                        ]);
+                    }
+
+                    /*
+                     * A Nota define o cliente.
+                     *
+                     * Venda de balcão:
+                     * cliente_id permanecerá NULL.
+                     */
+                    $dados['cliente_id'] =
+                        $nota->cliente_id;
                 }
 
-                $contaExistente = ContaReceber::query()
-                    ->where('nota_id', $nota->id)
-                    ->exists();
-
-                if ($contaExistente) {
-                    throw ValidationException::withMessages([
-                        'nota_id' => "A Nota #{$nota->id} já possui uma conta a receber.",
-                    ]);
-                }
-
+                /*
+                 * Se não existe Nota vinculada,
+                 * cliente é obrigatório.
+                 */
                 if (
-                    !empty($dados['cliente_id'])
-                    && (int) $dados['cliente_id'] !== (int) $nota->cliente_id
+                    !$nota
+                    && empty($dados['cliente_id'])
                 ) {
                     throw ValidationException::withMessages([
-                        'cliente_id' => 'O cliente informado não corresponde ao cliente da nota.',
+                        'cliente_id' =>
+                            'É necessário informar um cliente ou uma nota vinculada.',
                     ]);
                 }
 
-                $dados['cliente_id'] = $nota->cliente_id;
-            }
+                /*
+                 * =====================================================
+                 * VALORES
+                 * =====================================================
+                 */
+                $valorOriginalCentavos =
+                    $this->paraCentavos(
+                        $dados['valor_original']
+                        ?? 0
+                    );
 
-            if (!$nota && empty($dados['cliente_id'])) {
-                throw ValidationException::withMessages([
-                    'cliente_id' => 'É necessário informar um cliente ou uma nota vinculada.',
-                ]);
-            }
+                $descontoCentavos =
+                    $this->paraCentavos(
+                        $dados['desconto']
+                        ?? 0
+                    );
 
-            $valorOriginalCentavos = $this->paraCentavos(
-                $dados['valor_original'] ?? 0
-            );
+                $jurosCentavos =
+                    $this->paraCentavos(
+                        $dados['juros']
+                        ?? 0
+                    );
 
-            $descontoCentavos = $this->paraCentavos(
-                $dados['desconto'] ?? 0
-            );
-
-            $jurosCentavos = $this->paraCentavos(
-                $dados['juros'] ?? 0
-            );
-
-            $multaCentavos = $this->paraCentavos(
-                $dados['multa'] ?? 0
-            );
-
-            if ($valorOriginalCentavos <= 0) {
-                throw ValidationException::withMessages([
-                    'valor_original' => 'O valor original deve ser maior que zero.',
-                ]);
-            }
-
-            if ($descontoCentavos < 0) {
-                throw ValidationException::withMessages([
-                    'desconto' => 'O desconto não pode ser negativo.',
-                ]);
-            }
-
-            if ($jurosCentavos < 0) {
-                throw ValidationException::withMessages([
-                    'juros' => 'Os juros não podem ser negativos.',
-                ]);
-            }
-
-            if ($multaCentavos < 0) {
-                throw ValidationException::withMessages([
-                    'multa' => 'A multa não pode ser negativa.',
-                ]);
-            }
-
-            $valorDevidoCentavos =
-                $valorOriginalCentavos
-                - $descontoCentavos
-                + $jurosCentavos
-                + $multaCentavos;
-
-            if ($valorDevidoCentavos <= 0) {
-                throw ValidationException::withMessages([
-                    'valor_original' => 'O valor final da conta deve ser maior que zero.',
-                ]);
-            }
-
-            if ($nota) {
-                $valorNotaCentavos = $this->paraCentavos(
-                    $nota->total
-                );
-
-                if ($valorOriginalCentavos !== $valorNotaCentavos) {
-                    throw ValidationException::withMessages([
-                        'valor_original' => 'O valor original da conta deve ser igual ao total da nota.',
-                    ]);
-                }
-            }
-
-            $parcelas = $dados['parcelas'] ?? null;
-
-            if (!is_array($parcelas) || empty($parcelas)) {
-                throw ValidationException::withMessages([
-                    'parcelas' => 'Informe ao menos uma parcela para a conta a receber.',
-                ]);
-            }
-
-            $parcelasValidadas = [];
-            $numeros = [];
-            $totalParcelasCentavos = 0;
-
-            foreach ($parcelas as $indice => $parcela) {
-                $numero = filter_var(
-                    $parcela['numero'] ?? null,
-                    FILTER_VALIDATE_INT
-                );
-
-                if ($numero === false || $numero <= 0) {
-                    throw ValidationException::withMessages([
-                        "parcelas.{$indice}.numero" => 'O número da parcela deve ser um inteiro maior que zero.',
-                    ]);
-                }
-
-                if (in_array($numero, $numeros, true)) {
-                    throw ValidationException::withMessages([
-                        "parcelas.{$indice}.numero" => "A parcela número {$numero} está duplicada.",
-                    ]);
-                }
-
-                $valorCentavos = $this->paraCentavos(
-                    $parcela['valor'] ?? 0
-                );
-
-                if ($valorCentavos <= 0) {
-                    throw ValidationException::withMessages([
-                        "parcelas.{$indice}.valor" => 'O valor da parcela deve ser maior que zero.',
-                    ]);
-                }
-
-                $dataVencimento = $parcela['data_vencimento'] ?? null;
+                $multaCentavos =
+                    $this->paraCentavos(
+                        $dados['multa']
+                        ?? 0
+                    );
 
                 if (
-                    !$dataVencimento
-                    || !$this->dataValida($dataVencimento)
+                    $valorOriginalCentavos
+                    <= 0
                 ) {
                     throw ValidationException::withMessages([
-                        "parcelas.{$indice}.data_vencimento" => 'A data de vencimento da parcela é inválida.',
+                        'valor_original' =>
+                            'O valor original deve ser maior que zero.',
                     ]);
                 }
 
-                $numeros[] = $numero;
-                $totalParcelasCentavos += $valorCentavos;
+                if ($descontoCentavos < 0) {
+                    throw ValidationException::withMessages([
+                        'desconto' =>
+                            'O desconto não pode ser negativo.',
+                    ]);
+                }
 
-                $parcelasValidadas[] = [
-                    'numero' => $numero,
-                    'valor' => $valorCentavos / 100,
-                    'data_vencimento' => $dataVencimento,
-                ];
-            }
+                if ($jurosCentavos < 0) {
+                    throw ValidationException::withMessages([
+                        'juros' =>
+                            'Os juros não podem ser negativos.',
+                    ]);
+                }
 
-            if ($totalParcelasCentavos !== $valorOriginalCentavos) {
-                throw ValidationException::withMessages([
-                    'parcelas' => sprintf(
-                        'A soma das parcelas deve ser igual ao valor original da conta. Valor esperado: R$ %s.',
-                        number_format(
-                            $valorOriginalCentavos / 100,
-                            2,
-                            ',',
-                            '.'
+                if ($multaCentavos < 0) {
+                    throw ValidationException::withMessages([
+                        'multa' =>
+                            'A multa não pode ser negativa.',
+                    ]);
+                }
+
+                $valorDevidoCentavos =
+                    $valorOriginalCentavos
+                    - $descontoCentavos
+                    + $jurosCentavos
+                    + $multaCentavos;
+
+                if (
+                    $valorDevidoCentavos
+                    <= 0
+                ) {
+                    throw ValidationException::withMessages([
+                        'valor_original' =>
+                            'O valor final da conta deve ser maior que zero.',
+                    ]);
+                }
+
+                /*
+                 * Se está vinculada à Nota,
+                 * o valor original precisa ser exatamente
+                 * o total da Nota.
+                 */
+                if ($nota) {
+                    $valorNotaCentavos =
+                        $this->paraCentavos(
+                            $nota->total
+                        );
+
+                    if (
+                        $valorOriginalCentavos
+                        !== $valorNotaCentavos
+                    ) {
+                        throw ValidationException::withMessages([
+                            'valor_original' =>
+                                'O valor original da conta deve ser igual ao total da nota.',
+                        ]);
+                    }
+                }
+
+                /*
+                 * =====================================================
+                 * PARCELAS
+                 * =====================================================
+                 */
+                $parcelas =
+                    $dados['parcelas']
+                    ?? null;
+
+                if (
+                    !is_array($parcelas)
+                    || empty($parcelas)
+                ) {
+                    throw ValidationException::withMessages([
+                        'parcelas' =>
+                            'Informe ao menos uma parcela para a conta a receber.',
+                    ]);
+                }
+
+                $parcelasValidadas = [];
+                $numeros = [];
+                $totalParcelasCentavos = 0;
+
+                foreach (
+                    $parcelas as $indice => $parcela
+                ) {
+                    $numero = filter_var(
+                        $parcela['numero']
+                        ?? null,
+                        FILTER_VALIDATE_INT
+                    );
+
+                    if (
+                        $numero === false
+                        || $numero <= 0
+                    ) {
+                        throw ValidationException::withMessages([
+                            "parcelas.{$indice}.numero" =>
+                                'O número da parcela deve ser um inteiro maior que zero.',
+                        ]);
+                    }
+
+                    if (
+                        in_array(
+                            $numero,
+                            $numeros,
+                            true
                         )
-                    ),
-                ]);
+                    ) {
+                        throw ValidationException::withMessages([
+                            "parcelas.{$indice}.numero" =>
+                                "A parcela número {$numero} está duplicada.",
+                        ]);
+                    }
+
+                    $valorCentavos =
+                        $this->paraCentavos(
+                            $parcela['valor']
+                            ?? 0
+                        );
+
+                    if (
+                        $valorCentavos
+                        <= 0
+                    ) {
+                        throw ValidationException::withMessages([
+                            "parcelas.{$indice}.valor" =>
+                                'O valor da parcela deve ser maior que zero.',
+                        ]);
+                    }
+
+                    $dataVencimento =
+                        $parcela[
+                            'data_vencimento'
+                        ] ?? null;
+
+                    if (
+                        !$dataVencimento
+                        || !$this->dataValida(
+                            $dataVencimento
+                        )
+                    ) {
+                        throw ValidationException::withMessages([
+                            "parcelas.{$indice}.data_vencimento" =>
+                                'A data de vencimento da parcela é inválida.',
+                        ]);
+                    }
+
+                    $numeros[] =
+                        $numero;
+
+                    $totalParcelasCentavos +=
+                        $valorCentavos;
+
+                    $parcelasValidadas[] = [
+                        'numero' =>
+                            $numero,
+
+                        'valor' =>
+                            $valorCentavos / 100,
+
+                        'data_vencimento' =>
+                            $dataVencimento,
+                    ];
+                }
+
+                if (
+                    $totalParcelasCentavos
+                    !== $valorOriginalCentavos
+                ) {
+                    throw ValidationException::withMessages([
+                        'parcelas' => sprintf(
+                            'A soma das parcelas deve ser igual ao valor original da conta. Valor esperado: R$ %s.',
+                            number_format(
+                                $valorOriginalCentavos / 100,
+                                2,
+                                ',',
+                                '.'
+                            )
+                        ),
+                    ]);
+                }
+
+                usort(
+                    $parcelasValidadas,
+                    fn (
+                        array $a,
+                        array $b
+                    ) =>
+                        $a['numero']
+                        <=> $b['numero']
+                );
+
+                /*
+                 * =====================================================
+                 * CRIAÇÃO
+                 * =====================================================
+                 */
+                $dados['valor_original'] =
+                    $valorOriginalCentavos
+                    / 100;
+
+                $dados['desconto'] =
+                    $descontoCentavos
+                    / 100;
+
+                $dados['juros'] =
+                    $jurosCentavos
+                    / 100;
+
+                $dados['multa'] =
+                    $multaCentavos
+                    / 100;
+
+                $dados['status'] =
+                    'aberta';
+
+                $dados['data_vencimento'] =
+                    $parcelasValidadas[0][
+                        'data_vencimento'
+                    ];
+
+                unset(
+                    $dados['parcelas']
+                );
+
+                $conta =
+                    ContaReceber::create(
+                        $dados
+                    );
+
+                $conta
+                    ->parcelas()
+                    ->createMany(
+                        $parcelasValidadas
+                    );
+
+                return $conta->load(
+                    'parcelas'
+                );
             }
-
-            usort(
-                $parcelasValidadas,
-                fn (array $a, array $b) => $a['numero'] <=> $b['numero']
-            );
-
-            $dados['valor_original'] = $valorOriginalCentavos / 100;
-            $dados['desconto'] = $descontoCentavos / 100;
-            $dados['juros'] = $jurosCentavos / 100;
-            $dados['multa'] = $multaCentavos / 100;
-            $dados['status'] = 'aberta';
-            $dados['data_vencimento'] = $parcelasValidadas[0]['data_vencimento'];
-
-            unset($dados['parcelas']);
-
-            $conta = ContaReceber::create($dados);
-
-            $conta->parcelas()->createMany(
-                $parcelasValidadas
-            );
-
-            return $conta->load('parcelas');
-        });
+        );
     }
 
-    private function paraCentavos(mixed $valor): int
-    {
+    private function paraCentavos(
+        mixed $valor
+    ): int {
         return (int) round(
             (float) $valor * 100
         );
     }
 
-    private function dataValida(mixed $data): bool
-    {
+    private function dataValida(
+        mixed $data
+    ): bool {
         if (!is_string($data)) {
             return false;
         }
 
-        $objeto = \DateTimeImmutable::createFromFormat(
-            '!Y-m-d',
-            $data
-        );
+        $objeto =
+            \DateTimeImmutable::createFromFormat(
+                '!Y-m-d',
+                $data
+            );
 
         return $objeto !== false
-            && $objeto->format('Y-m-d') === $data;
+            && $objeto->format('Y-m-d')
+                === $data;
     }
 }
