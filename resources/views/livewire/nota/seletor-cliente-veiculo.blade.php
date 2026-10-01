@@ -1,6 +1,9 @@
 <div class="row g-3">
 
-    {{-- CLIENTE --}}
+    {{-- =====================================================
+         CLIENTE
+    ====================================================== --}}
+
     <div class="col-12 col-lg-6">
 
         <label
@@ -13,178 +16,321 @@
 
         @if($clienteSelecionado)
 
-            <div
-                class="d-flex justify-content-between align-items-center border rounded bg-light p-3"
-            >
+            <div class="border rounded bg-light p-3">
 
-                <div>
+                <div class="d-flex justify-content-between align-items-start gap-3">
 
-                    <div class="fw-bold">
-                        <i class="bi bi-person-check me-1"></i>
+                    <div>
 
-                        {{ $clienteSelecionado['nome'] }}
+                        <div class="fw-bold">
+                            <i class="bi bi-person-check me-1"></i>
+
+                            {{ $clienteSelecionado['nome'] }}
+                        </div>
+
+                        <div class="small text-body-secondary mt-1">
+
+                            @if(!empty($clienteSelecionado['cpf']))
+
+                                <span class="me-3">
+                                    CPF:
+                                    {{ $clienteSelecionado['cpf'] }}
+                                </span>
+
+                            @endif
+
+                            @if(!empty($clienteSelecionado['telefone']))
+
+                                <span>
+                                    <i class="bi bi-telephone me-1"></i>
+
+                                    {{ $clienteSelecionado['telefone'] }}
+                                </span>
+
+                            @endif
+
+                        </div>
+
                     </div>
 
-                    <div class="small text-body-secondary mt-1">
-
-                        @if(!empty($clienteSelecionado['cpf']))
-
-                            <span class="me-3">
-                                CPF:
-                                {{ $clienteSelecionado['cpf'] }}
-                            </span>
-
-                        @endif
-
-                        @if(!empty($clienteSelecionado['telefone']))
-
-                            <span>
-                                <i class="bi bi-telephone me-1"></i>
-
-                                {{ $clienteSelecionado['telefone'] }}
-                            </span>
-
-                        @endif
-
-                    </div>
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-outline-danger"
+                        wire:click="removerCliente"
+                        title="Trocar cliente"
+                    >
+                        <i class="bi bi-x-lg"></i>
+                    </button>
 
                 </div>
-
-                <button
-                    type="button"
-                    class="btn btn-sm btn-outline-danger"
-                    wire:click="removerCliente"
-                    title="Remover cliente"
-                >
-                    <i class="bi bi-x-lg"></i>
-                </button>
 
             </div>
 
             <input
                 type="hidden"
                 name="cliente_id"
+                id="cliente_id"
                 value="{{ $clienteSelecionadoId }}"
             >
 
         @else
 
-            <div class="position-relative">
+            @if(!$exibirCadastroClienteRapido)
 
-                <div class="input-group">
+                <div class="position-relative">
 
-                    <span class="input-group-text">
-                        <i class="bi bi-search"></i>
-                    </span>
+                    <div class="input-group">
 
-                    <input
-                        type="text"
-                        id="busca_cliente_nota"
-                        class="form-control"
-                        placeholder="Nome, CPF ou telefone..."
-                        autocomplete="off"
-                        wire:model.live.debounce.300ms="buscaCliente"
+                        <span class="input-group-text">
+                            <i class="bi bi-search"></i>
+                        </span>
+
+                        <input
+                            type="text"
+                            id="busca_cliente_nota"
+                            class="form-control"
+                            placeholder="Nome, CPF ou telefone..."
+                            autocomplete="off"
+                            wire:model.live.debounce.300ms="buscaCliente"
+                        >
+
+                    </div>
+
+                    <div
+                        wire:loading
+                        wire:target="buscaCliente"
+                        class="small fw-semibold mt-1"
                     >
+                        <i class="bi bi-arrow-repeat me-1"></i>
+                        Buscando clientes...
+                    </div>
 
-                </div>
+                    @if(
+                        mb_strlen(trim($buscaCliente)) >= 2
+                        && count($resultadosClientes) > 0
+                    )
 
-                <div
-                    wire:loading
-                    wire:target="buscaCliente"
-                    class="small fw-semibold mt-1"
-                >
-                    <i class="bi bi-arrow-repeat me-1"></i>
-                    Buscando clientes...
-                </div>
+                        <div class="busca-selecao mt-1 shadow-sm">
 
-                @if(
-                    mb_strlen(trim($buscaCliente)) >= 2
-                    && count($resultadosClientes) > 0
-                )
+                            <div class="busca-selecao__cabecalho">
 
-                    <div class="busca-selecao mt-1 shadow-sm">
+                                <span>
+                                    <i class="bi bi-people me-1"></i>
+                                    Clientes encontrados
+                                </span>
 
-                        <div class="busca-selecao__cabecalho">
+                                <span class="badge text-bg-secondary">
+                                    {{ count($resultadosClientes) }}
+                                </span>
 
-                            <span>
-                                <i class="bi bi-people me-1"></i>
-                                Clientes encontrados
-                            </span>
+                            </div>
 
-                            <span class="badge text-bg-secondary">
-                                {{ count($resultadosClientes) }}
-                            </span>
+                            <div class="busca-selecao__resultados">
+
+                                @foreach(
+                                    $resultadosClientes
+                                    as $cliente
+                                )
+
+                                    <button
+                                        type="button"
+                                        class="list-group-item list-group-item-action busca-selecao__item d-flex justify-content-between align-items-center gap-3"
+                                        wire:key="cliente-nota-{{ $cliente['id'] }}"
+                                        wire:click="selecionarCliente({{ $cliente['id'] }})"
+                                    >
+
+                                        <span class="text-start">
+
+                                            <span class="d-block fw-bold">
+                                                {{ $cliente['nome'] }}
+                                            </span>
+
+                                            <span class="small text-body-secondary">
+
+                                                @if(!empty($cliente['cpf']))
+
+                                                    <span class="me-3">
+                                                        CPF:
+                                                        {{ $cliente['cpf'] }}
+                                                    </span>
+
+                                                @endif
+
+                                                @if(!empty($cliente['telefone']))
+
+                                                    <span>
+                                                        {{ $cliente['telefone'] }}
+                                                    </span>
+
+                                                @endif
+
+                                            </span>
+
+                                        </span>
+
+                                        <i class="bi bi-plus-lg"></i>
+
+                                    </button>
+
+                                @endforeach
+
+                            </div>
 
                         </div>
 
-                        <div class="busca-selecao__resultados">
+                    @elseif(
+                        mb_strlen(trim($buscaCliente)) >= 2
+                        && count($resultadosClientes) === 0
+                    )
 
-                            @foreach(
-                                $resultadosClientes as $cliente
-                            )
+                        <div class="small fw-semibold mt-2">
+                            Nenhum cliente encontrado.
+                        </div>
 
-                                <button
-                                    type="button"
-                                    class="list-group-item list-group-item-action busca-selecao__item d-flex justify-content-between align-items-center gap-3"
-                                    wire:key="cliente-nota-{{ $cliente['id'] }}"
-                                    wire:click="selecionarCliente({{ $cliente['id'] }})"
+                    @endif
+
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center gap-2 mt-2">
+
+                    <small class="text-muted">
+                        Deixe vazio para venda de balcão.
+                    </small>
+
+                    <button
+                        type="button"
+                        class="btn btn-outline-primary btn-sm"
+                        wire:click="abrirCadastroClienteRapido"
+                    >
+                        <i class="bi bi-person-plus"></i>
+                        Novo cliente
+                    </button>
+
+                </div>
+
+            @else
+
+                <div class="card border-primary">
+
+                    <div class="card-header d-flex justify-content-between align-items-center">
+
+                        <strong>
+                            <i class="bi bi-person-plus"></i>
+                            Novo cliente
+                        </strong>
+
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-outline-secondary"
+                            wire:click="fecharCadastroClienteRapido"
+                        >
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="mb-3">
+
+                            <label
+                                for="cliente_rapido_nome"
+                                class="form-label"
+                            >
+                                Nome
+                            </label>
+
+                            <input
+                                type="text"
+                                id="cliente_rapido_nome"
+                                class="form-control @error('clienteRapidoNome') is-invalid @enderror"
+                                wire:model="clienteRapidoNome"
+                                maxlength="255"
+                                autocomplete="off"
+                            >
+
+                            @error('clienteRapidoNome')
+
+                                <div class="invalid-feedback">
+                                    {{ $message }}
+                                </div>
+
+                            @enderror
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label
+                                for="cliente_rapido_telefone"
+                                class="form-label"
+                            >
+                                Telefone principal
+                            </label>
+
+                            <input
+                                type="text"
+                                id="cliente_rapido_telefone"
+                                class="form-control @error('clienteRapidoTelefone') is-invalid @enderror"
+                                wire:model="clienteRapidoTelefone"
+                                maxlength="15"
+                                inputmode="tel"
+                                autocomplete="off"
+                                placeholder="Ex.: 75999999999"
+                            >
+
+                            @error('clienteRapidoTelefone')
+
+                                <div class="invalid-feedback">
+                                    {{ $message }}
+                                </div>
+
+                            @enderror
+
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+
+                            <button
+                                type="button"
+                                class="btn btn-outline-secondary"
+                                wire:click="fecharCadastroClienteRapido"
+                            >
+                                Cancelar
+                            </button>
+
+                            <button
+                                type="button"
+                                class="btn btn-primary"
+                                wire:click="criarClienteRapido"
+                                wire:loading.attr="disabled"
+                                wire:target="criarClienteRapido"
+                            >
+
+                                <span
+                                    wire:loading.remove
+                                    wire:target="criarClienteRapido"
                                 >
+                                    <i class="bi bi-check-circle"></i>
+                                    Criar e selecionar
+                                </span>
 
-                                    <span class="text-start">
+                                <span
+                                    wire:loading
+                                    wire:target="criarClienteRapido"
+                                >
+                                    Criando...
+                                </span>
 
-                                        <span class="d-block fw-bold">
-                                            {{ $cliente['nome'] }}
-                                        </span>
-
-                                        <span class="small text-body-secondary">
-
-                                            @if(!empty($cliente['cpf']))
-
-                                                <span class="me-3">
-                                                    CPF:
-                                                    {{ $cliente['cpf'] }}
-                                                </span>
-
-                                            @endif
-
-                                            @if(!empty($cliente['telefone']))
-
-                                                <span>
-                                                    {{ $cliente['telefone'] }}
-                                                </span>
-
-                                            @endif
-
-                                        </span>
-
-                                    </span>
-
-                                    <i class="bi bi-plus-lg"></i>
-
-                                </button>
-
-                            @endforeach
+                            </button>
 
                         </div>
 
                     </div>
 
-                @elseif(
-                    mb_strlen(trim($buscaCliente)) >= 2
-                    && count($resultadosClientes) === 0
-                )
+                </div>
 
-                    <div class="small fw-semibold mt-2">
-                        Nenhum cliente encontrado.
-                    </div>
-
-                @endif
-
-            </div>
-
-            <small class="text-muted">
-                Deixe vazio para venda de balcão.
-            </small>
+            @endif
 
         @endif
 
@@ -198,7 +344,11 @@
 
     </div>
 
-    {{-- VEÍCULO --}}
+
+    {{-- =====================================================
+         VEÍCULO
+    ====================================================== --}}
+
     <div class="col-12 col-lg-6">
 
         <label
@@ -212,208 +362,476 @@
         @if(!$clienteSelecionado)
 
             <div class="alert alert-secondary mb-0">
+
                 <i class="bi bi-info-circle me-1"></i>
 
                 Selecione um cliente para vincular um veículo.
                 A Nota pode ser salva sem veículo em vendas de balcão.
+
             </div>
 
         @elseif($veiculoSelecionado)
 
-            <div
-                class="d-flex justify-content-between align-items-center border rounded bg-light p-3"
-            >
+            <div class="border rounded bg-light p-3">
 
-                <div>
+                <div class="d-flex justify-content-between align-items-start gap-3">
 
-                    <div class="fw-bold">
+                    <div>
 
-                        <i class="bi bi-car-front me-1"></i>
+                        <div class="fw-bold">
 
-                        {{ $veiculoSelecionado['veiculo'] }}
+                            <i class="bi bi-car-front me-1"></i>
 
-                        @if(!empty($veiculoSelecionado['montadora']))
+                            {{ $veiculoSelecionado['veiculo'] }}
 
-                            —
-                            {{ $veiculoSelecionado['montadora'] }}
+                            @if(!empty($veiculoSelecionado['montadora']))
 
-                        @endif
+                                —
+                                {{ $veiculoSelecionado['montadora'] }}
 
-                    </div>
+                            @endif
 
-                    <div class="small text-body-secondary mt-1">
+                        </div>
 
-                        <span class="me-3">
-                            Placa:
-                            {{ $veiculoSelecionado['placa']
-                                ?? 'N/A' }}
-                        </span>
-
-                        @if(!empty($veiculoSelecionado['ano']))
+                        <div class="small text-body-secondary mt-1">
 
                             <span class="me-3">
-                                Ano:
-                                {{ $veiculoSelecionado['ano'] }}
+                                Placa:
+                                {{
+                                    $veiculoSelecionado['placa']
+                                    ?? 'N/A'
+                                }}
                             </span>
 
-                        @endif
+                            @if(!empty($veiculoSelecionado['ano']))
 
-                        @if(!empty($veiculoSelecionado['cor']))
+                                <span class="me-3">
+                                    Ano:
+                                    {{ $veiculoSelecionado['ano'] }}
+                                </span>
 
-                            <span>
-                                Cor:
-                                {{ $veiculoSelecionado['cor'] }}
-                            </span>
+                            @endif
 
-                        @endif
+                            @if(!empty($veiculoSelecionado['cor']))
+
+                                <span>
+                                    Cor:
+                                    {{ $veiculoSelecionado['cor'] }}
+                                </span>
+
+                            @endif
+
+                        </div>
 
                     </div>
 
-                </div>
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-outline-danger"
+                        wire:click="removerVeiculo"
+                        title="Trocar veículo"
+                    >
+                        <i class="bi bi-x-lg"></i>
+                    </button>
 
-                <button
-                    type="button"
-                    class="btn btn-sm btn-outline-danger"
-                    wire:click="removerVeiculo"
-                    title="Remover veículo"
-                >
-                    <i class="bi bi-x-lg"></i>
-                </button>
+                </div>
 
             </div>
 
             <input
                 type="hidden"
                 name="veiculo_cliente_id"
+                id="veiculo_cliente_id"
                 value="{{ $veiculoSelecionadoId }}"
             >
 
         @else
 
-            <div class="position-relative">
+            @if(!$exibirCadastroVeiculoRapido)
 
-                <div class="input-group">
+                <div class="position-relative">
 
-                    <span class="input-group-text">
-                        <i class="bi bi-search"></i>
-                    </span>
+                    <div class="input-group">
 
-                    <input
-                        type="text"
-                        id="busca_veiculo_nota"
-                        class="form-control"
-                        placeholder="Placa, veículo ou montadora..."
-                        autocomplete="off"
-                        wire:model.live.debounce.300ms="buscaVeiculo"
+                        <span class="input-group-text">
+                            <i class="bi bi-search"></i>
+                        </span>
+
+                        <input
+                            type="text"
+                            id="busca_veiculo_nota"
+                            class="form-control"
+                            placeholder="Placa, veículo ou montadora..."
+                            autocomplete="off"
+                            wire:model.live.debounce.300ms="buscaVeiculo"
+                        >
+
+                    </div>
+
+                    <div
+                        wire:loading
+                        wire:target="buscaVeiculo"
+                        class="small fw-semibold mt-1"
                     >
+                        <i class="bi bi-arrow-repeat me-1"></i>
+                        Buscando veículos...
+                    </div>
 
-                </div>
+                    @if(
+                        mb_strlen(trim($buscaVeiculo)) >= 2
+                        && count($resultadosVeiculos) > 0
+                    )
 
-                <div
-                    wire:loading
-                    wire:target="buscaVeiculo"
-                    class="small fw-semibold mt-1"
-                >
-                    <i class="bi bi-arrow-repeat me-1"></i>
-                    Buscando veículos...
-                </div>
+                        <div class="busca-selecao mt-1 shadow-sm">
 
-                @if(
-                    mb_strlen(trim($buscaVeiculo)) >= 2
-                    && count($resultadosVeiculos) > 0
-                )
+                            <div class="busca-selecao__cabecalho">
 
-                    <div class="busca-selecao mt-1 shadow-sm">
+                                <span>
+                                    Veículos vinculados ao cliente
+                                </span>
 
-                        <div class="busca-selecao__cabecalho">
+                                <span class="badge text-bg-secondary">
+                                    {{ count($resultadosVeiculos) }}
+                                </span>
 
-                            <span>
-                                Veículos vinculados ao cliente
-                            </span>
+                            </div>
 
-                            <span class="badge text-bg-secondary">
-                                {{ count($resultadosVeiculos) }}
-                            </span>
+                            <div class="busca-selecao__resultados">
+
+                                @foreach(
+                                    $resultadosVeiculos
+                                    as $veiculo
+                                )
+
+                                    <button
+                                        type="button"
+                                        class="list-group-item list-group-item-action busca-selecao__item d-flex justify-content-between align-items-center gap-3"
+                                        wire:key="veiculo-nota-{{ $veiculo['id'] }}"
+                                        wire:click="selecionarVeiculo({{ $veiculo['id'] }})"
+                                    >
+
+                                        <span class="text-start">
+
+                                            <span class="d-block fw-bold">
+
+                                                {{ $veiculo['veiculo'] }}
+
+                                                @if(!empty($veiculo['montadora']))
+
+                                                    —
+                                                    {{ $veiculo['montadora'] }}
+
+                                                @endif
+
+                                            </span>
+
+                                            <span class="small text-body-secondary">
+
+                                                Placa:
+                                                {{ $veiculo['placa'] ?? 'N/A' }}
+
+                                                @if(!empty($veiculo['ano']))
+
+                                                    · Ano:
+                                                    {{ $veiculo['ano'] }}
+
+                                                @endif
+
+                                                @if(!empty($veiculo['cor']))
+
+                                                    · Cor:
+                                                    {{ $veiculo['cor'] }}
+
+                                                @endif
+
+                                            </span>
+
+                                        </span>
+
+                                        <i class="bi bi-plus-lg"></i>
+
+                                    </button>
+
+                                @endforeach
+
+                            </div>
 
                         </div>
 
-                        <div class="busca-selecao__resultados">
+                    @elseif(
+                        mb_strlen(trim($buscaVeiculo)) >= 2
+                        && count($resultadosVeiculos) === 0
+                    )
 
-                            @foreach(
-                                $resultadosVeiculos as $veiculo
-                            )
+                        <div class="small fw-semibold mt-2">
+                            Nenhum veículo vinculado a esse cliente foi encontrado.
+                        </div>
 
-                                <button
-                                    type="button"
-                                    class="list-group-item list-group-item-action busca-selecao__item d-flex justify-content-between align-items-center gap-3"
-                                    wire:key="veiculo-nota-{{ $veiculo['id'] }}"
-                                    wire:click="selecionarVeiculo({{ $veiculo['id'] }})"
+                    @endif
+
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center gap-2 mt-2">
+
+                    <small class="text-muted">
+                        O veículo é opcional.
+                    </small>
+
+                    <button
+                        type="button"
+                        class="btn btn-outline-primary btn-sm"
+                        wire:click="abrirCadastroVeiculoRapido"
+                    >
+                        <i class="bi bi-car-front-fill"></i>
+                        Novo veículo
+                    </button>
+
+                </div>
+
+            @else
+
+                <div class="card border-primary">
+
+                    <div class="card-header d-flex justify-content-between align-items-center">
+
+                        <strong>
+                            <i class="bi bi-car-front"></i>
+                            Novo veículo
+                        </strong>
+
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-outline-secondary"
+                            wire:click="fecharCadastroVeiculoRapido"
+                        >
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="row g-3">
+
+                            <div class="col-12">
+
+                                <label
+                                    for="veiculo_rapido_montadora"
+                                    class="form-label"
+                                >
+                                    Montadora
+                                </label>
+
+                                <select
+                                    id="veiculo_rapido_montadora"
+                                    class="form-select @error('veiculoRapidoMontadoraId') is-invalid @enderror"
+                                    wire:model.live="veiculoRapidoMontadoraId"
                                 >
 
-                                    <span class="text-start">
+                                    <option value="">
+                                        Selecione...
+                                    </option>
 
-                                        <span class="d-block fw-bold">
+                                    @foreach(
+                                        $montadorasDisponiveis
+                                        as $montadora
+                                    )
 
-                                            {{ $veiculo['veiculo'] }}
+                                        <option
+                                            value="{{ $montadora['id'] }}"
+                                        >
+                                            {{ $montadora['nome'] }}
+                                        </option>
 
-                                            @if(!empty($veiculo['montadora']))
+                                    @endforeach
 
-                                                —
-                                                {{ $veiculo['montadora'] }}
+                                </select>
 
-                                            @endif
+                                @error('veiculoRapidoMontadoraId')
 
-                                        </span>
+                                    <div class="invalid-feedback">
+                                        {{ $message }}
+                                    </div>
 
-                                        <span class="small text-body-secondary">
+                                @enderror
 
-                                            Placa:
-                                            {{ $veiculo['placa'] ?? 'N/A' }}
+                            </div>
 
-                                            @if(!empty($veiculo['ano']))
+                            <div class="col-12">
 
-                                                · Ano:
-                                                {{ $veiculo['ano'] }}
+                                <label
+                                    for="veiculo_rapido_modelo"
+                                    class="form-label"
+                                >
+                                    Modelo
+                                </label>
 
-                                            @endif
+                                <select
+                                    id="veiculo_rapido_modelo"
+                                    class="form-select @error('veiculoRapidoVeiculoId') is-invalid @enderror"
+                                    wire:model="veiculoRapidoVeiculoId"
+                                    @disabled(!$veiculoRapidoMontadoraId)
+                                >
 
-                                            @if(!empty($veiculo['cor']))
+                                    <option value="">
+                                        Selecione...
+                                    </option>
 
-                                                · Cor:
-                                                {{ $veiculo['cor'] }}
+                                    @foreach(
+                                        $veiculosDisponiveis
+                                        as $veiculo
+                                    )
 
-                                            @endif
+                                        <option
+                                            value="{{ $veiculo['id'] }}"
+                                        >
+                                            {{ $veiculo['nome'] }}
+                                        </option>
 
-                                        </span>
+                                    @endforeach
 
-                                    </span>
+                                </select>
 
-                                    <i class="bi bi-plus-lg"></i>
+                                @error('veiculoRapidoVeiculoId')
 
-                                </button>
+                                    <div class="invalid-feedback">
+                                        {{ $message }}
+                                    </div>
 
-                            @endforeach
+                                @enderror
+
+                            </div>
+
+                            <div class="col-12 col-md-4">
+
+                                <label
+                                    for="veiculo_rapido_placa"
+                                    class="form-label"
+                                >
+                                    Placa
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="veiculo_rapido_placa"
+                                    class="form-control @error('veiculoRapidoPlaca') is-invalid @enderror"
+                                    wire:model="veiculoRapidoPlaca"
+                                    maxlength="7"
+                                    autocomplete="off"
+                                    placeholder="ABC1D23"
+                                >
+
+                                @error('veiculoRapidoPlaca')
+
+                                    <div class="invalid-feedback">
+                                        {{ $message }}
+                                    </div>
+
+                                @enderror
+
+                            </div>
+
+                            <div class="col-12 col-md-4">
+
+                                <label
+                                    for="veiculo_rapido_ano"
+                                    class="form-label"
+                                >
+                                    Ano
+                                </label>
+
+                                <input
+                                    type="number"
+                                    id="veiculo_rapido_ano"
+                                    class="form-control @error('veiculoRapidoAno') is-invalid @enderror"
+                                    wire:model="veiculoRapidoAno"
+                                    min="1900"
+                                    max="{{ date('Y') + 1 }}"
+                                    placeholder="{{ date('Y') }}"
+                                >
+
+                                @error('veiculoRapidoAno')
+
+                                    <div class="invalid-feedback">
+                                        {{ $message }}
+                                    </div>
+
+                                @enderror
+
+                            </div>
+
+                            <div class="col-12 col-md-4">
+
+                                <label
+                                    for="veiculo_rapido_cor"
+                                    class="form-label"
+                                >
+                                    Cor
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="veiculo_rapido_cor"
+                                    class="form-control @error('veiculoRapidoCor') is-invalid @enderror"
+                                    wire:model="veiculoRapidoCor"
+                                    maxlength="20"
+                                    placeholder="Branco"
+                                >
+
+                                @error('veiculoRapidoCor')
+
+                                    <div class="invalid-feedback">
+                                        {{ $message }}
+                                    </div>
+
+                                @enderror
+
+                            </div>
+
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-3">
+
+                            <button
+                                type="button"
+                                class="btn btn-outline-secondary"
+                                wire:click="fecharCadastroVeiculoRapido"
+                            >
+                                Cancelar
+                            </button>
+
+                            <button
+                                type="button"
+                                class="btn btn-primary"
+                                wire:click="criarVeiculoRapido"
+                                wire:loading.attr="disabled"
+                                wire:target="criarVeiculoRapido"
+                            >
+
+                                <span
+                                    wire:loading.remove
+                                    wire:target="criarVeiculoRapido"
+                                >
+                                    <i class="bi bi-check-circle"></i>
+                                    Criar e selecionar
+                                </span>
+
+                                <span
+                                    wire:loading
+                                    wire:target="criarVeiculoRapido"
+                                >
+                                    Criando...
+                                </span>
+
+                            </button>
 
                         </div>
 
                     </div>
 
-                @elseif(
-                    mb_strlen(trim($buscaVeiculo)) >= 2
-                    && count($resultadosVeiculos) === 0
-                )
+                </div>
 
-                    <div class="small fw-semibold mt-2">
-                        Nenhum veículo vinculado a esse cliente foi encontrado.
-                    </div>
-
-                @endif
-
-            </div>
-
-            <small class="text-muted">
-                O veículo é opcional.
-            </small>
+            @endif
 
         @endif
 
