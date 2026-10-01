@@ -17,15 +17,78 @@ class FinalizarNotaRequest extends FormRequest
 
     public function rules(): array
     {
-        $financeiroObrigatorio =
-            !$this->notaPossuiContaReceber();
+        /*
+         * =====================================================
+         * NOTA JÁ POSSUI CONTA A RECEBER
+         * =====================================================
+         *
+         * Nesse cenário não precisamos receber novamente
+         * categoria financeira nem parcelas.
+         *
+         * A Action FinalizarNota validará a Conta existente.
+         */
+        if ($this->notaPossuiContaReceber()) {
+            return [
+                'categoria_financeira_id' => [
+                    'nullable',
+                    'integer',
 
+                    Rule::exists(
+                        'categorias_financeiras',
+                        'id'
+                    )->where(
+                        function ($query) {
+                            $query
+                                ->where(
+                                    'tipo',
+                                    'entrada'
+                                )
+                                ->where(
+                                    'ativo',
+                                    true
+                                );
+                        }
+                    ),
+                ],
+
+                'parcelas' => [
+                    'nullable',
+                    'array',
+                ],
+
+                'parcelas.*.numero' => [
+                    'nullable',
+                    'integer',
+                    'min:1',
+                    'distinct',
+                ],
+
+                'parcelas.*.valor' => [
+                    'nullable',
+                    'numeric',
+                    'gt:0',
+                    'decimal:0,2',
+                ],
+
+                'parcelas.*.data_vencimento' => [
+                    'nullable',
+                    'date_format:Y-m-d',
+                ],
+            ];
+        }
+
+        /*
+         * =====================================================
+         * NOTA AINDA NÃO POSSUI CONTA A RECEBER
+         * =====================================================
+         *
+         * Categoria financeira e parcelamento são obrigatórios
+         * porque serão utilizados para criar a Conta a Receber
+         * durante a finalização.
+         */
         return [
             'categoria_financeira_id' => [
-                $financeiroObrigatorio
-                    ? 'required'
-                    : 'nullable',
-
+                'required',
                 'integer',
 
                 Rule::exists(
@@ -47,42 +110,27 @@ class FinalizarNotaRequest extends FormRequest
             ],
 
             'parcelas' => [
-                $financeiroObrigatorio
-                    ? 'required'
-                    : 'nullable',
-
+                'required',
                 'array',
-
-                $financeiroObrigatorio
-                    ? 'min:1'
-                    : null,
+                'min:1',
             ],
 
             'parcelas.*.numero' => [
-                $financeiroObrigatorio
-                    ? 'required'
-                    : 'nullable',
-
+                'required',
                 'integer',
                 'min:1',
                 'distinct',
             ],
 
             'parcelas.*.valor' => [
-                $financeiroObrigatorio
-                    ? 'required'
-                    : 'nullable',
-
+                'required',
                 'numeric',
                 'gt:0',
                 'decimal:0,2',
             ],
 
             'parcelas.*.data_vencimento' => [
-                $financeiroObrigatorio
-                    ? 'required'
-                    : 'nullable',
-
+                'required',
                 'date_format:Y-m-d',
             ],
         ];
@@ -148,31 +196,28 @@ class FinalizarNotaRequest extends FormRequest
         }
 
         /*
-         * Sua rota de finalizar recebe:
+         * A rota utilizada é:
          *
-         * finalizar(Request $request, string $id, ...)
+         * /notas/{nota}/finalizar
          *
-         * Portanto buscamos primeiro o parâmetro "id".
+         * Portanto o parâmetro correto é "nota".
          */
-        $notaId =
-            $this->route('id');
+        $parametroNota =
+            $this->route('nota');
 
-        if (!$notaId) {
-            $nota =
-                $this->route('nota');
-
-            if ($nota instanceof Nota) {
-                $notaId = $nota->id;
-            } elseif ($nota) {
-                $notaId = $nota;
-            }
-        }
-
-        if (!$notaId) {
+        if ($parametroNota instanceof Nota) {
+            $notaId =
+                $parametroNota->id;
+        } elseif ($parametroNota) {
+            $notaId =
+                (int) $parametroNota;
+        } else {
             /*
-             * Se não conseguirmos descobrir a Nota pela rota,
-             * mantemos o comportamento seguro:
-             * financeiro obrigatório.
+             * Falha segura:
+             *
+             * se não conseguirmos identificar a Nota,
+             * consideramos que ainda não há Conta a Receber
+             * e exigimos os dados financeiros.
              */
             return $this->notaJaPossuiContaReceber =
                 false;
@@ -181,7 +226,9 @@ class FinalizarNotaRequest extends FormRequest
         return $this->notaJaPossuiContaReceber =
             Nota::query()
                 ->whereKey($notaId)
-                ->whereHas('contaReceber')
+                ->whereHas(
+                    'contaReceber'
+                )
                 ->exists();
     }
 }
