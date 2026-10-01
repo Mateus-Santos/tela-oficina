@@ -36,7 +36,7 @@ class SetorServicoController extends Controller
 
     public function create()
     {
-        return view('.cadastrar_setor');
+        return view('setor-servico.cadastrar_setor');
     }
 
     public function store(
