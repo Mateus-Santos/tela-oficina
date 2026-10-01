@@ -49,25 +49,95 @@ export default function inicializarFinalizacaoNota() {
         modalElement.dataset.valorTotal || 0
     );
 
-    const configuracaoParcelas = inicializarParcelas({
-        quantidadeInput,
-        primeiraDataInput,
-        intervaloInput,
-        previewElement,
-        totalElement,
-        valorTotal,
-    });
+    /*
+     * =========================================================
+     * MODO DA FINALIZAÇÃO
+     * =========================================================
+     *
+     * Se esses campos existem, a Nota ainda NÃO possui
+     * Conta a Receber e precisamos criar as parcelas.
+     *
+     * Se não existem, significa que a Nota JÁ possui
+     * Conta a Receber e o financeiro já foi configurado.
+     */
+    const precisaCriarParcelas = Boolean(
+        parcelasHidden
+        && quantidadeInput
+        && primeiraDataInput
+        && intervaloInput
+        && previewElement
+        && totalElement
+    );
 
-    function limparParcelasHidden() {
-        if (parcelasHidden) {
-            parcelasHidden.innerHTML = '';
+    let configuracaoParcelas = null;
+
+    /*
+     * =========================================================
+     * INICIALIZAR PARCELAMENTO
+     * =========================================================
+     *
+     * Só inicializamos o componente quando realmente
+     * precisamos criar uma nova Conta a Receber.
+     */
+    if (precisaCriarParcelas) {
+        configuracaoParcelas =
+            inicializarParcelas({
+                quantidadeInput,
+                primeiraDataInput,
+                intervaloInput,
+                previewElement,
+                totalElement,
+                valorTotal,
+            });
+    }
+
+    /*
+     * =========================================================
+     * ESTADO DO BOTÃO
+     * =========================================================
+     */
+    function definirBotaoProcessando() {
+        if (!botaoFinalizar) {
+            return;
         }
+
+        botaoFinalizar.disabled = true;
+
+        botaoFinalizar.innerHTML =
+            '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Finalizando...';
+    }
+
+    function restaurarBotaoFinalizar() {
+        if (!botaoFinalizar) {
+            return;
+        }
+
+        botaoFinalizar.disabled = false;
+
+        botaoFinalizar.innerHTML =
+            '<i class="bi bi-check-circle"></i> Finalizar nota';
+    }
+
+    /*
+     * =========================================================
+     * INPUTS HIDDEN DAS PARCELAS
+     * =========================================================
+     */
+    function limparParcelasHidden() {
+        if (!parcelasHidden) {
+            return;
+        }
+
+        parcelasHidden.innerHTML = '';
     }
 
     function preencherParcelasHidden(parcelas) {
         limparParcelasHidden();
 
-        if (!parcelasHidden) {
+        if (
+            !parcelasHidden
+            || !Array.isArray(parcelas)
+        ) {
             return;
         }
 
@@ -76,41 +146,73 @@ export default function inicializarFinalizacaoNota() {
                 document.createElement('input');
 
             numero.type = 'hidden';
+
             numero.name =
                 `parcelas[${indice}][numero]`;
-            numero.value = parcela.numero;
+
+            numero.value =
+                parcela.numero;
 
             const valor =
                 document.createElement('input');
 
             valor.type = 'hidden';
+
             valor.name =
                 `parcelas[${indice}][valor]`;
+
             valor.value =
-                parcela.valor.toFixed(2);
+                Number(parcela.valor).toFixed(2);
 
             const dataVencimento =
                 document.createElement('input');
 
             dataVencimento.type = 'hidden';
+
             dataVencimento.name =
                 `parcelas[${indice}][data_vencimento]`;
+
             dataVencimento.value =
                 parcela.data_vencimento;
 
-            parcelasHidden.appendChild(numero);
-            parcelasHidden.appendChild(valor);
+            parcelasHidden.appendChild(
+                numero
+            );
+
+            parcelasHidden.appendChild(
+                valor
+            );
+
             parcelasHidden.appendChild(
                 dataVencimento
             );
         });
     }
 
+    /*
+     * =========================================================
+     * VALIDAR PARCELAS NOVAS
+     * =========================================================
+     */
     function obterParcelasValidas() {
+        if (
+            !precisaCriarParcelas
+            || !configuracaoParcelas
+        ) {
+            return [];
+        }
+
         const parcelas =
             configuracaoParcelas.obterParcelas();
 
-        if (!parcelas.length) {
+        if (
+            !Array.isArray(parcelas)
+            || !parcelas.length
+        ) {
+            window.alert(
+                'Informe ao menos uma parcela para finalizar a Nota.'
+            );
+
             return null;
         }
 
@@ -152,52 +254,103 @@ export default function inicializarFinalizacaoNota() {
         return parcelas;
     }
 
+    /*
+     * =========================================================
+     * SUBMIT
+     * =========================================================
+     */
     formulario.addEventListener(
         'submit',
         function (evento) {
+            /*
+             * =================================================
+             * CONTA A RECEBER JÁ EXISTENTE
+             * =================================================
+             *
+             * Não precisamos gerar parcelas.
+             *
+             * O backend vai validar:
+             * - Conta vinculada;
+             * - valor da Conta;
+             * - parcelas existentes;
+             * - status financeiro;
+             * - estoque.
+             */
+            if (!precisaCriarParcelas) {
+                definirBotaoProcessando();
+
+                return;
+            }
+
+            /*
+             * =================================================
+             * NOVA CONTA A RECEBER
+             * =================================================
+             */
             const parcelas =
                 obterParcelasValidas();
 
             if (!parcelas) {
                 evento.preventDefault();
+
                 return;
             }
 
-            preencherParcelasHidden(parcelas);
+            preencherParcelasHidden(
+                parcelas
+            );
 
-            if (botaoFinalizar) {
-                botaoFinalizar.disabled = true;
-
-                botaoFinalizar.innerHTML =
-                    '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Finalizando...';
-            }
+            definirBotaoProcessando();
         }
     );
 
+    /*
+     * =========================================================
+     * RESET DO MODAL
+     * =========================================================
+     */
     modalElement.addEventListener(
         'hidden.bs.modal',
         function () {
             limparParcelasHidden();
 
-            if (botaoFinalizar) {
-                botaoFinalizar.disabled = false;
+            restaurarBotaoFinalizar();
 
-                botaoFinalizar.innerHTML =
-                    '<i class="bi bi-check-circle"></i> Finalizar nota';
+            if (configuracaoParcelas) {
+                configuracaoParcelas.reset();
             }
-
-            configuracaoParcelas.reset();
         }
     );
 
-    configuracaoParcelas.atualizar();
+    /*
+     * =========================================================
+     * INICIALIZAÇÃO DO PARCELAMENTO
+     * =========================================================
+     */
+    if (configuracaoParcelas) {
+        configuracaoParcelas.atualizar();
+    }
 
+    /*
+     * =========================================================
+     * REABRIR MODAL APÓS VALIDAÇÃO
+     * =========================================================
+     */
     if (
         modalElement.dataset.reabrir === '1'
         && window.bootstrap
     ) {
         window.bootstrap.Modal
-            .getOrCreateInstance(modalElement)
+            .getOrCreateInstance(
+                modalElement
+            )
             .show();
     }
+
+    console.log(
+        '[SOS Mecânica] Finalização de Nota inicializada.',
+        {
+            precisaCriarParcelas,
+        }
+    );
 }

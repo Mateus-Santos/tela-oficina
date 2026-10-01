@@ -23,8 +23,8 @@
 </div>
 
 {{-- Modais ficam fora do .cadastro --}}
-@include('notas_item._modal_adicionar_item')
-@include('notas_item._modal_descontos')
+@include('notas_item.modal._modal_adicionar_item')
+@include('notas_item.modal._modal_descontos')
 
 @endsection
 

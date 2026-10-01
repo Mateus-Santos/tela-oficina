@@ -33,6 +33,8 @@ export default defineConfig({
                 'resources/js/conta-receber.js',
                 'resources/js/nota-show.js',
                 'resources/js/compras/show.js',
+                'resources/js/notaitem/os-rapida.js',
+                'resources/js/notaitem/produto-rapido.js',
             ],
             refresh: true,
         }),

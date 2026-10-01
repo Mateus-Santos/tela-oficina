@@ -7,6 +7,7 @@ use App\Actions\Financeiro\CriarContaReceber;
 use App\Models\CategoriaFinanceira;
 use App\Models\ContaReceber;
 use App\Models\Nota;
+use App\Models\OrdemServico;
 use App\Models\Produto;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -67,7 +68,7 @@ class FinalizarNota
 
                 /*
                  * =====================================================
-                 * 2. VERIFICAR SE A NOTA JÁ POSSUI CONTA A RECEBER
+                 * 2. VERIFICAR CONTA A RECEBER
                  * =====================================================
                  */
                 $jaPossuiContaReceber =
@@ -80,16 +81,6 @@ class FinalizarNota
                  * =====================================================
                  * 3. VALIDAR FINANCEIRO
                  * =====================================================
-                 *
-                 * Existem dois cenários:
-                 *
-                 * A) Nota ainda não possui Conta a Receber:
-                 *    validamos categoria e parcelas que serão usadas
-                 *    para criar a conta.
-                 *
-                 * B) Nota já possui Conta a Receber:
-                 *    validamos a conta existente e suas parcelas antes
-                 *    de permitir qualquer baixa de estoque.
                  */
                 if ($jaPossuiContaReceber) {
                     $this->validarContaReceberExistente(
@@ -219,7 +210,7 @@ class FinalizarNota
 
                 /*
                  * =====================================================
-                 * 4. IDENTIFICAR PRODUTOS DA NOTA
+                 * 4. IDENTIFICAR PRODUTOS E ORDENS DE SERVIÇO
                  * =====================================================
                  */
                 $itensProdutos = $nota
@@ -232,8 +223,7 @@ class FinalizarNota
                                 );
                             }
 
-                            return
-                                $item->itemable
+                            return $item->itemable
                                 instanceof Produto;
                         }
                     )
@@ -246,9 +236,48 @@ class FinalizarNota
                     )
                     ->values();
 
+                $itensOrdensServico = $nota
+                    ->itens
+                    ->filter(
+                        fn ($item) =>
+                            $item->itemable
+                            instanceof OrdemServico
+                    )
+                    ->sortBy(
+                        fn ($item) =>
+                            $item->itemable->id
+                    )
+                    ->values();
+
                 /*
                  * =====================================================
-                 * 5. IMPEDIR DUPLICIDADE DE BAIXA DE ESTOQUE
+                 * 5. VALIDAR ORDENS DE SERVIÇO
+                 * =====================================================
+                 *
+                 * Uma O.S. cancelada não pode compor uma Nota que está
+                 * sendo finalizada.
+                 */
+                foreach ($itensOrdensServico as $item) {
+                    $ordemServico =
+                        OrdemServico::query()
+                            ->lockForUpdate()
+                            ->findOrFail(
+                                $item->itemable->id
+                            );
+
+                    if (
+                        $ordemServico->status
+                        === 'cancelada'
+                    ) {
+                        throw new InvalidArgumentException(
+                            "A O.S. #{$ordemServico->id} está cancelada e não pode ser finalizada junto com a Nota."
+                        );
+                    }
+                }
+
+                /*
+                 * =====================================================
+                 * 6. IMPEDIR DUPLICIDADE DE BAIXA DE ESTOQUE
                  * =====================================================
                  */
                 foreach ($itensProdutos as $item) {
@@ -279,7 +308,7 @@ class FinalizarNota
 
                 /*
                  * =====================================================
-                 * 6. REGISTRAR SAÍDA DO ESTOQUE
+                 * 7. REGISTRAR SAÍDA DO ESTOQUE
                  * =====================================================
                  */
                 foreach ($itensProdutos as $item) {
@@ -295,7 +324,38 @@ class FinalizarNota
 
                 /*
                  * =====================================================
-                 * 7. FINALIZAR NOTA
+                 * 8. FINALIZAR ORDENS DE SERVIÇO
+                 * =====================================================
+                 */
+                foreach ($itensOrdensServico as $item) {
+                    $ordemServico =
+                        OrdemServico::query()
+                            ->lockForUpdate()
+                            ->findOrFail(
+                                $item->itemable->id
+                            );
+
+                    if (
+                        $ordemServico->status
+                        === 'finalizada'
+                    ) {
+                        continue;
+                    }
+
+                    $ordemServico->update([
+                        'status' =>
+                            'finalizada',
+
+                        'data_fechamento' =>
+                            $ordemServico
+                                ->data_fechamento
+                            ?? now(),
+                    ]);
+                }
+
+                /*
+                 * =====================================================
+                 * 9. FINALIZAR NOTA
                  * =====================================================
                  */
                 $nota->update([
@@ -304,7 +364,7 @@ class FinalizarNota
 
                 /*
                  * =====================================================
-                 * 8. CRIAR CONTA A RECEBER SOMENTE SE NÃO EXISTIR
+                 * 10. CRIAR CONTA A RECEBER SE NÃO EXISTIR
                  * =====================================================
                  */
                 if (!$jaPossuiContaReceber) {
@@ -346,28 +406,17 @@ class FinalizarNota
 
                 /*
                  * =====================================================
-                 * 9. RETORNAR NOTA ATUALIZADA
+                 * 11. RETORNAR NOTA ATUALIZADA
                  * =====================================================
                  */
                 return $nota->fresh([
+                    'itens.itemable',
                     'contaReceber.parcelas',
                 ]);
             }
         );
     }
 
-    /*
-     * =============================================================
-     * VALIDAR CONTA A RECEBER JÁ EXISTENTE
-     * =============================================================
-     *
-     * Uma Nota aberta pode possuir uma Conta a Receber criada
-     * anteriormente.
-     *
-     * Como a Nota pode ter sido alterada posteriormente, não podemos
-     * simplesmente confiar que a conta e suas parcelas continuam
-     * compatíveis com o valor atual da Nota.
-     */
     private function validarContaReceberExistente(
         Nota $nota,
         int $valorNotaCentavos
@@ -379,10 +428,6 @@ class FinalizarNota
             ]);
         }
 
-        /*
-         * Trava a Conta a Receber durante a finalização para evitar
-         * que ela seja alterada simultaneamente por outro processo.
-         */
         $contaReceber =
             ContaReceber::query()
                 ->lockForUpdate()
@@ -400,21 +445,16 @@ class FinalizarNota
             ]);
         }
 
-        /*
-         * Uma conta cancelada não pode servir como financeiro
-         * de uma Nota que está sendo finalizada.
-         */
-        if ($contaReceber->status === 'cancelada') {
+        if (
+            $contaReceber->status
+            === 'cancelada'
+        ) {
             throw ValidationException::withMessages([
                 'finalizacao' =>
                     'A Conta a Receber vinculada à Nota está cancelada. Regularize o financeiro antes de finalizar.',
             ]);
         }
 
-        /*
-         * O valor original precisa continuar correspondendo
-         * exatamente ao total atual da Nota.
-         */
         $valorContaCentavos =
             $this->paraCentavos(
                 $contaReceber->valor_original
@@ -443,10 +483,6 @@ class FinalizarNota
             ]);
         }
 
-        /*
-         * Também travamos as parcelas existentes durante
-         * a conferência financeira.
-         */
         $parcelas =
             $contaReceber
                 ->parcelas()
@@ -479,11 +515,6 @@ class FinalizarNota
                 $valorParcelaCentavos;
         }
 
-        /*
-         * Para uma Conta vinculada à Nota, as parcelas precisam
-         * continuar somando exatamente o valor original da conta,
-         * que por sua vez já foi validado contra o total da Nota.
-         */
         if (
             $totalParcelasCentavos
             !== $valorContaCentavos

@@ -28,6 +28,8 @@ use App\Http\Controllers\Api\ProdutoBuscaController;
 use App\Http\Controllers\Api\ClienteContaReceberBuscaController;
 use App\Http\Controllers\Api\NotaContaReceberBuscaController;
 use App\Http\Controllers\MarcaController;
+use App\Http\Controllers\Api\NotaOrdemServicoRapidaController;
+use App\Http\Controllers\Api\NotaProdutoRapidoController;
 
 // use App\Http\Controllers\ChatController;
 
@@ -174,7 +176,28 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         Route::post('contas-receber/{contaReceber}/recebimentos/{recebimento}/estornar', [RecebimentoController::class, 'estornar'])->name('recebimentos.estornar');
         Route::get('/api/contas-receber/clientes/buscar', ClienteContaReceberBuscaController::class)->name('api.contas-receber.clientes.buscar');
         Route::get('/api/contas-receber/notas/buscar', NotaContaReceberBuscaController::class)->name('api.contas-receber.notas.buscar');
-    });
+        Route::get('/api/notas-itens/setores-servico',[NotaOrdemServicoRapidaController::class,'setores',])->name('api.notas-itens.setores-servico');
+        Route::post('/api/notas-itens/ordens-servico',[NotaOrdemServicoRapidaController::class,'store',])->name('api.notas-itens.ordens-servico.store');
+        Route::get(
+            '/api/notas-itens/marcas-produto',
+            [
+                NotaProdutoRapidoController::class,
+                'marcas',
+            ]
+        )->name(
+            'api.notas-itens.marcas-produto'
+        );
+
+        Route::post(
+            '/api/notas-itens/produtos',
+            [
+                NotaProdutoRapidoController::class,
+                'store',
+            ]
+        )->name(
+            'api.notas-itens.produtos.store'
+        );
+            });
 });
 
 Route::middleware([
