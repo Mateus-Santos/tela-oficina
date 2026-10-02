@@ -27,19 +27,16 @@ class UserFactory extends Factory
             'pessoa_id' => Pessoa::factory(),
             'email' => $this->faker->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
+            'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
             'two_factor_secret' => null,
             'two_factor_recovery_codes' => null,
             'remember_token' => Str::random(10),
             'profile_photo_path' => null,
             'current_team_id' => null,
-            'status' => 0,
+            'status' => 1,
         ];
     }
 
-    /**
-     * Indicate that the model's email address should be unverified.
-     */
     public function unverified(): static
     {
         return $this->state(function (array $attributes) {
@@ -49,9 +46,6 @@ class UserFactory extends Factory
         });
     }
 
-    /**
-     * Indicate that the user should have a personal team.
-     */
     public function withPersonalTeam(callable $callback = null): static
     {
         if (! Features::hasTeamFeatures()) {

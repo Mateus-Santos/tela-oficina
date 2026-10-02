@@ -56,10 +56,10 @@ return Application::configure(
              * =====================================================
              *
              * Substitui gradualmente a dependência de
-             * '/dashboard'.
+             * RouteServiceProvider::HOME.
              */
             $middleware->redirectUsersTo(
-                '/dashboard'
+                '/home'
             );
 
             /*
