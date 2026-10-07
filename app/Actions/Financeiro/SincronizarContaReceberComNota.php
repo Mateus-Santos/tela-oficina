@@ -21,338 +21,222 @@ class SincronizarContaReceberComNota
                 ->lockForUpdate()
                 ->first();
 
-            /*
-             * A Nota ainda não possui financeiro.
-             *
-             * Não existe nada para sincronizar.
-             */
             if (!$conta) {
                 return null;
             }
 
             if ($conta->status === 'cancelada') {
                 throw ValidationException::withMessages([
-                    'nota' =>
-                        "A Conta a Receber #{$conta->id} vinculada à Nota está cancelada.",
+                    'nota' => "A Conta a Receber #{$conta->id} vinculada à Nota está cancelada.",
                 ]);
             }
 
-            $novoTotalCentavos =
-                $this->paraCentavos(
-                    $nota->total
-                );
+            $novoValorOriginalCentavos = $this->paraCentavos($nota->total);
 
-            if ($novoTotalCentavos <= 0) {
+            if ($novoValorOriginalCentavos <= 0) {
                 throw ValidationException::withMessages([
-                    'nota' =>
-                        'O total da Nota deve ser maior que zero para sincronizar o financeiro.',
+                    'nota' => 'O total da Nota deve ser maior que zero para sincronizar o financeiro.',
                 ]);
             }
 
-            /*
-             * =====================================================
-             * RECEBIMENTOS ATIVOS
-             * =====================================================
-             *
-             * Recebimentos estornados continuam existindo
-             * historicamente, mas não fazem parte do valor recebido.
-             */
-            $recebimentosAtivos =
-                $conta
-                    ->recebimentos()
-                    ->whereNull('estornado_em')
-                    ->lockForUpdate()
-                    ->get();
+            $descontoCentavos = $this->paraCentavos($conta->desconto);
+            $jurosCentavos = $this->paraCentavos($conta->juros);
+            $multaCentavos = $this->paraCentavos($conta->multa);
+
+            $novoValorDevidoCentavos =
+                $novoValorOriginalCentavos
+                - $descontoCentavos
+                + $jurosCentavos
+                + $multaCentavos;
+
+            if ($novoValorDevidoCentavos <= 0) {
+                throw ValidationException::withMessages([
+                    'nota' => 'O novo valor devido da Conta a Receber deve ser maior que zero.',
+                ]);
+            }
+
+            $recebimentosAtivos = $conta
+                ->recebimentos()
+                ->whereNull('estornado_em')
+                ->lockForUpdate()
+                ->get();
 
             $totalRecebidoCentavos = 0;
 
             foreach ($recebimentosAtivos as $recebimento) {
-                $totalRecebidoCentavos +=
-                    $this->paraCentavos(
-                        $recebimento->valor
-                    );
+                $totalRecebidoCentavos += $this->paraCentavos(
+                    $recebimento->valor
+                );
             }
 
-            /*
-             * =====================================================
-             * REGRA CRÍTICA
-             * =====================================================
-             *
-             * O total da Nota nunca pode ficar abaixo
-             * do que efetivamente já foi recebido.
-             */
-            if (
-                $novoTotalCentavos
-                < $totalRecebidoCentavos
-            ) {
+            if ($novoValorDevidoCentavos < $totalRecebidoCentavos) {
                 $valorEstornarCentavos =
                     $totalRecebidoCentavos
-                    - $novoTotalCentavos;
+                    - $novoValorDevidoCentavos;
 
                 throw ValidationException::withMessages([
                     'nota' => sprintf(
-                        'Não é possível reduzir a Nota para R$ %s porque existem R$ %s em recebimentos ativos. Estorne ao menos R$ %s antes de salvar esta alteração.',
-                        number_format(
-                            $novoTotalCentavos / 100,
-                            2,
-                            ',',
-                            '.'
-                        ),
-                        number_format(
-                            $totalRecebidoCentavos / 100,
-                            2,
-                            ',',
-                            '.'
-                        ),
-                        number_format(
-                            $valorEstornarCentavos / 100,
-                            2,
-                            ',',
-                            '.'
-                        )
+                        'Não é possível reduzir o valor devido para R$ %s porque existem R$ %s em recebimentos ativos. Estorne ao menos R$ %s antes de salvar esta alteração.',
+                        number_format($novoValorDevidoCentavos / 100, 2, ',', '.'),
+                        number_format($totalRecebidoCentavos / 100, 2, ',', '.'),
+                        number_format($valorEstornarCentavos / 100, 2, ',', '.')
                     ),
                 ]);
             }
 
-            /*
-             * =====================================================
-             * PARCELAS
-             * =====================================================
-             */
-            $parcelas =
-                $conta
-                    ->parcelas()
-                    ->lockForUpdate()
-                    ->get();
+            $parcelas = $conta
+                ->parcelas()
+                ->lockForUpdate()
+                ->get();
 
             if ($parcelas->isEmpty()) {
                 throw ValidationException::withMessages([
-                    'nota' =>
-                        "A Conta a Receber #{$conta->id} não possui parcelas cadastradas.",
+                    'nota' => "A Conta a Receber #{$conta->id} não possui parcelas cadastradas.",
                 ]);
             }
 
-            /*
-             * Valor recebido ativo por parcela.
-             */
             $recebidoPorParcela = [];
 
             foreach ($parcelas as $parcela) {
-                $recebidoPorParcela[$parcela->id] =
-                    $this->paraCentavos(
-                        $parcela
-                            ->recebimentos()
-                            ->whereNull('estornado_em')
-                            ->sum('valor')
-                    );
+                $recebidoPorParcela[$parcela->id] = $this->paraCentavos(
+                    $parcela
+                        ->recebimentos()
+                        ->whereNull('estornado_em')
+                        ->sum('valor')
+                );
             }
 
-            /*
-             * Soma atual das parcelas.
-             */
             $totalParcelasCentavos = 0;
 
             foreach ($parcelas as $parcela) {
-                $totalParcelasCentavos +=
-                    $this->paraCentavos(
-                        $parcela->valor
-                    );
+                $totalParcelasCentavos += $this->paraCentavos(
+                    $parcela->valor
+                );
             }
 
             $diferencaCentavos =
-                $novoTotalCentavos
+                $novoValorDevidoCentavos
                 - $totalParcelasCentavos;
 
-            /*
-             * =====================================================
-             * AUMENTO DA NOTA
-             * =====================================================
-             *
-             * A diferença é acrescentada à última parcela.
-             *
-             * Recebimentos existentes permanecem intactos.
-             */
             if ($diferencaCentavos > 0) {
-                $ultimaParcela =
-                    $parcelas
-                        ->sortByDesc('numero')
-                        ->first();
+                $ultimaParcela = $parcelas
+                    ->sortByDesc('numero')
+                    ->first();
 
-                $valorAtualCentavos =
-                    $this->paraCentavos(
-                        $ultimaParcela->valor
-                    );
+                $valorAtualCentavos = $this->paraCentavos(
+                    $ultimaParcela->valor
+                );
 
                 $ultimaParcela->update([
-                    'valor' =>
-                        (
-                            $valorAtualCentavos
-                            + $diferencaCentavos
-                        ) / 100,
+                    'valor' => ($valorAtualCentavos + $diferencaCentavos) / 100,
                 ]);
             }
 
-            /*
-             * =====================================================
-             * REDUÇÃO DA NOTA
-             * =====================================================
-             *
-             * Reduzimos primeiro as últimas parcelas.
-             *
-             * Uma parcela nunca poderá ficar abaixo
-             * do valor ativo já recebido nela.
-             */
             if ($diferencaCentavos < 0) {
-                $valorReduzirCentavos =
-                    abs($diferencaCentavos);
+                $valorReduzirCentavos = abs($diferencaCentavos);
 
-                $parcelasOrdenadas =
-                    $parcelas
-                        ->sortByDesc('numero');
-
-                foreach (
-                    $parcelasOrdenadas as $parcela
-                ) {
-                    if (
-                        $valorReduzirCentavos
-                        <= 0
-                    ) {
+                foreach ($parcelas->sortByDesc('numero') as $parcela) {
+                    if ($valorReduzirCentavos <= 0) {
                         break;
                     }
 
-                    $valorParcelaCentavos =
-                        $this->paraCentavos(
-                            $parcela->valor
-                        );
+                    $valorParcelaCentavos = $this->paraCentavos(
+                        $parcela->valor
+                    );
 
                     $valorRecebidoParcelaCentavos =
-                        $recebidoPorParcela[
-                            $parcela->id
-                        ] ?? 0;
+                        $recebidoPorParcela[$parcela->id] ?? 0;
 
-                    /*
-                     * Somente a parte ainda não recebida
-                     * pode ser reduzida.
-                     */
-                    $valorDisponivelReducaoCentavos =
-                        max(
-                            0,
-                            $valorParcelaCentavos
-                            - $valorRecebidoParcelaCentavos
-                        );
+                    $valorDisponivelReducaoCentavos = max(
+                        0,
+                        $valorParcelaCentavos
+                        - $valorRecebidoParcelaCentavos
+                    );
 
-                    if (
-                        $valorDisponivelReducaoCentavos
-                        <= 0
-                    ) {
+                    if ($valorDisponivelReducaoCentavos <= 0) {
                         continue;
                     }
 
-                    $reducaoCentavos =
-                        min(
-                            $valorReduzirCentavos,
-                            $valorDisponivelReducaoCentavos
-                        );
+                    $reducaoCentavos = min(
+                        $valorReduzirCentavos,
+                        $valorDisponivelReducaoCentavos
+                    );
 
                     $novoValorParcelaCentavos =
                         $valorParcelaCentavos
                         - $reducaoCentavos;
 
-                    $parcela->update([
-                        'valor' =>
-                            $novoValorParcelaCentavos
-                            / 100,
-                    ]);
+                    if ($novoValorParcelaCentavos <= 0) {
+                        if ($valorRecebidoParcelaCentavos > 0) {
+                            throw ValidationException::withMessages([
+                                'nota' => 'Não foi possível reduzir as parcelas sem afetar valores já recebidos.',
+                            ]);
+                        }
 
-                    $valorReduzirCentavos -=
-                        $reducaoCentavos;
+                        $parcela->delete();
+                    } else {
+                        $parcela->update([
+                            'valor' => $novoValorParcelaCentavos / 100,
+                        ]);
+                    }
+
+                    $valorReduzirCentavos -= $reducaoCentavos;
                 }
 
-                /*
-                 * Pela regra total >= recebido isso normalmente
-                 * nunca deverá acontecer.
-                 *
-                 * Mantemos a proteção para qualquer inconsistência
-                 * histórica existente no banco.
-                 */
                 if ($valorReduzirCentavos > 0) {
                     throw ValidationException::withMessages([
-                        'nota' =>
-                            'Não foi possível ajustar as parcelas da Conta a Receber ao novo valor da Nota sem afetar valores já recebidos.',
+                        'nota' => 'Não foi possível ajustar as parcelas da Conta a Receber ao novo valor devido sem afetar valores já recebidos.',
                     ]);
                 }
             }
 
-            /*
-             * =====================================================
-             * CONFERÊNCIA FINAL DAS PARCELAS
-             * =====================================================
-             */
-            $totalParcelasAtualizadoCentavos =
-                $this->paraCentavos(
-                    $conta
-                        ->parcelas()
-                        ->sum('valor')
-                );
+            $parcelasRestantes = $conta
+                ->parcelas()
+                ->lockForUpdate()
+                ->orderBy('numero')
+                ->get();
 
-            if (
-                $totalParcelasAtualizadoCentavos
-                !== $novoTotalCentavos
-            ) {
+            if ($parcelasRestantes->isEmpty()) {
                 throw ValidationException::withMessages([
-                    'nota' =>
-                        'Não foi possível sincronizar corretamente as parcelas da Conta a Receber com o novo total da Nota.',
+                    'nota' => 'A Conta a Receber precisa possuir ao menos uma parcela.',
                 ]);
             }
 
-            /*
-             * =====================================================
-             * STATUS DA CONTA
-             * =====================================================
-             */
+            $totalParcelasAtualizadoCentavos = $this->paraCentavos(
+                $conta->parcelas()->sum('valor')
+            );
+
+            if ($totalParcelasAtualizadoCentavos !== $novoValorDevidoCentavos) {
+                throw ValidationException::withMessages([
+                    'nota' => 'Não foi possível sincronizar corretamente as parcelas da Conta a Receber com o novo valor devido.',
+                ]);
+            }
+
             if ($totalRecebidoCentavos <= 0) {
                 $status = 'aberta';
                 $dataQuitacao = null;
-            } elseif (
-                $totalRecebidoCentavos
-                >= $novoTotalCentavos
-            ) {
+            } elseif ($totalRecebidoCentavos >= $novoValorDevidoCentavos) {
                 $status = 'quitada';
-
-                $dataQuitacao =
-                    $conta
-                        ->recebimentos()
-                        ->whereNull('estornado_em')
-                        ->orderByDesc('data_pagamento')
-                        ->value('data_pagamento');
+                $dataQuitacao = $conta
+                    ->recebimentos()
+                    ->whereNull('estornado_em')
+                    ->orderByDesc('data_pagamento')
+                    ->value('data_pagamento');
             } else {
                 $status = 'parcial';
                 $dataQuitacao = null;
             }
 
-            $primeiroVencimento =
-                $conta
-                    ->parcelas()
-                    ->orderBy('numero')
-                    ->value('data_vencimento');
+            $primeiroVencimento = $conta
+                ->parcelas()
+                ->orderBy('numero')
+                ->value('data_vencimento');
 
-            /*
-             * =====================================================
-             * ATUALIZAR CONTA
-             * =====================================================
-             */
             $conta->update([
-                'valor_original' =>
-                    $novoTotalCentavos / 100,
-
-                'data_vencimento' =>
-                    $primeiroVencimento,
-
-                'status' =>
-                    $status,
-
-                'data_quitacao' =>
-                    $dataQuitacao,
+                'valor_original' => $novoValorOriginalCentavos / 100,
+                'data_vencimento' => $primeiroVencimento,
+                'status' => $status,
+                'data_quitacao' => $dataQuitacao,
             ]);
 
             return $conta->fresh([
@@ -362,11 +246,8 @@ class SincronizarContaReceberComNota
         });
     }
 
-    private function paraCentavos(
-        mixed $valor
-    ): int {
-        return (int) round(
-            (float) $valor * 100
-        );
+    private function paraCentavos(mixed $valor): int
+    {
+        return (int) round((float) $valor * 100);
     }
 }

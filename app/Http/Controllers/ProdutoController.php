@@ -16,11 +16,6 @@ use Illuminate\Support\Facades\Storage;
 
 class ProdutoController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('admin:admin');
-    }
-
     public function index(Request $request)
     {
         $codigosFabricanteDisponiveis = Produto::select('codigo_fabricante')

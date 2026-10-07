@@ -36,6 +36,10 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
+    protected $appends = [
+        'name',
+    ];
+
     public function pessoa()
     {
         return $this->belongsTo(Pessoa::class, 'pessoa_id');
