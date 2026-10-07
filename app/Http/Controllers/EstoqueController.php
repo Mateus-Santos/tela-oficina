@@ -10,11 +10,6 @@ use InvalidArgumentException;
 
 class EstoqueController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('admin:admin');
-    }
-
     public function index(Request $request)
     {
         $query = Produto::query()

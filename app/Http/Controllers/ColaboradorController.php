@@ -8,11 +8,6 @@ use App\Models\User;
 
 class ColaboradorController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('admin:admin');
-    }
-
     public function index()
     {
         $colaboradores = Colaborador::with('user')->get();

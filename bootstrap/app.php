@@ -19,14 +19,7 @@ return Application::configure(
     )
     ->withMiddleware(
         function (Middleware $middleware): void {
-            /*
-             * =====================================================
-             * TRUSTED PROXIES
-             * =====================================================
-             *
-             * Preserva o comportamento atual do
-             * App\Http\Middleware\TrustProxies.
-             */
+
             $middleware->trustProxies(
                 at: '*',
                 headers:
@@ -37,67 +30,23 @@ return Application::configure(
                     | Request::HEADER_X_FORWARDED_AWS_ELB
             );
 
-            /*
-             * =====================================================
-             * REDIRECT DE VISITANTE
-             * =====================================================
-             *
-             * Preserva o comportamento atual do
-             * App\Http\Middleware\Authenticate.
-             */
             $middleware->redirectGuestsTo(
                 fn (Request $request): string =>
                     route('erro-autenticacao')
             );
 
-            /*
-             * =====================================================
-             * REDIRECT DE USUÁRIO AUTENTICADO
-             * =====================================================
-             *
-             * Substitui gradualmente a dependência de
-             * RouteServiceProvider::HOME.
-             */
             $middleware->redirectUsersTo(
                 '/home'
             );
 
-            /*
-             * =====================================================
-             * GRUPO WEB
-             * =====================================================
-             *
-             * Laravel 13 já fornece o grupo web padrão:
-             *
-             * - EncryptCookies
-             * - AddQueuedCookiesToResponse
-             * - StartSession
-             * - ShareErrorsFromSession
-             * - PreventRequestForgery
-             * - SubstituteBindings
-             *
-             * Acrescentamos apenas a regra própria da aplicação.
-             */
             $middleware->web(
                 append: [
                     CheckIfUserIsBlocked::class,
                 ]
             );
 
-            /*
-             * =====================================================
-             * API
-             * =====================================================
-             *
-             * Mantém o throttle utilizado pelo Kernel legado.
-             */
             $middleware->throttleApi();
 
-            /*
-             * =====================================================
-             * ALIASES CUSTOMIZADOS
-             * =====================================================
-             */
             $middleware->alias([
                 'check.blocked' =>
                     CheckIfUserIsBlocked::class,
@@ -112,13 +61,6 @@ return Application::configure(
     )
     ->withExceptions(
         function (Exceptions $exceptions): void {
-            /*
-             * Nesta primeira etapa não alteramos ainda
-             * o comportamento do Handler legado.
-             *
-             * A migração completa das exceptions será
-             * feita em etapa própria.
-             */
         }
     )
     ->create();
