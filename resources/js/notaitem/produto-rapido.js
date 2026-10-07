@@ -147,8 +147,7 @@
 
         function atualizarAcoes() {
             const ehProduto =
-                tipoInput.value
-                === 'produto';
+                tipoInput.value === 'produto';
 
             acoes.classList.toggle(
                 'd-none',
@@ -156,8 +155,37 @@
             );
 
             if (!ehProduto) {
+                abrirBotao.disabled = false;
+                abrirBotao.removeAttribute('title');
                 fechar();
+                return;
             }
+
+            const clienteSelecionado =
+                Boolean(clienteId());
+
+            const veiculoSelecionado =
+                Boolean(veiculoClienteId());
+
+            abrirBotao.disabled =
+                !clienteSelecionado
+                || !veiculoSelecionado;
+
+            if (!clienteSelecionado) {
+                abrirBotao.title =
+                    'Selecione um cliente antes de cadastrar um produto.';
+
+                return;
+            }
+
+            if (!veiculoSelecionado) {
+                abrirBotao.title =
+                    'Selecione um veículo antes de cadastrar um produto.';
+
+                return;
+            }
+
+            abrirBotao.removeAttribute('title');
         }
 
         function abrir() {
@@ -374,7 +402,7 @@
 
             if (descricao) {
                 descricao.value =
-                    produto.descricao;
+                    produto.nome;
             }
 
             if (quantidade) {
@@ -609,6 +637,11 @@
                     '<i class="bi bi-plus-circle"></i> Criar e adicionar à Nota';
             }
         }
+
+        window.addEventListener(
+            'nota-cliente-veiculo-atualizado',
+            atualizarAcoes
+        );
 
         tipoInput.addEventListener(
             'change',

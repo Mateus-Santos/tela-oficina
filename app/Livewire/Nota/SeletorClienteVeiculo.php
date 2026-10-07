@@ -27,7 +27,6 @@ class SeletorClienteVeiculo extends Component
 
     public ?array $clienteSelecionado = null;
 
-
     /*
      * =====================================================
      * CADASTRO RÁPIDO DE CLIENTE
@@ -39,7 +38,6 @@ class SeletorClienteVeiculo extends Component
     public string $clienteRapidoNome = '';
 
     public string $clienteRapidoTelefone = '';
-
 
     /*
      * =====================================================
@@ -54,7 +52,6 @@ class SeletorClienteVeiculo extends Component
     public ?int $veiculoSelecionadoId = null;
 
     public ?array $veiculoSelecionado = null;
-
 
     /*
      * =====================================================
@@ -77,7 +74,6 @@ class SeletorClienteVeiculo extends Component
     public array $montadorasDisponiveis = [];
 
     public array $veiculosDisponiveis = [];
-
 
     /*
      * =====================================================
@@ -144,6 +140,12 @@ class SeletorClienteVeiculo extends Component
         }
     }
 
+    private function notificarSelecaoAtualizada(): void
+    {
+        $this->dispatch(
+            'nota-cliente-veiculo-atualizado'
+        );
+    }
 
     /*
      * =====================================================
@@ -177,15 +179,13 @@ class SeletorClienteVeiculo extends Component
                 ) ?: []
             )
                 ->map(
-                    fn ($termo) =>
-                        trim($termo)
+                    fn ($termo) => trim($termo)
                 )
                 ->filter()
                 ->unique(
-                    fn ($termo) =>
-                        mb_strtolower(
-                            $termo
-                        )
+                    fn ($termo) => mb_strtolower(
+                        $termo
+                    )
                 )
                 ->values()
                 ->all();
@@ -201,8 +201,7 @@ class SeletorClienteVeiculo extends Component
                 ]);
 
         foreach (
-            $termos
-            as $termo
+            $termos as $termo
         ) {
             $numerico =
                 preg_replace(
@@ -360,14 +359,12 @@ class SeletorClienteVeiculo extends Component
                 )
                 ->values()
                 ->map(
-                    fn ($cliente) =>
-                        $this->formatarCliente(
-                            $cliente
-                        )
+                    fn ($cliente) => $this->formatarCliente(
+                        $cliente
+                    )
                 )
                 ->toArray();
     }
-
 
     /*
      * =====================================================
@@ -384,7 +381,7 @@ class SeletorClienteVeiculo extends Component
                     $clienteId
                 );
 
-        if (!$cliente) {
+        if (! $cliente) {
             return;
         }
 
@@ -406,7 +403,6 @@ class SeletorClienteVeiculo extends Component
         $this->removerVeiculo();
     }
 
-
     public function removerCliente(): void
     {
         $this->clienteSelecionadoId =
@@ -423,7 +419,6 @@ class SeletorClienteVeiculo extends Component
 
         $this->removerVeiculo();
     }
-
 
     /*
      * =====================================================
@@ -443,7 +438,6 @@ class SeletorClienteVeiculo extends Component
             true;
     }
 
-
     public function fecharCadastroClienteRapido(): void
     {
         $this->exibirCadastroClienteRapido =
@@ -458,7 +452,6 @@ class SeletorClienteVeiculo extends Component
             'clienteRapidoTelefone',
         ]);
     }
-
 
     public function criarClienteRapido(): void
     {
@@ -490,20 +483,15 @@ class SeletorClienteVeiculo extends Component
                     ],
                 ],
                 [
-                    'clienteRapidoNome.required' =>
-                        'Informe o nome do cliente.',
+                    'clienteRapidoNome.required' => 'Informe o nome do cliente.',
 
-                    'clienteRapidoNome.max' =>
-                        'O nome não pode ultrapassar 255 caracteres.',
+                    'clienteRapidoNome.max' => 'O nome não pode ultrapassar 255 caracteres.',
 
-                    'clienteRapidoTelefone.required' =>
-                        'Informe o telefone principal.',
+                    'clienteRapidoTelefone.required' => 'Informe o telefone principal.',
 
-                    'clienteRapidoTelefone.min' =>
-                        'O telefone deve possuir pelo menos 10 dígitos.',
+                    'clienteRapidoTelefone.min' => 'O telefone deve possuir pelo menos 10 dígitos.',
 
-                    'clienteRapidoTelefone.max' =>
-                        'O telefone não pode possuir mais de 11 dígitos.',
+                    'clienteRapidoTelefone.max' => 'O telefone não pode possuir mais de 11 dígitos.',
                 ]
             );
 
@@ -511,13 +499,11 @@ class SeletorClienteVeiculo extends Component
             app(
                 CriarClienteRapido::class
             )->execute([
-                'nome' =>
-                    $dados[
+                'nome' => $dados[
                         'clienteRapidoNome'
                     ],
 
-                'telefone_1' =>
-                    $dados[
+                'telefone_1' => $dados[
                         'clienteRapidoTelefone'
                     ],
             ]);
@@ -539,7 +525,6 @@ class SeletorClienteVeiculo extends Component
         $this->removerVeiculo();
     }
 
-
     /*
      * =====================================================
      * BUSCA DE VEÍCULO
@@ -554,7 +539,7 @@ class SeletorClienteVeiculo extends Component
             );
 
         if (
-            !$this->clienteSelecionadoId
+            ! $this->clienteSelecionadoId
             || mb_strlen($busca)
                 < 2
         ) {
@@ -573,15 +558,13 @@ class SeletorClienteVeiculo extends Component
                 ) ?: []
             )
                 ->map(
-                    fn ($termo) =>
-                        trim($termo)
+                    fn ($termo) => trim($termo)
                 )
                 ->filter()
                 ->unique(
-                    fn ($termo) =>
-                        mb_strtolower(
-                            $termo
-                        )
+                    fn ($termo) => mb_strtolower(
+                        $termo
+                    )
                 )
                 ->values()
                 ->all();
@@ -603,8 +586,7 @@ class SeletorClienteVeiculo extends Component
                 );
 
         foreach (
-            $termos
-            as $termo
+            $termos as $termo
         ) {
             $placa =
                 strtoupper(
@@ -662,14 +644,12 @@ class SeletorClienteVeiculo extends Component
                 ->limit(30)
                 ->get()
                 ->map(
-                    fn ($veiculoCliente) =>
-                        $this->formatarVeiculo(
-                            $veiculoCliente
-                        )
+                    fn ($veiculoCliente) => $this->formatarVeiculo(
+                        $veiculoCliente
+                    )
                 )
                 ->toArray();
     }
-
 
     /*
      * =====================================================
@@ -681,7 +661,7 @@ class SeletorClienteVeiculo extends Component
         int $veiculoClienteId
     ): void {
         if (
-            !$this->clienteSelecionadoId
+            ! $this->clienteSelecionadoId
         ) {
             return;
         }
@@ -707,7 +687,7 @@ class SeletorClienteVeiculo extends Component
                 )
                 ->first();
 
-        if (!$veiculoCliente) {
+        if (! $veiculoCliente) {
             return;
         }
 
@@ -724,8 +704,8 @@ class SeletorClienteVeiculo extends Component
         $this->resultadosVeiculos = [];
 
         $this->fecharCadastroVeiculoRapido();
+        $this->notificarSelecaoAtualizada();
     }
-
 
     public function removerVeiculo(): void
     {
@@ -740,8 +720,8 @@ class SeletorClienteVeiculo extends Component
         $this->resultadosVeiculos = [];
 
         $this->fecharCadastroVeiculoRapido();
+        $this->notificarSelecaoAtualizada();
     }
-
 
     /*
      * =====================================================
@@ -752,7 +732,7 @@ class SeletorClienteVeiculo extends Component
     public function abrirCadastroVeiculoRapido(): void
     {
         if (
-            !$this->clienteSelecionadoId
+            ! $this->clienteSelecionadoId
         ) {
             return;
         }
@@ -768,7 +748,6 @@ class SeletorClienteVeiculo extends Component
         $this->exibirCadastroVeiculoRapido =
             true;
     }
-
 
     public function fecharCadastroVeiculoRapido(): void
     {
@@ -799,7 +778,6 @@ class SeletorClienteVeiculo extends Component
         ]);
     }
 
-
     public function updatedVeiculoRapidoMontadoraId(
         $valor
     ): void {
@@ -809,7 +787,7 @@ class SeletorClienteVeiculo extends Component
         $this->veiculosDisponiveis =
             [];
 
-        if (!$valor) {
+        if (! $valor) {
             return;
         }
 
@@ -827,21 +805,18 @@ class SeletorClienteVeiculo extends Component
                 ->get()
                 ->map(
                     fn ($veiculo) => [
-                        'id' =>
-                            $veiculo->id,
+                        'id' => $veiculo->id,
 
-                        'nome' =>
-                            $veiculo->nome,
+                        'nome' => $veiculo->nome,
                     ]
                 )
                 ->toArray();
     }
 
-
     public function criarVeiculoRapido(): void
     {
         if (
-            !$this->clienteSelecionadoId
+            ! $this->clienteSelecionadoId
         ) {
             return;
         }
@@ -907,7 +882,7 @@ class SeletorClienteVeiculo extends Component
                         'required',
                         'integer',
                         'min:1900',
-                        'max:' . (
+                        'max:'.(
                             date('Y')
                             + 1
                         ),
@@ -920,38 +895,27 @@ class SeletorClienteVeiculo extends Component
                     ],
                 ],
                 [
-                    'veiculoRapidoMontadoraId.required' =>
-                        'Selecione a montadora.',
+                    'veiculoRapidoMontadoraId.required' => 'Selecione a montadora.',
 
-                    'veiculoRapidoMontadoraId.exists' =>
-                        'A montadora selecionada não existe.',
+                    'veiculoRapidoMontadoraId.exists' => 'A montadora selecionada não existe.',
 
-                    'veiculoRapidoVeiculoId.required' =>
-                        'Selecione o modelo do veículo.',
+                    'veiculoRapidoVeiculoId.required' => 'Selecione o modelo do veículo.',
 
-                    'veiculoRapidoVeiculoId.exists' =>
-                        'O modelo selecionado não pertence à montadora informada.',
+                    'veiculoRapidoVeiculoId.exists' => 'O modelo selecionado não pertence à montadora informada.',
 
-                    'veiculoRapidoPlaca.required' =>
-                        'Informe a placa do veículo.',
+                    'veiculoRapidoPlaca.required' => 'Informe a placa do veículo.',
 
-                    'veiculoRapidoPlaca.regex' =>
-                        'Informe uma placa válida. Exemplos: ABC1234 ou ABC1D23.',
+                    'veiculoRapidoPlaca.regex' => 'Informe uma placa válida. Exemplos: ABC1234 ou ABC1D23.',
 
-                    'veiculoRapidoPlaca.unique' =>
-                        'Já existe um veículo cadastrado com esta placa.',
+                    'veiculoRapidoPlaca.unique' => 'Já existe um veículo cadastrado com esta placa.',
 
-                    'veiculoRapidoAno.required' =>
-                        'Informe o ano do veículo.',
+                    'veiculoRapidoAno.required' => 'Informe o ano do veículo.',
 
-                    'veiculoRapidoAno.min' =>
-                        'Informe um ano válido.',
+                    'veiculoRapidoAno.min' => 'Informe um ano válido.',
 
-                    'veiculoRapidoAno.max' =>
-                        'O ano informado não pode ser superior ao próximo ano.',
+                    'veiculoRapidoAno.max' => 'O ano informado não pode ser superior ao próximo ano.',
 
-                    'veiculoRapidoCor.max' =>
-                        'A cor não pode ultrapassar 20 caracteres.',
+                    'veiculoRapidoCor.max' => 'A cor não pode ultrapassar 20 caracteres.',
                 ]
             );
 
@@ -960,23 +924,19 @@ class SeletorClienteVeiculo extends Component
                 CriarVeiculoCliente::class
             )->execute(
                 [
-                    'placa' =>
-                        $dados[
+                    'placa' => $dados[
                             'veiculoRapidoPlaca'
                         ],
 
-                    'ano' =>
-                        $dados[
+                    'ano' => $dados[
                             'veiculoRapidoAno'
                         ],
 
-                    'cor' =>
-                        $dados[
+                    'cor' => $dados[
                             'veiculoRapidoCor'
                         ] ?: null,
 
-                    'veiculo_id' =>
-                        $dados[
+                    'veiculo_id' => $dados[
                             'veiculoRapidoVeiculoId'
                         ],
 
@@ -1001,8 +961,8 @@ class SeletorClienteVeiculo extends Component
         $this->resultadosVeiculos = [];
 
         $this->fecharCadastroVeiculoRapido();
+        $this->notificarSelecaoAtualizada();
     }
-
 
     /*
      * =====================================================
@@ -1029,76 +989,61 @@ class SeletorClienteVeiculo extends Component
                 ->get()
                 ->map(
                     fn ($montadora) => [
-                        'id' =>
-                            $montadora->id,
+                        'id' => $montadora->id,
 
-                        'nome' =>
-                            $montadora->nome,
+                        'nome' => $montadora->nome,
                     ]
                 )
                 ->toArray();
     }
 
-
     private function formatarCliente(
         Cliente $cliente
     ): array {
         return [
-            'id' =>
-                $cliente->id,
+            'id' => $cliente->id,
 
-            'nome' =>
-                $cliente
-                    ->pessoa
-                    ?->nome
+            'nome' => $cliente
+                ->pessoa
+                ?->nome
                 ?? 'Cliente sem nome',
 
-            'cpf' =>
-                $cliente
-                    ->pessoa
-                    ?->cpf,
+            'cpf' => $cliente
+                ->pessoa
+                ?->cpf,
 
-            'telefone' =>
-                $cliente
-                    ->pessoa
-                    ?->telefone_1
+            'telefone' => $cliente
+                ->pessoa
+                ?->telefone_1
                 ?: $cliente
                     ->pessoa
                     ?->telefone_2,
         ];
     }
 
-
     private function formatarVeiculo(
         VeiculosCliente $veiculoCliente
     ): array {
         return [
-            'id' =>
-                $veiculoCliente->id,
+            'id' => $veiculoCliente->id,
 
-            'placa' =>
-                $veiculoCliente->placa,
+            'placa' => $veiculoCliente->placa,
 
-            'ano' =>
-                $veiculoCliente->ano,
+            'ano' => $veiculoCliente->ano,
 
-            'cor' =>
-                $veiculoCliente->cor,
+            'cor' => $veiculoCliente->cor,
 
-            'veiculo' =>
-                $veiculoCliente
-                    ->veiculo
-                    ?->nome
+            'veiculo' => $veiculoCliente
+                ->veiculo
+                ?->nome
                 ?? 'Veículo não informado',
 
-            'montadora' =>
-                $veiculoCliente
-                    ->veiculo
-                    ?->montadora
-                    ?->nome,
+            'montadora' => $veiculoCliente
+                ->veiculo
+                ?->montadora
+                ?->nome,
         ];
     }
-
 
     public function render()
     {
