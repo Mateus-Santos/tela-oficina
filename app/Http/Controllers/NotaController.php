@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\Actions\Notas\CancelarNota;
 use App\Actions\Notas\FinalizarNota;
 use App\Http\Requests\FinalizarNotaRequest;
+use App\Http\Requests\Notas\BaixarPdfInternoNotaRequest;
 use App\Models\CategoriaFinanceira;
 use App\Models\Nota;
 use App\Models\OrdemServico;
 use App\Models\Produto;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Http\Request;
 use InvalidArgumentException;
 
@@ -68,27 +70,6 @@ class NotaController extends Controller
             );
     }
 
-    public function gerarpdf(string $id)
-    {
-        $nota = Nota::with([
-            'cliente.pessoa',
-            'veiculosCliente.veiculo.montadora',
-            'itens.itemable',
-        ])->findOrFail($id);
-
-        $pdf = Pdf::loadView(
-            'pdf.nota',
-            compact('nota')
-        )->setPaper(
-            'a4',
-            'portrait'
-        );
-
-        return $pdf->stream(
-            "nota-{$nota->id}.pdf"
-        );
-    }
-
     public function index(Request $request)
     {
         $notas = Nota::query()
@@ -124,8 +105,7 @@ class NotaController extends Controller
                     $nota->id
                 )
                 ->withErrors([
-                    'nota' =>
-                        'Notas finalizadas ou canceladas não podem ser excluídas.',
+                    'nota' => 'Notas finalizadas ou canceladas não podem ser excluídas.',
                 ]);
         }
 
@@ -221,18 +201,14 @@ class NotaController extends Controller
          */
         $statusBadgeClass =
             match ($nota->status) {
-                'Aberto' =>
-                    'bg-warning text-dark',
+                'Aberto' => 'bg-warning text-dark',
 
                 'Finalizado',
-                'Concluido' =>
-                    'bg-success',
+                'Concluido' => 'bg-success',
 
-                'Cancelado' =>
-                    'bg-danger',
+                'Cancelado' => 'bg-danger',
 
-                default =>
-                    'bg-secondary',
+                default => 'bg-secondary',
             };
 
         $statusLabel =
@@ -323,7 +299,7 @@ class NotaController extends Controller
                 if (
                     $item->itemable_type
                         !== Produto::class
-                    || !$item->itemable
+                    || ! $item->itemable
                 ) {
                     continue;
                 }
@@ -376,31 +352,24 @@ class NotaController extends Controller
                         'baixo';
                 }
 
-                if (!$tipoProblema) {
+                if (! $tipoProblema) {
                     continue;
                 }
 
                 $problemasEstoque[] = [
-                    'tipo' =>
-                        $tipoProblema,
+                    'tipo' => $tipoProblema,
 
-                    'produto_id' =>
-                        $produto->id,
+                    'produto_id' => $produto->id,
 
-                    'descricao' =>
-                        $item->descricao,
+                    'descricao' => $item->descricao,
 
-                    'codigo' =>
-                        $codigoProduto,
+                    'codigo' => $codigoProduto,
 
-                    'solicitado' =>
-                        $quantidadeSolicitada,
+                    'solicitado' => $quantidadeSolicitada,
 
-                    'atual' =>
-                        $estoqueAtual,
+                    'atual' => $estoqueAtual,
 
-                    'minimo' =>
-                        $estoqueMinimo,
+                    'minimo' => $estoqueMinimo,
                 ];
             }
         }
@@ -483,7 +452,7 @@ class NotaController extends Controller
                         $codigo =
                             $item->itemable?->id
                                 ? '#'
-                                    . $item
+                                    .$item
                                         ->itemable
                                         ->id
                                 : '—';
@@ -502,44 +471,33 @@ class NotaController extends Controller
                     }
 
                     return [
-                        'id' =>
-                            $item->id,
+                        'id' => $item->id,
 
-                        'tipo' =>
-                            $tipo,
+                        'tipo' => $tipo,
 
-                        'tipo_classe' =>
-                            $tipoClasse,
+                        'tipo_classe' => $tipoClasse,
 
-                        'tipo_icone' =>
-                            $tipoIcone,
+                        'tipo_icone' => $tipoIcone,
 
-                        'codigo' =>
-                            $codigo,
+                        'codigo' => $codigo,
 
-                        'descricao' =>
-                            $item->descricao
+                        'descricao' => $item->descricao
                             ?? $item->itemable?->nome
                             ?? $item->itemable?->descricao
                             ?? 'Item sem descrição',
 
-                        'quantidade' =>
-                            $quantidade,
+                        'quantidade' => $quantidade,
 
-                        'valor_unitario' =>
-                            $valorUnitario,
+                        'valor_unitario' => $valorUnitario,
 
-                        'desconto' =>
-                            $desconto,
+                        'desconto' => $desconto,
 
-                        'total' =>
-                            $total,
+                        'total' => $total,
 
-                        'garantia_dias' =>
-                            (int) (
-                                $item->garantia_dias
-                                ?? 0
-                            ),
+                        'garantia_dias' => (int) (
+                            $item->garantia_dias
+                            ?? 0
+                        ),
                     ];
                 }
             );
@@ -550,7 +508,7 @@ class NotaController extends Controller
          */
         $categoriasFinanceiras =
             $podeFinalizarNota
-            && !$contaReceber
+            && ! $contaReceber
                 ? CategoriaFinanceira::query()
                     ->where(
                         'tipo',
@@ -591,6 +549,102 @@ class NotaController extends Controller
                 'itensExibicao',
                 'categoriasFinanceiras'
             )
+        );
+    }
+
+    private function carregarNotaParaPdf(
+        Nota $nota,
+        bool $interno = false
+    ): Nota {
+        $relacoes = [
+            'cliente.pessoa',
+            'veiculosCliente.veiculo.montadora',
+        ];
+
+        if ($interno) {
+            $relacoes['itens.itemable'] = function (MorphTo $morphTo) {
+                $morphTo->morphWith([
+                    Produto::class => [
+                        'marcaRelacionada',
+                        'imagens',
+                    ],
+                ]);
+            };
+        } else {
+            $relacoes[] = 'itens.itemable';
+        }
+
+        return $nota->load($relacoes);
+    }
+
+    public function gerarpdf(string $id)
+    {
+        $nota = Nota::findOrFail($id);
+
+        $this->carregarNotaParaPdf(
+            $nota
+        );
+
+        $pdf = Pdf::loadView(
+            'pdf.nota',
+            compact('nota')
+        )->setPaper(
+            'a4',
+            'portrait'
+        );
+
+        return $pdf->stream(
+            "nota-cliente-{$nota->id}.pdf"
+        );
+    }
+
+    public function baixarPdf(string $id)
+    {
+        $nota = Nota::findOrFail($id);
+
+        $this->carregarNotaParaPdf(
+            $nota
+        );
+
+        $pdf = Pdf::loadView(
+            'pdf.nota',
+            compact('nota')
+        )->setPaper(
+            'a4',
+            'portrait'
+        );
+
+        return $pdf->download(
+            "nota-cliente-{$nota->id}.pdf"
+        );
+    }
+
+    public function baixarPdfInterno(
+        BaixarPdfInternoNotaRequest $request,
+        Nota $nota
+    ) {
+        $this->carregarNotaParaPdf(
+            $nota,
+            true
+        );
+
+        $pdf = Pdf::loadView(
+            'pdf.nota_interna',
+            compact('nota')
+        )->setPaper(
+            'a4',
+            'landscape'
+        );
+
+        $senha =
+            $request->validated()['senha'];
+
+        $pdf->setEncryption(
+            $senha
+        );
+
+        return $pdf->download(
+            "nota-interna-{$nota->id}.pdf"
         );
     }
 }

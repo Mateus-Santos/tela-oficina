@@ -86,6 +86,7 @@
                     >
                         Cancelado
                     </option>
+
                 </select>
 
             </div>
@@ -119,25 +120,46 @@
 
     </x-filtros-container>
 
-    @if ($notas->isEmpty())
+
+    @if($notas->isEmpty())
 
         <div
-            class="alert alert-{{ request()->hasAny(['cliente', 'status']) ? 'warning' : 'info' }}"
+            class="alert alert-{{
+                request()->hasAny([
+                    'cliente',
+                    'status',
+                ])
+                    ? 'warning'
+                    : 'info'
+            }}"
         >
+
             <i
-                class="bi {{ request()->hasAny(['cliente', 'status']) ? 'bi-exclamation-triangle' : 'bi-info-circle' }}"
+                class="bi {{
+                    request()->hasAny([
+                        'cliente',
+                        'status',
+                    ])
+                        ? 'bi-exclamation-triangle'
+                        : 'bi-info-circle'
+                }}"
             ></i>
 
             {{
-                request()->hasAny(['cliente', 'status'])
+                request()->hasAny([
+                    'cliente',
+                    'status',
+                ])
                     ? 'Nenhuma nota encontrada com os filtros informados.'
                     : 'Nenhuma nota cadastrada.'
             }}
+
         </div>
 
     @endif
 
-    @if ($notas->isNotEmpty())
+
+    @if($notas->isNotEmpty())
 
         <div class="table-responsive">
 
@@ -185,7 +207,7 @@
                             scope="col"
                             class="text-center"
                         >
-                            IMPRIMIR
+                            PDFs
                         </th>
 
                         <th
@@ -208,21 +230,9 @@
 
                 <tbody>
 
-                    @foreach ($notas as $nota)
+                    @foreach($notas as $nota)
 
                         @php
-                            /*
-                             * =====================================================
-                             * ANÁLISE DE ESTOQUE DA NOTA
-                             * =====================================================
-                             *
-                             * Só analisamos Notas abertas.
-                             *
-                             * Após a finalização, o estoque já foi movimentado,
-                             * portanto o saldo atual não representa a
-                             * disponibilidade existente no momento da venda.
-                             */
-
                             $quantidadeSemEstoque = 0;
                             $quantidadeInsuficiente = 0;
                             $quantidadeEstoqueBaixo = 0;
@@ -243,7 +253,8 @@
 
                                     $possuiProduto = true;
 
-                                    $produto = $item->itemable;
+                                    $produto =
+                                        $item->itemable;
 
                                     $estoqueAtual =
                                         (float) (
@@ -260,51 +271,31 @@
                                     $quantidadeSolicitada =
                                         (float) $item->quantidade;
 
-                                    /*
-                                     * Sem nenhuma unidade disponível.
-                                     */
                                     if ($estoqueAtual <= 0) {
-
                                         $quantidadeSemEstoque++;
 
                                         continue;
                                     }
 
-                                    /*
-                                     * Existe estoque, mas não é suficiente
-                                     * para atender esta Nota.
-                                     */
                                     if (
                                         $quantidadeSolicitada
                                         > $estoqueAtual
                                     ) {
-
                                         $quantidadeInsuficiente++;
 
                                         continue;
                                     }
 
-                                    /*
-                                     * Há estoque suficiente para a Nota,
-                                     * porém o Produto está no estoque mínimo.
-                                     */
                                     if (
                                         $estoqueAtual
                                         <= $estoqueMinimo
                                     ) {
-
                                         $quantidadeEstoqueBaixo++;
                                     }
                                 }
 
                             } else {
 
-                                /*
-                                 * Para Notas não abertas precisamos apenas
-                                 * descobrir se existia Produto, para manter
-                                 * a informação estrutural disponível caso
-                                 * seja necessária posteriormente.
-                                 */
                                 $possuiProduto =
                                     $nota->itens->contains(
                                         function ($item) {
@@ -319,39 +310,56 @@
                         <tr>
 
                             {{-- ID --}}
-                            <td>
 
+                            <td>
                                 <strong>
                                     #{{ $nota->id }}
                                 </strong>
-
                             </td>
 
+
                             {{-- STATUS --}}
+
                             <td>
 
                                 @livewire(
                                     'status-nota-selector',
-                                    ['nota' => $nota],
-                                    key('status-nota-' . $nota->id)
+                                    [
+                                        'nota' => $nota,
+                                    ],
+                                    key(
+                                        'status-nota-'
+                                        . $nota->id
+                                    )
                                 )
 
                             </td>
 
+
                             {{-- CLIENTE --}}
+
                             <td>
 
                                 {{
-                                    $nota->cliente?->pessoa?->nome
+                                    $nota
+                                        ->cliente
+                                        ?->pessoa
+                                        ?->nome
                                     ?? 'Cliente Geral / Balcão'
                                 }}
 
                             </td>
 
+
                             {{-- VEÍCULO --}}
+
                             <td>
 
-                                @if($nota->veiculosCliente?->veiculo)
+                                @if(
+                                    $nota
+                                        ->veiculosCliente
+                                        ?->veiculo
+                                )
 
                                     {{
                                         $nota
@@ -391,10 +399,16 @@
 
                             </td>
 
+
                             {{-- PLACA --}}
+
                             <td>
 
-                                @if($nota->veiculosCliente?->placa)
+                                @if(
+                                    $nota
+                                        ->veiculosCliente
+                                        ?->placa
+                                )
 
                                     <span class="badge bg-light text-dark border">
 
@@ -418,7 +432,9 @@
 
                             </td>
 
+
                             {{-- VALOR --}}
+
                             <td class="text-end">
 
                                 <strong class="text-nowrap">
@@ -437,7 +453,9 @@
 
                             </td>
 
+
                             {{-- ESTOQUE --}}
+
                             <td class="text-center">
 
                                 @if($nota->status !== 'Aberto')
@@ -470,10 +488,9 @@
                                         Sem estoque
 
                                         @if($quantidadeSemEstoque > 1)
-
                                             ({{ $quantidadeSemEstoque }})
-
                                         @endif
+
                                     </span>
 
                                 @elseif($quantidadeInsuficiente > 0)
@@ -486,10 +503,9 @@
                                         Insuficiente
 
                                         @if($quantidadeInsuficiente > 1)
-
                                             ({{ $quantidadeInsuficiente }})
-
                                         @endif
+
                                     </span>
 
                                 @elseif($quantidadeEstoqueBaixo > 0)
@@ -502,10 +518,9 @@
                                         Estoque baixo
 
                                         @if($quantidadeEstoqueBaixo > 1)
-
                                             ({{ $quantidadeEstoqueBaixo }})
-
                                         @endif
+
                                     </span>
 
                                 @else
@@ -522,26 +537,149 @@
 
                             </td>
 
-                            {{-- PDF --}}
+
+                            {{-- PDFs --}}
+
                             <td class="text-center">
 
-                                <a
-                                    href="{{ route('notas.pdf', $nota->id) }}"
-                                    target="_blank"
-                                    class="btn btn-danger"
-                                    title="Imprimir nota"
-                                >
-                                    <i class="bi bi-printer"></i>
-                                    PDF
-                                </a>
+                                <div class="d-flex justify-content-center gap-1">
+
+                                    {{-- PDF CLIENTE --}}
+
+                                    <div class="btn-group">
+
+                                        <button
+                                            type="button"
+                                            class="btn btn-danger btn-sm dropdown-toggle"
+                                            data-bs-toggle="dropdown"
+                                            aria-expanded="false"
+                                        >
+                                            <i class="bi bi-file-earmark-pdf"></i>
+                                            Cliente
+                                        </button>
+
+                                        <ul class="dropdown-menu">
+
+                                            <li>
+                                                <a
+                                                    href="{{ route(
+                                                        'notas.pdf',
+                                                        $nota->id
+                                                    ) }}"
+                                                    target="_blank"
+                                                    class="dropdown-item"
+                                                >
+                                                    <i class="bi bi-eye"></i>
+                                                    Visualizar
+                                                </a>
+                                            </li>
+
+                                            <li>
+                                                <a
+                                                    href="{{ route(
+                                                        'notas.pdf.download',
+                                                        $nota->id
+                                                    ) }}"
+                                                    class="dropdown-item"
+                                                >
+                                                    <i class="bi bi-download"></i>
+                                                    Baixar
+                                                </a>
+                                            </li>
+
+                                        </ul>
+
+                                    </div>
+
+
+                                    {{-- PDF INTERNO --}}
+
+                                    @if(
+                                        auth()->user()
+                                        && auth()->user()->permitions != 2
+                                    )
+
+                                        <div class="dropdown">
+
+                                            <button
+                                                type="button"
+                                                class="btn btn-dark btn-sm dropdown-toggle"
+                                                data-bs-toggle="dropdown"
+                                                data-bs-auto-close="outside"
+                                                aria-expanded="false"
+                                            >
+                                                <i class="bi bi-lock"></i>
+                                                Interno
+                                            </button>
+
+                                            <div
+                                                class="dropdown-menu dropdown-menu-end p-3"
+                                                style="min-width: 290px;"
+                                            >
+
+                                                <form
+                                                    method="POST"
+                                                    action="{{ route(
+                                                        'notas.pdf.interno.download',
+                                                        $nota
+                                                    ) }}"
+                                                >
+
+                                                    @csrf
+
+                                                    <label
+                                                        for="senha-pdf-interno-{{ $nota->id }}"
+                                                        class="form-label fw-semibold"
+                                                    >
+                                                        <i class="bi bi-key"></i>
+                                                        Senha do PDF
+                                                    </label>
+
+                                                    <input
+                                                        type="password"
+                                                        name="senha"
+                                                        id="senha-pdf-interno-{{ $nota->id }}"
+                                                        class="form-control mb-2"
+                                                        minlength="4"
+                                                        maxlength="64"
+                                                        autocomplete="new-password"
+                                                        required
+                                                    >
+
+                                                    <small class="text-muted d-block mb-3">
+                                                        A senha será exigida para abrir o arquivo.
+                                                    </small>
+
+                                                    <button
+                                                        type="submit"
+                                                        class="btn btn-dark btn-sm w-100"
+                                                    >
+                                                        <i class="bi bi-download"></i>
+                                                        Baixar protegido
+                                                    </button>
+
+                                                </form>
+
+                                            </div>
+
+                                        </div>
+
+                                    @endif
+
+                                </div>
 
                             </td>
 
+
                             {{-- VER --}}
+
                             <td class="text-center">
 
                                 <a
-                                    href="{{ route('notas.show', $nota->id) }}"
+                                    href="{{ route(
+                                        'notas.show',
+                                        $nota->id
+                                    ) }}"
                                     class="btn btn-success"
                                     title="Visualizar nota"
                                 >
@@ -550,13 +688,18 @@
 
                             </td>
 
+
                             {{-- EXCLUIR --}}
+
                             <td class="text-center">
 
                                 @if($nota->status === 'Aberto')
 
                                     <form
-                                        action="{{ route('notas.destroy', $nota->id) }}"
+                                        action="{{ route(
+                                            'notas.destroy',
+                                            $nota->id
+                                        ) }}"
                                         method="POST"
                                         onsubmit="return confirm('Deseja realmente excluir esta nota?');"
                                     >
@@ -598,6 +741,7 @@
             </table>
 
         </div>
+
 
         @if($notas->hasPages())
 

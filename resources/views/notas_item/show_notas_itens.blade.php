@@ -81,14 +81,130 @@
 
             @endif
 
-            <a
-                href="{{ route('notas.pdf', $nota->id) }}"
-                target="_blank"
-                class="btn btn-danger"
-            >
-                <i class="bi bi-file-earmark-pdf"></i>
-                PDF
-            </a>
+            {{-- =====================================================
+                PDF CLIENTE
+            ====================================================== --}}
+
+            <div class="btn-group">
+
+                <button
+                    type="button"
+                    class="btn btn-danger dropdown-toggle"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                >
+                    <i class="bi bi-file-earmark-pdf"></i>
+                    PDF Cliente
+                </button>
+
+                <ul class="dropdown-menu">
+
+                    <li>
+                        <a
+                            href="{{ route(
+                                'notas.pdf',
+                                $nota->id
+                            ) }}"
+                            target="_blank"
+                            class="dropdown-item"
+                        >
+                            <i class="bi bi-eye"></i>
+                            Visualizar
+                        </a>
+                    </li>
+
+                    <li>
+                        <a
+                            href="{{ route(
+                                'notas.pdf.download',
+                                $nota->id
+                            ) }}"
+                            class="dropdown-item"
+                        >
+                            <i class="bi bi-download"></i>
+                            Baixar
+                        </a>
+                    </li>
+
+                </ul>
+
+            </div>
+
+            {{-- =====================================================
+                PDF INTERNO
+            ====================================================== --}}
+
+            @if(
+                auth()->user()
+                && auth()->user()->permitions != 2
+            )
+
+                <div class="dropdown">
+
+                    <button
+                        type="button"
+                        class="btn btn-dark dropdown-toggle"
+                        data-bs-toggle="dropdown"
+                        data-bs-auto-close="outside"
+                        aria-expanded="false"
+                    >
+                        <i class="bi bi-file-earmark-lock"></i>
+                        PDF Interno
+                    </button>
+
+                    <div
+                        class="dropdown-menu dropdown-menu-end p-3"
+                        style="min-width: 300px;"
+                    >
+
+                        <form
+                            method="POST"
+                            action="{{ route(
+                                'notas.pdf.interno.download',
+                                $nota
+                            ) }}"
+                        >
+
+                            @csrf
+
+                            <label
+                                for="senha-pdf-interno-show"
+                                class="form-label fw-semibold"
+                            >
+                                <i class="bi bi-key"></i>
+                                Senha do PDF
+                            </label>
+
+                            <input
+                                type="password"
+                                name="senha"
+                                id="senha-pdf-interno-show"
+                                class="form-control mb-2"
+                                minlength="4"
+                                maxlength="64"
+                                autocomplete="new-password"
+                                required
+                            >
+
+                            <div class="form-text mb-3">
+                                A senha será exigida para abrir o arquivo.
+                            </div>
+
+                            <button
+                                type="submit"
+                                class="btn btn-dark w-100"
+                            >
+                                <i class="bi bi-download"></i>
+                                Baixar PDF protegido
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            @endif
 
         </div>
 
@@ -490,9 +606,7 @@
                 <div class="row g-3">
 
                     <div class="col-12 col-md-3">
-
                         <div class="border rounded p-3 h-100">
-
                             <small class="text-muted d-block">
                                 Conta
                             </small>
@@ -500,15 +614,11 @@
                             <strong>
                                 #{{ $contaReceber->id }}
                             </strong>
-
                         </div>
-
                     </div>
 
                     <div class="col-12 col-md-3">
-
                         <div class="border rounded p-3 h-100">
-
                             <small class="text-muted d-block">
                                 Valor da conta
                             </small>
@@ -524,15 +634,11 @@
                                     )
                                 }}
                             </strong>
-
                         </div>
-
                     </div>
 
                     <div class="col-12 col-md-3">
-
                         <div class="border rounded p-3 h-100">
-
                             <small class="text-muted d-block">
                                 Recebido
                             </small>
@@ -548,15 +654,11 @@
                                     )
                                 }}
                             </strong>
-
                         </div>
-
                     </div>
 
                     <div class="col-12 col-md-3">
-
                         <div class="border rounded p-3 h-100">
-
                             <small class="text-muted d-block">
                                 Saldo
                             </small>
@@ -572,9 +674,7 @@
                                     )
                                 }}
                             </strong>
-
                         </div>
-
                     </div>
 
                 </div>
@@ -837,12 +937,10 @@
                                 <tr>
 
                                     <td>
-
                                         <span class="badge {{ $item['tipo_classe'] }}">
                                             <i class="bi {{ $item['tipo_icone'] }}"></i>
                                             {{ $item['tipo'] }}
                                         </span>
-
                                     </td>
 
                                     <td>
@@ -882,7 +980,6 @@
                                     </td>
 
                                     <td>
-
                                         <strong>
                                             R$
                                             {{
@@ -894,11 +991,9 @@
                                                 )
                                             }}
                                         </strong>
-
                                     </td>
 
                                     <td>
-
                                         @if($item['garantia_dias'] > 0)
 
                                             {{ $item['garantia_dias'] }}
@@ -909,7 +1004,6 @@
                                             —
 
                                         @endif
-
                                     </td>
 
                                 </tr>
