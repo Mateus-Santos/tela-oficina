@@ -58,7 +58,9 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         Route::post('/estoque/{produto}/ajuste', [EstoqueController::class, 'registrarAjuste'])->name('estoque.registrarAjuste');
 
         // Notas
-        Route::get('/notas/{id}/pdf', [NotaController::class, 'gerarpdf'])->name('notas.pdf');
+        Route::get('/notas/{id}/pdf',[NotaController::class, 'gerarpdf'])->name('notas.pdf');
+        Route::get('/notas/{id}/pdf/download',[NotaController::class, 'baixarPdf'])->name('notas.pdf.download');
+        Route::post('/notas/{nota}/pdf-interno/download',[NotaController::class, 'baixarPdfInterno'])->name('notas.pdf.interno.download');
         Route::post('/notas/{nota}/finalizar', [NotaController::class, 'finalizar'])->name('notas.finalizar');
         Route::post('/notas/{nota}/cancelar', [NotaController::class, 'cancelar'])->name('notas.cancelar');
         Route::resource('notas', NotaController::class)->only(['index', 'show', 'destroy']);

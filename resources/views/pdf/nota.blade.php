@@ -1033,21 +1033,21 @@
             style="padding-right: 15px;"
         >
 
-            @if(!empty($nota->observacao))
+           @if(!empty($nota->observacoes))
 
-                <div class="box-obs">
+            <div class="box-obs">
 
-                    <strong>
-                        OBSERVAÇÕES:
-                    </strong>
+                <strong>
+                    OBSERVAÇÕES:
+                </strong>
 
-                    <br>
+                <br>
 
-                    {{ $nota->observacao }}
+                {{ $nota->observacoes }}
 
-                </div>
+            </div>
 
-            @endif
+        @endif
 
 
             <div class="signature-area">
