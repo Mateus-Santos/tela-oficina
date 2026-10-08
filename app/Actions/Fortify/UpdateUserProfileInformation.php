@@ -4,6 +4,7 @@ namespace App\Actions\Fortify;
 
 use App\Models\User;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
@@ -19,7 +20,12 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
     {
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('users')->ignore($user->id),
+            ],
             'photo' => ['nullable', 'mimes:jpg,jpeg,png', 'max:1024'],
         ])->validateWithBag('updateProfileInformation');
 
@@ -27,29 +33,43 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             $user->updateProfilePhoto($input['photo']);
         }
 
-        if ($input['email'] !== $user->email &&
-            $user instanceof MustVerifyEmail) {
+        if (
+            $input['email'] !== $user->email &&
+            $user instanceof MustVerifyEmail
+        ) {
             $this->updateVerifiedUser($user, $input);
-        } else {
+
+            return;
+        }
+
+        DB::transaction(function () use ($user, $input): void {
+            $user->pessoa()->update([
+                'nome' => $input['name'],
+            ]);
+
             $user->forceFill([
-                'name' => $input['name'],
                 'email' => $input['email'],
             ])->save();
-        }
+        });
     }
 
     /**
      * Update the given verified user's profile information.
      *
-     * @param  array<string, string>  $input
+     * @param  array<string, mixed>  $input
      */
     protected function updateVerifiedUser(User $user, array $input): void
     {
-        $user->forceFill([
-            'name' => $input['name'],
-            'email' => $input['email'],
-            'email_verified_at' => null,
-        ])->save();
+        DB::transaction(function () use ($user, $input): void {
+            $user->pessoa()->update([
+                'nome' => $input['name'],
+            ]);
+
+            $user->forceFill([
+                'email' => $input['email'],
+                'email_verified_at' => null,
+            ])->save();
+        });
 
         $user->sendEmailVerificationNotification();
     }

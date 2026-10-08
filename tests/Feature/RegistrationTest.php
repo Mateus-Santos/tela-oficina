@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Fortify\Features;
 use Laravel\Jetstream\Jetstream;
@@ -45,10 +44,12 @@ class RegistrationTest extends TestCase
             'email' => 'test@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
+            'data_nascimento' => '1990-01-01',
+            'telefone_1' => '75999999999',
             'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(RouteServiceProvider::HOME);
+        $response->assertRedirect('/home');
     }
 }

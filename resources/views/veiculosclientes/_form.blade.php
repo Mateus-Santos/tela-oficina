@@ -1,3 +1,8 @@
+@php
+    $usuarioLogado = auth()->user();
+    $administrador = $usuarioLogado?->permitions == 1;
+@endphp
+
 <div class="campos">
 
     @if ($errors->any())
@@ -21,7 +26,16 @@
     {{-- CLIENTES --}}
     <div class="row mb-4">
 
-        @if(auth()->user() && auth()->user()->permitions == 1)
+        <div class="col-12">
+
+            <h5 class="mb-3">
+                <i class="bi bi-people me-1"></i>
+                Responsável(is) pelo veículo
+            </h5>
+
+        </div>
+
+        @if($administrador)
 
             <div class="col-12 col-lg-9">
 
@@ -37,11 +51,15 @@
                     )"
                 />
 
+                <div class="form-text mt-2">
+                    É possível vincular mais de um cliente ao mesmo veículo.
+                </div>
+
             </div>
 
         @else
 
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-lg-9">
 
                 <label class="form-label">
                     Cliente(s):
@@ -81,8 +99,8 @@
                             <i class="bi bi-person-check fs-5"></i>
 
                             <strong>
-                                {{ auth()->user()->pessoa?->nome
-                                    ?? auth()->user()->name
+                                {{ $usuarioLogado?->pessoa?->nome
+                                    ?? $usuarioLogado?->name
                                     ?? 'Cliente' }}
                             </strong>
 
@@ -98,6 +116,12 @@
                         Usuários comuns não podem alterar os responsáveis pelo veículo.
                     </div>
 
+                @else
+
+                    <div class="form-text">
+                        O veículo será vinculado automaticamente ao seu cadastro.
+                    </div>
+
                 @endif
 
             </div>
@@ -106,8 +130,19 @@
 
     </div>
 
+    <hr class="my-4">
+
     {{-- VEÍCULO --}}
     <div class="row mb-4">
+
+        <div class="col-12">
+
+            <h5 class="mb-3">
+                <i class="bi bi-car-front me-1"></i>
+                Modelo do veículo
+            </h5>
+
+        </div>
 
         <div class="col-12 col-lg-9">
 
@@ -125,11 +160,32 @@
                 "
             />
 
+            @error('veiculo_id')
+                <div class="text-danger small fw-semibold mt-1">
+                    {{ $message }}
+                </div>
+            @enderror
+
         </div>
 
     </div>
 
+    <hr class="my-4">
+
     {{-- DADOS DO VEÍCULO --}}
+    <div class="row">
+
+        <div class="col-12">
+
+            <h5 class="mb-3">
+                <i class="bi bi-card-text me-1"></i>
+                Dados do veículo
+            </h5>
+
+        </div>
+
+    </div>
+
     <div class="row g-3 mb-3">
 
         {{-- PLACA --}}
@@ -139,7 +195,7 @@
                 class="form-label"
                 for="placa"
             >
-                Placa:*
+                Placa *
             </label>
 
             <input
@@ -174,7 +230,7 @@
                 class="form-label"
                 for="ano"
             >
-                Ano:*
+                Ano *
             </label>
 
             <input
@@ -209,7 +265,7 @@
                 class="form-label"
                 for="cor"
             >
-                Cor:
+                Cor
             </label>
 
             <input
@@ -223,6 +279,7 @@
                 ) }}"
                 placeholder="Ex.: Branco"
                 maxlength="20"
+                autocomplete="off"
             >
 
             @error('cor')

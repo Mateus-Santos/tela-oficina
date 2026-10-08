@@ -9,22 +9,31 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class ClienteController extends Controller
 {
     private function limparMascara(?string $valor): ?string
     {
-        return $valor
-            ? preg_replace('/\D/', '', $valor)
+        if (! $valor) {
+            return null;
+        }
+
+        $valorLimpo = preg_replace('/\D/', '', $valor);
+
+        return $valorLimpo !== ''
+            ? $valorLimpo
             : null;
     }
 
     public function index(Request $request)
     {
         $nome = trim((string) $request->input('nome', ''));
+
         $cpf = $this->limparMascara(
             $request->input('cpf')
         );
+
         $telefone = $this->limparMascara(
             $request->input('telefone')
         );
@@ -107,10 +116,6 @@ class ClienteController extends Controller
 
     public function store(Request $request)
     {
-        /*
-         * Se o campo nome foi preenchido,
-         * entendemos que será criada uma nova Pessoa.
-         */
         if ($request->filled('nome')) {
             $cpfLimpo = $this->limparMascara(
                 $request->input('cpf')
@@ -189,38 +194,27 @@ class ClienteController extends Controller
                     ],
                 ],
                 [
-                    'nome.required' =>
-                        'O campo nome é obrigatório.',
+                    'nome.required' => 'O campo nome é obrigatório.',
 
-                    'email.required_if' =>
-                        'O e-mail é obrigatório para criar um usuário de acesso.',
+                    'email.required_if' => 'O e-mail é obrigatório para criar um usuário de acesso.',
 
-                    'email.email' =>
-                        'Informe um endereço de e-mail válido.',
+                    'email.email' => 'Informe um endereço de e-mail válido.',
 
-                    'email.unique' =>
-                        'Este e-mail já está em uso.',
+                    'email.unique' => 'Este e-mail já está em uso.',
 
-                    'cpf.unique' =>
-                        'Este CPF já está cadastrado.',
+                    'cpf.unique' => 'Este CPF já está cadastrado.',
 
-                    'cpf.size' =>
-                        'O CPF deve possuir exatamente 11 dígitos.',
+                    'cpf.size' => 'O CPF deve possuir exatamente 11 dígitos.',
 
-                    'rg.max' =>
-                        'O campo RG não pode ter mais que 14 dígitos.',
+                    'rg.max' => 'O campo RG não pode ter mais que 14 dígitos.',
 
-                    'telefone_1.min' =>
-                        'O Telefone Principal deve ter pelo menos 10 dígitos (DDD + número).',
+                    'telefone_1.min' => 'O Telefone Principal deve ter pelo menos 10 dígitos (DDD + número).',
 
-                    'telefone_1.max' =>
-                        'O Telefone Principal não pode ter mais que 11 dígitos.',
+                    'telefone_1.max' => 'O Telefone Principal não pode ter mais que 11 dígitos.',
 
-                    'telefone_2.min' =>
-                        'O Telefone Secundário deve ter pelo menos 10 dígitos (DDD + número).',
+                    'telefone_2.min' => 'O Telefone Secundário deve ter pelo menos 10 dígitos (DDD + número).',
 
-                    'telefone_2.max' =>
-                        'O Telefone Secundário não pode ter mais que 11 dígitos.',
+                    'telefone_2.max' => 'O Telefone Secundário não pode ter mais que 11 dígitos.',
                 ]
             );
 
@@ -239,28 +233,23 @@ class ClienteController extends Controller
                         'nome' => $request->input('nome'),
                         'cpf' => $cpfLimpo,
                         'rg' => $rgLimpo,
-                        'data_nascimento' =>
-                            $request->input('data_nascimento'),
+                        'data_nascimento' => $request->input('data_nascimento'),
                         'telefone_1' => $telefone1Limpo,
                         'telefone_2' => $telefone2Limpo,
                     ]);
 
                     Cliente::create([
                         'pessoa_id' => $pessoa->id,
-                        'pontos' => $request->input(
-                            'pontos',
-                            0
-                        ),
+                        'pontos' => $request->input('pontos') ?? 0,
                     ]);
 
                     if (
-                        $request->has('criar_usuario')
+                        $request->boolean('criar_usuario')
                         && $request->filled('email')
                     ) {
                         $senhaGerada = Str::random(8);
 
                         User::create([
-                            'name' => $pessoa->nome,
                             'email' => $request->input('email'),
                             'password' => Hash::make(
                                 $senhaGerada
@@ -275,20 +264,14 @@ class ClienteController extends Controller
                 return redirect()
                     ->route('clientes.index')
                     ->with([
-                        'success' =>
-                            'Cliente e usuário criados com sucesso!',
+                        'success' => 'Cliente e usuário criados com sucesso!',
 
-                        'senha_temporaria' =>
-                            $senhaGerada,
+                        'senha_temporaria' => $senhaGerada,
 
-                        'email_usuario' =>
-                            $request->input('email'),
+                        'email_usuario' => $request->input('email'),
                     ]);
             }
         } else {
-            /*
-             * Pessoa existente que ainda não possui Cliente.
-             */
             $request->validate(
                 [
                     'pessoa_id' => [
@@ -304,22 +287,16 @@ class ClienteController extends Controller
                     ],
                 ],
                 [
-                    'pessoa_id.required' =>
-                        'Selecione uma pessoa da lista ou preencha os dados de uma nova pessoa.',
+                    'pessoa_id.required' => 'Selecione uma pessoa da lista ou preencha os dados de uma nova pessoa.',
 
-                    'pessoa_id.unique' =>
-                        'Esta pessoa já é um cliente cadastrado.',
+                    'pessoa_id.unique' => 'Esta pessoa já é um cliente cadastrado.',
                 ]
             );
 
             Cliente::create([
-                'pessoa_id' => $request->input(
-                    'pessoa_id'
-                ),
-                'pontos' => $request->input(
-                    'pontos',
-                    0
-                ),
+                'pessoa_id' => $request->input('pessoa_id'),
+
+                'pontos' => $request->input('pontos') ?? 0,
             ]);
         }
 
@@ -381,6 +358,11 @@ class ClienteController extends Controller
         $cliente = Cliente::with('pessoa')
             ->findOrFail($id);
 
+        $usuario = User::where(
+            'pessoa_id',
+            $cliente->pessoa_id
+        )->first();
+
         $cpfLimpo = $this->limparMascara(
             $request->input('cpf')
         );
@@ -404,77 +386,96 @@ class ClienteController extends Controller
             'telefone_2' => $telefone2Limpo,
         ]);
 
-        $request->validate(
-            [
-                'nome' => [
-                    'required',
-                    'string',
-                    'max:255',
-                ],
-
-                'cpf' => [
-                    'nullable',
-                    'string',
-                    'size:11',
-                    'unique:pessoas,cpf,'
-                        . $cliente->pessoa_id,
-                ],
-
-                'rg' => [
-                    'nullable',
-                    'string',
-                    'max:14',
-                ],
-
-                'data_nascimento' => [
-                    'nullable',
-                    'date',
-                ],
-
-                'telefone_1' => [
-                    'nullable',
-                    'string',
-                    'min:10',
-                    'max:11',
-                ],
-
-                'telefone_2' => [
-                    'nullable',
-                    'string',
-                    'min:10',
-                    'max:11',
-                ],
-
-                'pontos' => [
-                    'required',
-                    'integer',
-                    'min:0',
-                ],
+        $regras = [
+            'nome' => [
+                'required',
+                'string',
+                'max:255',
             ],
+
+            'cpf' => [
+                'nullable',
+                'string',
+                'size:11',
+
+                Rule::unique(
+                    'pessoas',
+                    'cpf'
+                )->ignore(
+                    $cliente->pessoa_id
+                ),
+            ],
+
+            'rg' => [
+                'nullable',
+                'string',
+                'max:14',
+            ],
+
+            'data_nascimento' => [
+                'nullable',
+                'date',
+            ],
+
+            'telefone_1' => [
+                'nullable',
+                'string',
+                'min:10',
+                'max:11',
+            ],
+
+            'telefone_2' => [
+                'nullable',
+                'string',
+                'min:10',
+                'max:11',
+            ],
+
+            'pontos' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+        ];
+
+        if ($usuario) {
+            $regras['email'] = [
+                'required',
+                'email',
+
+                Rule::unique(
+                    'users',
+                    'email'
+                )->ignore(
+                    $usuario->id
+                ),
+            ];
+        }
+
+        $request->validate(
+            $regras,
             [
-                'nome.required' =>
-                    'O campo nome é obrigatório.',
+                'nome.required' => 'O campo nome é obrigatório.',
 
-                'cpf.unique' =>
-                    'Este CPF já pertence a outra pessoa.',
+                'email.required' => 'O e-mail é obrigatório para usuários de acesso.',
 
-                'cpf.size' =>
-                    'O CPF deve possuir exatamente 11 dígitos.',
+                'email.email' => 'Informe um endereço de e-mail válido.',
 
-                'rg.max' =>
-                    'O campo RG não pode ter mais que 14 dígitos.',
+                'email.unique' => 'Este e-mail já está em uso.',
 
-                'telefone_1.min' =>
-                    'O Telefone Principal deve ter pelo menos 10 dígitos.',
+                'cpf.unique' => 'Este CPF já pertence a outra pessoa.',
 
-                'telefone_1.max' =>
-                    'O Telefone Principal não pode ter mais que 11 dígitos.',
+                'cpf.size' => 'O CPF deve possuir exatamente 11 dígitos.',
 
-                'telefone_2.min' =>
-                    'O Telefone Secundário deve ter pelo menos 10 dígitos.',
+                'rg.max' => 'O campo RG não pode ter mais que 14 dígitos.',
 
-                'telefone_2.max' =>
-                    'O Telefone Secundário não pode ter mais que 11 dígitos.',
+                'telefone_1.min' => 'O Telefone Principal deve ter pelo menos 10 dígitos.',
+
+                'telefone_1.max' => 'O Telefone Principal não pode ter mais que 11 dígitos.',
+
+                'telefone_2.min' => 'O Telefone Secundário deve ter pelo menos 10 dígitos.',
+
+                'telefone_2.max' => 'O Telefone Secundário não pode ter mais que 11 dígitos.',
             ]
         );
 
@@ -482,6 +483,7 @@ class ClienteController extends Controller
             function () use (
                 $request,
                 $cliente,
+                $usuario,
                 $cpfLimpo,
                 $rgLimpo,
                 $telefone1Limpo,
@@ -491,15 +493,20 @@ class ClienteController extends Controller
                     'nome' => $request->input('nome'),
                     'cpf' => $cpfLimpo,
                     'rg' => $rgLimpo,
-                    'data_nascimento' =>
-                        $request->input('data_nascimento'),
+                    'data_nascimento' => $request->input('data_nascimento'),
                     'telefone_1' => $telefone1Limpo,
                     'telefone_2' => $telefone2Limpo,
                 ]);
 
                 $cliente->update([
-                    'pontos' => $request->input('pontos'),
+                    'pontos' => $request->input('pontos') ?? 0,
                 ]);
+
+                if ($usuario) {
+                    $usuario->update([
+                        'email' => $request->input('email'),
+                    ]);
+                }
             }
         );
 

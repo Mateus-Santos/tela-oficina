@@ -33,7 +33,11 @@ function iniciarContaReceber() {
     const btnLimparNota = document.getElementById('btn-limpar-nota');
 
     const descricao = document.getElementById('descricao');
+
     const valorOriginal = document.getElementById('valor_original');
+    const desconto = document.getElementById('desconto');
+    const juros = document.getElementById('juros');
+    const multa = document.getElementById('multa');
 
     const quantidadeInput = document.getElementById('parcelas_quantidade');
     const primeiraDataInput = document.getElementById('primeira_data_vencimento');
@@ -47,14 +51,38 @@ function iniciarContaReceber() {
     let notaAtual = null;
     let alterandoProgramaticamente = false;
 
+    function numero(valor) {
+        const convertido = Number(valor || 0);
+
+        return Number.isFinite(convertido)
+            ? convertido
+            : 0;
+    }
+
+    function calcularValorDevido() {
+        return Math.max(
+            0,
+            numero(valorOriginal?.value)
+                - numero(desconto?.value)
+                + numero(juros?.value)
+                + numero(multa?.value)
+        );
+    }
+
     const parcelas = inicializarParcelas({
         quantidadeInput,
         primeiraDataInput,
         intervaloInput,
         previewElement,
         totalElement,
-        valorTotal: Number(valorOriginal?.value || 0),
+        valorTotal: calcularValorDevido(),
     });
+
+    function atualizarValorParcelas() {
+        parcelas.definirValorTotal(
+            calcularValorDevido()
+        );
+    }
 
     function renderizarCliente(cliente) {
         if (!clienteSelecionado) {
@@ -97,6 +125,7 @@ function iniciarContaReceber() {
                         <strong>Nota #${escapeHtml(nota.numero)}</strong>
                         - ${escapeHtml(nota.cliente_nome)}
                     </div>
+
                     <strong>${moeda(nota.total)}</strong>
                 </div>
             </div>
@@ -123,6 +152,8 @@ function iniciarContaReceber() {
         if (valorOriginal) {
             valorOriginal.readOnly = false;
         }
+
+        atualizarValorParcelas();
     }
 
     function limparCliente() {
@@ -142,7 +173,10 @@ function iniciarContaReceber() {
         limparNota();
     }
 
-    function selecionarCliente(cliente, { manterNota = false } = {}) {
+    function selecionarCliente(
+        cliente,
+        { manterNota = false } = {}
+    ) {
         clienteAtual = cliente;
 
         if (clienteId) {
@@ -211,11 +245,9 @@ function iniciarContaReceber() {
                 Number(nota.total).toFixed(2);
 
             valorOriginal.readOnly = true;
-
-            parcelas.definirValorTotal(
-                Number(nota.total)
-            );
         }
+
+        atualizarValorParcelas();
 
         if (
             descricao &&
@@ -234,11 +266,13 @@ function iniciarContaReceber() {
         status: '#cliente-status',
         endpoint: container.dataset.clientesEndpoint,
         minimoCaracteres: 2,
+
         obterParametros(busca) {
             return {
                 q: busca,
             };
         },
+
         renderizarItem(cliente) {
             return `
                 <div>
@@ -247,6 +281,7 @@ function iniciarContaReceber() {
                 </div>
             `;
         },
+
         aoSelecionar(cliente) {
             selecionarCliente(cliente);
         },
@@ -258,25 +293,30 @@ function iniciarContaReceber() {
         status: '#nota-status',
         endpoint: container.dataset.notasEndpoint,
         minimoCaracteres: 0,
+
         obterParametros(busca) {
             return {
                 q: busca.replace('#', '').trim(),
                 cliente_id: clienteId?.value || '',
             };
         },
+
         renderizarItem(nota) {
             return `
                 <div class="d-flex justify-content-between align-items-center gap-3">
                     <div>
                         <strong>Nota #${escapeHtml(nota.numero)}</strong>
+
                         <div class="small text-muted">
                             ${escapeHtml(nota.cliente_nome)}
                         </div>
                     </div>
+
                     <strong>${moeda(nota.total)}</strong>
                 </div>
             `;
         },
+
         aoSelecionar(nota) {
             selecionarNota(nota);
         },
@@ -291,15 +331,20 @@ function iniciarContaReceber() {
         });
 
         if (!response.ok) {
-            throw new Error(`Erro HTTP ${response.status}`);
+            throw new Error(
+                `Erro HTTP ${response.status}`
+            );
         }
 
         return response.json();
     }
 
     async function restaurarSelecaoAnterior() {
-        const clienteAnterior = clienteId?.value || '';
-        const notaAnterior = notaId?.value || '';
+        const clienteAnterior =
+            clienteId?.value || '';
+
+        const notaAnterior =
+            notaId?.value || '';
 
         try {
             if (notaAnterior) {
@@ -308,12 +353,22 @@ function iniciarContaReceber() {
                     window.location.origin
                 );
 
-                url.searchParams.set('q', notaAnterior);
-
-                const resposta = await carregarJson(url.toString());
-                const nota = resposta.data?.find(
-                    item => String(item.id) === String(notaAnterior)
+                url.searchParams.set(
+                    'q',
+                    notaAnterior
                 );
+
+                const resposta =
+                    await carregarJson(
+                        url.toString()
+                    );
+
+                const nota =
+                    resposta.data?.find(
+                        item =>
+                            String(item.id)
+                            === String(notaAnterior)
+                    );
 
                 if (nota) {
                     selecionarNota(nota);
@@ -327,10 +382,18 @@ function iniciarContaReceber() {
                     window.location.origin
                 );
 
-                url.searchParams.set('id', clienteAnterior);
+                url.searchParams.set(
+                    'id',
+                    clienteAnterior
+                );
 
-                const resposta = await carregarJson(url.toString());
-                const cliente = resposta.data?.[0];
+                const resposta =
+                    await carregarJson(
+                        url.toString()
+                    );
+
+                const cliente =
+                    resposta.data?.[0];
 
                 if (cliente) {
                     selecionarCliente(cliente);
@@ -350,177 +413,251 @@ function iniciarContaReceber() {
         }
     }
 
-    function preencherParcelasHidden(listaParcelas) {
+    function preencherParcelasHidden(
+        listaParcelas
+    ) {
         limparParcelasHidden();
 
-        listaParcelas.forEach((parcela, indice) => {
-            const numero = document.createElement('input');
-            numero.type = 'hidden';
-            numero.name = `parcelas[${indice}][numero]`;
-            numero.value = parcela.numero;
+        listaParcelas.forEach(
+            (parcela, indice) => {
+                const numero =
+                    document.createElement('input');
 
-            const valor = document.createElement('input');
-            valor.type = 'hidden';
-            valor.name = `parcelas[${indice}][valor]`;
-            valor.value = Number(parcela.valor).toFixed(2);
+                numero.type = 'hidden';
+                numero.name =
+                    `parcelas[${indice}][numero]`;
 
-            const data = document.createElement('input');
-            data.type = 'hidden';
-            data.name = `parcelas[${indice}][data_vencimento]`;
-            data.value = parcela.data_vencimento;
+                numero.value =
+                    parcela.numero;
 
-            parcelasHidden.appendChild(numero);
-            parcelasHidden.appendChild(valor);
-            parcelasHidden.appendChild(data);
-        });
+                const valor =
+                    document.createElement('input');
+
+                valor.type = 'hidden';
+                valor.name =
+                    `parcelas[${indice}][valor]`;
+
+                valor.value =
+                    Number(parcela.valor)
+                        .toFixed(2);
+
+                const data =
+                    document.createElement('input');
+
+                data.type = 'hidden';
+                data.name =
+                    `parcelas[${indice}][data_vencimento]`;
+
+                data.value =
+                    parcela.data_vencimento;
+
+                parcelasHidden.appendChild(
+                    numero
+                );
+
+                parcelasHidden.appendChild(
+                    valor
+                );
+
+                parcelasHidden.appendChild(
+                    data
+                );
+            }
+        );
     }
 
     if (clienteBusca) {
-        clienteBusca.addEventListener('input', function () {
-            if (alterandoProgramaticamente) {
-                return;
-            }
+        clienteBusca.addEventListener(
+            'input',
+            function () {
+                if (
+                    alterandoProgramaticamente
+                ) {
+                    return;
+                }
 
-            if (
-                clienteAtual &&
-                clienteBusca.value !== clienteAtual.nome
-            ) {
-                clienteAtual = null;
-                clienteId.value = '';
-                renderizarCliente(null);
-                limparNota();
+                if (
+                    clienteAtual &&
+                    clienteBusca.value
+                    !== clienteAtual.nome
+                ) {
+                    clienteAtual = null;
+                    clienteId.value = '';
+
+                    renderizarCliente(null);
+                    limparNota();
+                }
             }
-        });
+        );
     }
 
     if (notaBusca) {
-        notaBusca.addEventListener('input', function () {
-            if (alterandoProgramaticamente) {
-                return;
-            }
+        notaBusca.addEventListener(
+            'input',
+            function () {
+                if (
+                    alterandoProgramaticamente
+                ) {
+                    return;
+                }
 
-            if (notaAtual) {
-                limparNota({
-                    limparBusca: false,
-                });
+                if (notaAtual) {
+                    limparNota({
+                        limparBusca: false,
+                    });
+                }
             }
-        });
+        );
 
-        notaBusca.addEventListener('focus', function () {
-            if (
-                clienteId?.value &&
-                notaBusca.value.trim() === ''
-            ) {
-                buscaNotas.buscar();
+        notaBusca.addEventListener(
+            'focus',
+            function () {
+                if (
+                    clienteId?.value &&
+                    notaBusca.value.trim() === ''
+                ) {
+                    buscaNotas.buscar();
+                }
             }
-        });
+        );
     }
 
     if (btnLimparCliente) {
-        btnLimparCliente.addEventListener('click', function () {
-            limparCliente();
-            buscaClientes.limpar();
-            buscaNotas.limpar();
-            clienteBusca?.focus();
-        });
+        btnLimparCliente.addEventListener(
+            'click',
+            function () {
+                limparCliente();
+
+                buscaClientes.limpar();
+                buscaNotas.limpar();
+
+                clienteBusca?.focus();
+            }
+        );
     }
 
     if (btnLimparNota) {
-        btnLimparNota.addEventListener('click', function () {
-            limparNota();
-            buscaNotas.limpar();
+        btnLimparNota.addEventListener(
+            'click',
+            function () {
+                limparNota();
 
-            if (clienteId?.value) {
-                buscaNotas.buscar();
+                buscaNotas.limpar();
+
+                if (clienteId?.value) {
+                    buscaNotas.buscar();
+                }
+
+                notaBusca?.focus();
             }
-
-            notaBusca?.focus();
-        });
-    }
-
-    if (valorOriginal) {
-        valorOriginal.addEventListener('input', function () {
-            if (notaAtual) {
-                return;
-            }
-
-            parcelas.definirValorTotal(
-                Number(valorOriginal.value || 0)
-            );
-        });
-
-        valorOriginal.addEventListener('change', function () {
-            if (notaAtual) {
-                return;
-            }
-
-            parcelas.definirValorTotal(
-                Number(valorOriginal.value || 0)
-            );
-        });
-    }
-
-    form.addEventListener('submit', function (event) {
-        const listaParcelas = parcelas.obterParcelas();
-
-        if (!listaParcelas.length) {
-            event.preventDefault();
-            window.alert('Informe ao menos uma parcela.');
-            return;
-        }
-
-        if (!clienteId?.value && !notaId?.value) {
-            event.preventDefault();
-            window.alert('Selecione um cliente ou uma Nota.');
-            return;
-        }
-
-        const possuiDataInvalida = listaParcelas.some(
-            parcela => !parcela.data_vencimento
         );
+    }
 
-        if (possuiDataInvalida) {
-            event.preventDefault();
-            window.alert(
-                'Preencha a data de vencimento de todas as parcelas.'
+    [
+        valorOriginal,
+        desconto,
+        juros,
+        multa,
+    ]
+        .filter(Boolean)
+        .forEach(input => {
+            input.addEventListener(
+                'input',
+                atualizarValorParcelas
             );
-            return;
-        }
 
-        for (
-            let indice = 1;
-            indice < listaParcelas.length;
-            indice += 1
-        ) {
+            input.addEventListener(
+                'change',
+                atualizarValorParcelas
+            );
+        });
+
+    form.addEventListener(
+        'submit',
+        function (event) {
+            const listaParcelas =
+                parcelas.obterParcelas();
+
+            if (!listaParcelas.length) {
+                event.preventDefault();
+
+                window.alert(
+                    'Informe ao menos uma parcela.'
+                );
+
+                return;
+            }
+
             if (
-                listaParcelas[indice].data_vencimento <
-                listaParcelas[indice - 1].data_vencimento
+                !clienteId?.value &&
+                !notaId?.value
             ) {
                 event.preventDefault();
+
                 window.alert(
-                    'As datas de vencimento devem estar em ordem cronológica.'
+                    'Selecione um cliente ou uma Nota.'
                 );
+
                 return;
             }
+
+            const possuiDataInvalida =
+                listaParcelas.some(
+                    parcela =>
+                        !parcela.data_vencimento
+                );
+
+            if (possuiDataInvalida) {
+                event.preventDefault();
+
+                window.alert(
+                    'Preencha a data de vencimento de todas as parcelas.'
+                );
+
+                return;
+            }
+
+            for (
+                let indice = 1;
+                indice < listaParcelas.length;
+                indice += 1
+            ) {
+                if (
+                    listaParcelas[indice]
+                        .data_vencimento
+                    <
+                    listaParcelas[indice - 1]
+                        .data_vencimento
+                ) {
+                    event.preventDefault();
+
+                    window.alert(
+                        'As datas de vencimento devem estar em ordem cronológica.'
+                    );
+
+                    return;
+                }
+            }
+
+            preencherParcelasHidden(
+                listaParcelas
+            );
+
+            if (btnCadastrar) {
+                btnCadastrar.disabled = true;
+
+                btnCadastrar.innerHTML = `
+                    <span
+                        class="spinner-border spinner-border-sm me-1"
+                        aria-hidden="true"
+                    ></span>
+                    Cadastrando...
+                `;
+            }
         }
-
-        preencherParcelasHidden(listaParcelas);
-
-        if (btnCadastrar) {
-            btnCadastrar.disabled = true;
-            btnCadastrar.innerHTML = `
-                <span
-                    class="spinner-border spinner-border-sm me-1"
-                    aria-hidden="true"
-                ></span>
-                Cadastrando...
-            `;
-        }
-    });
-
-    parcelas.definirValorTotal(
-        Number(valorOriginal?.value || 0)
     );
+
+    atualizarValorParcelas();
 
     restaurarSelecaoAnterior();
 }

@@ -23,15 +23,13 @@ use App\Http\Controllers\AnexoController;
 use App\Http\Controllers\EstoqueController;
 use App\Http\Controllers\MovimentacaoEstoqueController;
 use App\Http\Controllers\ContaPagarController;
+use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\Api\NotaItemBuscaController;
 use App\Http\Controllers\Api\ProdutoBuscaController;
 use App\Http\Controllers\Api\ClienteContaReceberBuscaController;
 use App\Http\Controllers\Api\NotaContaReceberBuscaController;
-use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\Api\NotaOrdemServicoRapidaController;
 use App\Http\Controllers\Api\NotaProdutoRapidoController;
-
-// use App\Http\Controllers\ChatController;
 
 Route::get('/', function () {
     return view('index');
@@ -41,19 +39,15 @@ Route::get('/home', function () {
     return view('index');
 });
 
-// Usuários estão desbloqueados.
 Route::middleware(['auth', 'check.blocked'])->group(function () {
     Route::get('/perfil', function () {
         return view('cliente/editarcliente');
     })->name('perfil');
 
     Route::put('/perfil/{id_user}/update', [UserController::class, 'update']);
-
     Route::resource('veiculosclientes', VeiculosClientesController::class);
-
     Route::get('/veiculos/montadora/{id}', [VeiculoController::class, 'porMontadora']);
 
-    // Rotas para administradores.
     Route::middleware(['admin'])->group(function () {
         // Estoque
         Route::get('/estoque', [EstoqueController::class, 'index'])->name('estoque.index');
@@ -69,11 +63,15 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         Route::post('/notas/{nota}/cancelar', [NotaController::class, 'cancelar'])->name('notas.cancelar');
         Route::resource('notas', NotaController::class)->only(['index', 'show', 'destroy']);
 
-        // Busca de itens para composição da nota
+        // APIs internas
         Route::get('/api/notas-itens/buscar', NotaItemBuscaController::class)->name('api.notas-itens.buscar');
-
-        // Busca de produtos
         Route::get('/api/produtos/buscar', ProdutoBuscaController::class)->name('api.produtos.buscar');
+        Route::get('/api/contas-receber/clientes/buscar', ClienteContaReceberBuscaController::class)->name('api.contas-receber.clientes.buscar');
+        Route::get('/api/contas-receber/notas/buscar', NotaContaReceberBuscaController::class)->name('api.contas-receber.notas.buscar');
+        Route::get('/api/notas-itens/setores-servico', [NotaOrdemServicoRapidaController::class, 'setores'])->name('api.notas-itens.setores-servico');
+        Route::post('/api/notas-itens/ordens-servico', [NotaOrdemServicoRapidaController::class, 'store'])->name('api.notas-itens.ordens-servico.store');
+        Route::get('/api/notas-itens/marcas-produto', [NotaProdutoRapidoController::class, 'marcas'])->name('api.notas-itens.marcas-produto');
+        Route::post('/api/notas-itens/produtos', [NotaProdutoRapidoController::class, 'store'])->name('api.notas-itens.produtos.store');
 
         // Ordens de Serviço
         Route::resource('ordemservicos', OrdemServicoController::class);
@@ -83,16 +81,13 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
 
         // Usuários
         Route::resource('users', UserController::class);
+        Route::patch('/users/{id}/block', [UserController::class, 'toggleBlock'])->name('toggleBlock');
 
         // Clientes
         Route::resource('clientes', ClienteController::class);
 
         // Produtos
-        Route::delete(
-            '/produtos/{produto}/imagens/{imagem}',
-            [ProdutoController::class, 'destroyImagem']
-        )->name('produtos.imagens.destroy');
-
+        Route::delete('/produtos/{produto}/imagens/{imagem}', [ProdutoController::class, 'destroyImagem'])->name('produtos.imagens.destroy');
         Route::resource('produtos', ProdutoController::class);
 
         // Marcas
@@ -115,23 +110,16 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         Route::resource('setor-servicos', SetorServicoController::class);
 
         // Formas de Pagamento
-        Route::resource('formas-pagamento', FormaPagamentoController::class)->parameters([
-            'formas-pagamento' => 'formaPagamento',
-        ]);
+        Route::resource('formas-pagamento', FormaPagamentoController::class)->parameters(['formas-pagamento' => 'formaPagamento']);
 
         // Categorias Financeiras
-        Route::resource('categorias-financeiras', CategoriaFinanceiraController::class)->parameters([
-            'categorias-financeiras' => 'categoriaFinanceira',
-        ]);
+        Route::resource('categorias-financeiras', CategoriaFinanceiraController::class)->parameters(['categorias-financeiras' => 'categoriaFinanceira']);
 
         // Contas a Receber
-        Route::resource('contas-receber', ContaReceberController::class)->parameters([
-            'contas-receber' => 'contaReceber',
-        ]);
-
-        // Recebimentos
+        Route::resource('contas-receber', ContaReceberController::class)->parameters(['contas-receber' => 'contaReceber']);
         Route::get('contas-receber/{contaReceber}/parcelas/{parcela}/recebimentos/create', [RecebimentoController::class, 'create'])->name('recebimentos.create');
         Route::post('recebimentos', [RecebimentoController::class, 'store'])->name('recebimentos.store');
+        Route::post('contas-receber/{contaReceber}/recebimentos/{recebimento}/estornar', [RecebimentoController::class, 'estornar'])->name('recebimentos.estornar');
 
         // Compras
         Route::post('compras/{compra}/iniciar-conferencia', [CompraController::class, 'iniciarConferencia'])->name('compras.iniciar-conferencia');
@@ -140,81 +128,33 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         Route::post('compras/{compra}/gerar-conta', [CompraController::class, 'gerarConta'])->name('compras.gerar-conta');
         Route::post('compras/{compra}/cancelar', [CompraController::class, 'cancelar'])->name('compras.cancelar');
         Route::post('compras/{compra}/estoque', [CompraController::class, 'registrarEstoque'])->name('compras.estoque');
-        Route::resource('compras', CompraController::class);
         Route::post('compras/{compra}/estornar', [CompraController::class, 'estornar'])->name('compras.estornar');
+        Route::resource('compras', CompraController::class);
 
         // Fornecedores
-        Route::resource('fornecedores', FornecedorController::class)->parameters([
-            'fornecedores' => 'fornecedor',
-        ]);
-
-        // Anexos de Compras
-        Route::post('compras/{compra}/anexos', [AnexoController::class, 'storeCompra'])->name('compras.anexos.store');
-
-        // Anexos de Contas a Pagar
-        Route::post('contas-pagar/{conta}/anexos', [AnexoController::class, 'storeContaPagar'])->name('contas-pagar.anexos.store');
+        Route::resource('fornecedores', FornecedorController::class)->parameters(['fornecedores' => 'fornecedor']);
 
         // Anexos
+        Route::post('compras/{compra}/anexos', [AnexoController::class, 'storeCompra'])->name('compras.anexos.store');
+        Route::post('contas-pagar/{conta}/anexos', [AnexoController::class, 'storeContaPagar'])->name('contas-pagar.anexos.store');
         Route::get('anexos/{anexo}', [AnexoController::class, 'show'])->name('anexos.show');
-
         Route::get('anexos/{anexo}/preview', [AnexoController::class, 'preview'])->name('anexos.preview');
-
         Route::get('anexos/{anexo}/download', [AnexoController::class, 'download'])->name('anexos.download');
-
         Route::delete('anexos/{vinculo}', [AnexoController::class, 'destroy'])->name('anexos.destroy');
 
         // Contas a Pagar
-        Route::resource('contas-pagar', ContaPagarController::class)->parameters([
-            'contas-pagar' => 'conta',
-        ])->except(['destroy']);
-
+        Route::resource('contas-pagar', ContaPagarController::class)->parameters(['contas-pagar' => 'conta'])->except(['destroy']);
         Route::post('contas-pagar/{conta}/parcelas', [ContaPagarController::class, 'atualizarParcelas'])->name('contas-pagar.parcelas.update');
         Route::post('contas-pagar/{conta}/pagamentos', [ContaPagarController::class, 'registrarPagamento'])->name('contas-pagar.pagamentos.store');
         Route::post('contas-pagar/{conta}/pagamentos/{pagamento}/estornar', [ContaPagarController::class, 'estornarPagamento'])->name('contas-pagar.pagamentos.estornar');
         Route::post('contas-pagar/{conta}/cancelar', [ContaPagarController::class, 'cancelar'])->name('contas-pagar.cancelar');
-
-        Route::post('contas-receber/{contaReceber}/recebimentos/{recebimento}/estornar', [RecebimentoController::class, 'estornar'])->name('recebimentos.estornar');
-        Route::get('/api/contas-receber/clientes/buscar', ClienteContaReceberBuscaController::class)->name('api.contas-receber.clientes.buscar');
-        Route::get('/api/contas-receber/notas/buscar', NotaContaReceberBuscaController::class)->name('api.contas-receber.notas.buscar');
-        Route::get('/api/notas-itens/setores-servico',[NotaOrdemServicoRapidaController::class,'setores',])->name('api.notas-itens.setores-servico');
-        Route::post('/api/notas-itens/ordens-servico',[NotaOrdemServicoRapidaController::class,'store',])->name('api.notas-itens.ordens-servico.store');
-        Route::get(
-            '/api/notas-itens/marcas-produto',
-            [
-                NotaProdutoRapidoController::class,
-                'marcas',
-            ]
-        )->name(
-            'api.notas-itens.marcas-produto'
-        );
-
-        Route::post(
-            '/api/notas-itens/produtos',
-            [
-                NotaProdutoRapidoController::class,
-                'store',
-            ]
-        )->name(
-            'api.notas-itens.produtos.store'
-        );
-            });
-});
-
-Route::middleware([
-    'auth:sanctum',
-    config('jetstream.auth_session'),
-    'verified',
-])->group(function () {
-    // Rotas autenticadas do sistema
+    });
 });
 
 Route::get('/erro-autenticacao', function () {
     return view('errors.403');
 })->name('erro-autenticacao');
 
-Route::patch('/users/{id}/block', [UserController::class, 'toggleBlock'])->name('toggleBlock');
-
-// Rotas de teste para as novas views
 Route::get('/termos-de-uso', function () {
     return view('termos/termosdeuso');
 })->name('termos');
