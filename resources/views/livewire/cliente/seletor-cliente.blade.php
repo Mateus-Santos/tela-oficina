@@ -4,7 +4,7 @@
         for="busca_cliente"
         class="form-label"
     >
-        Cliente(s):*
+        Cliente(s): *
     </label>
 
     <div class="position-relative">
@@ -16,7 +16,7 @@
             </span>
 
             <input
-                type="text"
+                type="search"
                 id="busca_cliente"
                 class="form-control"
                 placeholder="Digite nome, CPF ou telefone..."
@@ -79,28 +79,35 @@
 
                                 </span>
 
-                                <span class="small text-body-secondary">
+                                @if(
+                                    !empty($cliente['cpf'])
+                                    || !empty($cliente['telefone'])
+                                )
 
-                                    @if(!empty($cliente['cpf']))
+                                    <span class="small text-body-secondary">
 
-                                        <span class="me-3">
-                                            CPF:
-                                            {{ $cliente['cpf'] }}
-                                        </span>
+                                        @if(!empty($cliente['cpf']))
 
-                                    @endif
+                                            <span class="me-3">
+                                                CPF:
+                                                {{ $cliente['cpf'] }}
+                                            </span>
 
-                                    @if(!empty($cliente['telefone']))
+                                        @endif
 
-                                        <span>
-                                            <i class="bi bi-telephone me-1"></i>
+                                        @if(!empty($cliente['telefone']))
 
-                                            {{ $cliente['telefone'] }}
-                                        </span>
+                                            <span>
+                                                <i class="bi bi-telephone me-1"></i>
 
-                                    @endif
+                                                {{ $cliente['telefone'] }}
+                                            </span>
 
-                                </span>
+                                        @endif
+
+                                    </span>
+
+                                @endif
 
                             </span>
 
@@ -146,7 +153,7 @@
 
         <div class="mt-3">
 
-            <div class="d-flex justify-content-between mb-2">
+            <div class="d-flex justify-content-between align-items-center mb-2">
 
                 <strong class="small">
                     Clientes vinculados:
@@ -165,20 +172,23 @@
                 )
 
                     <div
-                        class="tag"
+                        class="tag d-inline-flex align-items-center gap-2"
                         wire:key="cliente-selecionado-{{ $cliente['id'] }}"
                     >
 
-                        {{ $cliente['nome'] }}
+                        <span>
+                            {{ $cliente['nome'] }}
+                        </span>
 
-                        <span
-                            class="remove-tag"
+                        <button
+                            type="button"
+                            class="remove-tag border-0 bg-transparent p-0"
                             wire:click="removerCliente({{ $cliente['id'] }})"
-                            role="button"
                             title="Remover cliente"
+                            aria-label="Remover {{ $cliente['nome'] }}"
                         >
                             &times;
-                        </span>
+                        </button>
 
                     </div>
 
