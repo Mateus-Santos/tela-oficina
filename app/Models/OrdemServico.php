@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Cliente;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class OrdemServico extends Model
 {
@@ -14,15 +14,23 @@ class OrdemServico extends Model
     protected $fillable = [
         'setor_servico_id',
         'veiculo_cliente_id',
+        'etapa_id',
         'status',
         'descricao',
         'valor',
         'cliente_id',
         'data_abertura',
-        'data_fechamento'
+        'data_fechamento',
     ];
 
-    public function veiculosCliente()
+    protected $casts = [
+        'etapa_id' => 'integer',
+        'valor' => 'decimal:2',
+        'data_abertura' => 'datetime',
+        'data_fechamento' => 'datetime',
+    ];
+
+    public function veiculosCliente(): BelongsTo
     {
         return $this->belongsTo(
             VeiculosCliente::class,
@@ -40,6 +48,25 @@ class OrdemServico extends Model
 
     public function setorServico(): BelongsTo
     {
-        return $this->belongsTo(SetorServico::class, 'setor_servico_id');
+        return $this->belongsTo(
+            SetorServico::class,
+            'setor_servico_id'
+        );
+    }
+
+    public function etapa(): BelongsTo
+    {
+        return $this->belongsTo(
+            Etapa::class,
+            'etapa_id'
+        );
+    }
+
+    public function historicoEtapas(): HasMany
+    {
+        return $this->hasMany(
+            OrdemServicoEtapaHistorico::class,
+            'ordem_servico_id'
+        )->orderByDesc('id');
     }
 }
