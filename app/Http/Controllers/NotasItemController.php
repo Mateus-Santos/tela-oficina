@@ -41,7 +41,8 @@ class NotasItemController extends Controller
         CriarNota $criarNota
     ) {
         $nota = $criarNota->execute(
-            $request->validated()
+            $request->validated(),
+            $request->user()->id
         );
 
         return redirect()
@@ -49,8 +50,8 @@ class NotasItemController extends Controller
             ->with(
                 'success',
                 'Nota Fiscal criada com '
-                . $nota->itens->count()
-                . ' itens!'
+                .$nota->itens->count()
+                .' itens!'
             );
     }
 
@@ -72,8 +73,7 @@ class NotasItemController extends Controller
                     $nota->id
                 )
                 ->withErrors([
-                    'nota' =>
-                        'Notas finalizadas ou canceladas não podem ser editadas.',
+                    'nota' => 'Notas finalizadas ou canceladas não podem ser editadas.',
                 ]);
         }
 
@@ -103,8 +103,8 @@ class NotasItemController extends Controller
             ->with(
                 'success',
                 'Nota Fiscal #'
-                . $nota->id
-                . ' atualizada com sucesso!'
+                .$nota->id
+                .' atualizada com sucesso!'
             );
     }
 
@@ -130,8 +130,7 @@ class NotasItemController extends Controller
                     $nota->id
                 )
                 ->withErrors([
-                    'nota' =>
-                        'Não é possível remover itens de uma nota finalizada ou cancelada.',
+                    'nota' => 'Não é possível remover itens de uma nota finalizada ou cancelada.',
                 ]);
         }
 
@@ -154,24 +153,20 @@ class NotasItemController extends Controller
         $descontoGeral =
             $nota->itens->sum(
                 function ($item) {
-                    return
-                        (float) $item->desconto;
+                    return (float) $item->desconto;
                 }
             );
 
         $nota->update([
-            'subtotal' =>
-                $subtotalGeral,
+            'subtotal' => $subtotalGeral,
 
-            'desconto' =>
-                $descontoGeral,
+            'desconto' => $descontoGeral,
 
-            'total' =>
-                max(
-                    0,
-                    $subtotalGeral
-                    - $descontoGeral
-                ),
+            'total' => max(
+                0,
+                $subtotalGeral
+                - $descontoGeral
+            ),
         ]);
 
         return redirect()

@@ -61,55 +61,42 @@ class NotaOrdemServicoRapidaController extends Controller
                     'gte:0',
                 ],
             ], [
-                'cliente_id.required' =>
-                    'Selecione um cliente na Nota antes de criar a O.S.',
+                'cliente_id.required' => 'Selecione um cliente na Nota antes de criar a O.S.',
 
-                'veiculo_cliente_id.required' =>
-                    'Selecione um veículo na Nota antes de criar a O.S.',
+                'veiculo_cliente_id.required' => 'Selecione um veículo na Nota antes de criar a O.S.',
 
-                'setor_servico_id.required' =>
-                    'Selecione o setor de serviço.',
+                'setor_servico_id.required' => 'Selecione o setor de serviço.',
 
-                'descricao.required' =>
-                    'Informe a descrição da O.S.',
+                'descricao.required' => 'Informe a descrição da O.S.',
 
-                'valor.required' =>
-                    'Informe o valor da O.S.',
+                'valor.required' => 'Informe o valor da O.S.',
             ]);
 
         $ordemServico =
             $criarOrdemServico->execute(
-                $dados
+                $dados,
+                $request->user()->id
             );
 
         return response()->json([
-            'message' =>
-                "O.S. #{$ordemServico->id} criada com sucesso.",
+            'message' => "O.S. #{$ordemServico->id} criada com sucesso.",
 
             'data' => [
-                'id' =>
-                    $ordemServico->id,
+                'id' => $ordemServico->id,
 
-                'cliente_id' =>
-                    $ordemServico->cliente_id,
+                'cliente_id' => $ordemServico->cliente_id,
 
-                'veiculo_cliente_id' =>
-                    $ordemServico->veiculo_cliente_id,
+                'veiculo_cliente_id' => $ordemServico->veiculo_cliente_id,
 
-                'descricao' =>
-                    $ordemServico->descricao,
+                'descricao' => $ordemServico->descricao,
 
-                'valor' =>
-                    (float) $ordemServico->valor,
+                'valor' => (float) $ordemServico->valor,
 
-                'status' =>
-                    $ordemServico->status,
+                'status' => $ordemServico->status,
 
-                'disponivel' =>
-                    true,
+                'disponivel' => true,
 
-                'nota' =>
-                    null,
+                'nota' => null,
             ],
         ], 201);
     }
