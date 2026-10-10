@@ -397,6 +397,16 @@
                                 </li>
 
                                 <li>
+                                    <a
+                                        href="{{ route('etapas.index') }}"
+                                        class="dropdown-item"
+                                    >
+                                        <i class="bi bi-signpost-split-fill me-2"></i>
+                                        Etapas do Atendimento
+                                    </a>
+                                </li>
+
+                                <li>
                                     <hr class="dropdown-divider">
                                 </li>
 
