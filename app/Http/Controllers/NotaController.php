@@ -7,6 +7,7 @@ use App\Actions\Notas\FinalizarNota;
 use App\Http\Requests\FinalizarNotaRequest;
 use App\Http\Requests\Notas\BaixarPdfInternoNotaRequest;
 use App\Models\CategoriaFinanceira;
+use App\Models\Etapa;
 use App\Models\Nota;
 use App\Models\OrdemServico;
 use App\Models\Produto;
@@ -72,27 +73,42 @@ class NotaController extends Controller
 
     public function index(Request $request)
     {
+        $filters = $request->all();
+
+        /*
+        * Sem status informado, a listagem operacional
+        * trabalha somente com Notas abertas.
+        */
+        $filters['status'] =
+            $request->input(
+                'status',
+                'Aberto'
+            );
+
         $notas = Nota::query()
             ->with([
                 'cliente.pessoa',
                 'itens.itemable',
                 'veiculosCliente.veiculo.montadora',
+                'etapa',
             ])
-            ->filtro(
-                $request->all()
-            )
-            ->orderByDesc(
-                'created_at'
-            )
-            ->orderByDesc(
-                'id'
-            )
+            ->filtro($filters)
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
             ->paginate(15)
             ->withQueryString();
 
+        $etapas = Etapa::query()
+            ->paraNota()
+            ->ativas()
+            ->get();
+
         return view(
             'notas_item.listar_notas_itens',
-            compact('notas')
+            compact(
+                'notas',
+                'etapas'
+            )
         );
     }
 

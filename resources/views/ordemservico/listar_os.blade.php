@@ -15,8 +15,10 @@
     @if (session('success'))
 
         <div class="alert alert-success">
+
             <i class="bi bi-check-circle"></i>
             {{ session('success') }}
+
         </div>
 
     @endif
@@ -24,8 +26,10 @@
     @if (session('error'))
 
         <div class="alert alert-danger">
+
             <i class="bi bi-exclamation-triangle"></i>
             {{ session('error') }}
+
         </div>
 
     @endif
@@ -47,7 +51,7 @@
 
             <div class="row g-3 align-items-end">
 
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-3">
 
                     <label
                         for="cliente"
@@ -89,7 +93,7 @@
 
                 </div>
 
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-md-2">
 
                     <label
                         for="status"
@@ -119,24 +123,6 @@
                         </option>
 
                         <option
-                            value="em_andamento"
-                            @selected(
-                                request('status') === 'em_andamento'
-                            )
-                        >
-                            Em andamento
-                        </option>
-
-                        <option
-                            value="aguardando_aprovacao"
-                            @selected(
-                                request('status') === 'aguardando_aprovacao'
-                            )
-                        >
-                            Aguardando aprovação
-                        </option>
-
-                        <option
                             value="finalizada"
                             @selected(
                                 request('status') === 'finalizada'
@@ -153,6 +139,44 @@
                         >
                             Cancelada
                         </option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-12 col-md-2">
+
+                    <label
+                        for="etapa_id"
+                        class="form-label"
+                    >
+                        <i class="bi bi-signpost-split"></i>
+                        Etapa
+                    </label>
+
+                    <select
+                        name="etapa_id"
+                        id="etapa_id"
+                        class="filtros-container__select"
+                    >
+
+                        <option value="">
+                            Todas as etapas
+                        </option>
+
+                        @foreach($etapas as $etapa)
+
+                            <option
+                                value="{{ $etapa->id }}"
+                                @selected(
+                                    (int) request('etapa_id')
+                                    === $etapa->id
+                                )
+                            >
+                                {{ $etapa->nome }}
+                            </option>
+
+                        @endforeach
 
                     </select>
 
@@ -316,6 +340,7 @@
         $possuiFiltros = request()->hasAny([
             'id',
             'status',
+            'etapa_id',
             'cliente',
             'placa',
             'setor',
@@ -359,8 +384,10 @@
                 <thead>
 
                     <tr>
+
                         <th>ID</th>
                         <th>STATUS</th>
+                        <th>ETAPA</th>
                         <th>DATA ABERTURA</th>
                         <th>CLIENTE</th>
                         <th>VEÍCULO</th>
@@ -368,6 +395,7 @@
                         <th>DESCRIÇÃO</th>
                         <th>SETOR</th>
                         <th>EXCLUIR</th>
+
                     </tr>
 
                 </thead>
@@ -376,20 +404,77 @@
 
                     @foreach ($ordemservicos as $ordemservico)
 
+                        @php
+
+                            $statusClasse =
+                                match ($ordemservico->status) {
+                                    'aberta' =>
+                                        'bg-primary',
+
+                                    'finalizada' =>
+                                        'bg-success',
+
+                                    'cancelada' =>
+                                        'bg-danger',
+
+                                    default =>
+                                        'bg-secondary',
+                                };
+
+                            $statusNome =
+                                match ($ordemservico->status) {
+                                    'aberta' =>
+                                        'Aberta',
+
+                                    'finalizada' =>
+                                        'Finalizada',
+
+                                    'cancelada' =>
+                                        'Cancelada',
+
+                                    default =>
+                                        $ordemservico->status,
+                                };
+
+                        @endphp
+
                         <tr>
 
                             <td>
+
                                 {{ $ordemservico->id }}
+
                             </td>
+
+                            {{-- STATUS --}}
 
                             <td>
 
-                                <livewire:status-ordem-servico-selector
-                                    :ordem-servico="$ordemservico"
-                                    :key="'status-os-' . $ordemservico->id"
-                                />
+                                <span class="badge {{ $statusClasse }}">
+                                    {{ $statusNome }}
+                                </span>
 
                             </td>
+
+                            {{-- ETAPA --}}
+
+                            <td>
+
+                                @livewire(
+                                    'etapa-ordem-servico-selector',
+                                    [
+                                        'ordemServico' =>
+                                            $ordemservico,
+                                    ],
+                                    key(
+                                        'etapa-os-'
+                                        . $ordemservico->id
+                                    )
+                                )
+
+                            </td>
+
+                            {{-- DATA ABERTURA --}}
 
                             <td>
 
@@ -398,6 +483,8 @@
                                 )->format('d/m/Y H:i') }}
 
                             </td>
+
+                            {{-- CLIENTE --}}
 
                             <td>
 
@@ -410,6 +497,8 @@
                                     ?? 'N/A' }}
 
                             </td>
+
+                            {{-- VEÍCULO --}}
 
                             <td>
 
@@ -453,6 +542,8 @@
 
                             </td>
 
+                            {{-- PLACA --}}
+
                             <td>
 
                                 {{ $ordemservico
@@ -462,16 +553,26 @@
 
                             </td>
 
-                            <td>
-                                {{ $ordemservico->descricao ?? 'N/A' }}
-                            </td>
+                            {{-- DESCRIÇÃO --}}
 
                             <td>
+
+                                {{ $ordemservico->descricao ?? 'N/A' }}
+
+                            </td>
+
+                            {{-- SETOR --}}
+
+                            <td>
+
                                 {{ $ordemservico
                                     ->setorServico
                                     ?->setor
                                     ?? 'N/A' }}
+
                             </td>
+
+                            {{-- EXCLUIR --}}
 
                             <td>
 
@@ -514,7 +615,9 @@
         @if ($ordemservicos->hasPages())
 
             <div class="d-flex justify-content-center mt-4">
+
                 {{ $ordemservicos->links() }}
+
             </div>
 
         @endif
