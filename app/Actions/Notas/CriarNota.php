@@ -2,24 +2,32 @@
 
 namespace App\Actions\Notas;
 
+use App\Models\Etapa;
 use App\Models\Nota;
+use App\Models\NotaEtapaHistorico;
 use App\Models\NotasItem;
 use App\Models\OrdemServico;
 use App\Models\Produto;
 use App\Models\VeiculosCliente;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
 
 class CriarNota
 {
-    public function execute(array $dados): Nota
-    {
-        return DB::transaction(function () use ($dados) {
-            $clienteId = !empty($dados['cliente_id'])
+    public function execute(
+        array $dados,
+        ?int $userId = null
+    ): Nota {
+        return DB::transaction(function () use (
+            $dados,
+            $userId
+        ) {
+            $clienteId = ! empty($dados['cliente_id'])
                 ? (int) $dados['cliente_id']
                 : null;
 
-            $veiculoClienteId = !empty($dados['veiculo_cliente_id'])
+            $veiculoClienteId = ! empty($dados['veiculo_cliente_id'])
                 ? (int) $dados['veiculo_cliente_id']
                 : null;
 
@@ -41,36 +49,49 @@ class CriarNota
                     $veiculoClienteId
                 );
 
+            $etapaInicial =
+                $this->obterEtapaInicial();
+
             $nota = Nota::create([
-                'cliente_id' =>
-                    $clienteId,
+                'cliente_id' => $clienteId,
 
-                'veiculo_cliente_id' =>
-                    $veiculoClienteId,
+                'veiculo_cliente_id' => $veiculoClienteId,
 
-                'tipo' =>
-                    'Venda',
+                'etapa_id' => $etapaInicial->id,
 
-                'status' =>
-                    'Aberto',
+                'tipo' => 'Venda',
 
-                'km' =>
-                    $dados['km'] ?? null,
+                'status' => 'Aberto',
 
-                'km_proxima_troca_oleo' =>
-                    $dados['km_proxima_troca_oleo'] ?? null,
+                'km' => $dados['km'] ?? null,
 
-                'subtotal' =>
-                    $subtotalGeral,
+                'km_proxima_troca_oleo' => $dados['km_proxima_troca_oleo']
+                    ?? null,
 
-                'desconto' =>
-                    $descontoGeral,
+                'subtotal' => $subtotalGeral,
 
-                'total' =>
-                    max(
-                        0,
-                        $subtotalGeral - $descontoGeral
-                    ),
+                'desconto' => $descontoGeral,
+
+                'total' => max(
+                    0,
+                    $subtotalGeral - $descontoGeral
+                ),
+            ]);
+
+            NotaEtapaHistorico::create([
+                'nota_id' => $nota->id,
+
+                'etapa_origem_id' => null,
+
+                'etapa_destino_id' => $etapaInicial->id,
+
+                'etapa_origem_nome' => null,
+
+                'etapa_destino_nome' => $etapaInicial->nome,
+
+                'user_id' => $userId,
+
+                'motivo' => 'Etapa inicial definida na criação da Nota.',
             ]);
 
             foreach ($itens as $dadosItem) {
@@ -83,23 +104,49 @@ class CriarNota
             return $nota->fresh([
                 'cliente.pessoa',
                 'veiculosCliente',
+                'etapa',
+                'historicoEtapas',
                 'itens.itemable',
             ]);
         });
+    }
+
+    private function obterEtapaInicial(): Etapa
+    {
+        $etapas =
+            Etapa::query()
+                ->paraNota()
+                ->where(
+                    'ativo',
+                    true
+                )
+                ->where(
+                    'tipo',
+                    'inicial'
+                )
+                ->orderBy('ordem')
+                ->get();
+
+        if ($etapas->count() !== 1) {
+            throw new InvalidArgumentException(
+                'O fluxo de Notas deve possuir exatamente uma etapa inicial ativa.'
+            );
+        }
+
+        return $etapas->first();
     }
 
     private function validarClienteVeiculo(
         ?int $clienteId,
         ?int $veiculoClienteId
     ): void {
-        if (!$veiculoClienteId) {
+        if (! $veiculoClienteId) {
             return;
         }
 
-        if (!$clienteId) {
+        if (! $clienteId) {
             throw ValidationException::withMessages([
-                'cliente_id' =>
-                    'Selecione o cliente responsável pelo veículo.',
+                'cliente_id' => 'Selecione o cliente responsável pelo veículo.',
             ]);
         }
 
@@ -116,10 +163,9 @@ class CriarNota
             )
             ->exists();
 
-        if (!$vinculoExiste) {
+        if (! $vinculoExiste) {
             throw ValidationException::withMessages([
-                'veiculo_cliente_id' =>
-                    'O cliente informado não está vinculado ao veículo selecionado.',
+                'veiculo_cliente_id' => 'O cliente informado não está vinculado ao veículo selecionado.',
             ]);
         }
     }
@@ -142,14 +188,13 @@ class CriarNota
                 ?? 0
             );
 
-            if (!$produtoId) {
+            if (! $produtoId) {
                 continue;
             }
 
             if (isset($produtos[$produtoId])) {
                 throw ValidationException::withMessages([
-                    "itens.{$index}.itemable_id" =>
-                        'O mesmo produto não pode ser adicionado mais de uma vez à Nota.',
+                    "itens.{$index}.itemable_id" => 'O mesmo produto não pode ser adicionado mais de uma vez à Nota.',
                 ]);
             }
 
@@ -189,10 +234,9 @@ class CriarNota
                     ->whereKey($itemId)
                     ->exists();
 
-                if (!$produtoExiste) {
+                if (! $produtoExiste) {
                     throw ValidationException::withMessages([
-                        "itens.{$index}.itemable_id" =>
-                            'O produto informado não existe.',
+                        "itens.{$index}.itemable_id" => 'O produto informado não existe.',
                     ]);
                 }
             }
@@ -212,8 +256,7 @@ class CriarNota
 
             if ($desconto > $subtotalItem) {
                 throw ValidationException::withMessages([
-                    "itens.{$index}.desconto" =>
-                        'O desconto do item não pode ser maior que o valor do item.',
+                    "itens.{$index}.desconto" => 'O desconto do item não pode ser maior que o valor do item.',
                 ]);
             }
 
@@ -245,20 +288,12 @@ class CriarNota
                 ])
                 ->find($ordemServicoId);
 
-        if (!$ordemServico) {
+        if (! $ordemServico) {
             throw ValidationException::withMessages([
-                "itens.{$index}.itemable_id" =>
-                    'A Ordem de Serviço informada não existe.',
+                "itens.{$index}.itemable_id" => 'A Ordem de Serviço informada não existe.',
             ]);
         }
 
-        /*
-         * A O.S. pode ser utilizada em uma Nota,
-         * mas não pode já estar vinculada a outra Nota.
-         *
-         * Esta proteção é feita também no backend,
-         * independentemente do bloqueio existente no frontend.
-         */
         $vinculoExistente =
             NotasItem::query()
                 ->where(
@@ -273,8 +308,7 @@ class CriarNota
 
         if ($vinculoExistente) {
             throw ValidationException::withMessages([
-                "itens.{$index}.itemable_id" =>
-                    "A Ordem de Serviço #{$ordemServicoId} já está vinculada à Nota #{$vinculoExistente->nota_id}.",
+                "itens.{$index}.itemable_id" => "A Ordem de Serviço #{$ordemServicoId} já está vinculada à Nota #{$vinculoExistente->nota_id}.",
             ]);
         }
 
@@ -285,8 +319,7 @@ class CriarNota
                 !== $clienteId
         ) {
             throw ValidationException::withMessages([
-                "itens.{$index}.itemable_id" =>
-                    'A Ordem de Serviço pertence a outro cliente.',
+                "itens.{$index}.itemable_id" => 'A Ordem de Serviço pertence a outro cliente.',
             ]);
         }
 
@@ -297,8 +330,7 @@ class CriarNota
                 !== $veiculoClienteId
         ) {
             throw ValidationException::withMessages([
-                "itens.{$index}.itemable_id" =>
-                    'A Ordem de Serviço pertence a outro veículo.',
+                "itens.{$index}.itemable_id" => 'A Ordem de Serviço pertence a outro veículo.',
             ]);
         }
     }
@@ -328,42 +360,31 @@ class CriarNota
         );
 
         $dadosItemNota = [
-            'nota_id' =>
-                $nota->id,
+            'nota_id' => $nota->id,
 
-            'itemable_type' =>
-                $dadosItem['itemable_type'],
+            'itemable_type' => $dadosItem['itemable_type'],
 
-            'itemable_id' =>
-                $dadosItem['itemable_id'],
+            'itemable_id' => $dadosItem['itemable_id'],
 
-            'descricao' =>
-                $dadosItem['descricao'],
+            'descricao' => $dadosItem['descricao'],
 
-            'quantidade' =>
-                $quantidade,
+            'quantidade' => $quantidade,
 
-            'valor_unitario' =>
-                $valorUnitario,
+            'valor_unitario' => $valorUnitario,
 
-            'desconto' =>
-                $desconto,
+            'desconto' => $desconto,
 
-            'valor_total' =>
-                $valorTotal,
+            'valor_total' => $valorTotal,
 
-            'garantia_dias' =>
-                null,
+            'garantia_dias' => null,
 
-            'garantia_inicio' =>
-                null,
+            'garantia_inicio' => null,
 
-            'garantia_fim' =>
-                null,
+            'garantia_fim' => null,
         ];
 
         if (
-            !empty($dadosItem['garantia_dias'])
+            ! empty($dadosItem['garantia_dias'])
             && (int) $dadosItem['garantia_dias'] > 0
         ) {
             $garantiaDias =

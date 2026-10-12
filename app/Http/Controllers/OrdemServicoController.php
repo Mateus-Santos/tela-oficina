@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\OrdemServico\CancelarOrdemServico;
+use App\Actions\OrdemServico\CriarOrdemServico;
+use App\Actions\OrdemServico\FinalizarOrdemServico;
+use App\Models\Etapa;
 use App\Models\OrdemServico;
 use App\Models\SetorServico;
-use App\Models\VeiculosCliente;
 use Illuminate\Http\Request;
+use InvalidArgumentException;
 
 class OrdemServicoController extends Controller
 {
@@ -17,6 +21,7 @@ class OrdemServicoController extends Controller
                 'veiculosCliente.clientes.pessoa',
                 'veiculosCliente.veiculo.montadora',
                 'setorServico',
+                'etapa',
             ]);
 
         if ($request->filled('id')) {
@@ -27,9 +32,23 @@ class OrdemServicoController extends Controller
         }
 
         if ($request->filled('status')) {
+            if ($request->input('status') !== 'todos') {
+                $query->where(
+                    'status',
+                    $request->input('status')
+                );
+            }
+        } else {
             $query->where(
                 'status',
-                $request->input('status')
+                'aberta'
+            );
+        }
+
+        if ($request->filled('etapa_id')) {
+            $query->where(
+                'etapa_id',
+                $request->integer('etapa_id')
             );
         }
 
@@ -115,11 +134,14 @@ class OrdemServicoController extends Controller
             ->orderBy('setor')
             ->get();
 
+        $etapas = Etapa::query()->paraOrdemServico()->ativas()->get();
+
         return view(
             'ordemservico.listar_os',
             compact(
                 'ordemservicos',
-                'setorservicos'
+                'setorservicos',
+                'etapas'
             )
         );
     }
@@ -136,8 +158,10 @@ class OrdemServicoController extends Controller
         );
     }
 
-    public function store(Request $request)
-    {
+    public function store(
+        Request $request,
+        CriarOrdemServico $criarOrdemServico
+    ) {
         $dados = $request->validate(
             [
                 'cliente_id' => [
@@ -168,94 +192,32 @@ class OrdemServicoController extends Controller
                 ],
             ],
             [
-                'cliente_id.required' =>
-                    'Selecione o cliente responsável pela OS.',
+                'cliente_id.required' => 'Selecione o cliente responsável pela OS.',
 
-                'cliente_id.integer' =>
-                    'O cliente selecionado é inválido.',
+                'cliente_id.integer' => 'O cliente selecionado é inválido.',
 
-                'cliente_id.exists' =>
-                    'O cliente selecionado não existe.',
+                'cliente_id.exists' => 'O cliente selecionado não existe.',
 
-                'veiculo_cliente_id.required' =>
-                    'Selecione o veículo.',
+                'veiculo_cliente_id.required' => 'Selecione o veículo.',
 
-                'veiculo_cliente_id.integer' =>
-                    'O veículo selecionado é inválido.',
+                'veiculo_cliente_id.integer' => 'O veículo selecionado é inválido.',
 
-                'veiculo_cliente_id.exists' =>
-                    'O veículo selecionado não existe.',
+                'veiculo_cliente_id.exists' => 'O veículo selecionado não existe.',
 
-                'setor_servico_id.required' =>
-                    'Selecione o setor de serviço.',
+                'setor_servico_id.required' => 'Selecione o setor de serviço.',
 
-                'setor_servico_id.integer' =>
-                    'O setor selecionado é inválido.',
+                'setor_servico_id.integer' => 'O setor selecionado é inválido.',
 
-                'setor_servico_id.exists' =>
-                    'O setor selecionado não existe.',
+                'setor_servico_id.exists' => 'O setor selecionado não existe.',
 
-                'valor.required' =>
-                    'Informe o valor da ordem de serviço.',
+                'valor.required' => 'Informe o valor da ordem de serviço.',
             ]
         );
 
-        $veiculoCliente = VeiculosCliente::query()
-            ->where(
-                'id',
-                $dados['veiculo_cliente_id']
-            )
-            ->whereHas(
-                'clientes',
-                function ($clientesQuery) use ($dados) {
-                    $clientesQuery->where(
-                        'clientes.id',
-                        $dados['cliente_id']
-                    );
-                }
-            )
-            ->first();
-
-        if (!$veiculoCliente) {
-            return back()
-                ->withInput()
-                ->withErrors([
-                    'veiculo_cliente_id' =>
-                        'O veículo selecionado não está vinculado ao cliente informado.',
-                ]);
-        }
-
-        $valor = str_replace(
-            '.',
-            '',
-            (string) $dados['valor']
+        $criarOrdemServico->execute(
+            $dados,
+            $request->user()->id
         );
-
-        $valor = str_replace(
-            ',',
-            '.',
-            $valor
-        );
-
-        $ordemservico = new OrdemServico();
-
-        $ordemservico->data_abertura = now();
-
-        $ordemservico->cliente_id =
-            $dados['cliente_id'];
-
-        $ordemservico->veiculo_cliente_id =
-            $dados['veiculo_cliente_id'];
-
-        $ordemservico->setor_servico_id =
-            $dados['setor_servico_id'];
-
-        $ordemservico->descricao =
-            $dados['descricao'] ?? null;
-
-        $ordemservico->valor = $valor;
-
-        $ordemservico->save();
 
         return redirect()
             ->route('ordemservicos.index')
@@ -277,11 +239,68 @@ class OrdemServicoController extends Controller
         //
     }
 
+    public function finalizar(
+        Request $request,
+        OrdemServico $ordemservico,
+        FinalizarOrdemServico $finalizarOrdemServico
+    ) {
+        try {
+            $finalizarOrdemServico->execute(
+                $ordemservico,
+                $request->user()->id
+            );
+        } catch (InvalidArgumentException $e) {
+            return back()->with(
+                'error',
+                $e->getMessage()
+            );
+        }
+
+        return redirect()
+            ->route('ordemservicos.index')
+            ->with(
+                'success',
+                "Ordem de Serviço #{$ordemservico->id} finalizada com sucesso!"
+            );
+    }
+
+    public function cancelar(
+        OrdemServico $ordemservico,
+        CancelarOrdemServico $cancelarOrdemServico
+    ) {
+        try {
+            $cancelarOrdemServico->execute(
+                $ordemservico
+            );
+        } catch (InvalidArgumentException $e) {
+            return back()->with(
+                'error',
+                $e->getMessage()
+            );
+        }
+
+        return redirect()
+            ->route('ordemservicos.index')
+            ->with(
+                'success',
+                "Ordem de Serviço #{$ordemservico->id} cancelada com sucesso!"
+            );
+    }
+
     public function destroy(string $id)
     {
         $ordemservico = OrdemServico::findOrFail(
             $id
         );
+
+        if ($ordemservico->status !== 'aberta') {
+            return redirect()
+                ->route('ordemservicos.index')
+                ->with(
+                    'error',
+                    'Somente Ordens de Serviço abertas podem ser excluídas.'
+                );
+        }
 
         $ordemservico->delete();
 

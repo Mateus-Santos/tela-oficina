@@ -30,6 +30,7 @@ use App\Http\Controllers\Api\ClienteContaReceberBuscaController;
 use App\Http\Controllers\Api\NotaContaReceberBuscaController;
 use App\Http\Controllers\Api\NotaOrdemServicoRapidaController;
 use App\Http\Controllers\Api\NotaProdutoRapidoController;
+use App\Http\Controllers\EtapaController;
 
 Route::get('/', function () {
     return view('index');
@@ -76,6 +77,12 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         Route::post('/api/notas-itens/produtos', [NotaProdutoRapidoController::class, 'store'])->name('api.notas-itens.produtos.store');
 
         // Ordens de Serviço
+        Route::post('/ordemservicos/{ordemservico}/finalizar',[OrdemServicoController::class, 'finalizar'])->name('ordemservicos.finalizar');
+
+        Route::post('/ordemservicos/{ordemservico}/cancelar',[OrdemServicoController::class, 'cancelar'])->name('ordemservicos.cancelar');
+
+        Route::resource('ordemservicos',OrdemServicoController::class
+        );
         Route::resource('ordemservicos', OrdemServicoController::class);
 
         // Itens das Notas
@@ -150,6 +157,14 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         Route::post('contas-pagar/{conta}/pagamentos', [ContaPagarController::class, 'registrarPagamento'])->name('contas-pagar.pagamentos.store');
         Route::post('contas-pagar/{conta}/pagamentos/{pagamento}/estornar', [ContaPagarController::class, 'estornarPagamento'])->name('contas-pagar.pagamentos.estornar');
         Route::post('contas-pagar/{conta}/cancelar', [ContaPagarController::class, 'cancelar'])->name('contas-pagar.cancelar');
+        Route::resource(
+            'etapas',
+            EtapaController::class
+        )->only([
+            'index',
+            'store',
+            'update',
+        ]);
     });
 });
 

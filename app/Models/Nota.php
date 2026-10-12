@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\ContaReceber;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,6 +18,7 @@ class Nota extends Model
     protected $fillable = [
         'cliente_id',
         'veiculo_cliente_id',
+        'etapa_id',
         'tipo',
         'status',
         'subtotal',
@@ -30,8 +30,9 @@ class Nota extends Model
     ];
 
     protected $casts = [
-        'km' => 'int',
-        'km_proxima_troca_oleo' => 'int',
+        'etapa_id' => 'integer',
+        'km' => 'integer',
+        'km_proxima_troca_oleo' => 'integer',
         'subtotal' => 'decimal:2',
         'desconto' => 'decimal:2',
         'total' => 'decimal:2',
@@ -61,6 +62,22 @@ class Nota extends Model
         );
     }
 
+    public function etapa(): BelongsTo
+    {
+        return $this->belongsTo(
+            Etapa::class,
+            'etapa_id'
+        );
+    }
+
+    public function historicoEtapas(): HasMany
+    {
+        return $this->hasMany(
+            NotaEtapaHistorico::class,
+            'nota_id'
+        )->orderByDesc('id');
+    }
+
     public function contaReceber(): HasOne
     {
         return $this->hasOne(
@@ -74,27 +91,69 @@ class Nota extends Model
         array $filters
     ): Builder {
         /*
-         * FILTRO POR CLIENTE
-         *
-         * Nota -> Cliente -> Pessoa -> nome
+         * =====================================================
+         * CLIENTE
+         * =====================================================
          */
-        if (!empty($filters['cliente'])) {
+        if (! empty($filters['cliente'])) {
             $query->whereHas(
                 'cliente.pessoa',
-                function ($query) use ($filters) {
+                function (Builder $query) use ($filters) {
                     $query->where(
                         'nome',
                         'like',
-                        '%' . $filters['cliente'] . '%'
+                        '%'.$filters['cliente'].'%'
                     );
                 }
             );
         }
 
         /*
-         * FILTRO POR TIPO
+         * =====================================================
+         * VEÍCULO
+         * =====================================================
          */
-        if (!empty($filters['tipo'])) {
+        if (! empty($filters['veiculo'])) {
+            $query->whereHas(
+                'veiculosCliente.veiculo',
+                function (Builder $query) use ($filters) {
+                    $query->where(
+                        'nome',
+                        'like',
+                        '%'.$filters['veiculo'].'%'
+                    );
+                }
+            );
+        }
+
+        /*
+         * =====================================================
+         * PLACA
+         * =====================================================
+         */
+        if (! empty($filters['placa'])) {
+            $placa = strtoupper(
+                trim($filters['placa'])
+            );
+
+            $query->whereHas(
+                'veiculosCliente',
+                function (Builder $query) use ($placa) {
+                    $query->where(
+                        'placa',
+                        'like',
+                        '%'.$placa.'%'
+                    );
+                }
+            );
+        }
+
+        /*
+         * =====================================================
+         * TIPO
+         * =====================================================
+         */
+        if (! empty($filters['tipo'])) {
             $query->where(
                 'tipo',
                 $filters['tipo']
@@ -102,39 +161,66 @@ class Nota extends Model
         }
 
         /*
-         * FILTRO POR STATUS
-         *
-         * "Finalizado" é o status atual.
-         *
-         * "Concluido" permanece suportado como legado,
-         * permitindo que registros antigos apareçam
-         * junto dos registros finalizados atuais.
+         * =====================================================
+         * ETAPA
+         * =====================================================
          */
-        if (!empty($filters['status'])) {
-            if ($filters['status'] === 'Finalizado') {
-                $query->whereIn(
-                    'status',
-                    [
-                        'Finalizado',
-                        'Concluido',
-                    ]
-                );
-            } else {
-                $query->where(
-                    'status',
-                    $filters['status']
-                );
-            }
-        } else {
-            /*
-             * Por padrão, notas canceladas não aparecem.
-             */
+        if (! empty($filters['etapa_id'])) {
             $query->where(
-                'status',
-                '!=',
-                'Cancelado'
+                'etapa_id',
+                $filters['etapa_id']
             );
         }
+
+        /*
+         * =====================================================
+         * STATUS
+         * =====================================================
+         *
+         * Regra padrão:
+         *
+         * Sem filtro explícito, a listagem mostra somente
+         * Notas que ainda estão em andamento no sistema:
+         * status Aberto.
+         *
+         * Finalizado inclui Concluido por compatibilidade
+         * com registros legados.
+         */
+        $status = $filters['status'] ?? null;
+
+        if ($status === 'Todos') {
+            return $query;
+        }
+
+        if ($status === 'Finalizado') {
+            $query->whereIn(
+                'status',
+                [
+                    'Finalizado',
+                    'Concluido',
+                ]
+            );
+
+            return $query;
+        }
+
+        if ($status === 'Cancelado') {
+            $query->where(
+                'status',
+                'Cancelado'
+            );
+
+            return $query;
+        }
+
+        /*
+         * Tanto "Aberto" explícito quanto ausência de filtro
+         * caem aqui.
+         */
+        $query->where(
+            'status',
+            'Aberto'
+        );
 
         return $query;
     }
