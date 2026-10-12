@@ -77,6 +77,12 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
         Route::post('/api/notas-itens/produtos', [NotaProdutoRapidoController::class, 'store'])->name('api.notas-itens.produtos.store');
 
         // Ordens de Serviço
+        Route::post('/ordemservicos/{ordemservico}/finalizar',[OrdemServicoController::class, 'finalizar'])->name('ordemservicos.finalizar');
+
+        Route::post('/ordemservicos/{ordemservico}/cancelar',[OrdemServicoController::class, 'cancelar'])->name('ordemservicos.cancelar');
+
+        Route::resource('ordemservicos',OrdemServicoController::class
+        );
         Route::resource('ordemservicos', OrdemServicoController::class);
 
         // Itens das Notas

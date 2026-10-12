@@ -110,7 +110,14 @@
                     >
 
                         <option value="">
-                            Todos os status
+                            Aberta (padrão)
+                        </option>
+
+                        <option
+                            value="todos"
+                            @selected(request('status') === 'todos')
+                        >
+                            Todos
                         </option>
 
                         <option
@@ -394,7 +401,7 @@
                         <th>PLACA</th>
                         <th>DESCRIÇÃO</th>
                         <th>SETOR</th>
-                        <th>EXCLUIR</th>
+                        <th class="text-center">AÇÕES</th>
 
                     </tr>
 
@@ -572,33 +579,92 @@
 
                             </td>
 
-                            {{-- EXCLUIR --}}
+                            {{-- AÇÕES --}}
 
                             <td>
 
-                                <form
-                                    action="{{ route(
-                                        'ordemservicos.destroy',
-                                        $ordemservico->id
-                                    ) }}"
-                                    method="POST"
-                                    onsubmit="return confirm(
-                                        'Tem certeza que deseja excluir esta ordem de serviço?'
-                                    );"
+                                <div
+                                    class="d-flex justify-content-center flex-wrap gap-2"
                                 >
 
-                                    @csrf
-                                    @method('DELETE')
+                                    @if($ordemservico->status === 'aberta')
 
-                                    <button
-                                        type="submit"
-                                        class="btn btn-danger btn-sm"
-                                        title="Excluir OS"
+                                        <form
+                                            action="{{ route(
+                                                'ordemservicos.finalizar',
+                                                $ordemservico
+                                            ) }}"
+                                            method="POST"
+                                            onsubmit="return confirm(
+                                                'Deseja realmente finalizar esta Ordem de Serviço?'
+                                            );"
+                                        >
+
+                                            @csrf
+
+                                            <button
+                                                type="submit"
+                                                class="btn btn-success btn-sm"
+                                                title="Finalizar O.S."
+                                            >
+                                                <i class="bi bi-check-circle"></i>
+                                            </button>
+
+                                        </form>
+
+                                        <form
+                                            action="{{ route(
+                                                'ordemservicos.cancelar',
+                                                $ordemservico
+                                            ) }}"
+                                            method="POST"
+                                            onsubmit="return confirm(
+                                                'Deseja realmente cancelar esta Ordem de Serviço?'
+                                            );"
+                                        >
+
+                                            @csrf
+
+                                            <button
+                                                type="submit"
+                                                class="btn btn-outline-danger btn-sm"
+                                                title="Cancelar O.S."
+                                            >
+                                                <i class="bi bi-x-circle"></i>
+                                            </button>
+
+                                        </form>
+
+                                    @endif
+
+                                    <form
+                                        action="{{ route(
+                                            'ordemservicos.destroy',
+                                            $ordemservico->id
+                                        ) }}"
+                                        method="POST"
+                                        onsubmit="return confirm(
+                                            'Tem certeza que deseja excluir esta Ordem de Serviço?'
+                                        );"
                                     >
-                                        <i class="bi bi-trash"></i>
-                                    </button>
 
-                                </form>
+                                        @csrf
+                                        @method('DELETE')
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-danger btn-sm"
+                                            title="Excluir O.S."
+                                            @disabled(
+                                                $ordemservico->status !== 'aberta'
+                                            )
+                                        >
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+
+                                    </form>
+
+                                </div>
 
                             </td>
 

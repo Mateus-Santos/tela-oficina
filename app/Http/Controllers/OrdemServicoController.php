@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\OrdemServico\CancelarOrdemServico;
 use App\Actions\OrdemServico\CriarOrdemServico;
+use App\Actions\OrdemServico\FinalizarOrdemServico;
+use App\Models\Etapa;
 use App\Models\OrdemServico;
 use App\Models\SetorServico;
 use Illuminate\Http\Request;
-use App\Models\Etapa;
+use InvalidArgumentException;
+
 class OrdemServicoController extends Controller
 {
     public function index(Request $request)
@@ -28,11 +32,19 @@ class OrdemServicoController extends Controller
         }
 
         if ($request->filled('status')) {
+            if ($request->input('status') !== 'todos') {
+                $query->where(
+                    'status',
+                    $request->input('status')
+                );
+            }
+        } else {
             $query->where(
                 'status',
-                $request->input('status')
+                'aberta'
             );
         }
+
         if ($request->filled('etapa_id')) {
             $query->where(
                 'etapa_id',
@@ -227,11 +239,68 @@ class OrdemServicoController extends Controller
         //
     }
 
+    public function finalizar(
+        Request $request,
+        OrdemServico $ordemservico,
+        FinalizarOrdemServico $finalizarOrdemServico
+    ) {
+        try {
+            $finalizarOrdemServico->execute(
+                $ordemservico,
+                $request->user()->id
+            );
+        } catch (InvalidArgumentException $e) {
+            return back()->with(
+                'error',
+                $e->getMessage()
+            );
+        }
+
+        return redirect()
+            ->route('ordemservicos.index')
+            ->with(
+                'success',
+                "Ordem de Serviço #{$ordemservico->id} finalizada com sucesso!"
+            );
+    }
+
+    public function cancelar(
+        OrdemServico $ordemservico,
+        CancelarOrdemServico $cancelarOrdemServico
+    ) {
+        try {
+            $cancelarOrdemServico->execute(
+                $ordemservico
+            );
+        } catch (InvalidArgumentException $e) {
+            return back()->with(
+                'error',
+                $e->getMessage()
+            );
+        }
+
+        return redirect()
+            ->route('ordemservicos.index')
+            ->with(
+                'success',
+                "Ordem de Serviço #{$ordemservico->id} cancelada com sucesso!"
+            );
+    }
+
     public function destroy(string $id)
     {
         $ordemservico = OrdemServico::findOrFail(
             $id
         );
+
+        if ($ordemservico->status !== 'aberta') {
+            return redirect()
+                ->route('ordemservicos.index')
+                ->with(
+                    'error',
+                    'Somente Ordens de Serviço abertas podem ser excluídas.'
+                );
+        }
 
         $ordemservico->delete();
 

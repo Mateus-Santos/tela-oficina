@@ -26,7 +26,8 @@ class NotaController extends Controller
         try {
             $finalizarNota->execute(
                 $nota,
-                $request->validated()
+                $request->validated(),
+                $request->user()->id
             );
         } catch (InvalidArgumentException $e) {
             return back()
