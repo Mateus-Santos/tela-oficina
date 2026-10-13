@@ -42,7 +42,8 @@ class UpdateMarcaRequest extends FormRequest
             'logo' => [
                 'nullable',
                 'image',
-                'max:2048',
+                'max:8192',
+                'dimensions:max_width=8000,max_height=8000',
             ],
 
             'logo_url' => [
@@ -72,7 +73,9 @@ class UpdateMarcaRequest extends FormRequest
             'nome.unique' => 'Já existe uma marca cadastrada com este nome.',
 
             'logo.image' => 'O arquivo da logo deve ser uma imagem.',
-            'logo.max' => 'A logo não pode ter mais de 2 MB.',
+            'logo.max' => 'A logo não pode ter mais de 8 MB.',
+
+            'logo.dimensions' => 'A logo pode ter no máximo 8000 x 8000 pixels.',
 
             'logo_url.url' => 'A URL da logo deve ser uma URL válida.',
             'logo_url.max' => 'A URL da logo não pode ter mais de 2048 caracteres.',

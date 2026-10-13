@@ -1,5 +1,4 @@
 @php
-
     $itensFormulario = isset($itens)
         ? $itens
         : (isset($nota) && $nota->itens ? $nota->itens : collect());
@@ -15,9 +14,7 @@
                 ->recebimentosAtivos()
                 ->sum('valor')
             : 0;
-
 @endphp
-
 
 {{-- =========================================================
      1. IDENTIFICAÇÃO DA NOTA / O.S.
@@ -37,7 +34,6 @@
     <div class="card-body">
 
         <livewire:nota.seletor-cliente-veiculo
-
             :cliente-selecionado-id="
                 old(
                     'cliente_id',
@@ -49,7 +45,6 @@
                     )
                     : null
             "
-
             :veiculo-selecionado-id="
                 old(
                     'veiculo_cliente_id',
@@ -65,7 +60,6 @@
 
         <div class="row g-3 mt-1">
 
-            {{-- KM --}}
             <div class="col-md-4">
 
                 <label
@@ -92,7 +86,6 @@
 
             </div>
 
-            {{-- INTERVALO TROCA DE ÓLEO --}}
             <div class="col-md-4">
 
                 <label
@@ -126,7 +119,6 @@
 
             </div>
 
-            {{-- PRÓXIMA TROCA --}}
             <div class="col-md-4">
 
                 <label
@@ -166,7 +158,6 @@
 
 </div>
 
-
 {{-- =========================================================
      2. RESUMO FINANCEIRO
 ========================================================= --}}
@@ -183,12 +174,9 @@
         @if($contaReceberFormulario)
 
             <span class="badge bg-success">
-
                 <i class="bi bi-cash-coin"></i>
-
                 Conta a Receber
                 #{{ $contaReceberFormulario->id }}
-
             </span>
 
         @endif
@@ -202,10 +190,8 @@
             <div class="alert alert-info">
 
                 <div class="fw-semibold mb-1">
-
                     <i class="bi bi-info-circle"></i>
                     Financeiro vinculado
-
                 </div>
 
                 Esta Nota já possui uma Conta a Receber.
@@ -249,16 +235,13 @@
 
         <div class="row g-3">
 
-            {{-- PEÇAS --}}
             <div class="col-md-6">
 
                 <div class="border rounded p-3 h-100">
 
                     <h6 class="mb-3">
-
                         <i class="bi bi-box-seam"></i>
                         Peças / Produtos
-
                     </h6>
 
                     <div class="d-flex justify-content-between mb-2">
@@ -303,16 +286,13 @@
 
             </div>
 
-            {{-- SERVIÇOS --}}
             <div class="col-md-6">
 
                 <div class="border rounded p-3 h-100">
 
                     <h6 class="mb-3">
-
                         <i class="bi bi-tools"></i>
                         Serviços / O.S.
-
                     </h6>
 
                     <div class="d-flex justify-content-between mb-2">
@@ -359,7 +339,6 @@
 
         </div>
 
-        {{-- TOTAL DE DESCONTOS --}}
         <div class="row mt-3">
 
             <div class="col-12">
@@ -367,10 +346,8 @@
                 <div class="d-flex justify-content-between">
 
                     <span>
-
                         <i class="bi bi-percent"></i>
                         Total de descontos:
-
                     </span>
 
                     <strong id="resumo-total-descontos">
@@ -383,7 +360,6 @@
 
         </div>
 
-        {{-- TOTAL FINAL --}}
         <div class="row mt-3">
 
             <div class="col-12">
@@ -393,10 +369,8 @@
                     <div class="d-flex justify-content-between align-items-center">
 
                         <span class="fs-5">
-
                             <i class="bi bi-cash-stack"></i>
                             TOTAL DA NOTA
-
                         </span>
 
                         <strong
@@ -418,7 +392,6 @@
 
 </div>
 
-
 {{-- =========================================================
      3. ITENS DA NOTA / O.S.
 ========================================================= --}}
@@ -428,10 +401,8 @@
     <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
 
         <h5 class="mb-0">
-
             <i class="bi bi-cart3"></i>
             Itens da Nota / O.S.
-
         </h5>
 
         <button
@@ -440,10 +411,8 @@
             data-bs-toggle="modal"
             data-bs-target="#modalAdicionarItem"
         >
-
             <i class="bi bi-plus-circle"></i>
             Adicionar item
-
         </button>
 
     </div>
@@ -461,8 +430,8 @@
 
                     <tr>
 
-                        <th style="min-width: 220px;">
-                            Tipo
+                        <th style="min-width: 310px;">
+                            Item
                         </th>
 
                         <th style="min-width: 220px;">
@@ -504,7 +473,6 @@
                         @foreach($itensFormulario as $index => $item)
 
                             @php
-
                                 $itemableType =
                                     $item->itemable_type ?? '';
 
@@ -527,37 +495,70 @@
                                     $item->garantia_dias ?? 0;
 
                                 $codigoItem = '';
+                                $codigoFabricanteItem = '';
+                                $codigoBarrasItem = '';
+                                $marcaItem = '';
+                                $imagemUrlItem = null;
 
                                 $estoqueAtualItem = null;
-
                                 $estoqueMinimoItem = null;
 
                                 $estoqueSemItem = false;
-
                                 $estoqueInsuficienteItem = false;
-
                                 $estoqueBaixoItem = false;
+
+                                $produtoItem = null;
 
                                 if (
                                     $itemableType
                                         === \App\Models\Produto::class
                                     && $item->itemable
                                 ) {
+                                    $produtoItem =
+                                        $item->itemable;
+
+                                    $codigoFabricanteItem =
+                                        $produtoItem->codigo_fabricante
+                                        ?: '';
+
+                                    $codigoBarrasItem =
+                                        $produtoItem->codigo_barras
+                                        ?: '';
 
                                     $codigoItem =
-                                        $item->itemable->codigo_fabricante
-                                        ?: $item->itemable->codigo_barras
+                                        $codigoFabricanteItem
+                                        ?: $codigoBarrasItem
                                         ?: '';
+
+                                    $marcaItem =
+                                        $produtoItem
+                                            ->marcaRelacionada
+                                            ?->nome
+                                        ?: '';
+
+                                    $imagemPathItem =
+                                        $produtoItem
+                                            ->imagens
+                                            ->first()
+                                            ?->caminho;
+
+                                    $imagemUrlItem =
+                                        $imagemPathItem
+                                            ? asset(
+                                                'storage/'
+                                                .$imagemPathItem
+                                            )
+                                            : null;
 
                                     $estoqueAtualItem =
                                         (float) (
-                                            $item->itemable->quantidade
+                                            $produtoItem->quantidade
                                             ?? 0
                                         );
 
                                     $estoqueMinimoItem =
                                         (float) (
-                                            $item->itemable->estoque_minimo
+                                            $produtoItem->estoque_minimo
                                             ?? 0
                                         );
 
@@ -565,13 +566,13 @@
                                         $estoqueAtualItem <= 0;
 
                                     $estoqueInsuficienteItem =
-                                        !$estoqueSemItem
+                                        ! $estoqueSemItem
                                         && (float) $quantidadeItem
                                             > $estoqueAtualItem;
 
                                     $estoqueBaixoItem =
-                                        !$estoqueSemItem
-                                        && !$estoqueInsuficienteItem
+                                        ! $estoqueSemItem
+                                        && ! $estoqueInsuficienteItem
                                         && $estoqueAtualItem
                                             <= $estoqueMinimoItem;
                                 }
@@ -580,9 +581,8 @@
                                     $itemableType
                                     === \App\Models\OrdemServico::class
                                 ) {
-
                                     $codigoItem =
-                                        '#' . $itemableId;
+                                        '#'.$itemableId;
                                 }
 
                                 $totalItem = max(
@@ -592,7 +592,6 @@
                                         * $valorUnitarioItem
                                     ) - $descontoItem
                                 );
-
                             @endphp
 
                             <tr
@@ -600,6 +599,10 @@
                                 data-item-index="{{ $index }}"
                                 data-itemable-type="{{ $itemableType }}"
                                 data-itemable-id="{{ $itemableId }}"
+                                @if($estoqueAtualItem !== null)
+                                    data-estoque-atual="{{ $estoqueAtualItem }}"
+                                    data-estoque-minimo="{{ $estoqueMinimoItem }}"
+                                @endif
                             >
 
                                 <td>
@@ -624,104 +627,216 @@
                                         class="itemable-id"
                                     >
 
-                                    @if(
-                                        $itemableType
-                                        === \App\Models\Produto::class
-                                    )
+                                    <div class="d-flex align-items-start gap-2">
 
-                                        <span class="badge bg-primary">
-                                            Produto
-                                        </span>
+                                        @if(
+                                            $itemableType
+                                                === \App\Models\Produto::class
+                                            && $imagemUrlItem
+                                        )
 
-                                    @elseif(
-                                        $itemableType
-                                        === \App\Models\OrdemServico::class
-                                    )
+                                            <img
+                                                src="{{ $imagemUrlItem }}"
+                                                alt="{{ $descricaoItem }}"
+                                                class="rounded border flex-shrink-0"
+                                                style="
+                                                    width: 56px;
+                                                    height: 56px;
+                                                    object-fit: contain;
+                                                    background: #fff;
+                                                "
+                                            >
 
-                                        <span class="badge bg-warning text-dark">
-                                            O.S.
-                                        </span>
+                                        @else
 
-                                    @else
+                                            <div
+                                                class="rounded border bg-light d-flex align-items-center justify-content-center flex-shrink-0"
+                                                style="
+                                                    width: 56px;
+                                                    height: 56px;
+                                                "
+                                            >
 
-                                        <span class="badge bg-secondary">
-                                            Item
-                                        </span>
+                                                @if(
+                                                    $itemableType
+                                                    === \App\Models\OrdemServico::class
+                                                )
 
-                                    @endif
+                                                    <i class="bi bi-tools fs-4 text-warning"></i>
 
-                                    @if($codigoItem)
+                                                @else
 
-                                        <div class="small text-muted mt-1">
+                                                    <i class="bi bi-box-seam fs-4 text-muted"></i>
 
-                                            <i class="bi bi-upc-scan"></i>
-
-                                            {{ $codigoItem }}
-
-                                        </div>
-
-                                    @endif
-
-                                    @if(
-                                        $itemableType
-                                        === \App\Models\Produto::class
-                                    )
-
-                                        @if($estoqueSemItem)
-
-                                            <div class="mt-2">
-
-                                                <span
-                                                    class="badge bg-danger"
-                                                    title="Produto sem estoque disponível."
-                                                >
-
-                                                    <i class="bi bi-exclamation-octagon"></i>
-                                                    Sem estoque
-
-                                                </span>
-
-                                            </div>
-
-                                        @elseif($estoqueInsuficienteItem)
-
-                                            <div class="mt-2">
-
-                                                <span
-                                                    class="badge bg-danger"
-                                                    title="Quantidade da Nota maior que o estoque disponível."
-                                                >
-
-                                                    <i class="bi bi-exclamation-triangle"></i>
-                                                    Estoque insuficiente
-
-                                                </span>
-
-                                            </div>
-
-                                        @elseif($estoqueBaixoItem)
-
-                                            <div class="mt-2">
-
-                                                <span
-                                                    class="badge bg-warning text-dark"
-                                                    title="Produto no estoque mínimo."
-                                                >
-
-                                                    <i class="bi bi-exclamation-triangle"></i>
-                                                    Estoque baixo
-
-                                                </span>
+                                                @endif
 
                                             </div>
 
                                         @endif
 
-                                    @endif
+                                        <div class="flex-grow-1">
+
+                                            @if(
+                                                $itemableType
+                                                === \App\Models\Produto::class
+                                            )
+
+                                                <span class="badge bg-primary">
+                                                    Produto
+                                                </span>
+
+                                                @if($marcaItem)
+
+                                                    <div class="fw-semibold mt-1">
+                                                        {{ $marcaItem }}
+                                                    </div>
+
+                                                @endif
+
+                                                @if($codigoFabricanteItem)
+
+                                                    <div class="small mt-1">
+
+                                                        <span class="text-muted">
+                                                            Fabricante:
+                                                        </span>
+
+                                                        <strong>
+                                                            {{ $codigoFabricanteItem }}
+                                                        </strong>
+
+                                                    </div>
+
+                                                @endif
+
+                                                @if($codigoBarrasItem)
+
+                                                    <div class="small">
+
+                                                        <span class="text-muted">
+                                                            Barras:
+                                                        </span>
+
+                                                        {{ $codigoBarrasItem }}
+
+                                                    </div>
+
+                                                @endif
+
+                                                <div class="small mt-1">
+
+                                                    <span class="text-muted">
+                                                        Estoque:
+                                                    </span>
+
+                                                    <strong>
+                                                        {{
+                                                            number_format(
+                                                                $estoqueAtualItem,
+                                                                3,
+                                                                ',',
+                                                                '.'
+                                                            )
+                                                        }}
+                                                    </strong>
+
+                                                    <span class="text-muted">
+                                                        / mínimo
+                                                        {{
+                                                            number_format(
+                                                                $estoqueMinimoItem,
+                                                                3,
+                                                                ',',
+                                                                '.'
+                                                            )
+                                                        }}
+                                                    </span>
+
+                                                </div>
+
+                                                <div class="mt-2 estoque-status-item">
+
+                                                    @if($estoqueSemItem)
+
+                                                        <span
+                                                            class="badge bg-danger"
+                                                            title="Produto sem estoque disponível."
+                                                        >
+                                                            <i class="bi bi-exclamation-octagon"></i>
+                                                            Sem estoque
+                                                        </span>
+
+                                                    @elseif($estoqueInsuficienteItem)
+
+                                                        <span
+                                                            class="badge bg-danger"
+                                                            title="Quantidade da Nota maior que o estoque disponível."
+                                                        >
+                                                            <i class="bi bi-exclamation-triangle"></i>
+                                                            Estoque insuficiente
+                                                        </span>
+
+                                                    @elseif($estoqueBaixoItem)
+
+                                                        <span
+                                                            class="badge bg-warning text-dark"
+                                                            title="Produto no estoque mínimo."
+                                                        >
+                                                            <i class="bi bi-exclamation-triangle"></i>
+                                                            Estoque baixo
+                                                        </span>
+
+                                                    @else
+
+                                                        <span class="badge bg-success">
+                                                            <i class="bi bi-check-circle"></i>
+                                                            Disponível
+                                                        </span>
+
+                                                    @endif
+
+                                                </div>
+
+                                            @elseif(
+                                                $itemableType
+                                                === \App\Models\OrdemServico::class
+                                            )
+
+                                                <span class="badge bg-warning text-dark">
+                                                    <i class="bi bi-tools"></i>
+                                                    O.S.
+                                                </span>
+
+                                                <div class="fw-semibold mt-2">
+                                                    {{ $codigoItem }}
+                                                </div>
+
+                                                <div class="small text-muted mt-1">
+                                                    Serviço vinculado à Nota
+                                                </div>
+
+                                            @else
+
+                                                <span class="badge bg-secondary">
+                                                    Item
+                                                </span>
+
+                                                @if($codigoItem)
+
+                                                    <div class="small text-muted mt-1">
+                                                        {{ $codigoItem }}
+                                                    </div>
+
+                                                @endif
+
+                                            @endif
+
+                                        </div>
+
+                                    </div>
 
                                 </td>
 
-                                {{-- DESCRIÇÃO --}}
                                 <td>
 
                                     <input
@@ -729,7 +844,7 @@
                                         name="itens[{{ $index }}][descricao]"
                                         class="form-control input-descricao"
                                         value="{{ old(
-                                            'itens.' . $index . '.descricao',
+                                            'itens.'.$index.'.descricao',
                                             $descricaoItem
                                         ) }}"
                                         required
@@ -737,7 +852,6 @@
 
                                 </td>
 
-                                {{-- QUANTIDADE --}}
                                 <td>
 
                                     <input
@@ -745,7 +859,7 @@
                                         name="itens[{{ $index }}][quantidade]"
                                         class="form-control input-qtd"
                                         value="{{ old(
-                                            'itens.' . $index . '.quantidade',
+                                            'itens.'.$index.'.quantidade',
                                             $quantidadeItem
                                         ) }}"
                                         min="1"
@@ -755,7 +869,6 @@
 
                                 </td>
 
-                                {{-- VALOR UNITÁRIO --}}
                                 <td>
 
                                     <input
@@ -763,7 +876,7 @@
                                         name="itens[{{ $index }}][valor_unitario]"
                                         class="form-control input-valor"
                                         value="{{ old(
-                                            'itens.' . $index . '.valor_unitario',
+                                            'itens.'.$index.'.valor_unitario',
                                             number_format(
                                                 $valorUnitarioItem,
                                                 2,
@@ -777,7 +890,6 @@
 
                                 </td>
 
-                                {{-- DESCONTO --}}
                                 <td>
 
                                     <input
@@ -785,7 +897,7 @@
                                         name="itens[{{ $index }}][desconto]"
                                         class="form-control input-desconto"
                                         value="{{ old(
-                                            'itens.' . $index . '.desconto',
+                                            'itens.'.$index.'.desconto',
                                             number_format(
                                                 $descontoItem,
                                                 2,
@@ -798,7 +910,6 @@
 
                                 </td>
 
-                                {{-- GARANTIA --}}
                                 <td>
 
                                     <input
@@ -806,7 +917,7 @@
                                         name="itens[{{ $index }}][garantia_dias]"
                                         class="form-control input-garantia"
                                         value="{{ old(
-                                            'itens.' . $index . '.garantia_dias',
+                                            'itens.'.$index.'.garantia_dias',
                                             $garantiaDiasItem
                                         ) }}"
                                         min="0"
@@ -815,25 +926,21 @@
 
                                 </td>
 
-                                {{-- TOTAL --}}
                                 <td>
 
                                     <span class="valor-total-item fw-bold">
-
                                         {{
-                                            'R$ ' . number_format(
+                                            'R$ '.number_format(
                                                 $totalItem,
                                                 2,
                                                 ',',
                                                 '.'
                                             )
                                         }}
-
                                     </span>
 
                                 </td>
 
-                                {{-- AÇÕES --}}
                                 <td class="text-center">
 
                                     <button
@@ -841,9 +948,7 @@
                                         class="btn btn-danger btn-sm btn-remover-item"
                                         title="Remover item"
                                     >
-
                                         <i class="bi bi-trash"></i>
-
                                     </button>
 
                                 </td>
@@ -860,10 +965,8 @@
                                 colspan="8"
                                 class="text-center text-muted py-4"
                             >
-
                                 <i class="bi bi-info-circle"></i>
                                 Nenhum item adicionado à nota.
-
                             </td>
 
                         </tr>
@@ -880,7 +983,6 @@
 
 </div>
 
-
 {{-- =========================================================
      4. DESCONTOS GERAIS
 ========================================================= --}}
@@ -890,10 +992,8 @@
     <div class="card-header">
 
         <h5 class="mb-0">
-
             <i class="bi bi-percent"></i>
             Descontos
-
         </h5>
 
     </div>
@@ -909,9 +1009,7 @@
                 </strong>
 
                 <div class="text-muted">
-
                     Aplique um desconto sobre os produtos e serviços da nota.
-
                 </div>
 
             </div>
@@ -922,10 +1020,8 @@
                 data-bs-toggle="modal"
                 data-bs-target="#modalDescontos"
             >
-
                 <i class="bi bi-percent"></i>
                 Gerenciar descontos
-
             </button>
 
         </div>
@@ -933,7 +1029,6 @@
     </div>
 
 </div>
-
 
 {{-- =========================================================
      5. BOTÕES
@@ -945,10 +1040,8 @@
         href="{{ route('notas.index') }}"
         class="btn btn-secondary"
     >
-
         <i class="bi bi-arrow-left"></i>
         Voltar
-
     </a>
 
     <button
@@ -956,10 +1049,8 @@
         class="btn btn-success"
         id="btn-salvar-nota"
     >
-
         <i class="bi bi-check-circle"></i>
         Salvar nota
-
     </button>
 
 </div>

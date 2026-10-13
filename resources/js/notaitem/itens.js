@@ -58,15 +58,23 @@ import BuscaItens from '../busca/busca-itens.js';
 
         let indiceItem = 0;
 
-        let itemSelecionado = {
-            tipo: '',
-            id: '',
-            descricao: '',
-            valor: 0,
-            codigo: '',
-            estoque: null,
-            estoqueMinimo: null,
-        };
+        function estadoItemVazio() {
+            return {
+                tipo: '',
+                id: '',
+                descricao: '',
+                valor: 0,
+                codigo: '',
+                codigoFabricante: '',
+                codigoBarras: '',
+                marca: '',
+                imagemUrl: '',
+                estoque: null,
+                estoqueMinimo: null,
+            };
+        }
+
+        let itemSelecionado = estadoItemVazio();
 
         /*
          * =========================================================
@@ -136,6 +144,20 @@ import BuscaItens from '../busca/busca-itens.js';
                     .toFixed(2)
                     .replace('.', ',')
                 : '0,00';
+        }
+
+        function formatarQuantidade(valor) {
+            const numero = Number(valor);
+
+            return Number.isFinite(numero)
+                ? numero.toLocaleString(
+                    'pt-BR',
+                    {
+                        minimumFractionDigits: 3,
+                        maximumFractionDigits: 3,
+                    }
+                )
+                : '0,000';
         }
 
         function obterTipoSelecionado() {
@@ -287,7 +309,7 @@ import BuscaItens from '../busca/busca-itens.js';
 
         /*
          * =========================================================
-         * AVISOS DO MODAL
+         * AVISOS
          * =========================================================
          */
 
@@ -309,17 +331,10 @@ import BuscaItens from '../busca/busca-itens.js';
             }
 
             const icones = {
-                warning:
-                    'bi-exclamation-triangle',
-
-                danger:
-                    'bi-x-octagon',
-
-                info:
-                    'bi-info-circle',
-
-                success:
-                    'bi-check-circle',
+                warning: 'bi-exclamation-triangle',
+                danger: 'bi-x-octagon',
+                info: 'bi-info-circle',
+                success: 'bi-check-circle',
             };
 
             const icone =
@@ -380,8 +395,7 @@ import BuscaItens from '../busca/busca-itens.js';
             }
 
             if (!itemSelecionado.codigo) {
-                itemCodigoElemento.textContent =
-                    '—';
+                itemCodigoElemento.textContent = '—';
 
                 itemCodigoWrapper.classList.add(
                     'd-none'
@@ -431,6 +445,109 @@ import BuscaItens from '../busca/busca-itens.js';
             }
 
             return null;
+        }
+
+        function obterHtmlStatusEstoque(
+            estoque,
+            estoqueMinimo,
+            quantidade
+        ) {
+            if (
+                estoque === null
+                || estoque === undefined
+            ) {
+                return '';
+            }
+
+            if (estoque <= 0) {
+                return `
+                    <span
+                        class="badge bg-danger"
+                        title="Produto sem estoque disponível."
+                    >
+                        <i class="bi bi-exclamation-octagon"></i>
+                        Sem estoque
+                    </span>
+                `;
+            }
+
+            if (quantidade > estoque) {
+                return `
+                    <span
+                        class="badge bg-danger"
+                        title="Quantidade da Nota maior que o estoque disponível."
+                    >
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Estoque insuficiente
+                    </span>
+                `;
+            }
+
+            if (
+                estoqueMinimo !== null
+                && estoque <= estoqueMinimo
+            ) {
+                return `
+                    <span
+                        class="badge bg-warning text-dark"
+                        title="Produto no estoque mínimo."
+                    >
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Estoque baixo
+                    </span>
+                `;
+            }
+
+            return `
+                <span class="badge bg-success">
+                    <i class="bi bi-check-circle"></i>
+                    Disponível
+                </span>
+            `;
+        }
+
+        function atualizarStatusEstoqueLinha(linha) {
+            if (
+                !linha
+                || obterTipoLinha(linha) !== 'produto'
+            ) {
+                return;
+            }
+
+            const container =
+                linha.querySelector(
+                    '.estoque-status-item'
+                );
+
+            if (!container) {
+                return;
+            }
+
+            const estoque =
+                linha.dataset.estoqueAtual !== undefined
+                && linha.dataset.estoqueAtual !== ''
+                    ? Number(
+                        linha.dataset.estoqueAtual
+                    )
+                    : null;
+
+            const estoqueMinimo =
+                linha.dataset.estoqueMinimo !== undefined
+                && linha.dataset.estoqueMinimo !== ''
+                    ? Number(
+                        linha.dataset.estoqueMinimo
+                    )
+                    : null;
+
+            const quantidade =
+                obterQuantidadeLinha(linha);
+
+            container.innerHTML =
+                obterHtmlStatusEstoque(
+                    estoque,
+                    estoqueMinimo,
+                    quantidade
+                );
         }
 
         function atualizarAvisoEstoque() {
@@ -586,6 +703,10 @@ import BuscaItens from '../busca/busca-itens.js';
                         ).total
                     );
             }
+
+            atualizarStatusEstoqueLinha(
+                linha
+            );
         }
 
         function obterDadosFinanceiros() {
@@ -790,20 +911,12 @@ import BuscaItens from '../busca/busca-itens.js';
          */
 
         function limparResultados() {
-            resultadosContainer.innerHTML =
-                '';
+            resultadosContainer.innerHTML = '';
         }
 
         function limparSelecao() {
-            itemSelecionado = {
-                tipo: '',
-                id: '',
-                descricao: '',
-                valor: 0,
-                codigo: '',
-                estoque: null,
-                estoqueMinimo: null,
-            };
+            itemSelecionado =
+                estadoItemVazio();
 
             if (itemIdInput) {
                 itemIdInput.value = '';
@@ -843,14 +956,6 @@ import BuscaItens from '../busca/busca-itens.js';
         function selecionarItem(item) {
             const tipo =
                 obterTipoSelecionado();
-
-            const estoqueMinimo =
-                tipo === 'produto'
-                    && item
-                    && item.estoque_minimo !== undefined
-                    && item.estoque_minimo !== null
-                        ? Number(item.estoque_minimo)
-                        : null;
 
             if (
                 !tipo
@@ -936,12 +1041,42 @@ import BuscaItens from '../busca/busca-itens.js';
                     )
                     : null;
 
+            const estoqueMinimo =
+                tipo === 'produto'
+                && item.estoque_minimo !== undefined
+                && item.estoque_minimo !== null
+                    ? Number(
+                        item.estoque_minimo
+                    )
+                    : null;
+
             itemSelecionado = {
                 tipo,
                 id: item.id,
                 descricao,
                 valor,
                 codigo,
+
+                codigoFabricante:
+                    tipo === 'produto'
+                        ? item.codigo_fabricante || ''
+                        : '',
+
+                codigoBarras:
+                    tipo === 'produto'
+                        ? item.codigo_barras || ''
+                        : '',
+
+                marca:
+                    tipo === 'produto'
+                        ? item.marca || ''
+                        : '',
+
+                imagemUrl:
+                    tipo === 'produto'
+                        ? item.imagem_url || ''
+                        : '',
+
                 estoque,
                 estoqueMinimo,
             };
@@ -1167,6 +1302,175 @@ import BuscaItens from '../busca/busca-itens.js';
          * =========================================================
          */
 
+        function gerarHtmlIdentificacao(
+            tipo,
+            itemId,
+            quantidade
+        ) {
+            if (tipo === 'os') {
+                return `
+                    <div class="d-flex align-items-start gap-2">
+
+                        <div
+                            class="rounded border bg-light d-flex align-items-center justify-content-center flex-shrink-0"
+                            style="
+                                width:56px;
+                                height:56px;
+                            "
+                        >
+                            <i class="bi bi-tools fs-4 text-warning"></i>
+                        </div>
+
+                        <div>
+                            <span class="badge bg-warning text-dark">
+                                <i class="bi bi-tools"></i>
+                                O.S.
+                            </span>
+
+                            <div class="fw-semibold mt-2">
+                                #${escaparHtml(itemId)}
+                            </div>
+
+                            <div class="small text-muted mt-1">
+                                Serviço vinculado à Nota
+                            </div>
+                        </div>
+
+                    </div>
+                `;
+            }
+
+            const imagem =
+                itemSelecionado.imagemUrl
+                    ? `
+                        <img
+                            src="${escaparHtml(itemSelecionado.imagemUrl)}"
+                            alt="${escaparHtml(itemSelecionado.descricao)}"
+                            class="rounded border flex-shrink-0"
+                            style="
+                                width:56px;
+                                height:56px;
+                                object-fit:contain;
+                                background:#fff;
+                            "
+                        >
+                    `
+                    : `
+                        <div
+                            class="rounded border bg-light d-flex align-items-center justify-content-center flex-shrink-0"
+                            style="
+                                width:56px;
+                                height:56px;
+                            "
+                        >
+                            <i class="bi bi-box-seam fs-4 text-muted"></i>
+                        </div>
+                    `;
+
+            const marca =
+                itemSelecionado.marca
+                    ? `
+                        <div class="fw-semibold mt-1">
+                            ${escaparHtml(itemSelecionado.marca)}
+                        </div>
+                    `
+                    : '';
+
+            const fabricante =
+                itemSelecionado.codigoFabricante
+                    ? `
+                        <div class="small mt-1">
+                            <span class="text-muted">
+                                Fabricante:
+                            </span>
+
+                            <strong>
+                                ${escaparHtml(itemSelecionado.codigoFabricante)}
+                            </strong>
+                        </div>
+                    `
+                    : '';
+
+            const barras =
+                itemSelecionado.codigoBarras
+                    ? `
+                        <div class="small">
+                            <span class="text-muted">
+                                Barras:
+                            </span>
+
+                            ${escaparHtml(itemSelecionado.codigoBarras)}
+                        </div>
+                    `
+                    : '';
+
+            const estoque =
+                itemSelecionado.estoque !== null
+                    ? `
+                        <div class="small mt-1">
+                            <span class="text-muted">
+                                Estoque:
+                            </span>
+
+                            <strong>
+                                ${escaparHtml(
+                                    formatarQuantidade(
+                                        itemSelecionado.estoque
+                                    )
+                                )}
+                            </strong>
+
+                            ${
+                                itemSelecionado.estoqueMinimo !== null
+                                    ? `
+                                        <span class="text-muted">
+                                            / mínimo
+                                            ${escaparHtml(
+                                                formatarQuantidade(
+                                                    itemSelecionado.estoqueMinimo
+                                                )
+                                            )}
+                                        </span>
+                                    `
+                                    : ''
+                            }
+                        </div>
+                    `
+                    : '';
+
+            const statusEstoque =
+                obterHtmlStatusEstoque(
+                    itemSelecionado.estoque,
+                    itemSelecionado.estoqueMinimo,
+                    quantidade
+                );
+
+            return `
+                <div class="d-flex align-items-start gap-2">
+
+                    ${imagem}
+
+                    <div class="flex-grow-1">
+
+                        <span class="badge bg-primary">
+                            Produto
+                        </span>
+
+                        ${marca}
+                        ${fabricante}
+                        ${barras}
+                        ${estoque}
+
+                        <div class="mt-2 estoque-status-item">
+                            ${statusEstoque}
+                        </div>
+
+                    </div>
+
+                </div>
+            `;
+        }
+
         function adicionarItem() {
             if (!validarItem()) {
                 return;
@@ -1213,14 +1517,6 @@ import BuscaItens from '../busca/busca-itens.js';
                     ) || 0
                     : 0;
 
-            const codigo =
-                itemSelecionado.codigo
-                || (
-                    tipo === 'os'
-                        ? `#${itemId}`
-                        : ''
-                );
-
             const index =
                 indiceItem++;
 
@@ -1236,6 +1532,10 @@ import BuscaItens from '../busca/busca-itens.js';
                     'tr'
                 );
 
+            linha.classList.add(
+                'item-os'
+            );
+
             linha.dataset.itemIndex =
                 index;
 
@@ -1245,8 +1545,20 @@ import BuscaItens from '../busca/busca-itens.js';
             linha.dataset.itemableId =
                 itemId;
 
+            if (
+                tipo === 'produto'
+                && itemSelecionado.estoque !== null
+            ) {
+                linha.dataset.estoqueAtual =
+                    itemSelecionado.estoque;
+
+                linha.dataset.estoqueMinimo =
+                    itemSelecionado.estoqueMinimo ?? '';
+            }
+
             linha.innerHTML = `
                 <td>
+
                     <input
                         type="hidden"
                         name="itens[${index}][itemable_type]"
@@ -1261,33 +1573,16 @@ import BuscaItens from '../busca/busca-itens.js';
                         class="itemable-id"
                     >
 
-                    <div>
-                        <span class="badge ${
-                            tipo === 'produto'
-                                ? 'bg-primary'
-                                : 'bg-warning text-dark'
-                        }">
-                            ${
-                                tipo === 'produto'
-                                    ? 'Produto'
-                                    : 'O.S.'
-                            }
-                        </span>
+                    ${gerarHtmlIdentificacao(
+                        tipo,
+                        itemId,
+                        quantidade
+                    )}
 
-                        ${
-                            codigo
-                                ? `
-                                    <div class="small text-muted mt-1">
-                                        <i class="bi bi-upc-scan"></i>
-                                        ${escaparHtml(codigo)}
-                                    </div>
-                                `
-                                : ''
-                        }
-                    </div>
                 </td>
 
                 <td>
+
                     <input
                         type="text"
                         name="itens[${index}][descricao]"
@@ -1295,9 +1590,11 @@ import BuscaItens from '../busca/busca-itens.js';
                         class="form-control input-descricao"
                         required
                     >
+
                 </td>
 
                 <td>
+
                     <input
                         type="number"
                         name="itens[${index}][quantidade]"
@@ -1307,28 +1604,36 @@ import BuscaItens from '../busca/busca-itens.js';
                         class="form-control input-qtd"
                         required
                     >
+
                 </td>
 
                 <td>
+
                     <input
                         type="text"
                         name="itens[${index}][valor_unitario]"
                         value="${formatarNumero(valorUnitario)}"
                         class="form-control input-valor"
+                        inputmode="decimal"
                         required
                     >
+
                 </td>
 
                 <td>
+
                     <input
                         type="text"
                         name="itens[${index}][desconto]"
                         value="${formatarNumero(desconto)}"
                         class="form-control input-desconto"
+                        inputmode="decimal"
                     >
+
                 </td>
 
                 <td>
+
                     <input
                         type="number"
                         name="itens[${index}][garantia_dias]"
@@ -1341,13 +1646,19 @@ import BuscaItens from '../busca/busca-itens.js';
                         step="1"
                         class="form-control input-garantia"
                     >
+
                 </td>
 
-                <td class="valor-total-item fw-bold">
-                    ${formatarMoeda(valorTotal)}
+                <td>
+
+                    <span class="valor-total-item fw-bold">
+                        ${formatarMoeda(valorTotal)}
+                    </span>
+
                 </td>
 
                 <td class="text-center">
+
                     <button
                         type="button"
                         class="btn btn-danger btn-sm btn-remover-item"
@@ -1355,6 +1666,7 @@ import BuscaItens from '../busca/busca-itens.js';
                     >
                         <i class="bi bi-trash"></i>
                     </button>
+
                 </td>
             `;
 
@@ -1410,15 +1722,8 @@ import BuscaItens from '../busca/busca-itens.js';
          */
 
         function limparEditorItem() {
-            itemSelecionado = {
-                tipo: '',
-                id: '',
-                descricao: '',
-                valor: 0,
-                codigo: '',
-                estoque: null,
-                estoqueMinimo: null,
-            };
+            itemSelecionado =
+                estadoItemVazio();
 
             if (itemIdInput) {
                 itemIdInput.value = '';
@@ -1567,9 +1872,7 @@ import BuscaItens from '../busca/busca-itens.js';
                                 'div'
                             );
 
-                        if (
-                            tipo === 'produto'
-                        ) {
+                        if (tipo === 'produto') {
                             const nome =
                                 item.nome
                                 || 'Produto sem nome';
@@ -1578,22 +1881,9 @@ import BuscaItens from '../busca/busca-itens.js';
                                 item.descricao
                                 || '';
 
-                            let marca = '';
-
-                            if (
+                            const marca =
                                 item.marca
-                                && typeof item.marca
-                                    === 'object'
-                            ) {
-                                marca =
-                                    item.marca.nome
-                                    || '';
-                            } else {
-                                marca =
-                                    item.marca
-                                    || item.marca_nome
-                                    || '';
-                            }
+                                || '';
 
                             const codigoFabricante =
                                 item.codigo_fabricante
@@ -1613,10 +1903,45 @@ import BuscaItens from '../busca/busca-itens.js';
                                     item
                                 );
 
+                            const estoqueMinimo =
+                                item.estoque_minimo !== undefined
+                                && item.estoque_minimo !== null
+                                    ? Number(
+                                        item.estoque_minimo
+                                    )
+                                    : null;
+
                             const duplicado =
                                 produtoJaAdicionado(
                                     item.id
                                 );
+
+                            const imagem =
+                                item.imagem_url
+                                    ? `
+                                        <img
+                                            src="${escaparHtml(item.imagem_url)}"
+                                            alt="${escaparHtml(nome)}"
+                                            class="rounded border flex-shrink-0"
+                                            style="
+                                                width:56px;
+                                                height:56px;
+                                                object-fit:contain;
+                                                background:#fff;
+                                            "
+                                        >
+                                    `
+                                    : `
+                                        <div
+                                            class="d-flex align-items-center justify-content-center rounded border bg-light text-primary flex-shrink-0"
+                                            style="
+                                                width:56px;
+                                                height:56px;
+                                            "
+                                        >
+                                            <i class="bi bi-box-seam fs-5"></i>
+                                        </div>
+                                    `;
 
                             if (duplicado) {
                                 container.classList.add(
@@ -1627,16 +1952,12 @@ import BuscaItens from '../busca/busca-itens.js';
                             container.innerHTML = `
                                 <div class="d-flex align-items-start gap-3">
 
-                                    <div
-                                        class="d-flex align-items-center justify-content-center rounded bg-light text-primary flex-shrink-0"
-                                        style="width:42px;height:42px;"
-                                    >
-                                        <i class="bi bi-box-seam fs-5"></i>
-                                    </div>
+                                    ${imagem}
 
                                     <div class="flex-grow-1 min-width-0">
 
                                         <div class="d-flex justify-content-between align-items-start gap-3">
+
                                             <strong class="d-block text-dark">
                                                 ${escaparHtml(nome)}
                                             </strong>
@@ -1644,6 +1965,7 @@ import BuscaItens from '../busca/busca-itens.js';
                                             <strong class="text-primary text-nowrap">
                                                 ${formatarMoeda(preco)}
                                             </strong>
+
                                         </div>
 
                                         ${
@@ -1651,7 +1973,9 @@ import BuscaItens from '../busca/busca-itens.js';
                                                 ? `
                                                     <div class="small text-muted mt-1">
                                                         <i class="bi bi-bookmark"></i>
-                                                        <span class="fw-semibold">Marca:</span>
+                                                        <span class="fw-semibold">
+                                                            Marca:
+                                                        </span>
                                                         ${escaparHtml(marca)}
                                                     </div>
                                                 `
@@ -1663,7 +1987,9 @@ import BuscaItens from '../busca/busca-itens.js';
                                                 ? `
                                                     <div class="small text-muted mt-1">
                                                         <i class="bi bi-tag"></i>
-                                                        <span class="fw-semibold">Código:</span>
+                                                        <span class="fw-semibold">
+                                                            Fabricante:
+                                                        </span>
                                                         ${escaparHtml(codigoFabricante)}
                                                     </div>
                                                 `
@@ -1675,7 +2001,9 @@ import BuscaItens from '../busca/busca-itens.js';
                                                 ? `
                                                     <div class="small text-muted mt-1">
                                                         <i class="bi bi-upc-scan"></i>
-                                                        <span class="fw-semibold">Código de barras:</span>
+                                                        <span class="fw-semibold">
+                                                            Código de barras:
+                                                        </span>
                                                         ${escaparHtml(codigoBarras)}
                                                     </div>
                                                 `
@@ -1691,8 +2019,26 @@ import BuscaItens from '../busca/busca-itens.js';
                                                             : 'text-muted'
                                                     }">
                                                         <i class="bi bi-boxes"></i>
+
                                                         Estoque:
-                                                        ${escaparHtml(estoque)}
+                                                        ${escaparHtml(
+                                                            formatarQuantidade(
+                                                                estoque
+                                                            )
+                                                        )}
+
+                                                        ${
+                                                            estoqueMinimo !== null
+                                                                ? `
+                                                                    / mínimo
+                                                                    ${escaparHtml(
+                                                                        formatarQuantidade(
+                                                                            estoqueMinimo
+                                                                        )
+                                                                    )}
+                                                                `
+                                                                : ''
+                                                        }
                                                     </div>
                                                 `
                                                 : ''
@@ -1716,7 +2062,13 @@ import BuscaItens from '../busca/busca-itens.js';
                                                 ? `
                                                     <div
                                                         class="small text-muted mt-2"
-                                                        style="display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;line-height:1.4;"
+                                                        style="
+                                                            display:-webkit-box;
+                                                            -webkit-box-orient:vertical;
+                                                            -webkit-line-clamp:3;
+                                                            overflow:hidden;
+                                                            line-height:1.4;
+                                                        "
                                                     >
                                                         ${escaparHtml(descricao)}
                                                     </div>
@@ -1781,6 +2133,7 @@ import BuscaItens from '../busca/busca-itens.js';
                                     <div class="flex-grow-1 min-width-0">
 
                                         <div class="d-flex justify-content-between align-items-start gap-3">
+
                                             <strong class="d-block text-dark">
                                                 O.S. #${escaparHtml(item.id)}
                                             </strong>
@@ -1788,24 +2141,34 @@ import BuscaItens from '../busca/busca-itens.js';
                                             <strong class="text-muted text-nowrap">
                                                 ${formatarMoeda(valor)}
                                             </strong>
+
                                         </div>
 
                                         <div
                                             class="small text-muted mt-2"
-                                            style="display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;line-height:1.4;"
+                                            style="
+                                                display:-webkit-box;
+                                                -webkit-box-orient:vertical;
+                                                -webkit-line-clamp:3;
+                                                overflow:hidden;
+                                                line-height:1.4;
+                                            "
                                         >
                                             ${escaparHtml(descricao)}
                                         </div>
 
                                         <div class="mt-2">
+
                                             <span class="badge bg-warning text-dark">
                                                 <i class="bi bi-link-45deg"></i>
+
                                                 Já vinculada${
                                                     notaId
                                                         ? ` à Nota #${escaparHtml(notaId)}`
                                                         : ' a uma Nota'
                                                 }
                                             </span>
+
                                         </div>
 
                                         ${
@@ -1860,7 +2223,13 @@ import BuscaItens from '../busca/busca-itens.js';
 
                                     <div
                                         class="small text-muted mt-2"
-                                        style="display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;line-height:1.4;"
+                                        style="
+                                            display:-webkit-box;
+                                            -webkit-box-orient:vertical;
+                                            -webkit-line-clamp:3;
+                                            overflow:hidden;
+                                            line-height:1.4;
+                                        "
                                     >
                                         ${escaparHtml(descricao)}
                                     </div>
@@ -1909,13 +2278,11 @@ import BuscaItens from '../busca/busca-itens.js';
                 buscaItens.limpar();
 
                 if (descricaoInput) {
-                    descricaoInput.value =
-                        '';
+                    descricaoInput.value = '';
                 }
 
                 if (valorInput) {
-                    valorInput.value =
-                        '';
+                    valorInput.value = '';
                 }
 
                 if (descontoInput) {

@@ -77,9 +77,9 @@ class NotaController extends Controller
         $filters = $request->all();
 
         /*
-        * Sem status informado, a listagem operacional
-        * trabalha somente com Notas abertas.
-        */
+         * Sem status informado, a listagem operacional
+         * trabalha somente com Notas abertas.
+         */
         $filters['status'] =
             $request->input(
                 'status',
@@ -141,7 +141,14 @@ class NotaController extends Controller
         $nota->load([
             'cliente.pessoa',
             'veiculosCliente.veiculo.montadora',
-            'itens.itemable',
+            'itens.itemable' => function (MorphTo $morphTo) {
+                $morphTo->morphWith([
+                    Produto::class => [
+                        'marcaRelacionada',
+                        'imagens',
+                    ],
+                ]);
+            },
             'contaReceber.parcelas',
             'contaReceber.recebimentosAtivos',
         ]);
@@ -351,6 +358,7 @@ class NotaController extends Controller
 
                 if ($estoqueAtual <= 0) {
                     $quantidadeSemEstoque++;
+
                     $tipoProblema =
                         'sem_estoque';
                 } elseif (
@@ -358,6 +366,7 @@ class NotaController extends Controller
                     > $estoqueAtual
                 ) {
                     $quantidadeInsuficiente++;
+
                     $tipoProblema =
                         'insuficiente';
                 } elseif (
@@ -365,6 +374,7 @@ class NotaController extends Controller
                     <= $estoqueMinimo
                 ) {
                     $quantidadeEstoqueBaixo++;
+
                     $tipoProblema =
                         'baixo';
                 }
@@ -438,6 +448,14 @@ class NotaController extends Controller
                         $item->itemable_type
                         === OrdemServico::class;
 
+                    $codigo = '—';
+                    $codigoFabricante = null;
+                    $codigoBarras = null;
+                    $marca = null;
+                    $imagemUrl = null;
+                    $estoqueAtual = null;
+                    $estoqueMinimo = null;
+
                     if ($isProduto) {
                         $tipo =
                             'Produto';
@@ -448,14 +466,51 @@ class NotaController extends Controller
                         $tipoIcone =
                             'bi-box-seam';
 
-                        $codigo =
-                            $item
-                                ->itemable
-                                ?->codigo_fabricante
-                            ?: $item
-                                ->itemable
-                                ?->codigo_barras
-                            ?: '—';
+                        $produto =
+                            $item->itemable;
+
+                        if ($produto) {
+                            $codigoFabricante =
+                                $produto->codigo_fabricante;
+
+                            $codigoBarras =
+                                $produto->codigo_barras;
+
+                            $codigo =
+                                $codigoFabricante
+                                ?: $codigoBarras
+                                ?: '—';
+
+                            $marca =
+                                $produto
+                                    ->marcaRelacionada
+                                    ?->nome;
+
+                            $imagem =
+                                $produto
+                                    ->imagens
+                                    ->first()
+                                    ?->caminho;
+
+                            $imagemUrl =
+                                $imagem
+                                    ? asset(
+                                        'storage/'.$imagem
+                                    )
+                                    : null;
+
+                            $estoqueAtual =
+                                (float) (
+                                    $produto->quantidade
+                                    ?? 0
+                                );
+
+                            $estoqueMinimo =
+                                (float) (
+                                    $produto->estoque_minimo
+                                    ?? 0
+                                );
+                        }
                     } elseif ($isOrdemServico) {
                         $tipo =
                             'O.S.';
@@ -468,10 +523,7 @@ class NotaController extends Controller
 
                         $codigo =
                             $item->itemable?->id
-                                ? '#'
-                                    .$item
-                                        ->itemable
-                                        ->id
+                                ? '#'.$item->itemable->id
                                 : '—';
                     } else {
                         $tipo =
@@ -482,9 +534,6 @@ class NotaController extends Controller
 
                         $tipoIcone =
                             'bi-question-circle';
-
-                        $codigo =
-                            '—';
                     }
 
                     return [
@@ -497,6 +546,18 @@ class NotaController extends Controller
                         'tipo_icone' => $tipoIcone,
 
                         'codigo' => $codigo,
+
+                        'codigo_fabricante' => $codigoFabricante,
+
+                        'codigo_barras' => $codigoBarras,
+
+                        'marca' => $marca,
+
+                        'imagem_url' => $imagemUrl,
+
+                        'estoque_atual' => $estoqueAtual,
+
+                        'estoque_minimo' => $estoqueMinimo,
 
                         'descricao' => $item->descricao
                             ?? $item->itemable?->nome
@@ -579,36 +640,42 @@ class NotaController extends Controller
         ];
 
         if ($interno) {
-            $relacoes['itens.itemable'] = function (MorphTo $morphTo) {
-                $morphTo->morphWith([
-                    Produto::class => [
-                        'marcaRelacionada',
-                        'imagens',
-                    ],
-                ]);
-            };
+            $relacoes['itens.itemable'] =
+                function (MorphTo $morphTo) {
+                    $morphTo->morphWith([
+                        Produto::class => [
+                            'marcaRelacionada',
+                            'imagens',
+                        ],
+                    ]);
+                };
         } else {
-            $relacoes[] = 'itens.itemable';
+            $relacoes[] =
+                'itens.itemable';
         }
 
-        return $nota->load($relacoes);
+        return $nota->load(
+            $relacoes
+        );
     }
 
     public function gerarpdf(string $id)
     {
-        $nota = Nota::findOrFail($id);
+        $nota =
+            Nota::findOrFail($id);
 
         $this->carregarNotaParaPdf(
             $nota
         );
 
-        $pdf = Pdf::loadView(
-            'pdf.nota',
-            compact('nota')
-        )->setPaper(
-            'a4',
-            'portrait'
-        );
+        $pdf =
+            Pdf::loadView(
+                'pdf.nota',
+                compact('nota')
+            )->setPaper(
+                'a4',
+                'portrait'
+            );
 
         return $pdf->stream(
             "nota-cliente-{$nota->id}.pdf"
@@ -617,19 +684,21 @@ class NotaController extends Controller
 
     public function baixarPdf(string $id)
     {
-        $nota = Nota::findOrFail($id);
+        $nota =
+            Nota::findOrFail($id);
 
         $this->carregarNotaParaPdf(
             $nota
         );
 
-        $pdf = Pdf::loadView(
-            'pdf.nota',
-            compact('nota')
-        )->setPaper(
-            'a4',
-            'portrait'
-        );
+        $pdf =
+            Pdf::loadView(
+                'pdf.nota',
+                compact('nota')
+            )->setPaper(
+                'a4',
+                'portrait'
+            );
 
         return $pdf->download(
             "nota-cliente-{$nota->id}.pdf"
@@ -645,13 +714,14 @@ class NotaController extends Controller
             true
         );
 
-        $pdf = Pdf::loadView(
-            'pdf.nota_interna',
-            compact('nota')
-        )->setPaper(
-            'a4',
-            'landscape'
-        );
+        $pdf =
+            Pdf::loadView(
+                'pdf.nota_interna',
+                compact('nota')
+            )->setPaper(
+                'a4',
+                'landscape'
+            );
 
         $senha =
             $request->validated()['senha'];

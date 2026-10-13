@@ -143,7 +143,8 @@ class UpdateProdutoRequest extends FormRequest
 
             'imagens.*' => [
                 'image',
-                'max:2048',
+                'max:8192',
+                'dimensions:max_width=8000,max_height=8000',
             ],
 
             'ordem_imagens' => [
@@ -221,13 +222,13 @@ class UpdateProdutoRequest extends FormRequest
         $validator->after(function ($validator) {
             $produto = $this->route('produto');
 
-            if (!$produto instanceof Produto) {
+            if (! $produto instanceof Produto) {
                 return;
             }
 
             $novasImagens = $this->file('imagens', []);
 
-            if (!is_array($novasImagens)) {
+            if (! is_array($novasImagens)) {
                 $novasImagens = [];
             }
 
@@ -244,7 +245,7 @@ class UpdateProdutoRequest extends FormRequest
                 $validator->errors()->add(
                     'imagens',
                     "Este produto já possui {$existentes} imagem(ns). "
-                    . "Você pode adicionar no máximo mais {$disponiveis}."
+                    ."Você pode adicionar no máximo mais {$disponiveis}."
                 );
             }
         });
@@ -288,7 +289,9 @@ class UpdateProdutoRequest extends FormRequest
             'imagens.array' => 'As imagens enviadas são inválidas.',
             'imagens.max' => 'Você pode cadastrar no máximo 8 imagens.',
             'imagens.*.image' => 'Um dos arquivos enviados não é uma imagem válida.',
-            'imagens.*.max' => 'Cada imagem pode ter no máximo 2 MB.',
+            'imagens.*.max' => 'Cada imagem pode ter no máximo 8 MB.',
+
+            'imagens.*.dimensions' => 'Cada imagem pode ter no máximo 8000 x 8000 pixels.',
 
             'ordem_imagens.json' => 'A ordem das imagens enviada é inválida.',
 
@@ -296,10 +299,11 @@ class UpdateProdutoRequest extends FormRequest
             'ncm.max' => 'O NCM não pode ultrapassar 8 caracteres.',
 
             'cest.string' => 'O CEST informado é inválido.',
-            'cest.max' => 'O CEST não pode ultrapassar 8 caracteres.',
+            'cest.max' => 'O CEST não pode ultrapassar 20 caracteres.',
+
+            'ex_tipi.max' => 'O EX-TIPI não pode ultrapassar 20 caracteres.',
 
             'ex_tipi.string' => 'O EX-TIPI informado é inválido.',
-            'ex_tipi.max' => 'O EX-TIPI não pode ultrapassar 8 caracteres.',
 
             'origem_mercadoria.integer' => 'A origem da mercadoria é inválida.',
             'origem_mercadoria.between' => 'A origem da mercadoria deve estar entre 0 e 8.',
