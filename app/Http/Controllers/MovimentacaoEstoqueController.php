@@ -3,46 +3,104 @@
 namespace App\Http\Controllers;
 
 use App\Models\MovimentacaoEstoque;
-use App\Models\Produto;
+use App\Models\NotasItem;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Http\Request;
 
 class MovimentacaoEstoqueController extends Controller
 {
     public function index(Request $request)
     {
-        $query = MovimentacaoEstoque::with([
-            'produto:id,nome,codigo_fabricante',
-            'usuario:id,pessoa_id',
-            'usuario.pessoa:id,nome',
-        ])->orderByDesc('created_at');
+        $query = MovimentacaoEstoque::query()
+            ->with([
+                'produto.marcaRelacionada',
+                'produto.imagens',
+                'usuario:id,pessoa_id',
+                'usuario.pessoa:id,nome',
+                'origem' => function (MorphTo $morphTo) {
+                    $morphTo->morphWith([
+                        NotasItem::class => [
+                            'nota:id,status',
+                        ],
+                    ]);
+                },
+            ])
+            ->orderByDesc('created_at')
+            ->orderByDesc('id');
 
-        $query->when($request->filled('produto_id'), function ($q) use ($request) {
-            $q->where('produto_id', $request->produto_id);
-        });
+        if ($request->filled('produto')) {
+            $produto = trim(
+                (string) $request->input('produto')
+            );
 
-        $query->when($request->filled('tipo'), function ($q) use ($request) {
-            $q->where('tipo', $request->tipo);
-        });
+            $query->whereHas(
+                'produto',
+                function ($produtoQuery) use ($produto) {
+                    $produtoQuery->where(
+                        function ($busca) use ($produto) {
+                            $busca
+                                ->where(
+                                    'nome',
+                                    'like',
+                                    "%{$produto}%"
+                                )
+                                ->orWhere(
+                                    'codigo_fabricante',
+                                    'like',
+                                    "%{$produto}%"
+                                )
+                                ->orWhere(
+                                    'codigo_barras',
+                                    'like',
+                                    "%{$produto}%"
+                                );
+                        }
+                    );
+                }
+            );
+        }
 
-        $query->when($request->filled('data_inicio'), function ($q) use ($request) {
-            $q->whereDate('created_at', '>=', $request->data_inicio);
-        });
+        /*
+         * Mantém compatibilidade com links antigos
+         * que eventualmente utilizem produto_id.
+         */
+        if ($request->filled('produto_id')) {
+            $query->where(
+                'produto_id',
+                $request->integer('produto_id')
+            );
+        }
 
-        $query->when($request->filled('data_fim'), function ($q) use ($request) {
-            $q->whereDate('created_at', '<=', $request->data_fim);
-        });
+        if ($request->filled('tipo')) {
+            $query->where(
+                'tipo',
+                $request->input('tipo')
+            );
+        }
+
+        if ($request->filled('data_inicio')) {
+            $query->whereDate(
+                'created_at',
+                '>=',
+                $request->input('data_inicio')
+            );
+        }
+
+        if ($request->filled('data_fim')) {
+            $query->whereDate(
+                'created_at',
+                '<=',
+                $request->input('data_fim')
+            );
+        }
 
         $movimentacoes = $query
             ->paginate(20)
             ->withQueryString();
 
-        $produtos = Produto::select('id', 'nome', 'codigo_fabricante')
-            ->orderBy('nome')
-            ->get();
-
-        return view('estoque.movimentacoes', compact(
-            'movimentacoes',
-            'produtos'
-        ));
+        return view(
+            'estoque.movimentacoes',
+            compact('movimentacoes')
+        );
     }
 }

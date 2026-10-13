@@ -87,6 +87,7 @@ class NotaItemBuscaController extends Controller
         $produtos = Produto::query()
             ->with([
                 'marcaRelacionada:id,nome',
+                'imagens',
             ])
             ->select([
                 'id',
@@ -136,38 +137,40 @@ class NotaItemBuscaController extends Controller
             'data' => $produtos
                 ->map(
                     function ($produto) {
+                        $imagem =
+                            $produto
+                                ->imagens
+                                ->first()
+                                ?->caminho;
+
                         return [
-                            'id' =>
-                                $produto->id,
+                            'id' => $produto->id,
 
-                            'nome' =>
-                                $produto->nome,
+                            'nome' => $produto->nome,
 
-                            'descricao' =>
-                                $produto->descricao,
+                            'descricao' => $produto->descricao,
 
-                            'preco' =>
-                                (float) $produto->preco_uni,
+                            'preco' => (float) $produto->preco_uni,
 
-                            'codigo_fabricante' =>
-                                $produto->codigo_fabricante,
+                            'codigo_fabricante' => $produto->codigo_fabricante,
 
-                            'codigo_barras' =>
-                                $produto->codigo_barras,
+                            'codigo_barras' => $produto->codigo_barras,
 
-                            'marca' =>
-                                $produto
-                                    ->marcaRelacionada
-                                    ?->nome,
+                            'marca' => $produto
+                                ->marcaRelacionada
+                                ?->nome,
 
-                            'estoque_atual' =>
-                                (float) $produto->quantidade,
+                            'imagem_url' => $imagem
+                                    ? asset(
+                                        'storage/'.$imagem
+                                    )
+                                    : null,
 
-                            'estoque_minimo' =>
-                                (float) $produto->estoque_minimo,
+                            'estoque_atual' => (float) $produto->quantidade,
 
-                            'disponivel' =>
-                                (float) $produto->quantidade > 0,
+                            'estoque_minimo' => (float) $produto->estoque_minimo,
+
+                            'disponivel' => (float) $produto->quantidade > 0,
                         ];
                     }
                 )
@@ -208,11 +211,6 @@ class NotaItemBuscaController extends Controller
                     'valor',
                     'created_at',
                 ])
-
-                /*
-                 * Filtra pelo cliente responsável
-                 * quando a Nota já possui cliente.
-                 */
                 ->when(
                     $clienteId,
                     function ($query) use ($clienteId) {
@@ -222,11 +220,6 @@ class NotaItemBuscaController extends Controller
                         );
                     }
                 )
-
-                /*
-                 * Filtra pelo veículo quando a Nota
-                 * já possui veículo selecionado.
-                 */
                 ->when(
                     $veiculoClienteId,
                     function ($query) use ($veiculoClienteId) {
@@ -236,10 +229,6 @@ class NotaItemBuscaController extends Controller
                         );
                     }
                 )
-
-                /*
-                 * Busca por descrição ou número da O.S.
-                 */
                 ->when(
                     $busca !== '',
                     function ($query) use ($busca) {
@@ -261,7 +250,6 @@ class NotaItemBuscaController extends Controller
                         );
                     }
                 )
-
                 ->orderByDesc('created_at')
                 ->limit(15)
                 ->get();
@@ -269,10 +257,6 @@ class NotaItemBuscaController extends Controller
         $ordemServicoIds =
             $ordensServico->pluck('id');
 
-        /*
-         * Busca eventuais vínculos das O.S.
-         * encontradas com itens de Notas.
-         */
         $vinculos =
             NotasItem::query()
                 ->select([
@@ -309,38 +293,27 @@ class NotaItemBuscaController extends Controller
                             $vinculo?->nota;
 
                         return [
-                            'id' =>
-                                $ordemServico->id,
+                            'id' => $ordemServico->id,
 
-                            'cliente_id' =>
-                                $ordemServico->cliente_id,
+                            'cliente_id' => $ordemServico->cliente_id,
 
-                            'veiculo_cliente_id' =>
-                                $ordemServico->veiculo_cliente_id,
+                            'veiculo_cliente_id' => $ordemServico->veiculo_cliente_id,
 
-                            'descricao' =>
-                                $ordemServico->descricao,
+                            'descricao' => $ordemServico->descricao,
 
-                            'valor' =>
-                                (float) $ordemServico->valor,
+                            'valor' => (float) $ordemServico->valor,
 
-                            'status' =>
-                                $ordemServico->status,
+                            'status' => $ordemServico->status,
 
-                            'disponivel' =>
-                                !$vinculo,
+                            'disponivel' => ! $vinculo,
 
-                            'nota' =>
-                                $nota
+                            'nota' => $nota
                                     ? [
-                                        'id' =>
-                                            $nota->id,
+                                        'id' => $nota->id,
 
-                                        'tipo' =>
-                                            $nota->tipo,
+                                        'tipo' => $nota->tipo,
 
-                                        'status' =>
-                                            $nota->status,
+                                        'status' => $nota->status,
                                     ]
                                     : null,
                         ];

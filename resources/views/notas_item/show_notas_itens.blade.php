@@ -50,10 +50,7 @@
             @if($contaReceber)
 
                 <a
-                    href="{{ route(
-                        'contas-receber.show',
-                        $contaReceber
-                    ) }}"
+                    href="{{ route('contas-receber.show', $contaReceber) }}"
                     class="btn btn-success"
                 >
                     <i class="bi bi-cash-coin"></i>
@@ -67,12 +64,9 @@
             )
 
                 <a
-                    href="{{ route(
-                        'contas-receber.create',
-                        [
-                            'nota_id' => $nota->id,
-                        ]
-                    ) }}"
+                    href="{{ route('contas-receber.create', [
+                        'nota_id' => $nota->id,
+                    ]) }}"
                     class="btn btn-outline-success"
                 >
                     <i class="bi bi-cash-stack"></i>
@@ -81,9 +75,7 @@
 
             @endif
 
-            {{-- =====================================================
-                PDF CLIENTE
-            ====================================================== --}}
+            {{-- PDF CLIENTE --}}
 
             <div class="btn-group">
 
@@ -101,10 +93,7 @@
 
                     <li>
                         <a
-                            href="{{ route(
-                                'notas.pdf',
-                                $nota->id
-                            ) }}"
+                            href="{{ route('notas.pdf', $nota->id) }}"
                             target="_blank"
                             class="dropdown-item"
                         >
@@ -115,10 +104,7 @@
 
                     <li>
                         <a
-                            href="{{ route(
-                                'notas.pdf.download',
-                                $nota->id
-                            ) }}"
+                            href="{{ route('notas.pdf.download', $nota->id) }}"
                             class="dropdown-item"
                         >
                             <i class="bi bi-download"></i>
@@ -130,9 +116,7 @@
 
             </div>
 
-            {{-- =====================================================
-                PDF INTERNO
-            ====================================================== --}}
+            {{-- PDF INTERNO --}}
 
             @if(
                 auth()->user()
@@ -210,7 +194,6 @@
 
     </div>
 
-
     {{-- =====================================================
         MENSAGENS
     ====================================================== --}}
@@ -240,7 +223,6 @@
 
     @endforeach
 
-
     {{-- =====================================================
         IDENTIFICAÇÃO
     ====================================================== --}}
@@ -261,7 +243,6 @@
             <div class="row g-3">
 
                 <div class="col-12 col-md-6 col-xl-3">
-
                     <div class="border rounded p-3 h-100">
 
                         <small class="text-muted d-block mb-1">
@@ -274,11 +255,9 @@
                         </strong>
 
                     </div>
-
                 </div>
 
                 <div class="col-12 col-md-6 col-xl-3">
-
                     <div class="border rounded p-3 h-100">
 
                         <small class="text-muted d-block mb-1">
@@ -299,11 +278,9 @@
                         @endif
 
                     </div>
-
                 </div>
 
                 <div class="col-12 col-md-6 col-xl-3">
-
                     <div class="border rounded p-3 h-100">
 
                         <small class="text-muted d-block mb-1">
@@ -316,11 +293,9 @@
                         </strong>
 
                     </div>
-
                 </div>
 
                 <div class="col-12 col-md-6 col-xl-3">
-
                     <div class="border rounded p-3 h-100">
 
                         <small class="text-muted d-block mb-1">
@@ -331,19 +306,15 @@
                         <strong>
                             {{
                                 $nota->created_at
-                                    ? $nota->created_at->format(
-                                        'd/m/Y H:i'
-                                    )
+                                    ? $nota->created_at->format('d/m/Y H:i')
                                     : 'N/A'
                             }}
                         </strong>
 
                     </div>
-
                 </div>
 
                 <div class="col-12 col-md-6 col-xl-3">
-
                     <div class="border rounded p-3 h-100">
 
                         <small class="text-muted d-block mb-1">
@@ -356,11 +327,9 @@
                         </strong>
 
                     </div>
-
                 </div>
 
                 <div class="col-12 col-md-6 col-xl-3">
-
                     <div class="border rounded p-3 h-100">
 
                         <small class="text-muted d-block mb-1">
@@ -369,6 +338,7 @@
                         </small>
 
                         <strong>
+
                             @if($nota->km !== null)
 
                                 {{
@@ -386,14 +356,13 @@
                                 Não informado
 
                             @endif
+
                         </strong>
 
                     </div>
-
                 </div>
 
                 <div class="col-12 col-md-6 col-xl-3">
-
                     <div class="border rounded p-3 h-100">
 
                         <small class="text-muted d-block mb-1">
@@ -402,10 +371,8 @@
                         </small>
 
                         <strong>
-                            @if(
-                                $nota->km_proxima_troca_oleo
-                                !== null
-                            )
+
+                            @if($nota->km_proxima_troca_oleo !== null)
 
                                 {{
                                     number_format(
@@ -422,14 +389,13 @@
                                 Não informada
 
                             @endif
+
                         </strong>
 
                     </div>
-
                 </div>
 
                 <div class="col-12 col-md-6 col-xl-3">
-
                     <div class="border rounded p-3 h-100">
 
                         <small class="text-muted d-block mb-1">
@@ -442,7 +408,6 @@
                         </strong>
 
                     </div>
-
                 </div>
 
             </div>
@@ -467,7 +432,6 @@
         </div>
 
     </div>
-
 
     {{-- =====================================================
         RESUMO FINANCEIRO
@@ -509,7 +473,6 @@
             <div class="row g-3">
 
                 <div class="col-12 col-md-4">
-
                     <div class="border rounded p-3 h-100">
 
                         <small class="text-muted d-block">
@@ -529,11 +492,9 @@
                         </strong>
 
                     </div>
-
                 </div>
 
                 <div class="col-12 col-md-4">
-
                     <div class="border rounded p-3 h-100">
 
                         <small class="text-muted d-block">
@@ -553,11 +514,9 @@
                         </strong>
 
                     </div>
-
                 </div>
 
                 <div class="col-12 col-md-4">
-
                     <div class="border rounded p-3 h-100">
 
                         <small class="text-muted d-block">
@@ -577,7 +536,6 @@
                         </strong>
 
                     </div>
-
                 </div>
 
             </div>
@@ -607,6 +565,7 @@
 
                     <div class="col-12 col-md-3">
                         <div class="border rounded p-3 h-100">
+
                             <small class="text-muted d-block">
                                 Conta
                             </small>
@@ -614,11 +573,13 @@
                             <strong>
                                 #{{ $contaReceber->id }}
                             </strong>
+
                         </div>
                     </div>
 
                     <div class="col-12 col-md-3">
                         <div class="border rounded p-3 h-100">
+
                             <small class="text-muted d-block">
                                 Valor da conta
                             </small>
@@ -634,11 +595,13 @@
                                     )
                                 }}
                             </strong>
+
                         </div>
                     </div>
 
                     <div class="col-12 col-md-3">
                         <div class="border rounded p-3 h-100">
+
                             <small class="text-muted d-block">
                                 Recebido
                             </small>
@@ -654,11 +617,13 @@
                                     )
                                 }}
                             </strong>
+
                         </div>
                     </div>
 
                     <div class="col-12 col-md-3">
                         <div class="border rounded p-3 h-100">
+
                             <small class="text-muted d-block">
                                 Saldo
                             </small>
@@ -674,6 +639,7 @@
                                     )
                                 }}
                             </strong>
+
                         </div>
                     </div>
 
@@ -684,7 +650,6 @@
         </div>
 
     </div>
-
 
     {{-- =====================================================
         ESTOQUE
@@ -812,19 +777,13 @@
 
                                     <td>
 
-                                        @if(
-                                            $problema['tipo']
-                                            === 'sem_estoque'
-                                        )
+                                        @if($problema['tipo'] === 'sem_estoque')
 
                                             <span class="badge bg-danger">
                                                 Sem estoque
                                             </span>
 
-                                        @elseif(
-                                            $problema['tipo']
-                                            === 'insuficiente'
-                                        )
+                                        @elseif($problema['tipo'] === 'insuficiente')
 
                                             <span class="badge bg-danger">
                                                 Insuficiente
@@ -871,7 +830,6 @@
 
     @endif
 
-
     {{-- =====================================================
         ITENS
     ====================================================== --}}
@@ -888,10 +846,7 @@
             @if($podeFinalizarNota)
 
                 <a
-                    href="{{ route(
-                        'notasitem.edit',
-                        $nota->id
-                    ) }}"
+                    href="{{ route('notasitem.edit', $nota->id) }}"
                     class="btn btn-primary btn-sm"
                 >
                     <i class="bi bi-pencil-square"></i>
@@ -919,9 +874,14 @@
 
                         <thead>
                             <tr>
-                                <th>Tipo</th>
-                                <th>Código</th>
-                                <th>Descrição</th>
+                                <th style="min-width: 310px;">
+                                    Item
+                                </th>
+
+                                <th style="min-width: 220px;">
+                                    Descrição
+                                </th>
+
                                 <th>Qtd.</th>
                                 <th>Valor unit.</th>
                                 <th>Desconto</th>
@@ -937,14 +897,140 @@
                                 <tr>
 
                                     <td>
-                                        <span class="badge {{ $item['tipo_classe'] }}">
-                                            <i class="bi {{ $item['tipo_icone'] }}"></i>
-                                            {{ $item['tipo'] }}
-                                        </span>
-                                    </td>
 
-                                    <td>
-                                        {{ $item['codigo'] }}
+                                        <div class="d-flex align-items-start gap-3">
+
+                                            @if(
+                                                $item['tipo'] === 'Produto'
+                                                && $item['imagem_url']
+                                            )
+
+                                                <img
+                                                    src="{{ $item['imagem_url'] }}"
+                                                    alt="{{ $item['descricao'] }}"
+                                                    class="rounded border flex-shrink-0"
+                                                    style="
+                                                        width: 58px;
+                                                        height: 58px;
+                                                        object-fit: contain;
+                                                        background: #fff;
+                                                    "
+                                                >
+
+                                            @else
+
+                                                <div
+                                                    class="rounded border bg-light d-flex align-items-center justify-content-center flex-shrink-0"
+                                                    style="
+                                                        width: 58px;
+                                                        height: 58px;
+                                                    "
+                                                >
+                                                    <i class="bi {{ $item['tipo_icone'] }} fs-4 text-muted"></i>
+                                                </div>
+
+                                            @endif
+
+                                            <div>
+
+                                                <span class="badge {{ $item['tipo_classe'] }}">
+                                                    <i class="bi {{ $item['tipo_icone'] }}"></i>
+                                                    {{ $item['tipo'] }}
+                                                </span>
+
+                                                @if($item['tipo'] === 'Produto')
+
+                                                    @if($item['marca'])
+
+                                                        <div class="fw-semibold mt-2">
+                                                            {{ $item['marca'] }}
+                                                        </div>
+
+                                                    @endif
+
+                                                    @if($item['codigo_fabricante'])
+
+                                                        <div class="small mt-1">
+
+                                                            <span class="text-muted">
+                                                                Fabricante:
+                                                            </span>
+
+                                                            <strong>
+                                                                {{ $item['codigo_fabricante'] }}
+                                                            </strong>
+
+                                                        </div>
+
+                                                    @endif
+
+                                                    @if($item['codigo_barras'])
+
+                                                        <div class="small">
+
+                                                            <span class="text-muted">
+                                                                Barras:
+                                                            </span>
+
+                                                            {{ $item['codigo_barras'] }}
+
+                                                        </div>
+
+                                                    @endif
+
+                                                    @if($item['estoque_atual'] !== null)
+
+                                                        <div class="small mt-1">
+
+                                                            <span class="text-muted">
+                                                                Estoque:
+                                                            </span>
+
+                                                            <strong>
+                                                                {{
+                                                                    number_format(
+                                                                        $item['estoque_atual'],
+                                                                        3,
+                                                                        ',',
+                                                                        '.'
+                                                                    )
+                                                                }}
+                                                            </strong>
+
+                                                            @if(
+                                                                $item['estoque_minimo'] !== null
+                                                            )
+
+                                                                <span class="text-muted">
+                                                                    / mínimo
+                                                                    {{
+                                                                        number_format(
+                                                                            $item['estoque_minimo'],
+                                                                            3,
+                                                                            ',',
+                                                                            '.'
+                                                                        )
+                                                                    }}
+                                                                </span>
+
+                                                            @endif
+
+                                                        </div>
+
+                                                    @endif
+
+                                                @else
+
+                                                    <div class="small text-muted mt-2">
+                                                        {{ $item['codigo'] }}
+                                                    </div>
+
+                                                @endif
+
+                                            </div>
+
+                                        </div>
+
                                     </td>
 
                                     <td>
@@ -980,6 +1066,7 @@
                                     </td>
 
                                     <td>
+
                                         <strong>
                                             R$
                                             {{
@@ -991,9 +1078,11 @@
                                                 )
                                             }}
                                         </strong>
+
                                     </td>
 
                                     <td>
+
                                         @if($item['garantia_dias'] > 0)
 
                                             {{ $item['garantia_dias'] }}
@@ -1004,6 +1093,7 @@
                                             —
 
                                         @endif
+
                                     </td>
 
                                 </tr>
@@ -1022,7 +1112,6 @@
 
     </div>
 
-
     {{-- =====================================================
         STATUS / AÇÕES
     ====================================================== --}}
@@ -1036,8 +1125,11 @@
                 <div>
 
                     <strong>
+
                         @if($nota->status === 'Aberto')
+
                             Nota aberta
+
                         @elseif(
                             in_array(
                                 $nota->status,
@@ -1045,12 +1137,19 @@
                                 true
                             )
                         )
+
                             Nota finalizada
+
                         @elseif($nota->status === 'Cancelado')
+
                             Nota cancelada
+
                         @else
+
                             {{ $nota->status }}
+
                         @endif
+
                     </strong>
 
                     <div class="text-muted">
@@ -1098,10 +1197,7 @@
                     @if($podeCancelarNota)
 
                         <form
-                            action="{{ route(
-                                'notas.cancelar',
-                                $nota
-                            ) }}"
+                            action="{{ route('notas.cancelar', $nota) }}"
                             method="POST"
                             onsubmit="return confirm(@js($mensagemCancelamento));"
                         >
@@ -1128,7 +1224,6 @@
 
     </div>
 
-
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
 
         <a
@@ -1142,10 +1237,7 @@
         @if($podeFinalizarNota)
 
             <a
-                href="{{ route(
-                    'notasitem.edit',
-                    $nota->id
-                ) }}"
+                href="{{ route('notasitem.edit', $nota->id) }}"
                 class="btn btn-primary"
             >
                 <i class="bi bi-pencil-square"></i>
@@ -1157,7 +1249,6 @@
     </div>
 
 </div>
-
 
 @if($podeFinalizarNota)
 
