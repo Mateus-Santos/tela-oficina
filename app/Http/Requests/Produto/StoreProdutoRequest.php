@@ -130,7 +130,8 @@ class StoreProdutoRequest extends FormRequest
 
             'imagens.*' => [
                 'image',
-                'max:2048',
+                'max:8192',
+                'dimensions:max_width=8000,max_height=8000',
             ],
 
             'ordem_imagens' => [

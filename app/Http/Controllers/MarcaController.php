@@ -15,17 +15,18 @@ class MarcaController extends Controller
 {
     public function index(Request $request): View
     {
-        logger()->info('FILTROS MARCAS', $request->query());
-
         $marcas = Marca::query()
             ->withCount('produtos')
-            ->when($request->filled('nome'), function ($query) use ($request) {
-                $query->where(
-                    'nome',
-                    'like',
-                    '%' . trim($request->input('nome')) . '%'
-                );
-            })
+            ->when(
+                $request->filled('nome'),
+                function ($query) use ($request) {
+                    $query->where(
+                        'nome',
+                        'like',
+                        '%'.trim($request->input('nome')).'%'
+                    );
+                }
+            )
             ->when(
                 $request->filled('status'),
                 function ($query) use ($request) {
@@ -35,11 +36,53 @@ class MarcaController extends Controller
                     );
                 }
             )
+            ->when(
+                $request->filled('imagem'),
+                function ($query) use ($request) {
+                    if ($request->input('imagem') === 'com_foto') {
+                        $query->where(
+                            function ($query) {
+                                $query
+                                    ->whereNotNull('logo_path')
+                                    ->where('logo_path', '!=', '')
+                                    ->orWhere(
+                                        function ($query) {
+                                            $query
+                                                ->whereNotNull('logo_url')
+                                                ->where('logo_url', '!=', '');
+                                        }
+                                    );
+                            }
+                        );
+                    }
+
+                    if ($request->input('imagem') === 'sem_foto') {
+                        $query
+                            ->where(
+                                function ($query) {
+                                    $query
+                                        ->whereNull('logo_path')
+                                        ->orWhere('logo_path', '');
+                                }
+                            )
+                            ->where(
+                                function ($query) {
+                                    $query
+                                        ->whereNull('logo_url')
+                                        ->orWhere('logo_url', '');
+                                }
+                            );
+                    }
+                }
+            )
             ->orderBy('nome')
             ->paginate(20)
             ->withQueryString();
 
-        return view('marca.index', compact('marcas'));
+        return view(
+            'marca.index',
+            compact('marcas')
+        );
     }
 
     public function create(): View
@@ -51,25 +94,40 @@ class MarcaController extends Controller
         StoreMarcaRequest $request,
         CriarMarca $criarMarca
     ): RedirectResponse {
-        $marca = $criarMarca->execute($request->validated());
+        $marca =
+            $criarMarca->execute(
+                $request->validated()
+            );
 
         return redirect()
-            ->route('marcas.edit', $marca)
-            ->with('success', 'Marca cadastrada com sucesso.');
+            ->route(
+                'marcas.edit',
+                $marca
+            )
+            ->with(
+                'success',
+                'Marca cadastrada com sucesso.'
+            );
     }
 
     public function show(Marca $marca): View
     {
         $marca->loadCount('produtos');
 
-        return view('marca.show', compact('marca'));
+        return view(
+            'marca.show',
+            compact('marca')
+        );
     }
 
     public function edit(Marca $marca): View
     {
         $marca->loadCount('produtos');
 
-        return view('marca.edit', compact('marca'));
+        return view(
+            'marca.edit',
+            compact('marca')
+        );
     }
 
     public function update(
@@ -83,12 +141,19 @@ class MarcaController extends Controller
         );
 
         return redirect()
-            ->route('marcas.edit', $marca)
-            ->with('success', 'Marca atualizada com sucesso.');
+            ->route(
+                'marcas.edit',
+                $marca
+            )
+            ->with(
+                'success',
+                'Marca atualizada com sucesso.'
+            );
     }
 
-    public function destroy(Marca $marca): RedirectResponse
-    {
+    public function destroy(
+        Marca $marca
+    ): RedirectResponse {
         if ($marca->produtos()->exists()) {
             return redirect()
                 ->route('marcas.index')
@@ -102,6 +167,9 @@ class MarcaController extends Controller
 
         return redirect()
             ->route('marcas.index')
-            ->with('success', 'Marca excluída com sucesso.');
+            ->with(
+                'success',
+                'Marca excluída com sucesso.'
+            );
     }
 }
