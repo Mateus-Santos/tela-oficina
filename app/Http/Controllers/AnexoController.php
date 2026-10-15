@@ -21,9 +21,21 @@ class AnexoController extends Controller
         Compra $compra,
         CriarAnexo $criarAnexo
     ): RedirectResponse {
-        if (in_array($compra->status, ['aprovada', 'cancelada'], true)) {
+        if (
+            in_array(
+                $compra->status,
+                [
+                    'aprovada',
+                    'cancelada',
+                ],
+                true
+            )
+        ) {
             return redirect()
-                ->route('compras.show', $compra)
+                ->route(
+                    'compras.show',
+                    $compra
+                )
                 ->with(
                     'error',
                     'Não é possível adicionar anexos a uma compra aprovada ou cancelada.'
@@ -34,12 +46,20 @@ class AnexoController extends Controller
             $compra,
             $request->file('arquivo'),
             $request->validated('tipo'),
-            $request->validated('observacoes')
+            $request->validated(
+                'observacoes'
+            )
         );
 
         return redirect()
-            ->route('compras.show', $compra)
-            ->with('success', 'Anexo enviado com sucesso!');
+            ->route(
+                'compras.show',
+                $compra
+            )
+            ->with(
+                'success',
+                'Anexo enviado com sucesso!'
+            );
     }
 
     public function storeContaPagar(
@@ -47,9 +67,21 @@ class AnexoController extends Controller
         ContaPagar $conta,
         CriarAnexo $criarAnexo
     ): RedirectResponse {
-        if (in_array($conta->status, ['paga', 'cancelada'], true)) {
+        if (
+            in_array(
+                $conta->status,
+                [
+                    'paga',
+                    'cancelada',
+                ],
+                true
+            )
+        ) {
             return redirect()
-                ->route('contas-pagar.show', $conta)
+                ->route(
+                    'contas-pagar.show',
+                    $conta
+                )
                 ->with(
                     'error',
                     'Não é possível adicionar anexos a uma conta paga ou cancelada.'
@@ -60,18 +92,31 @@ class AnexoController extends Controller
             $conta,
             $request->file('arquivo'),
             $request->validated('tipo'),
-            $request->validated('observacoes')
+            $request->validated(
+                'observacoes'
+            )
         );
 
         return redirect()
-            ->route('contas-pagar.show', $conta)
-            ->with('success', 'Anexo enviado com sucesso!');
+            ->route(
+                'contas-pagar.show',
+                $conta
+            )
+            ->with(
+                'success',
+                'Anexo enviado com sucesso!'
+            );
     }
 
-    public function show(Anexo $anexo): View
-    {
+    public function show(
+        Anexo $anexo
+    ): View {
         abort_unless(
-            Storage::disk('public')->exists($anexo->arquivo),
+            Storage::disk(
+                'private'
+            )->exists(
+                $anexo->arquivo
+            ),
             404
         );
 
@@ -85,34 +130,63 @@ class AnexoController extends Controller
         );
     }
 
-    public function preview(Anexo $anexo): StreamedResponse
-    {
+    public function preview(
+        Anexo $anexo
+    ): StreamedResponse {
         abort_unless(
-            Storage::disk('public')->exists($anexo->arquivo),
+            Storage::disk(
+                'private'
+            )->exists(
+                $anexo->arquivo
+            ),
             404
         );
 
-        return Storage::disk('public')->response(
+        return Storage::disk(
+            'private'
+        )->response(
             $anexo->arquivo,
             $anexo->nome_original,
             [
                 'Content-Type' => $anexo->mime_type,
-                'Content-Disposition' => 'inline; filename="' . $anexo->nome_original . '"',
+
+                'Content-Disposition' => 'inline; filename="'
+                    .$anexo->nome_original
+                    .'"',
+
                 'X-Content-Type-Options' => 'nosniff',
+
+                'Cache-Control' => 'private, no-store, no-cache, must-revalidate',
+
+                'Pragma' => 'no-cache',
             ]
         );
     }
 
-    public function download(Anexo $anexo): StreamedResponse
-    {
+    public function download(
+        Anexo $anexo
+    ): StreamedResponse {
         abort_unless(
-            Storage::disk('public')->exists($anexo->arquivo),
+            Storage::disk(
+                'private'
+            )->exists(
+                $anexo->arquivo
+            ),
             404
         );
 
-        return Storage::disk('public')->download(
+        return Storage::disk(
+            'private'
+        )->download(
             $anexo->arquivo,
-            $anexo->nome_original
+            $anexo->nome_original,
+            [
+                'X-Content-Type-Options' => 'nosniff',
+
+                'Cache-Control' => 'private, no-store, no-cache, must-revalidate',
+
+                'Pragma' => 'no-cache',
+            ]
         );
     }
 
@@ -120,40 +194,87 @@ class AnexoController extends Controller
         AnexoVinculo $vinculo,
         ExcluirAnexo $excluirAnexo
     ): RedirectResponse {
-        $anexavel = $vinculo->vinculavel;
+        $anexavel =
+            $vinculo->vinculavel;
 
-        if ($anexavel instanceof Compra) {
-            if (in_array($anexavel->status, ['aprovada', 'cancelada'], true)) {
+        if (
+            $anexavel
+            instanceof Compra
+        ) {
+            if (
+                in_array(
+                    $anexavel->status,
+                    [
+                        'aprovada',
+                        'cancelada',
+                    ],
+                    true
+                )
+            ) {
                 return redirect()
-                    ->route('compras.show', $anexavel)
+                    ->route(
+                        'compras.show',
+                        $anexavel
+                    )
                     ->with(
                         'error',
                         'Anexos de uma compra aprovada ou cancelada não podem ser excluídos.'
                     );
             }
 
-            $excluirAnexo->execute($vinculo);
+            $excluirAnexo->execute(
+                $vinculo
+            );
 
             return redirect()
-                ->route('compras.show', $anexavel)
-                ->with('success', 'Anexo excluído com sucesso!');
+                ->route(
+                    'compras.show',
+                    $anexavel
+                )
+                ->with(
+                    'success',
+                    'Anexo excluído com sucesso!'
+                );
         }
 
-        if ($anexavel instanceof ContaPagar) {
-            if (in_array($anexavel->status, ['paga', 'cancelada'], true)) {
+        if (
+            $anexavel
+            instanceof ContaPagar
+        ) {
+            if (
+                in_array(
+                    $anexavel->status,
+                    [
+                        'paga',
+                        'cancelada',
+                    ],
+                    true
+                )
+            ) {
                 return redirect()
-                    ->route('contas-pagar.show', $anexavel)
+                    ->route(
+                        'contas-pagar.show',
+                        $anexavel
+                    )
                     ->with(
                         'error',
                         'Anexos de uma conta a pagar paga ou cancelada não podem ser excluídos.'
                     );
             }
 
-            $excluirAnexo->execute($vinculo);
+            $excluirAnexo->execute(
+                $vinculo
+            );
 
             return redirect()
-                ->route('contas-pagar.show', $anexavel)
-                ->with('success', 'Anexo excluído com sucesso!');
+                ->route(
+                    'contas-pagar.show',
+                    $anexavel
+                )
+                ->with(
+                    'success',
+                    'Anexo excluído com sucesso!'
+                );
         }
 
         abort(404);

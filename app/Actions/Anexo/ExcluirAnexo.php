@@ -8,24 +8,41 @@ use Illuminate\Support\Facades\Storage;
 
 class ExcluirAnexo
 {
-    public function execute(AnexoVinculo $vinculo): void
-    {
-        DB::transaction(function () use ($vinculo) {
-            $anexo = $vinculo->anexo;
-            $vinculo->delete();
+    public function execute(
+        AnexoVinculo $vinculo
+    ): void {
+        DB::transaction(
+            function () use ($vinculo) {
+                $anexo =
+                    $vinculo->anexo;
 
-            if ($anexo->vinculos()->exists()) {
-                return;
+                $vinculo->delete();
+
+                if (
+                    $anexo
+                        ->vinculos()
+                        ->exists()
+                ) {
+                    return;
+                }
+
+                if (
+                    $anexo->arquivo
+                    && Storage::disk(
+                        'private'
+                    )->exists(
+                        $anexo->arquivo
+                    )
+                ) {
+                    Storage::disk(
+                        'private'
+                    )->delete(
+                        $anexo->arquivo
+                    );
+                }
+
+                $anexo->delete();
             }
-
-            if (
-                $anexo->arquivo
-                && Storage::disk('public')->exists($anexo->arquivo)
-            ) {
-                Storage::disk('public')->delete($anexo->arquivo);
-            }
-
-            $anexo->delete();
-        });
+        );
     }
 }
