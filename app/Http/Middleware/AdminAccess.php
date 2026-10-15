@@ -8,11 +8,19 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AdminAccess
 {
-    public function handle(Request $request, Closure $next): Response
-    {
-        if (auth()->check() && (auth()->user()->colaborador == 1)) {
-            return $next($request);
-        }
-        abort(403, 'Acesso não autorizado.');
+    public function handle(
+        Request $request,
+        Closure $next
+    ): Response {
+        $usuario = $request->user();
+
+        abort_unless(
+            $usuario
+            && $usuario->isAdmin(),
+            403,
+            'Acesso não autorizado.'
+        );
+
+        return $next($request);
     }
 }

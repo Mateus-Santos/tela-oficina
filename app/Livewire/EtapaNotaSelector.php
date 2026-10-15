@@ -15,26 +15,36 @@ class EtapaNotaSelector extends Component
 
     public ?int $etapaId = null;
 
-    public function mount(Nota $nota): void
-    {
-        $this->nota = $nota;
-        $this->etapaId = $nota->etapa_id;
+    public function mount(
+        Nota $nota
+    ): void {
+        $this->nota =
+            $nota;
+
+        $this->etapaId =
+            $nota->etapa_id;
     }
 
     public function updatedEtapaId(
         mixed $value,
         AlterarEtapaNota $alterarEtapaNota
     ): void {
-        $this->resetErrorBag('etapa');
+        $this->resetErrorBag(
+            'etapa'
+        );
 
-        $this->nota->refresh();
+        $this
+            ->nota
+            ->refresh();
 
         if (
             ! Auth::check()
-            || Auth::user()->permitions == 2
+            || ! Auth::user()->isAdmin()
         ) {
             $this->etapaId =
-                $this->nota->etapa_id;
+                $this
+                    ->nota
+                    ->etapa_id;
 
             $this->addError(
                 'etapa',
@@ -44,9 +54,16 @@ class EtapaNotaSelector extends Component
             return;
         }
 
-        if ($this->nota->status !== 'Aberto') {
+        if (
+            $this
+                ->nota
+                ->status
+            !== 'Aberto'
+        ) {
             $this->etapaId =
-                $this->nota->etapa_id;
+                $this
+                    ->nota
+                    ->etapa_id;
 
             $this->addError(
                 'etapa',
@@ -56,12 +73,15 @@ class EtapaNotaSelector extends Component
             return;
         }
 
-        $etapa = Etapa::query()
-            ->find($value);
+        $etapa =
+            Etapa::query()
+                ->find($value);
 
         if (! $etapa) {
             $this->etapaId =
-                $this->nota->etapa_id;
+                $this
+                    ->nota
+                    ->etapa_id;
 
             $this->addError(
                 'etapa',
@@ -73,11 +93,12 @@ class EtapaNotaSelector extends Component
 
         try {
             $nota =
-                $alterarEtapaNota->execute(
-                    $this->nota,
-                    $etapa,
-                    Auth::id()
-                );
+                $alterarEtapaNota
+                    ->execute(
+                        $this->nota,
+                        $etapa,
+                        Auth::id()
+                    );
 
             $this->nota =
                 $nota;
@@ -89,11 +110,17 @@ class EtapaNotaSelector extends Component
                 'etapa-nota-atualizada',
                 notaId: $nota->id
             );
-        } catch (InvalidArgumentException $e) {
-            $this->nota->refresh();
+        } catch (
+            InvalidArgumentException $e
+        ) {
+            $this
+                ->nota
+                ->refresh();
 
             $this->etapaId =
-                $this->nota->etapa_id;
+                $this
+                    ->nota
+                    ->etapa_id;
 
             $this->addError(
                 'etapa',
@@ -104,21 +131,33 @@ class EtapaNotaSelector extends Component
 
     public function render()
     {
-        $etapas = Etapa::query()
-            ->paraNota()
-            ->where(
-                function ($query) {
-                    $query
-                        ->where('ativo', true)
-                        ->orWhere(
-                            'id',
-                            $this->nota->etapa_id
-                        );
-                }
-            )
-            ->orderBy('ordem')
-            ->orderBy('id')
-            ->get();
+        $etapas =
+            Etapa::query()
+                ->paraNota()
+                ->where(
+                    function (
+                        $query
+                    ) {
+                        $query
+                            ->where(
+                                'ativo',
+                                true
+                            )
+                            ->orWhere(
+                                'id',
+                                $this
+                                    ->nota
+                                    ->etapa_id
+                            );
+                    }
+                )
+                ->orderBy(
+                    'ordem'
+                )
+                ->orderBy(
+                    'id'
+                )
+                ->get();
 
         return view(
             'livewire.etapa-nota-selector',

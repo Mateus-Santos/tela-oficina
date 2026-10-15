@@ -53,7 +53,9 @@ class NotaController extends Controller
         CancelarNota $cancelarNota
     ) {
         try {
-            $cancelarNota->execute($nota);
+            $cancelarNota->execute(
+                $nota
+            );
         } catch (InvalidArgumentException $e) {
             return back()
                 ->withErrors([
@@ -72,37 +74,41 @@ class NotaController extends Controller
             );
     }
 
-    public function index(Request $request)
-    {
-        $filters = $request->all();
+    public function index(
+        Request $request
+    ) {
+        $filters =
+            $request->all();
 
-        /*
-         * Sem status informado, a listagem operacional
-         * trabalha somente com Notas abertas.
-         */
         $filters['status'] =
             $request->input(
                 'status',
                 'Aberto'
             );
 
-        $notas = Nota::query()
-            ->with([
-                'cliente.pessoa',
-                'itens.itemable',
-                'veiculosCliente.veiculo.montadora',
-                'etapa',
-            ])
-            ->filtro($filters)
-            ->orderByDesc('created_at')
-            ->orderByDesc('id')
-            ->paginate(15)
-            ->withQueryString();
+        $notas =
+            Nota::query()
+                ->with([
+                    'cliente.pessoa',
+                    'itens.itemable',
+                    'veiculosCliente.veiculo.montadora',
+                    'etapa',
+                ])
+                ->filtro(
+                    $filters
+                )
+                ->orderByDesc(
+                    'created_at'
+                )
+                ->orderByDesc('id')
+                ->paginate(15)
+                ->withQueryString();
 
-        $etapas = Etapa::query()
-            ->paraNota()
-            ->ativas()
-            ->get();
+        $etapas =
+            Etapa::query()
+                ->paraNota()
+                ->ativas()
+                ->get();
 
         return view(
             'notas_item.listar_notas_itens',
@@ -113,9 +119,13 @@ class NotaController extends Controller
         );
     }
 
-    public function destroy(Nota $nota)
-    {
-        if ($nota->status !== 'Aberto') {
+    public function destroy(
+        Nota $nota
+    ) {
+        if (
+            $nota->status
+            !== 'Aberto'
+        ) {
             return redirect()
                 ->route(
                     'notas.show',
@@ -136,12 +146,16 @@ class NotaController extends Controller
             );
     }
 
-    public function show(Nota $nota)
-    {
+    public function show(
+        Nota $nota
+    ) {
         $nota->load([
             'cliente.pessoa',
             'veiculosCliente.veiculo.montadora',
-            'itens.itemable' => function (MorphTo $morphTo) {
+
+            'itens.itemable' => function (
+                MorphTo $morphTo
+            ) {
                 $morphTo->morphWith([
                     Produto::class => [
                         'marcaRelacionada',
@@ -149,18 +163,21 @@ class NotaController extends Controller
                     ],
                 ]);
             },
+
             'contaReceber.parcelas',
             'contaReceber.recebimentosAtivos',
         ]);
 
-        $usuario = auth()->user();
+        $usuario =
+            auth()->user();
 
         $podeGerenciar =
-            $usuario
-            && $usuario->permitions != 2;
+            $usuario?->isAdmin()
+            ?? false;
 
         $podeFinalizarNota =
-            $nota->status === 'Aberto'
+            $nota->status
+                === 'Aberto'
             && $podeGerenciar;
 
         $podeCancelarNota =
@@ -176,30 +193,39 @@ class NotaController extends Controller
             && $podeGerenciar;
 
         $subtotal =
-            (float) ($nota->subtotal ?? 0);
+            (float) (
+                $nota->subtotal
+                ?? 0
+            );
 
         $descontoTotal =
-            (float) ($nota->desconto ?? 0);
+            (float) (
+                $nota->desconto
+                ?? 0
+            );
 
         $totalNota =
-            (float) ($nota->total ?? 0);
+            (float) (
+                $nota->total
+                ?? 0
+            );
 
-        /*
-         * =====================================================
-         * CLIENTE / VEÍCULO
-         * =====================================================
-         */
         $cliente =
-            $nota->cliente?->pessoa;
+            $nota
+                ->cliente
+                ?->pessoa;
 
         $veiculoCliente =
-            $nota->veiculosCliente;
+            $nota
+                ->veiculosCliente;
 
         $veiculo =
-            $veiculoCliente?->veiculo;
+            $veiculoCliente
+                ?->veiculo;
 
         $montadora =
-            $veiculo?->montadora;
+            $veiculo
+                ?->montadora;
 
         $clienteNome =
             $cliente?->nome
@@ -218,13 +244,10 @@ class NotaController extends Controller
             $montadora?->nome
             ?? null;
 
-        /*
-         * =====================================================
-         * STATUS
-         * =====================================================
-         */
         $statusBadgeClass =
-            match ($nota->status) {
+            match (
+                $nota->status
+            ) {
                 'Aberto' => 'bg-warning text-dark',
 
                 'Finalizado',
@@ -236,32 +259,32 @@ class NotaController extends Controller
             };
 
         $statusLabel =
-            $nota->status === 'Concluido'
-                ? 'Finalizado'
-                : $nota->status;
+            $nota->status
+                === 'Concluido'
+            ? 'Finalizado'
+            : $nota->status;
 
         $mensagemCancelamento =
-            $nota->status === 'Aberto'
-                ? 'Deseja cancelar esta nota? Ela será cancelada e não poderá mais ser editada.'
-                : 'Deseja cancelar esta nota? Os produtos baixados serão devolvidos ao estoque e esta operação não poderá ser desfeita.';
+            $nota->status
+                === 'Aberto'
+            ? 'Deseja cancelar esta nota? Ela será cancelada e não poderá mais ser editada.'
+            : 'Deseja cancelar esta nota? Os produtos baixados serão devolvidos ao estoque e esta operação não poderá ser desfeita.';
 
-        /*
-         * =====================================================
-         * FINANCEIRO
-         * =====================================================
-         */
         $contaReceber =
-            $nota->contaReceber;
+            $nota
+                ->contaReceber;
 
         $valorConta = 0;
         $valorRecebido = 0;
         $saldoConta = 0;
         $totalParcelas = 0;
-        $financeiroSincronizado = true;
+        $financeiroSincronizado =
+            true;
 
         if ($contaReceber) {
             $valorConta =
-                (float) $contaReceber->valor_original;
+                (float) $contaReceber
+                    ->valor_original;
 
             $valorRecebido =
                 (float) $contaReceber
@@ -269,10 +292,14 @@ class NotaController extends Controller
                     ->sum('valor');
 
             $valorDevidoConta =
-                (float) $contaReceber->valor_original
-                - (float) $contaReceber->desconto
-                + (float) $contaReceber->juros
-                + (float) $contaReceber->multa;
+                (float) $contaReceber
+                    ->valor_original
+                - (float) $contaReceber
+                    ->desconto
+                + (float) $contaReceber
+                    ->juros
+                + (float) $contaReceber
+                    ->multa;
 
             $saldoConta =
                 max(
@@ -307,19 +334,23 @@ class NotaController extends Controller
                 );
         }
 
-        /*
-         * =====================================================
-         * ESTOQUE
-         * =====================================================
-         */
         $problemasEstoque = [];
 
         $quantidadeSemEstoque = 0;
-        $quantidadeInsuficiente = 0;
-        $quantidadeEstoqueBaixo = 0;
 
-        if ($nota->status === 'Aberto') {
-            foreach ($nota->itens as $item) {
+        $quantidadeInsuficiente =
+            0;
+
+        $quantidadeEstoqueBaixo =
+            0;
+
+        if (
+            $nota->status
+            === 'Aberto'
+        ) {
+            foreach (
+                $nota->itens as $item
+            ) {
                 if (
                     $item->itemable_type
                         !== Produto::class
@@ -339,7 +370,8 @@ class NotaController extends Controller
 
                 $estoqueMinimo =
                     (float) (
-                        $produto->estoque_minimo
+                        $produto
+                            ->estoque_minimo
                         ?? 0
                     );
 
@@ -350,13 +382,19 @@ class NotaController extends Controller
                     );
 
                 $codigoProduto =
-                    $produto->codigo_fabricante
-                    ?: $produto->codigo_barras
+                    $produto
+                        ->codigo_fabricante
+                    ?: $produto
+                        ->codigo_barras
                     ?: null;
 
-                $tipoProblema = null;
+                $tipoProblema =
+                    null;
 
-                if ($estoqueAtual <= 0) {
+                if (
+                    $estoqueAtual
+                    <= 0
+                ) {
                     $quantidadeSemEstoque++;
 
                     $tipoProblema =
@@ -379,7 +417,9 @@ class NotaController extends Controller
                         'baixo';
                 }
 
-                if (! $tipoProblema) {
+                if (
+                    ! $tipoProblema
+                ) {
                     continue;
                 }
 
@@ -405,11 +445,6 @@ class NotaController extends Controller
             $quantidadeSemEstoque > 0
             || $quantidadeInsuficiente > 0;
 
-        /*
-         * =====================================================
-         * ITENS PARA EXIBIÇÃO
-         * =====================================================
-         */
         $itensExibicao =
             $nota->itens->map(
                 function ($item) {
@@ -421,7 +456,8 @@ class NotaController extends Controller
 
                     $valorUnitario =
                         (float) (
-                            $item->valor_unitario
+                            $item
+                                ->valor_unitario
                             ?? 0
                         );
 
@@ -437,7 +473,8 @@ class NotaController extends Controller
                             (
                                 $quantidade
                                 * $valorUnitario
-                            ) - $desconto
+                            )
+                            - $desconto
                         );
 
                     $isProduto =
@@ -449,12 +486,23 @@ class NotaController extends Controller
                         === OrdemServico::class;
 
                     $codigo = '—';
-                    $codigoFabricante = null;
-                    $codigoBarras = null;
+
+                    $codigoFabricante =
+                        null;
+
+                    $codigoBarras =
+                        null;
+
                     $marca = null;
-                    $imagemUrl = null;
-                    $estoqueAtual = null;
-                    $estoqueMinimo = null;
+
+                    $imagemUrl =
+                        null;
+
+                    $estoqueAtual =
+                        null;
+
+                    $estoqueMinimo =
+                        null;
 
                     if ($isProduto) {
                         $tipo =
@@ -471,10 +519,12 @@ class NotaController extends Controller
 
                         if ($produto) {
                             $codigoFabricante =
-                                $produto->codigo_fabricante;
+                                $produto
+                                    ->codigo_fabricante;
 
                             $codigoBarras =
-                                $produto->codigo_barras;
+                                $produto
+                                    ->codigo_barras;
 
                             $codigo =
                                 $codigoFabricante
@@ -495,23 +545,28 @@ class NotaController extends Controller
                             $imagemUrl =
                                 $imagem
                                     ? asset(
-                                        'storage/'.$imagem
+                                        'storage/'
+                                        .$imagem
                                     )
                                     : null;
 
                             $estoqueAtual =
                                 (float) (
-                                    $produto->quantidade
+                                    $produto
+                                        ->quantidade
                                     ?? 0
                                 );
 
                             $estoqueMinimo =
                                 (float) (
-                                    $produto->estoque_minimo
+                                    $produto
+                                        ->estoque_minimo
                                     ?? 0
                                 );
                         }
-                    } elseif ($isOrdemServico) {
+                    } elseif (
+                        $isOrdemServico
+                    ) {
                         $tipo =
                             'O.S.';
 
@@ -522,8 +577,13 @@ class NotaController extends Controller
                             'bi-tools';
 
                         $codigo =
-                            $item->itemable?->id
-                                ? '#'.$item->itemable->id
+                            $item
+                                ->itemable
+                                ?->id
+                                ? '#'
+                                    .$item
+                                        ->itemable
+                                        ->id
                                 : '—';
                     } else {
                         $tipo =
@@ -560,8 +620,12 @@ class NotaController extends Controller
                         'estoque_minimo' => $estoqueMinimo,
 
                         'descricao' => $item->descricao
-                            ?? $item->itemable?->nome
-                            ?? $item->itemable?->descricao
+                            ?? $item
+                                ->itemable
+                                ?->nome
+                            ?? $item
+                                ->itemable
+                                ?->descricao
                             ?? 'Item sem descrição',
 
                         'quantidade' => $quantidade,
@@ -573,17 +637,14 @@ class NotaController extends Controller
                         'total' => $total,
 
                         'garantia_dias' => (int) (
-                            $item->garantia_dias
+                            $item
+                                ->garantia_dias
                             ?? 0
                         ),
                     ];
                 }
             );
 
-        /*
-         * Só precisamos das categorias se a Nota puder ser
-         * finalizada e ainda não possuir Conta a Receber.
-         */
         $categoriasFinanceiras =
             $podeFinalizarNota
             && ! $contaReceber
@@ -596,7 +657,9 @@ class NotaController extends Controller
                         'ativo',
                         true
                     )
-                    ->orderBy('nome')
+                    ->orderBy(
+                        'nome'
+                    )
                     ->get()
                 : collect();
 
@@ -640,15 +703,18 @@ class NotaController extends Controller
         ];
 
         if ($interno) {
-            $relacoes['itens.itemable'] =
-                function (MorphTo $morphTo) {
-                    $morphTo->morphWith([
-                        Produto::class => [
-                            'marcaRelacionada',
-                            'imagens',
-                        ],
-                    ]);
-                };
+            $relacoes[
+                'itens.itemable'
+            ] = function (
+                MorphTo $morphTo
+            ) {
+                $morphTo->morphWith([
+                    Produto::class => [
+                        'marcaRelacionada',
+                        'imagens',
+                    ],
+                ]);
+            };
         } else {
             $relacoes[] =
                 'itens.itemable';
@@ -659,10 +725,13 @@ class NotaController extends Controller
         );
     }
 
-    public function gerarpdf(string $id)
-    {
+    public function gerarpdf(
+        string $id
+    ) {
         $nota =
-            Nota::findOrFail($id);
+            Nota::findOrFail(
+                $id
+            );
 
         $this->carregarNotaParaPdf(
             $nota
@@ -682,10 +751,13 @@ class NotaController extends Controller
         );
     }
 
-    public function baixarPdf(string $id)
-    {
+    public function baixarPdf(
+        string $id
+    ) {
         $nota =
-            Nota::findOrFail($id);
+            Nota::findOrFail(
+                $id
+            );
 
         $this->carregarNotaParaPdf(
             $nota
@@ -724,7 +796,8 @@ class NotaController extends Controller
             );
 
         $senha =
-            $request->validated()['senha'];
+            $request
+                ->validated()['senha'];
 
         $pdf->setEncryption(
             $senha

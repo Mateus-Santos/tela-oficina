@@ -1,36 +1,37 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\EnderecoController;
-use App\Http\Controllers\ProdutoController;
-use App\Http\Controllers\ColaboradorController;
-use App\Http\Controllers\ClienteController;
-use App\Http\Controllers\VeiculoController;
-use App\Http\Controllers\VeiculosClientesController;
-use App\Http\Controllers\OrdemServicoController;
-use App\Http\Controllers\NotasItemController;
-use App\Http\Controllers\NotaController;
-use App\Http\Controllers\MontadoraController;
-use App\Http\Controllers\SetorServicoController;
-use App\Http\Controllers\CategoriaFinanceiraController;
-use App\Http\Controllers\ContaReceberController;
-use App\Http\Controllers\FormaPagamentoController;
-use App\Http\Controllers\RecebimentoController;
-use App\Http\Controllers\CompraController;
-use App\Http\Controllers\FornecedorController;
 use App\Http\Controllers\AnexoController;
-use App\Http\Controllers\EstoqueController;
-use App\Http\Controllers\MovimentacaoEstoqueController;
-use App\Http\Controllers\ContaPagarController;
-use App\Http\Controllers\MarcaController;
-use App\Http\Controllers\Api\NotaItemBuscaController;
-use App\Http\Controllers\Api\ProdutoBuscaController;
 use App\Http\Controllers\Api\ClienteContaReceberBuscaController;
 use App\Http\Controllers\Api\NotaContaReceberBuscaController;
+use App\Http\Controllers\Api\NotaItemBuscaController;
 use App\Http\Controllers\Api\NotaOrdemServicoRapidaController;
 use App\Http\Controllers\Api\NotaProdutoRapidoController;
+use App\Http\Controllers\Api\ProdutoBuscaController;
+use App\Http\Controllers\Api\VeiculosClientesController as ApiVeiculosClientesController;
+use App\Http\Controllers\CategoriaFinanceiraController;
+use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\ColaboradorController;
+use App\Http\Controllers\CompraController;
+use App\Http\Controllers\ContaPagarController;
+use App\Http\Controllers\ContaReceberController;
+use App\Http\Controllers\EnderecoController;
+use App\Http\Controllers\EstoqueController;
 use App\Http\Controllers\EtapaController;
+use App\Http\Controllers\FormaPagamentoController;
+use App\Http\Controllers\FornecedorController;
+use App\Http\Controllers\MarcaController;
+use App\Http\Controllers\MontadoraController;
+use App\Http\Controllers\MovimentacaoEstoqueController;
+use App\Http\Controllers\NotaController;
+use App\Http\Controllers\NotasItemController;
+use App\Http\Controllers\OrdemServicoController;
+use App\Http\Controllers\ProdutoController;
+use App\Http\Controllers\RecebimentoController;
+use App\Http\Controllers\SetorServicoController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\VeiculoController;
+use App\Http\Controllers\VeiculosClientesController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('index');
@@ -40,123 +41,575 @@ Route::get('/home', function () {
     return view('index');
 });
 
-Route::middleware(['auth', 'check.blocked'])->group(function () {
+Route::middleware([
+    'auth',
+    'check.blocked',
+])->group(function () {
     Route::get('/perfil', function () {
         return view('cliente/editarcliente');
     })->name('perfil');
 
-    Route::put('/perfil/{id_user}/update', [UserController::class, 'update']);
-    Route::resource('veiculosclientes', VeiculosClientesController::class);
-    Route::get('/veiculos/montadora/{id}', [VeiculoController::class, 'porMontadora']);
+    Route::put(
+        '/perfil/{id_user}/update',
+        [UserController::class, 'update']
+    );
 
-    Route::middleware(['admin'])->group(function () {
+    Route::resource(
+        'veiculosclientes',
+        VeiculosClientesController::class
+    );
+
+    Route::get(
+        '/veiculos/montadora/{id}',
+        [VeiculoController::class, 'porMontadora']
+    );
+
+    /*
+     * Compatibilidade com JavaScript antigo.
+     *
+     * Continua usando /api/... na URL, porém agora
+     * passa pela sessão web e exige autenticação.
+     */
+    Route::get(
+        '/api/montadora/{id}/veiculos',
+        [VeiculoController::class, 'porMontadora']
+    );
+
+    Route::middleware([
+        'admin',
+    ])->group(function () {
         // Estoque
-        Route::get('/estoque', [EstoqueController::class, 'index'])->name('estoque.index');
-        Route::get('/estoque/movimentacoes', [MovimentacaoEstoqueController::class, 'index'])->name('estoque.movimentacoes.index');
-        Route::get('/estoque/{produto}/saida', [EstoqueController::class, 'saida'])->name('estoque.saida');
-        Route::post('/estoque/{produto}/saida', [EstoqueController::class, 'registrarSaida'])->name('estoque.registrarSaida');
-        Route::get('/estoque/{produto}/ajuste', [EstoqueController::class, 'ajuste'])->name('estoque.ajuste');
-        Route::post('/estoque/{produto}/ajuste', [EstoqueController::class, 'registrarAjuste'])->name('estoque.registrarAjuste');
+
+        Route::get(
+            '/estoque',
+            [EstoqueController::class, 'index']
+        )->name('estoque.index');
+
+        Route::get(
+            '/estoque/movimentacoes',
+            [MovimentacaoEstoqueController::class, 'index']
+        )->name('estoque.movimentacoes.index');
+
+        Route::get(
+            '/estoque/{produto}/saida',
+            [EstoqueController::class, 'saida']
+        )->name('estoque.saida');
+
+        Route::post(
+            '/estoque/{produto}/saida',
+            [EstoqueController::class, 'registrarSaida']
+        )->name('estoque.registrarSaida');
+
+        Route::get(
+            '/estoque/{produto}/ajuste',
+            [EstoqueController::class, 'ajuste']
+        )->name('estoque.ajuste');
+
+        Route::post(
+            '/estoque/{produto}/ajuste',
+            [EstoqueController::class, 'registrarAjuste']
+        )->name('estoque.registrarAjuste');
 
         // Notas
-        Route::get('/notas/{id}/pdf',[NotaController::class, 'gerarpdf'])->name('notas.pdf');
-        Route::get('/notas/{id}/pdf/download',[NotaController::class, 'baixarPdf'])->name('notas.pdf.download');
-        Route::post('/notas/{nota}/pdf-interno/download',[NotaController::class, 'baixarPdfInterno'])->name('notas.pdf.interno.download');
-        Route::post('/notas/{nota}/finalizar', [NotaController::class, 'finalizar'])->name('notas.finalizar');
-        Route::post('/notas/{nota}/cancelar', [NotaController::class, 'cancelar'])->name('notas.cancelar');
-        Route::resource('notas', NotaController::class)->only(['index', 'show', 'destroy']);
+
+        Route::get(
+            '/notas/{id}/pdf',
+            [NotaController::class, 'gerarpdf']
+        )->name('notas.pdf');
+
+        Route::get(
+            '/notas/{id}/pdf/download',
+            [NotaController::class, 'baixarPdf']
+        )->name('notas.pdf.download');
+
+        Route::post(
+            '/notas/{nota}/pdf-interno/download',
+            [NotaController::class, 'baixarPdfInterno']
+        )->name('notas.pdf.interno.download');
+
+        Route::post(
+            '/notas/{nota}/finalizar',
+            [NotaController::class, 'finalizar']
+        )->name('notas.finalizar');
+
+        Route::post(
+            '/notas/{nota}/cancelar',
+            [NotaController::class, 'cancelar']
+        )->name('notas.cancelar');
+
+        Route::resource(
+            'notas',
+            NotaController::class
+        )->only([
+            'index',
+            'show',
+            'destroy',
+        ]);
 
         // APIs internas
-        Route::get('/api/notas-itens/buscar', NotaItemBuscaController::class)->name('api.notas-itens.buscar');
-        Route::get('/api/produtos/buscar', ProdutoBuscaController::class)->name('api.produtos.buscar');
-        Route::get('/api/contas-receber/clientes/buscar', ClienteContaReceberBuscaController::class)->name('api.contas-receber.clientes.buscar');
-        Route::get('/api/contas-receber/notas/buscar', NotaContaReceberBuscaController::class)->name('api.contas-receber.notas.buscar');
-        Route::get('/api/notas-itens/setores-servico', [NotaOrdemServicoRapidaController::class, 'setores'])->name('api.notas-itens.setores-servico');
-        Route::post('/api/notas-itens/ordens-servico', [NotaOrdemServicoRapidaController::class, 'store'])->name('api.notas-itens.ordens-servico.store');
-        Route::get('/api/notas-itens/marcas-produto', [NotaProdutoRapidoController::class, 'marcas'])->name('api.notas-itens.marcas-produto');
-        Route::post('/api/notas-itens/produtos', [NotaProdutoRapidoController::class, 'store'])->name('api.notas-itens.produtos.store');
+
+        Route::get(
+            '/api/veiculo/placa/{placa}',
+            [
+                ApiVeiculosClientesController::class,
+                'buscarPorPlaca',
+            ]
+        )->name('api.veiculos.buscar-por-placa');
+
+        Route::get(
+            '/api/notas-itens/buscar',
+            NotaItemBuscaController::class
+        )->name('api.notas-itens.buscar');
+
+        Route::get(
+            '/api/produtos/buscar',
+            ProdutoBuscaController::class
+        )->name('api.produtos.buscar');
+
+        Route::get(
+            '/api/contas-receber/clientes/buscar',
+            ClienteContaReceberBuscaController::class
+        )->name(
+            'api.contas-receber.clientes.buscar'
+        );
+
+        Route::get(
+            '/api/contas-receber/notas/buscar',
+            NotaContaReceberBuscaController::class
+        )->name(
+            'api.contas-receber.notas.buscar'
+        );
+
+        Route::get(
+            '/api/notas-itens/setores-servico',
+            [
+                NotaOrdemServicoRapidaController::class,
+                'setores',
+            ]
+        )->name(
+            'api.notas-itens.setores-servico'
+        );
+
+        Route::post(
+            '/api/notas-itens/ordens-servico',
+            [
+                NotaOrdemServicoRapidaController::class,
+                'store',
+            ]
+        )->name(
+            'api.notas-itens.ordens-servico.store'
+        );
+
+        Route::get(
+            '/api/notas-itens/marcas-produto',
+            [
+                NotaProdutoRapidoController::class,
+                'marcas',
+            ]
+        )->name(
+            'api.notas-itens.marcas-produto'
+        );
+
+        Route::post(
+            '/api/notas-itens/produtos',
+            [
+                NotaProdutoRapidoController::class,
+                'store',
+            ]
+        )->name(
+            'api.notas-itens.produtos.store'
+        );
 
         // Ordens de Serviço
-        Route::post('/ordemservicos/{ordemservico}/finalizar',[OrdemServicoController::class, 'finalizar'])->name('ordemservicos.finalizar');
 
-        Route::post('/ordemservicos/{ordemservico}/cancelar',[OrdemServicoController::class, 'cancelar'])->name('ordemservicos.cancelar');
-
-        Route::resource('ordemservicos',OrdemServicoController::class
+        Route::post(
+            '/ordemservicos/{ordemservico}/finalizar',
+            [
+                OrdemServicoController::class,
+                'finalizar',
+            ]
+        )->name(
+            'ordemservicos.finalizar'
         );
-        Route::resource('ordemservicos', OrdemServicoController::class);
+
+        Route::post(
+            '/ordemservicos/{ordemservico}/cancelar',
+            [
+                OrdemServicoController::class,
+                'cancelar',
+            ]
+        )->name(
+            'ordemservicos.cancelar'
+        );
+
+        Route::resource(
+            'ordemservicos',
+            OrdemServicoController::class
+        );
 
         // Itens das Notas
-        Route::resource('notasitem', NotasItemController::class)->except(['show']);
+
+        Route::resource(
+            'notasitem',
+            NotasItemController::class
+        )->except([
+            'show',
+        ]);
 
         // Usuários
-        Route::resource('users', UserController::class);
-        Route::patch('/users/{id}/block', [UserController::class, 'toggleBlock'])->name('toggleBlock');
+
+        Route::resource(
+            'users',
+            UserController::class
+        );
+
+        Route::patch(
+            '/users/{id}/block',
+            [
+                UserController::class,
+                'toggleBlock',
+            ]
+        )->name(
+            'toggleBlock'
+        );
 
         // Clientes
-        Route::resource('clientes', ClienteController::class);
+
+        Route::resource(
+            'clientes',
+            ClienteController::class
+        );
 
         // Produtos
-        Route::delete('/produtos/{produto}/imagens/{imagem}', [ProdutoController::class, 'destroyImagem'])->name('produtos.imagens.destroy');
-        Route::resource('produtos', ProdutoController::class);
+
+        Route::delete(
+            '/produtos/{produto}/imagens/{imagem}',
+            [
+                ProdutoController::class,
+                'destroyImagem',
+            ]
+        )->name(
+            'produtos.imagens.destroy'
+        );
+
+        Route::resource(
+            'produtos',
+            ProdutoController::class
+        );
 
         // Marcas
-        Route::resource('marcas', MarcaController::class);
+
+        Route::resource(
+            'marcas',
+            MarcaController::class
+        );
 
         // Colaboradores
-        Route::resource('colaboradores', ColaboradorController::class);
+
+        Route::resource(
+            'colaboradores',
+            ColaboradorController::class
+        );
 
         // Endereços
-        Route::resource('enderecos', EnderecoController::class);
-        Route::get('/endereco/create/{id}', [EnderecoController::class, 'create']);
+
+        Route::resource(
+            'enderecos',
+            EnderecoController::class
+        );
+
+        Route::get(
+            '/endereco/create/{id}',
+            [
+                EnderecoController::class,
+                'create',
+            ]
+        );
 
         // Veículos
-        Route::resource('veiculos', VeiculoController::class);
+
+        Route::resource(
+            'veiculos',
+            VeiculoController::class
+        );
 
         // Montadoras
-        Route::resource('montadoras', MontadoraController::class);
+
+        Route::resource(
+            'montadoras',
+            MontadoraController::class
+        );
 
         // Setores de Serviço
-        Route::resource('setor-servicos', SetorServicoController::class);
+
+        Route::resource(
+            'setor-servicos',
+            SetorServicoController::class
+        );
 
         // Formas de Pagamento
-        Route::resource('formas-pagamento', FormaPagamentoController::class)->parameters(['formas-pagamento' => 'formaPagamento']);
+
+        Route::resource(
+            'formas-pagamento',
+            FormaPagamentoController::class
+        )->parameters([
+            'formas-pagamento' =>
+                'formaPagamento',
+        ]);
 
         // Categorias Financeiras
-        Route::resource('categorias-financeiras', CategoriaFinanceiraController::class)->parameters(['categorias-financeiras' => 'categoriaFinanceira']);
+
+        Route::resource(
+            'categorias-financeiras',
+            CategoriaFinanceiraController::class
+        )->parameters([
+            'categorias-financeiras' =>
+                'categoriaFinanceira',
+        ]);
 
         // Contas a Receber
-        Route::resource('contas-receber', ContaReceberController::class)->parameters(['contas-receber' => 'contaReceber']);
-        Route::get('contas-receber/{contaReceber}/parcelas/{parcela}/recebimentos/create', [RecebimentoController::class, 'create'])->name('recebimentos.create');
-        Route::post('recebimentos', [RecebimentoController::class, 'store'])->name('recebimentos.store');
-        Route::post('contas-receber/{contaReceber}/recebimentos/{recebimento}/estornar', [RecebimentoController::class, 'estornar'])->name('recebimentos.estornar');
+
+        Route::resource(
+            'contas-receber',
+            ContaReceberController::class
+        )->parameters([
+            'contas-receber' =>
+                'contaReceber',
+        ]);
+
+        Route::get(
+            'contas-receber/{contaReceber}/parcelas/{parcela}/recebimentos/create',
+            [
+                RecebimentoController::class,
+                'create',
+            ]
+        )->name(
+            'recebimentos.create'
+        );
+
+        Route::post(
+            'recebimentos',
+            [
+                RecebimentoController::class,
+                'store',
+            ]
+        )->name(
+            'recebimentos.store'
+        );
+
+        Route::post(
+            'contas-receber/{contaReceber}/recebimentos/{recebimento}/estornar',
+            [
+                RecebimentoController::class,
+                'estornar',
+            ]
+        )->name(
+            'recebimentos.estornar'
+        );
 
         // Compras
-        Route::post('compras/{compra}/iniciar-conferencia', [CompraController::class, 'iniciarConferencia'])->name('compras.iniciar-conferencia');
-        Route::post('compras/{compra}/conferir', [CompraController::class, 'conferir'])->name('compras.conferir');
-        Route::post('compras/{compra}/aprovar', [CompraController::class, 'aprovar'])->name('compras.aprovar');
-        Route::post('compras/{compra}/gerar-conta', [CompraController::class, 'gerarConta'])->name('compras.gerar-conta');
-        Route::post('compras/{compra}/cancelar', [CompraController::class, 'cancelar'])->name('compras.cancelar');
-        Route::post('compras/{compra}/estoque', [CompraController::class, 'registrarEstoque'])->name('compras.estoque');
-        Route::post('compras/{compra}/estornar', [CompraController::class, 'estornar'])->name('compras.estornar');
-        Route::resource('compras', CompraController::class);
+
+        Route::post(
+            'compras/{compra}/iniciar-conferencia',
+            [
+                CompraController::class,
+                'iniciarConferencia',
+            ]
+        )->name(
+            'compras.iniciar-conferencia'
+        );
+
+        Route::post(
+            'compras/{compra}/conferir',
+            [
+                CompraController::class,
+                'conferir',
+            ]
+        )->name(
+            'compras.conferir'
+        );
+
+        Route::post(
+            'compras/{compra}/aprovar',
+            [
+                CompraController::class,
+                'aprovar',
+            ]
+        )->name(
+            'compras.aprovar'
+        );
+
+        Route::post(
+            'compras/{compra}/gerar-conta',
+            [
+                CompraController::class,
+                'gerarConta',
+            ]
+        )->name(
+            'compras.gerar-conta'
+        );
+
+        Route::post(
+            'compras/{compra}/cancelar',
+            [
+                CompraController::class,
+                'cancelar',
+            ]
+        )->name(
+            'compras.cancelar'
+        );
+
+        Route::post(
+            'compras/{compra}/estoque',
+            [
+                CompraController::class,
+                'registrarEstoque',
+            ]
+        )->name(
+            'compras.estoque'
+        );
+
+        Route::post(
+            'compras/{compra}/estornar',
+            [
+                CompraController::class,
+                'estornar',
+            ]
+        )->name(
+            'compras.estornar'
+        );
+
+        Route::resource(
+            'compras',
+            CompraController::class
+        );
 
         // Fornecedores
-        Route::resource('fornecedores', FornecedorController::class)->parameters(['fornecedores' => 'fornecedor']);
+
+        Route::resource(
+            'fornecedores',
+            FornecedorController::class
+        )->parameters([
+            'fornecedores' =>
+                'fornecedor',
+        ]);
 
         // Anexos
-        Route::post('compras/{compra}/anexos', [AnexoController::class, 'storeCompra'])->name('compras.anexos.store');
-        Route::post('contas-pagar/{conta}/anexos', [AnexoController::class, 'storeContaPagar'])->name('contas-pagar.anexos.store');
-        Route::get('anexos/{anexo}', [AnexoController::class, 'show'])->name('anexos.show');
-        Route::get('anexos/{anexo}/preview', [AnexoController::class, 'preview'])->name('anexos.preview');
-        Route::get('anexos/{anexo}/download', [AnexoController::class, 'download'])->name('anexos.download');
-        Route::delete('anexos/{vinculo}', [AnexoController::class, 'destroy'])->name('anexos.destroy');
+
+        Route::post(
+            'compras/{compra}/anexos',
+            [
+                AnexoController::class,
+                'storeCompra',
+            ]
+        )->name(
+            'compras.anexos.store'
+        );
+
+        Route::post(
+            'contas-pagar/{conta}/anexos',
+            [
+                AnexoController::class,
+                'storeContaPagar',
+            ]
+        )->name(
+            'contas-pagar.anexos.store'
+        );
+
+        Route::get(
+            'anexos/{anexo}',
+            [
+                AnexoController::class,
+                'show',
+            ]
+        )->name(
+            'anexos.show'
+        );
+
+        Route::get(
+            'anexos/{anexo}/preview',
+            [
+                AnexoController::class,
+                'preview',
+            ]
+        )->name(
+            'anexos.preview'
+        );
+
+        Route::get(
+            'anexos/{anexo}/download',
+            [
+                AnexoController::class,
+                'download',
+            ]
+        )->name(
+            'anexos.download'
+        );
+
+        Route::delete(
+            'anexos/{vinculo}',
+            [
+                AnexoController::class,
+                'destroy',
+            ]
+        )->name(
+            'anexos.destroy'
+        );
 
         // Contas a Pagar
-        Route::resource('contas-pagar', ContaPagarController::class)->parameters(['contas-pagar' => 'conta'])->except(['destroy']);
-        Route::post('contas-pagar/{conta}/parcelas', [ContaPagarController::class, 'atualizarParcelas'])->name('contas-pagar.parcelas.update');
-        Route::post('contas-pagar/{conta}/pagamentos', [ContaPagarController::class, 'registrarPagamento'])->name('contas-pagar.pagamentos.store');
-        Route::post('contas-pagar/{conta}/pagamentos/{pagamento}/estornar', [ContaPagarController::class, 'estornarPagamento'])->name('contas-pagar.pagamentos.estornar');
-        Route::post('contas-pagar/{conta}/cancelar', [ContaPagarController::class, 'cancelar'])->name('contas-pagar.cancelar');
+
+        Route::resource(
+            'contas-pagar',
+            ContaPagarController::class
+        )->parameters([
+            'contas-pagar' =>
+                'conta',
+        ])->except([
+            'destroy',
+        ]);
+
+        Route::post(
+            'contas-pagar/{conta}/parcelas',
+            [
+                ContaPagarController::class,
+                'atualizarParcelas',
+            ]
+        )->name(
+            'contas-pagar.parcelas.update'
+        );
+
+        Route::post(
+            'contas-pagar/{conta}/pagamentos',
+            [
+                ContaPagarController::class,
+                'registrarPagamento',
+            ]
+        )->name(
+            'contas-pagar.pagamentos.store'
+        );
+
+        Route::post(
+            'contas-pagar/{conta}/pagamentos/{pagamento}/estornar',
+            [
+                ContaPagarController::class,
+                'estornarPagamento',
+            ]
+        )->name(
+            'contas-pagar.pagamentos.estornar'
+        );
+
+        Route::post(
+            'contas-pagar/{conta}/cancelar',
+            [
+                ContaPagarController::class,
+                'cancelar',
+            ]
+        )->name(
+            'contas-pagar.cancelar'
+        );
+
+        // Etapas
+
         Route::resource(
             'etapas',
             EtapaController::class
@@ -168,10 +621,24 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
     });
 });
 
-Route::get('/erro-autenticacao', function () {
-    return view('errors.403');
-})->name('erro-autenticacao');
+Route::get(
+    '/erro-autenticacao',
+    function () {
+        return view(
+            'errors.403'
+        );
+    }
+)->name(
+    'erro-autenticacao'
+);
 
-Route::get('/termos-de-uso', function () {
-    return view('termos/termosdeuso');
-})->name('termos');
+Route::get(
+    '/termos-de-uso',
+    function () {
+        return view(
+            'termos/termosdeuso'
+        );
+    }
+)->name(
+    'termos'
+);

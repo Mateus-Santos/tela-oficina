@@ -18,37 +18,37 @@ class AtualizarVeiculoCliente
                 $dados,
                 $user
             ) {
-                if ($user->permitions == 1) {
+                if ($user->isAdmin()) {
                     $clientesIds = collect(
                         $dados['clientes'] ?? []
                     )
-                        ->map(fn ($id) => (int) $id)
+                        ->map(
+                            fn ($id) => (int) $id
+                        )
                         ->unique()
                         ->values()
                         ->all();
-                } else {
+                } elseif ($user->isCliente()) {
                     $clienteId = $user
-                        ->pessoa
-                        ?->cliente
+                        ->cliente
                         ?->id;
 
-                    if (!$clienteId) {
+                    if (! $clienteId) {
                         abort(
                             403,
                             'Usuário não possui um cliente vinculado.'
                         );
                     }
 
-                    $possuiAcesso =
-                        $veiculoCliente
-                            ->clientes()
-                            ->where(
-                                'clientes.id',
-                                $clienteId
-                            )
-                            ->exists();
+                    $possuiAcesso = $veiculoCliente
+                        ->clientes()
+                        ->where(
+                            'clientes.id',
+                            $clienteId
+                        )
+                        ->exists();
 
-                    if (!$possuiAcesso) {
+                    if (! $possuiAcesso) {
                         abort(
                             403,
                             'Ação não autorizada.'
@@ -56,15 +56,21 @@ class AtualizarVeiculoCliente
                     }
 
                     /*
-                     * Usuário comum não pode mudar
-                     * os responsáveis.
+                     * Cliente não pode alterar os
+                     * responsáveis pelo veículo.
                      */
-                    $clientesIds =
-                        $veiculoCliente
-                            ->clientes()
-                            ->pluck('clientes.id')
-                            ->map(fn ($id) => (int) $id)
-                            ->all();
+                    $clientesIds = $veiculoCliente
+                        ->clientes()
+                        ->pluck('clientes.id')
+                        ->map(
+                            fn ($id) => (int) $id
+                        )
+                        ->all();
+                } else {
+                    abort(
+                        403,
+                        'Perfil de usuário sem permissão para alterar veículos.'
+                    );
                 }
 
                 if ($clientesIds === []) {
@@ -77,18 +83,13 @@ class AtualizarVeiculoCliente
                 $veiculoCliente->update([
                     'placa' => $dados['placa'],
                     'ano' => $dados['ano'],
-
-                    'cor' =>
-                        $dados['cor'] ?? null,
-
-                    'veiculo_id' =>
-                        $dados['veiculo_id'],
+                    'cor' => $dados['cor'] ?? null,
+                    'veiculo_id' => $dados['veiculo_id'],
 
                     /*
                      * Compatibilidade temporária.
                      */
-                    'cliente_id' =>
-                        $clientesIds[0],
+                    'cliente_id' => $clientesIds[0],
                 ]);
 
                 $veiculoCliente

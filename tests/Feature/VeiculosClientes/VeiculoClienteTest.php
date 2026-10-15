@@ -23,8 +23,7 @@ class VeiculoClienteTest extends TestCase
         parent::setUp();
 
         $this->admin = User::factory()->create([
-            'colaborador' => true,
-            'permitions' => 1,
+            'perfil' => User::PERFIL_ADMIN,
             'status' => 1,
         ]);
 

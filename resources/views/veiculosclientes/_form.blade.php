@@ -1,6 +1,9 @@
 @php
     $usuarioLogado = auth()->user();
-    $administrador = $usuarioLogado?->permitions == 1;
+
+    $administrador =
+        $usuarioLogado?->isAdmin()
+        ?? false;
 @endphp
 
 <div class="campos">

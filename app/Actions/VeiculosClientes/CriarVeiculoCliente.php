@@ -13,21 +13,22 @@ class CriarVeiculoCliente
     ): VeiculosCliente {
         return DB::transaction(
             function () use ($dados, $user) {
-                if ($user->permitions == 1) {
+                if ($user->isAdmin()) {
                     $clientesIds = collect(
                         $dados['clientes'] ?? []
                     )
-                        ->map(fn ($id) => (int) $id)
+                        ->map(
+                            fn ($id) => (int) $id
+                        )
                         ->unique()
                         ->values()
                         ->all();
-                } else {
+                } elseif ($user->isCliente()) {
                     $clienteId = $user
-                        ->pessoa
-                        ?->cliente
+                        ->cliente
                         ?->id;
 
-                    if (!$clienteId) {
+                    if (! $clienteId) {
                         abort(
                             403,
                             'Usuário não possui um cliente vinculado.'
@@ -37,6 +38,11 @@ class CriarVeiculoCliente
                     $clientesIds = [
                         (int) $clienteId,
                     ];
+                } else {
+                    abort(
+                        403,
+                        'Perfil de usuário sem permissão para cadastrar veículos.'
+                    );
                 }
 
                 if ($clientesIds === []) {
@@ -46,31 +52,29 @@ class CriarVeiculoCliente
                     );
                 }
 
-                $veiculoCliente =
-                    VeiculosCliente::create([
-                        'placa' => $dados['placa'],
-                        'ano' => $dados['ano'],
-                        'cor' => $dados['cor'] ?? null,
+                $veiculoCliente = VeiculosCliente::create([
+                    'placa' => $dados['placa'],
+                    'ano' => $dados['ano'],
+                    'cor' => $dados['cor'] ?? null,
+                    'veiculo_id' => $dados['veiculo_id'],
 
-                        'veiculo_id' =>
-                            $dados['veiculo_id'],
-
-                        /*
-                         * Compatibilidade temporária.
-                         */
-                        'cliente_id' =>
-                            $clientesIds[0],
-                    ]);
+                    /*
+                     * Compatibilidade temporária.
+                     *
+                     * A relação oficial com clientes é
+                     * cliente_veiculo_cliente.
+                     */
+                    'cliente_id' => $clientesIds[0],
+                ]);
 
                 $veiculoCliente
                     ->clientes()
                     ->sync($clientesIds);
 
-                return $veiculoCliente
-                    ->load([
-                        'veiculo.montadora',
-                        'clientes.pessoa',
-                    ]);
+                return $veiculoCliente->load([
+                    'veiculo.montadora',
+                    'clientes.pessoa',
+                ]);
             }
         );
     }

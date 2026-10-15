@@ -60,7 +60,7 @@
             @elseif(
                 $nota->status !== 'Cancelado'
                 && auth()->user()
-                && auth()->user()->permitions != 2
+                && auth()->user()->isAdmin()
             )
 
                 <a
@@ -120,7 +120,7 @@
 
             @if(
                 auth()->user()
-                && auth()->user()->permitions != 2
+                && auth()->user()->isAdmin()
             )
 
                 <div class="dropdown">

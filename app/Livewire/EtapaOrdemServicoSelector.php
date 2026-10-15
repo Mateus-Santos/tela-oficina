@@ -22,23 +22,31 @@ class EtapaOrdemServicoSelector extends Component
             $ordemServico;
 
         $this->etapaId =
-            $ordemServico->etapa_id;
+            $ordemServico
+                ->etapa_id;
     }
 
     public function updatedEtapaId(
         mixed $value,
         AlterarEtapaOrdemServico $alterarEtapaOrdemServico
     ): void {
-        $this->resetErrorBag('etapa');
+        $this->resetErrorBag(
+            'etapa'
+        );
 
-        $this->ordemServico->refresh();
+        $this
+            ->ordemServico
+            ->refresh();
 
         if (
             ! Auth::check()
-            || Auth::user()->permitions == 2
+            || ! Auth::user()
+                ->isAdmin()
         ) {
             $this->etapaId =
-                $this->ordemServico->etapa_id;
+                $this
+                    ->ordemServico
+                    ->etapa_id;
 
             $this->addError(
                 'etapa',
@@ -49,11 +57,15 @@ class EtapaOrdemServicoSelector extends Component
         }
 
         if (
-            $this->ordemServico->status
+            $this
+                ->ordemServico
+                ->status
             !== 'aberta'
         ) {
             $this->etapaId =
-                $this->ordemServico->etapa_id;
+                $this
+                    ->ordemServico
+                    ->etapa_id;
 
             $this->addError(
                 'etapa',
@@ -63,12 +75,15 @@ class EtapaOrdemServicoSelector extends Component
             return;
         }
 
-        $etapa = Etapa::query()
-            ->find($value);
+        $etapa =
+            Etapa::query()
+                ->find($value);
 
         if (! $etapa) {
             $this->etapaId =
-                $this->ordemServico->etapa_id;
+                $this
+                    ->ordemServico
+                    ->etapa_id;
 
             $this->addError(
                 'etapa',
@@ -80,27 +95,38 @@ class EtapaOrdemServicoSelector extends Component
 
         try {
             $ordemServico =
-                $alterarEtapaOrdemServico->execute(
-                    $this->ordemServico,
-                    $etapa,
-                    Auth::id()
-                );
+                $alterarEtapaOrdemServico
+                    ->execute(
+                        $this
+                            ->ordemServico,
+
+                        $etapa,
+
+                        Auth::id()
+                    );
 
             $this->ordemServico =
                 $ordemServico;
 
             $this->etapaId =
-                $ordemServico->etapa_id;
+                $ordemServico
+                    ->etapa_id;
 
             $this->dispatch(
                 'etapa-ordem-servico-atualizada',
                 ordemServicoId: $ordemServico->id
             );
-        } catch (InvalidArgumentException $e) {
-            $this->ordemServico->refresh();
+        } catch (
+            InvalidArgumentException $e
+        ) {
+            $this
+                ->ordemServico
+                ->refresh();
 
             $this->etapaId =
-                $this->ordemServico->etapa_id;
+                $this
+                    ->ordemServico
+                    ->etapa_id;
 
             $this->addError(
                 'etapa',
@@ -111,21 +137,33 @@ class EtapaOrdemServicoSelector extends Component
 
     public function render()
     {
-        $etapas = Etapa::query()
-            ->paraOrdemServico()
-            ->where(
-                function ($query) {
-                    $query
-                        ->where('ativo', true)
-                        ->orWhere(
-                            'id',
-                            $this->ordemServico->etapa_id
-                        );
-                }
-            )
-            ->orderBy('ordem')
-            ->orderBy('id')
-            ->get();
+        $etapas =
+            Etapa::query()
+                ->paraOrdemServico()
+                ->where(
+                    function (
+                        $query
+                    ) {
+                        $query
+                            ->where(
+                                'ativo',
+                                true
+                            )
+                            ->orWhere(
+                                'id',
+                                $this
+                                    ->ordemServico
+                                    ->etapa_id
+                            );
+                    }
+                )
+                ->orderBy(
+                    'ordem'
+                )
+                ->orderBy(
+                    'id'
+                )
+                ->get();
 
         return view(
             'livewire.etapa-ordem-servico-selector',
