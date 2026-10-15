@@ -13,13 +13,19 @@ use Illuminate\Validation\Rule;
 
 class ClienteController extends Controller
 {
-    private function limparMascara(?string $valor): ?string
-    {
+    private function limparMascara(
+        ?string $valor
+    ): ?string {
         if (! $valor) {
             return null;
         }
 
-        $valorLimpo = preg_replace('/\D/', '', $valor);
+        $valorLimpo =
+            preg_replace(
+                '/\D/',
+                '',
+                $valor
+            );
 
         return $valorLimpo !== ''
             ? $valorLimpo
@@ -28,72 +34,91 @@ class ClienteController extends Controller
 
     public function index(Request $request)
     {
-        $nome = trim((string) $request->input('nome', ''));
+        $nome =
+            trim(
+                (string) $request->input(
+                    'nome',
+                    ''
+                )
+            );
 
-        $cpf = $this->limparMascara(
-            $request->input('cpf')
-        );
+        $cpf =
+            $this->limparMascara(
+                $request->input('cpf')
+            );
 
-        $telefone = $this->limparMascara(
-            $request->input('telefone')
-        );
+        $telefone =
+            $this->limparMascara(
+                $request->input(
+                    'telefone'
+                )
+            );
 
-        $clientes = Cliente::query()
-            ->with('pessoa')
-            ->when(
-                $nome !== '',
-                function ($query) use ($nome) {
-                    $query->whereHas(
-                        'pessoa',
-                        function ($pessoaQuery) use ($nome) {
-                            $pessoaQuery->where(
-                                'nome',
-                                'like',
-                                "%{$nome}%"
-                            );
-                        }
-                    );
-                }
-            )
-            ->when(
-                $cpf,
-                function ($query) use ($cpf) {
-                    $query->whereHas(
-                        'pessoa',
-                        function ($pessoaQuery) use ($cpf) {
-                            $pessoaQuery->where(
-                                'cpf',
-                                'like',
-                                "%{$cpf}%"
-                            );
-                        }
-                    );
-                }
-            )
-            ->when(
-                $telefone,
-                function ($query) use ($telefone) {
-                    $query->whereHas(
-                        'pessoa',
-                        function ($pessoaQuery) use ($telefone) {
-                            $pessoaQuery
-                                ->where(
-                                    'telefone_1',
+        $clientes =
+            Cliente::query()
+                ->with('pessoa')
+                ->when(
+                    $nome !== '',
+                    function ($query) use ($nome) {
+                        $query->whereHas(
+                            'pessoa',
+                            function (
+                                $pessoaQuery
+                            ) use ($nome) {
+                                $pessoaQuery->where(
+                                    'nome',
                                     'like',
-                                    "%{$telefone}%"
-                                )
-                                ->orWhere(
-                                    'telefone_2',
-                                    'like',
-                                    "%{$telefone}%"
+                                    "%{$nome}%"
                                 );
-                        }
-                    );
-                }
-            )
-            ->latest('id')
-            ->paginate(20)
-            ->withQueryString();
+                            }
+                        );
+                    }
+                )
+                ->when(
+                    $cpf,
+                    function ($query) use ($cpf) {
+                        $query->whereHas(
+                            'pessoa',
+                            function (
+                                $pessoaQuery
+                            ) use ($cpf) {
+                                $pessoaQuery->where(
+                                    'cpf',
+                                    'like',
+                                    "%{$cpf}%"
+                                );
+                            }
+                        );
+                    }
+                )
+                ->when(
+                    $telefone,
+                    function (
+                        $query
+                    ) use ($telefone) {
+                        $query->whereHas(
+                            'pessoa',
+                            function (
+                                $pessoaQuery
+                            ) use ($telefone) {
+                                $pessoaQuery
+                                    ->where(
+                                        'telefone_1',
+                                        'like',
+                                        "%{$telefone}%"
+                                    )
+                                    ->orWhere(
+                                        'telefone_2',
+                                        'like',
+                                        "%{$telefone}%"
+                                    );
+                            }
+                        );
+                    }
+                )
+                ->latest('id')
+                ->paginate(20)
+                ->withQueryString();
 
         return view(
             'cliente.listarcliente',
@@ -103,40 +128,54 @@ class ClienteController extends Controller
 
     public function create()
     {
-        $pessoasSemCliente = Pessoa::query()
-            ->doesntHave('cliente')
-            ->orderBy('nome')
-            ->get();
+        $pessoasSemCliente =
+            Pessoa::query()
+                ->doesntHave('cliente')
+                ->orderBy('nome')
+                ->get();
 
         return view(
             'cliente.cadastrocliente',
-            compact('pessoasSemCliente')
+            compact(
+                'pessoasSemCliente'
+            )
         );
     }
 
     public function store(Request $request)
     {
         if ($request->filled('nome')) {
-            $cpfLimpo = $this->limparMascara(
-                $request->input('cpf')
-            );
+            $cpfLimpo =
+                $this->limparMascara(
+                    $request->input('cpf')
+                );
 
-            $rgLimpo = $this->limparMascara(
-                $request->input('rg')
-            );
+            $rgLimpo =
+                $this->limparMascara(
+                    $request->input('rg')
+                );
 
-            $telefone1Limpo = $this->limparMascara(
-                $request->input('telefone_1')
-            );
+            $telefone1Limpo =
+                $this->limparMascara(
+                    $request->input(
+                        'telefone_1'
+                    )
+                );
 
-            $telefone2Limpo = $this->limparMascara(
-                $request->input('telefone_2')
-            );
+            $telefone2Limpo =
+                $this->limparMascara(
+                    $request->input(
+                        'telefone_2'
+                    )
+                );
 
             $request->merge([
                 'cpf' => $cpfLimpo,
+
                 'rg' => $rgLimpo,
+
                 'telefone_1' => $telefone1Limpo,
+
                 'telefone_2' => $telefone2Limpo,
             ]);
 
@@ -229,32 +268,56 @@ class ClienteController extends Controller
                     $telefone2Limpo,
                     &$senhaGerada
                 ) {
-                    $pessoa = Pessoa::create([
-                        'nome' => $request->input('nome'),
-                        'cpf' => $cpfLimpo,
-                        'rg' => $rgLimpo,
-                        'data_nascimento' => $request->input('data_nascimento'),
-                        'telefone_1' => $telefone1Limpo,
-                        'telefone_2' => $telefone2Limpo,
-                    ]);
+                    $pessoa =
+                        Pessoa::create([
+                            'nome' => $request->input(
+                                'nome'
+                            ),
+
+                            'cpf' => $cpfLimpo,
+
+                            'rg' => $rgLimpo,
+
+                            'data_nascimento' => $request->input(
+                                'data_nascimento'
+                            ),
+
+                            'telefone_1' => $telefone1Limpo,
+
+                            'telefone_2' => $telefone2Limpo,
+                        ]);
 
                     Cliente::create([
                         'pessoa_id' => $pessoa->id,
-                        'pontos' => $request->input('pontos') ?? 0,
+
+                        'pontos' => $request->input(
+                            'pontos'
+                        ) ?? 0,
                     ]);
 
                     if (
-                        $request->boolean('criar_usuario')
-                        && $request->filled('email')
+                        $request->boolean(
+                            'criar_usuario'
+                        )
+                        && $request->filled(
+                            'email'
+                        )
                     ) {
-                        $senhaGerada = Str::random(8);
+                        $senhaGerada =
+                            Str::random(8);
 
                         User::create([
-                            'email' => $request->input('email'),
+                            'email' => $request->input(
+                                'email'
+                            ),
+
                             'password' => Hash::make(
                                 $senhaGerada
                             ),
+
                             'pessoa_id' => $pessoa->id,
+
+                            'perfil' => User::PERFIL_CLIENTE,
                         ]);
                     }
                 }
@@ -262,13 +325,17 @@ class ClienteController extends Controller
 
             if ($senhaGerada) {
                 return redirect()
-                    ->route('clientes.index')
+                    ->route(
+                        'clientes.index'
+                    )
                     ->with([
                         'success' => 'Cliente e usuário criados com sucesso!',
 
                         'senha_temporaria' => $senhaGerada,
 
-                        'email_usuario' => $request->input('email'),
+                        'email_usuario' => $request->input(
+                            'email'
+                        ),
                     ]);
             }
         } else {
@@ -294,9 +361,13 @@ class ClienteController extends Controller
             );
 
             Cliente::create([
-                'pessoa_id' => $request->input('pessoa_id'),
+                'pessoa_id' => $request->input(
+                    'pessoa_id'
+                ),
 
-                'pontos' => $request->input('pontos') ?? 0,
+                'pontos' => $request->input(
+                    'pontos'
+                ) ?? 0,
             ]);
         }
 
@@ -310,8 +381,9 @@ class ClienteController extends Controller
 
     public function show(string $id)
     {
-        $cliente = Cliente::with('pessoa')
-            ->findOrFail($id);
+        $cliente =
+            Cliente::with('pessoa')
+                ->findOrFail($id);
 
         return view(
             'cliente.showcliente',
@@ -321,25 +393,41 @@ class ClienteController extends Controller
 
     public function edit(string $id)
     {
-        $usuarioLogado = auth()->user();
+        $usuarioLogado =
+            auth()->user();
 
-        if ($usuarioLogado->permitions === 1) {
-            $cliente = Cliente::with('pessoa')
-                ->findOrFail($id);
+        if ($usuarioLogado->isAdmin()) {
+            $cliente =
+                Cliente::with('pessoa')
+                    ->findOrFail($id);
 
-            $usuario = User::where(
-                'pessoa_id',
-                $cliente->pessoa_id
-            )->first();
-        } else {
-            $usuario = $usuarioLogado;
-
-            $cliente = Cliente::with('pessoa')
-                ->where(
+            $usuario =
+                User::where(
                     'pessoa_id',
-                    $usuarioLogado->pessoa_id
-                )
-                ->firstOrFail();
+                    $cliente->pessoa_id
+                )->first();
+        } elseif (
+            $usuarioLogado->isCliente()
+        ) {
+            $usuario =
+                $usuarioLogado;
+
+            $cliente =
+                $usuarioLogado->cliente;
+
+            if (! $cliente) {
+                abort(
+                    403,
+                    'Usuário não possui cliente vinculado.'
+                );
+            }
+
+            $cliente->load('pessoa');
+        } else {
+            abort(
+                403,
+                'Acesso não autorizado.'
+            );
         }
 
         return view(
@@ -355,34 +443,71 @@ class ClienteController extends Controller
         Request $request,
         string $id
     ) {
-        $cliente = Cliente::with('pessoa')
-            ->findOrFail($id);
+        $usuarioLogado =
+            $request->user();
 
-        $usuario = User::where(
-            'pessoa_id',
-            $cliente->pessoa_id
-        )->first();
+        if ($usuarioLogado->isAdmin()) {
+            $cliente =
+                Cliente::with('pessoa')
+                    ->findOrFail($id);
+        } elseif (
+            $usuarioLogado->isCliente()
+        ) {
+            $cliente =
+                $usuarioLogado->cliente;
 
-        $cpfLimpo = $this->limparMascara(
-            $request->input('cpf')
-        );
+            if (! $cliente) {
+                abort(
+                    403,
+                    'Usuário não possui cliente vinculado.'
+                );
+            }
 
-        $rgLimpo = $this->limparMascara(
-            $request->input('rg')
-        );
+            $cliente->load('pessoa');
+        } else {
+            abort(
+                403,
+                'Acesso não autorizado.'
+            );
+        }
 
-        $telefone1Limpo = $this->limparMascara(
-            $request->input('telefone_1')
-        );
+        $usuario =
+            User::where(
+                'pessoa_id',
+                $cliente->pessoa_id
+            )->first();
 
-        $telefone2Limpo = $this->limparMascara(
-            $request->input('telefone_2')
-        );
+        $cpfLimpo =
+            $this->limparMascara(
+                $request->input('cpf')
+            );
+
+        $rgLimpo =
+            $this->limparMascara(
+                $request->input('rg')
+            );
+
+        $telefone1Limpo =
+            $this->limparMascara(
+                $request->input(
+                    'telefone_1'
+                )
+            );
+
+        $telefone2Limpo =
+            $this->limparMascara(
+                $request->input(
+                    'telefone_2'
+                )
+            );
 
         $request->merge([
             'cpf' => $cpfLimpo,
+
             'rg' => $rgLimpo,
+
             'telefone_1' => $telefone1Limpo,
+
             'telefone_2' => $telefone2Limpo,
         ]);
 
@@ -489,29 +614,48 @@ class ClienteController extends Controller
                 $telefone1Limpo,
                 $telefone2Limpo
             ) {
-                $cliente->pessoa->update([
-                    'nome' => $request->input('nome'),
-                    'cpf' => $cpfLimpo,
-                    'rg' => $rgLimpo,
-                    'data_nascimento' => $request->input('data_nascimento'),
-                    'telefone_1' => $telefone1Limpo,
-                    'telefone_2' => $telefone2Limpo,
-                ]);
+                $cliente
+                    ->pessoa
+                    ->update([
+                        'nome' => $request->input(
+                            'nome'
+                        ),
+
+                        'cpf' => $cpfLimpo,
+
+                        'rg' => $rgLimpo,
+
+                        'data_nascimento' => $request->input(
+                            'data_nascimento'
+                        ),
+
+                        'telefone_1' => $telefone1Limpo,
+
+                        'telefone_2' => $telefone2Limpo,
+                    ]);
 
                 $cliente->update([
-                    'pontos' => $request->input('pontos') ?? 0,
+                    'pontos' => $request->input(
+                        'pontos'
+                    ) ?? 0,
                 ]);
 
                 if ($usuario) {
                     $usuario->update([
-                        'email' => $request->input('email'),
+                        'email' => $request->input(
+                            'email'
+                        ),
                     ]);
                 }
             }
         );
 
         return redirect()
-            ->route('clientes.index')
+            ->route(
+                $usuarioLogado->isCliente()
+                    ? 'perfil'
+                    : 'clientes.index'
+            )
             ->with(
                 'success',
                 'Cliente atualizado com sucesso!'
@@ -520,7 +664,8 @@ class ClienteController extends Controller
 
     public function destroy(string $id)
     {
-        $cliente = Cliente::findOrFail($id);
+        $cliente =
+            Cliente::findOrFail($id);
 
         $cliente->delete();
 

@@ -542,7 +542,7 @@
                     Visualizar
                 </a>
 
-                @if(auth()->user() && auth()->user()->permitions === 1)
+                @if(auth()->user()?->isAdmin())
 
                     <a
                         href="{{ route('produtos.edit', $produto->id) }}"

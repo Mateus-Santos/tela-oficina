@@ -2,7 +2,6 @@
 
 use App\Http\Middleware\AdminAccess;
 use App\Http\Middleware\CheckIfUserIsBlocked;
-use App\Http\Middleware\PermitionAccess;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -12,14 +11,13 @@ return Application::configure(
     basePath: dirname(__DIR__)
 )
     ->withRouting(
-        web: __DIR__ . '/../routes/web.php',
-        api: __DIR__ . '/../routes/api.php',
-        commands: __DIR__ . '/../routes/console.php',
+        web: __DIR__.'/../routes/web.php',
+        api: __DIR__.'/../routes/api.php',
+        commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
     ->withMiddleware(
         function (Middleware $middleware): void {
-
             $middleware->trustProxies(
                 at: '*',
                 headers:
@@ -53,9 +51,6 @@ return Application::configure(
 
                 'admin' =>
                     AdminAccess::class,
-
-                'permition.colaborator' =>
-                    PermitionAccess::class,
             ]);
         }
     )

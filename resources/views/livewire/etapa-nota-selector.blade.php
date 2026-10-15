@@ -6,7 +6,7 @@
         @disabled(
             $nota->status !== 'Aberto'
             || !auth()->check()
-            || auth()->user()->permitions == 2
+            || ! auth()->user()->isAdmin()
         )
     >
 

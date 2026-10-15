@@ -14,14 +14,18 @@ use Illuminate\View\View;
 
 class EtapaController extends Controller
 {
-    public function index(Request $request): View
-    {
-        $this->garantirAcesso($request);
+    public function index(
+        Request $request
+    ): View {
+        $this->garantirAcesso(
+            $request
+        );
 
-        $etapas = Etapa::query()
-            ->orderBy('ordem')
-            ->orderBy('id')
-            ->get();
+        $etapas =
+            Etapa::query()
+                ->orderBy('ordem')
+                ->orderBy('id')
+                ->get();
 
         return view(
             'etapas.index',
@@ -29,38 +33,44 @@ class EtapaController extends Controller
         );
     }
 
-    public function store(Request $request): RedirectResponse
-    {
-        $this->garantirAcesso($request);
+    public function store(
+        Request $request
+    ): RedirectResponse {
+        $this->garantirAcesso(
+            $request
+        );
 
-        $dados = $request->validate([
-            'nome' => [
-                'required',
-                'string',
-                'max:100',
-            ],
+        $dados =
+            $request->validate([
+                'nome' => [
+                    'required',
+                    'string',
+                    'max:100',
+                ],
 
-            'descricao' => [
-                'nullable',
-                'string',
-                'max:255',
-            ],
+                'descricao' => [
+                    'nullable',
+                    'string',
+                    'max:255',
+                ],
 
-            'cor' => [
-                'required',
-                'in:primary,secondary,success,danger,warning,info,dark',
-            ],
+                'cor' => [
+                    'required',
+                    'in:primary,secondary,success,danger,warning,info,dark',
+                ],
 
-            'ordem' => [
-                'required',
-                'integer',
-                'min:1',
-                'max:9999',
-            ],
-        ]);
+                'ordem' => [
+                    'required',
+                    'integer',
+                    'min:1',
+                    'max:9999',
+                ],
+            ]);
 
         $aplicaNota =
-            $request->boolean('aplica_nota');
+            $request->boolean(
+                'aplica_nota'
+            );
 
         $aplicaOrdemServico =
             $request->boolean(
@@ -111,33 +121,36 @@ class EtapaController extends Controller
         Request $request,
         Etapa $etapa
     ): RedirectResponse {
-        $this->garantirAcesso($request);
+        $this->garantirAcesso(
+            $request
+        );
 
-        $dados = $request->validate([
-            'nome' => [
-                'required',
-                'string',
-                'max:100',
-            ],
+        $dados =
+            $request->validate([
+                'nome' => [
+                    'required',
+                    'string',
+                    'max:100',
+                ],
 
-            'descricao' => [
-                'nullable',
-                'string',
-                'max:255',
-            ],
+                'descricao' => [
+                    'nullable',
+                    'string',
+                    'max:255',
+                ],
 
-            'cor' => [
-                'required',
-                'in:primary,secondary,success,danger,warning,info,dark',
-            ],
+                'cor' => [
+                    'required',
+                    'in:primary,secondary,success,danger,warning,info,dark',
+                ],
 
-            'ordem' => [
-                'required',
-                'integer',
-                'min:1',
-                'max:9999',
-            ],
-        ]);
+                'ordem' => [
+                    'required',
+                    'integer',
+                    'min:1',
+                    'max:9999',
+                ],
+            ]);
 
         DB::transaction(
             function () use (
@@ -145,13 +158,6 @@ class EtapaController extends Controller
                 $etapa,
                 $dados
             ) {
-                /*
-                 * Inicial/final são estruturais.
-                 *
-                 * Podem ser renomeadas e reordenadas,
-                 * mas permanecem ativas e aplicáveis
-                 * aos fluxos que já atendem.
-                 */
                 if (
                     in_array(
                         $etapa->tipo,
@@ -202,13 +208,10 @@ class EtapaController extends Controller
                     ]);
                 }
 
-                /*
-                 * Não podemos remover a etapa do fluxo
-                 * enquanto houver registros ativos nela.
-                 */
                 if (
                     ! $aplicaNota
-                    && $etapa->aplica_nota
+                    && $etapa
+                        ->aplica_nota
                 ) {
                     $possuiNotasAbertas =
                         Nota::query()
@@ -222,7 +225,9 @@ class EtapaController extends Controller
                             )
                             ->exists();
 
-                    if ($possuiNotasAbertas) {
+                    if (
+                        $possuiNotasAbertas
+                    ) {
                         throw ValidationException::withMessages([
                             'aplica_nota' => 'Esta etapa possui Notas abertas e não pode ser removida do fluxo de Notas.',
                         ]);
@@ -246,7 +251,9 @@ class EtapaController extends Controller
                             )
                             ->exists();
 
-                    if ($possuiOrdensAbertas) {
+                    if (
+                        $possuiOrdensAbertas
+                    ) {
                         throw ValidationException::withMessages([
                             'aplica_ordem_servico' => 'Esta etapa possui Ordens de Serviço abertas e não pode ser removida do fluxo de O.S.',
                         ]);
@@ -314,9 +321,10 @@ class EtapaController extends Controller
     private function garantirAcesso(
         Request $request
     ): void {
-        abort_if(
-            ! $request->user()
-            || $request->user()->permitions == 2,
+        abort_unless(
+            $request
+                ->user()
+                ?->isAdmin(),
             403
         );
     }

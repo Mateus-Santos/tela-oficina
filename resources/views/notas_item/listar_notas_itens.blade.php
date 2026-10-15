@@ -703,9 +703,9 @@
                     </div>
 
                     @if(
-                        auth()->user()
-                        && auth()->user()->permitions != 2
-                    )
+                            auth()->user()
+                            && auth()->user()->isAdmin()
+                        )
 
                         <div class="dropdown">
 

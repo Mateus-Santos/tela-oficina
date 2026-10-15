@@ -34,7 +34,7 @@ class VeiculosClientesController extends Controller
 
     public function index(Request $request)
     {
-        $user = auth()->user();
+        $user = $request->user();
 
         $query = VeiculosCliente::query()
             ->with([
@@ -42,13 +42,12 @@ class VeiculosClientesController extends Controller
                 'clientes.pessoa',
             ]);
 
-        if ($user->permitions == 2) {
+        if ($user->isCliente()) {
             $clienteId = $user
-                ->pessoa
-                ?->cliente
+                ->cliente
                 ?->id;
 
-            if (!$clienteId) {
+            if (! $clienteId) {
                 $query->whereRaw('1 = 0');
             } else {
                 $query->whereHas(
@@ -61,6 +60,11 @@ class VeiculosClientesController extends Controller
                     }
                 );
             }
+        } elseif (! $user->isAdmin()) {
+            abort(
+                403,
+                'Acesso não autorizado.'
+            );
         }
 
         $query
@@ -195,7 +199,7 @@ class VeiculosClientesController extends Controller
 
         $criarVeiculoCliente->execute(
             $dados,
-            auth()->user()
+            $request->user()
         );
 
         return redirect()
@@ -215,13 +219,12 @@ class VeiculosClientesController extends Controller
             'veiculo.montadora',
         ])->findOrFail($id);
 
-        if ($userLogado->permitions != 1) {
+        if ($userLogado->isCliente()) {
             $clienteIdLogado = $userLogado
-                ->pessoa
-                ?->cliente
+                ->cliente
                 ?->id;
 
-            if (!$clienteIdLogado) {
+            if (! $clienteIdLogado) {
                 abort(
                     403,
                     'Ação não autorizada.'
@@ -236,12 +239,17 @@ class VeiculosClientesController extends Controller
                 )
                 ->exists();
 
-            if (!$possuiAcesso) {
+            if (! $possuiAcesso) {
                 abort(
                     403,
                     'Ação não autorizada.'
                 );
             }
+        } elseif (! $userLogado->isAdmin()) {
+            abort(
+                403,
+                'Acesso não autorizado.'
+            );
         }
 
         return view(
@@ -262,7 +270,7 @@ class VeiculosClientesController extends Controller
         $atualizarVeiculoCliente->execute(
             $veiculoscliente,
             $dados,
-            auth()->user()
+            $request->user()
         );
 
         return redirect()
@@ -280,13 +288,12 @@ class VeiculosClientesController extends Controller
         $query = VeiculosCliente::query()
             ->where('id', $id);
 
-        if ($user->permitions != 1) {
+        if ($user->isCliente()) {
             $clienteId = $user
-                ->pessoa
-                ?->cliente
+                ->cliente
                 ?->id;
 
-            if (!$clienteId) {
+            if (! $clienteId) {
                 abort(
                     403,
                     'Ação não autorizada.'
@@ -302,9 +309,15 @@ class VeiculosClientesController extends Controller
                     );
                 }
             );
+        } elseif (! $user->isAdmin()) {
+            abort(
+                403,
+                'Acesso não autorizado.'
+            );
         }
 
-        $veiculoCliente = $query->firstOrFail();
+        $veiculoCliente = $query
+            ->firstOrFail();
 
         $veiculoCliente->delete();
 

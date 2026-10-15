@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\VeiculosClientes;
 
+use App\Models\VeiculosCliente;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -9,15 +10,38 @@ class UpdateVeiculosClienteRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return auth()->check();
+        $usuario = $this->user();
+
+        return $usuario
+            && (
+                $usuario->isAdmin()
+                || $usuario->isCliente()
+            );
     }
 
     public function rules(): array
     {
-        $user = auth()->user();
+        $usuario = $this->user();
+
+        $veiculoCliente =
+            $this->route('veiculoscliente');
 
         $veiculoClienteId =
-            $this->route('veiculoscliente');
+            $veiculoCliente instanceof VeiculosCliente
+                ? $veiculoCliente->id
+                : $veiculoCliente;
+
+        $clientesRules =
+            $usuario?->isAdmin()
+                ? [
+                    'required',
+                    'array',
+                    'min:1',
+                ]
+                : [
+                    'nullable',
+                    'array',
+                ];
 
         return [
             'placa' => [
@@ -54,16 +78,7 @@ class UpdateVeiculosClienteRequest extends FormRequest
                 'exists:veiculos,id',
             ],
 
-            'clientes' => $user->permitions == 1
-                ? [
-                    'required',
-                    'array',
-                    'min:1',
-                ]
-                : [
-                    'nullable',
-                    'array',
-                ],
+            'clientes' => $clientesRules,
 
             'clientes.*' => [
                 'integer',
@@ -124,7 +139,10 @@ class UpdateVeiculosClienteRequest extends FormRequest
             '/[^A-Z0-9]/',
             '',
             strtoupper(
-                (string) ($this->input('placa') ?? '')
+                (string) (
+                    $this->input('placa')
+                    ?? ''
+                )
             )
         );
 
@@ -144,7 +162,11 @@ class UpdateVeiculosClienteRequest extends FormRequest
         }
 
         return trim(
-            preg_replace('/\s+/', ' ', $valor)
+            preg_replace(
+                '/\s+/',
+                ' ',
+                $valor
+            )
         );
     }
 }

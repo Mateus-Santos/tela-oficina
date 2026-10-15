@@ -8,12 +8,30 @@ class StoreVeiculosClienteRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return auth()->check();
+        $usuario = $this->user();
+
+        return $usuario
+            && (
+                $usuario->isAdmin()
+                || $usuario->isCliente()
+            );
     }
 
     public function rules(): array
     {
-        $user = auth()->user();
+        $usuario = $this->user();
+
+        $clientesRules =
+            $usuario?->isAdmin()
+                ? [
+                    'required',
+                    'array',
+                    'min:1',
+                ]
+                : [
+                    'nullable',
+                    'array',
+                ];
 
         return [
             'placa' => [
@@ -43,16 +61,7 @@ class StoreVeiculosClienteRequest extends FormRequest
                 'exists:veiculos,id',
             ],
 
-            'clientes' => $user->permitions == 1
-                ? [
-                    'required',
-                    'array',
-                    'min:1',
-                ]
-                : [
-                    'nullable',
-                    'array',
-                ],
+            'clientes' => $clientesRules,
 
             'clientes.*' => [
                 'integer',
@@ -113,7 +122,10 @@ class StoreVeiculosClienteRequest extends FormRequest
             '/[^A-Z0-9]/',
             '',
             strtoupper(
-                (string) ($this->input('placa') ?? '')
+                (string) (
+                    $this->input('placa')
+                    ?? ''
+                )
             )
         );
 
@@ -133,7 +145,11 @@ class StoreVeiculosClienteRequest extends FormRequest
         }
 
         return trim(
-            preg_replace('/\s+/', ' ', $valor)
+            preg_replace(
+                '/\s+/',
+                ' ',
+                $valor
+            )
         );
     }
 }

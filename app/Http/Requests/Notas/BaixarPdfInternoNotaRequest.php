@@ -8,8 +8,8 @@ class BaixarPdfInternoNotaRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()
-            && $this->user()->permitions != 2;
+        return $this->user()?->isAdmin()
+            ?? false;
     }
 
     public function rules(): array
@@ -28,7 +28,9 @@ class BaixarPdfInternoNotaRequest extends FormRequest
     {
         return [
             'senha.required' => 'Informe uma senha para proteger o PDF interno.',
+
             'senha.min' => 'A senha deve possuir pelo menos 4 caracteres.',
+
             'senha.max' => 'A senha pode possuir no máximo 64 caracteres.',
         ];
     }
