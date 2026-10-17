@@ -70,12 +70,6 @@ class FinalizarNota
                 );
             }
 
-            if (! $nota->cliente_id) {
-                throw new InvalidArgumentException(
-                    'Não é possível finalizar uma nota sem cliente.'
-                );
-            }
-
             /*
              * =====================================================
              * 2. VALIDAR ETAPA FINAL DA NOTA
