@@ -1,5 +1,6 @@
 services:
     laravel.sosmecanica:
+        restart: unless-stopped
         build:
             context: './docker/8.5'
             dockerfile: Dockerfile
@@ -25,6 +26,7 @@ services:
                 condition: service_healthy
 
     mysql:
+        restart: unless-stopped
         image: 'mysql:8.4'
         environment:
             MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
