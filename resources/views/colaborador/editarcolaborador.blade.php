@@ -1,60 +1,114 @@
 @extends('layouts.layout')
 
 @section('content')
+    <section class="container cadastro">
+        <h1>EDIÇÃO DE COLABORADOR</h1>
 
-  <section class="container cadastro">
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
-  <h1>CADASTRO DE COLABORADOR</h1>
+        <form
+            action="{{ route('colaboradores.update', $colaborador->id) }}"
+            method="POST"
+            class="row g-3"
+        >
+            @csrf
+            @method('PUT')
 
-  <form action="/colaboradores/update/{{$colaborador->id_colaborador}}" method="post" class="row g-3">
-  @csrf
-  @method('PUT')
-      <div class="campos">
-      <div class="row">
+            <div class="campos">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label
+                            class="form-label"
+                            for="id_user"
+                        >
+                            Usuário:*
+                        </label>
 
-        <div class="col-md-2">
-          <label class="form-label" for="chave_pix">Chave Pix:*</label>
-          <input type="text" class="form-control" id="chave_pix" placeholder="Digite seu Nome Completo." value="{{$colaborador->chave_pix}}" name="chave_pix" required>
-        </div>
+                        <select
+                            id="id_user"
+                            class="form-control"
+                            name="id_user"
+                            required
+                        >
+                            @foreach ($users as $user)
+                                <option
+                                    value="{{ $user->id }}"
+                                    @selected(
+                                        old(
+                                            'id_user',
+                                            $colaborador->id_user
+                                        ) == $user->id
+                                    )
+                                >
+                                    {{ $user->name }}
+                                    — {{ $user->email }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
-        <div class="col-md-3">
-          <label class="form-label" for="conta_banco">Conta banco:*</label>
-          <input type="text" class="form-control" id="conta_banco" placeholder="Digite seu Nome Completo." value="{{$colaborador->conta_banco}}" name="conta_banco" required>
-        </div>
+                    <div class="col-md-4">
+                        <label
+                            class="form-label"
+                            for="chave_pix"
+                        >
+                            Chave Pix:*
+                        </label>
 
-        <div class="col-md-4">
-          <label class="form-label" for="id_user">Usuário:</label>
-          <select onchange="colaborador(this.value)"  id="id_user" class="form-control" name="id_user" required>
-          <option selected>Escolher...</option>
-          @foreach($users as $user)
-          <option value="{{ $user }}">{{ $user->email }}</option>
-          @endforeach
-          </select>
-        </div>
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="chave_pix"
+                            name="chave_pix"
+                            value="{{ old(
+                                'chave_pix',
+                                $colaborador->chave_pix
+                            ) }}"
+                            maxlength="100"
+                            required
+                        >
+                    </div>
 
-        <div class="col-md-3">
-          <label class="form-label" for="name">Nome:</label>
-          <input type="text" class="form-control" id="name" name="name" readonly>
-          </input>
-        </div>
+                    <div class="col-md-4">
+                        <label
+                            class="form-label"
+                            for="conta_banco"
+                        >
+                            Conta bancária:*
+                        </label>
 
-      </div>
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="conta_banco"
+                            name="conta_banco"
+                            value="{{ old(
+                                'conta_banco',
+                                $colaborador->conta_banco
+                            ) }}"
+                            maxlength="30"
+                            required
+                        >
+                    </div>
+                </div>
 
-
-    <div class="row mb-3">
-      <div class="col">
-        <input class="form-check-input" type="checkbox" id="confirmacao">
-        <label for="confirmacao" name="cidade" required>
-          Confirmo que toda as informações adicionadas são verdadeiras.
-        </label>
-      </div>
-    </div>
-
-    <div class="col text-center">
-        <button type="submit" class="btn btn-success">Cadastrar</button>
-    </div>
-
-  </div>
-</form>
-</section>
+                <div class="col text-center mt-4">
+                    <button
+                        type="submit"
+                        class="btn btn-success"
+                    >
+                        Atualizar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </section>
 @endsection

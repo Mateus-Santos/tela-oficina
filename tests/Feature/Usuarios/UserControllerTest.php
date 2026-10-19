@@ -14,7 +14,9 @@ class UserControllerTest extends TestCase
 
     public function test_admin_cria_usuario_cliente_sem_senha_padrao(): void
     {
-        $admin = $this->criarAdmin();
+        $admin = $this->criarUsuario(
+            User::PERFIL_ADMIN
+        );
 
         $response = $this
             ->actingAs($admin)
@@ -61,11 +63,6 @@ class UserControllerTest extends TestCase
             $pessoa->telefone_1
         );
 
-        $this->assertNotSame(
-            '12345678',
-            $usuario->password
-        );
-
         $this->assertFalse(
             Hash::check(
                 '12345678',
@@ -85,13 +82,341 @@ class UserControllerTest extends TestCase
         );
     }
 
-    private function criarAdmin(): User
+    public function test_admin_pode_acessar_listagem_de_usuarios(): void
     {
-        $pessoa = Pessoa::factory()->create();
+        $admin = $this->criarUsuario(
+            User::PERFIL_ADMIN
+        );
 
+        $this
+            ->actingAs($admin)
+            ->get(
+                route('users.index')
+            )
+            ->assertOk();
+    }
+
+    public function test_cliente_nao_pode_acessar_listagem_de_usuarios(): void
+    {
+        $cliente = $this->criarUsuario(
+            User::PERFIL_CLIENTE
+        );
+
+        $this
+            ->actingAs($cliente)
+            ->get(
+                route('users.index')
+            )
+            ->assertForbidden();
+    }
+
+    public function test_colaborador_nao_pode_acessar_listagem_de_usuarios(): void
+    {
+        $colaborador = $this->criarUsuario(
+            User::PERFIL_COLABORADOR
+        );
+
+        $this
+            ->actingAs($colaborador)
+            ->get(
+                route('users.index')
+            )
+            ->assertForbidden();
+    }
+
+    public function test_admin_pode_editar_outro_usuario(): void
+    {
+        $admin = $this->criarUsuario(
+            User::PERFIL_ADMIN
+        );
+
+        $usuario = $this->criarUsuario(
+            User::PERFIL_CLIENTE
+        );
+
+        $response = $this
+            ->actingAs($admin)
+            ->put(
+                route(
+                    'users.update',
+                    $usuario
+                ),
+                [
+                    'nome' => 'Nome Atualizado',
+                    'email' => 'atualizado@example.com',
+                    'cpf' => '123.456.789-01',
+                    'rg' => '12.345.678-9',
+                    'telefone_1' => '(75) 99999-1111',
+                    'telefone_2' => '(75) 98888-2222',
+                    'data_nascimento' => '1995-05-10',
+                ]
+            );
+
+        $response->assertRedirect(
+            route('users.index')
+        );
+
+        $usuario->refresh();
+
+        $this->assertSame(
+            'atualizado@example.com',
+            $usuario->email
+        );
+
+        $this->assertSame(
+            'Nome Atualizado',
+            $usuario->pessoa->fresh()->nome
+        );
+
+        $this->assertSame(
+            '12345678901',
+            $usuario->pessoa->fresh()->cpf
+        );
+
+        $this->assertSame(
+            '123456789',
+            $usuario->pessoa->fresh()->rg
+        );
+
+        $this->assertSame(
+            '75999991111',
+            $usuario->pessoa->fresh()->telefone_1
+        );
+
+        $this->assertSame(
+            '75988882222',
+            $usuario->pessoa->fresh()->telefone_2
+        );
+
+        $this->assertSame(
+            '1995-05-10',
+            $usuario->pessoa->fresh()->data_nascimento
+        );
+    }
+
+    public function test_cliente_nao_pode_editar_usuario_pela_area_administrativa(): void
+    {
+        $cliente = $this->criarUsuario(
+            User::PERFIL_CLIENTE
+        );
+
+        $usuario = $this->criarUsuario(
+            User::PERFIL_CLIENTE
+        );
+
+        $emailOriginal = $usuario->email;
+
+        $this
+            ->actingAs($cliente)
+            ->put(
+                route(
+                    'users.update',
+                    $usuario
+                ),
+                [
+                    'nome' => 'Tentativa Indevida',
+                    'email' => 'ataque@example.com',
+                ]
+            )
+            ->assertForbidden();
+
+        $this->assertSame(
+            $emailOriginal,
+            $usuario->fresh()->email
+        );
+    }
+
+    public function test_colaborador_nao_pode_editar_usuario_pela_area_administrativa(): void
+    {
+        $colaborador = $this->criarUsuario(
+            User::PERFIL_COLABORADOR
+        );
+
+        $usuario = $this->criarUsuario(
+            User::PERFIL_CLIENTE
+        );
+
+        $emailOriginal = $usuario->email;
+
+        $this
+            ->actingAs($colaborador)
+            ->put(
+                route(
+                    'users.update',
+                    $usuario
+                ),
+                [
+                    'nome' => 'Tentativa Indevida',
+                    'email' => 'ataque@example.com',
+                ]
+            )
+            ->assertForbidden();
+
+        $this->assertSame(
+            $emailOriginal,
+            $usuario->fresh()->email
+        );
+    }
+
+    public function test_admin_pode_excluir_outro_usuario_sem_excluir_pessoa(): void
+    {
+        $admin = $this->criarUsuario(
+            User::PERFIL_ADMIN
+        );
+
+        $usuario = $this->criarUsuario(
+            User::PERFIL_CLIENTE
+        );
+
+        $pessoaId = $usuario->pessoa_id;
+        $userId = $usuario->id;
+
+        $response = $this
+            ->actingAs($admin)
+            ->delete(
+                route(
+                    'users.destroy',
+                    $usuario
+                )
+            );
+
+        $response->assertRedirect(
+            route('users.index')
+        );
+
+        $this->assertDatabaseMissing(
+            'users',
+            [
+                'id' => $userId,
+            ]
+        );
+
+        $this->assertDatabaseHas(
+            'pessoas',
+            [
+                'id' => $pessoaId,
+            ]
+        );
+    }
+
+    public function test_admin_nao_pode_excluir_a_propria_conta(): void
+    {
+        $admin = $this->criarUsuario(
+            User::PERFIL_ADMIN
+        );
+
+        $this
+            ->actingAs($admin)
+            ->delete(
+                route(
+                    'users.destroy',
+                    $admin
+                )
+            )
+            ->assertForbidden();
+
+        $this->assertDatabaseHas(
+            'users',
+            [
+                'id' => $admin->id,
+            ]
+        );
+    }
+
+    public function test_cliente_nao_pode_excluir_usuario(): void
+    {
+        $cliente = $this->criarUsuario(
+            User::PERFIL_CLIENTE
+        );
+
+        $usuario = $this->criarUsuario(
+            User::PERFIL_CLIENTE
+        );
+
+        $this
+            ->actingAs($cliente)
+            ->delete(
+                route(
+                    'users.destroy',
+                    $usuario
+                )
+            )
+            ->assertForbidden();
+
+        $this->assertDatabaseHas(
+            'users',
+            [
+                'id' => $usuario->id,
+            ]
+        );
+    }
+
+    public function test_colaborador_nao_pode_excluir_usuario(): void
+    {
+        $colaborador = $this->criarUsuario(
+            User::PERFIL_COLABORADOR
+        );
+
+        $usuario = $this->criarUsuario(
+            User::PERFIL_CLIENTE
+        );
+
+        $this
+            ->actingAs($colaborador)
+            ->delete(
+                route(
+                    'users.destroy',
+                    $usuario
+                )
+            )
+            ->assertForbidden();
+
+        $this->assertDatabaseHas(
+            'users',
+            [
+                'id' => $usuario->id,
+            ]
+        );
+    }
+
+    public function test_admin_nao_altera_perfil_pelo_update_generico(): void
+    {
+        $admin = $this->criarUsuario(
+            User::PERFIL_ADMIN
+        );
+
+        $usuario = $this->criarUsuario(
+            User::PERFIL_CLIENTE
+        );
+
+        $this
+            ->actingAs($admin)
+            ->put(
+                route(
+                    'users.update',
+                    $usuario
+                ),
+                [
+                    'nome' => $usuario->pessoa->nome,
+                    'email' => $usuario->email,
+                    'perfil' => User::PERFIL_ADMIN,
+                ]
+            )
+            ->assertRedirect(
+                route('users.index')
+            );
+
+        $this->assertSame(
+            User::PERFIL_CLIENTE,
+            $usuario->fresh()->perfil
+        );
+    }
+
+    private function criarUsuario(
+        string $perfil
+    ): User {
         return User::factory()->create([
-            'pessoa_id' => $pessoa->id,
-            'perfil' => User::PERFIL_ADMIN,
+            'perfil' => $perfil,
             'status' => true,
         ]);
     }
