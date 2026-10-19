@@ -1,77 +1,186 @@
 @extends('layouts.layout')
 
 @section('content')
+    <div class="container cadastro">
+        <h1>CADASTRO DE USUÁRIO</h1>
 
-  <div class="container cadastro">
-  
-  <h1>CADASTRO DE USUÁRIO FÍSICA</h1>
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
-  <form action="{{ route('users.store') }}" method="post" class="row g-3">
-  @csrf
-      <div class="campos">
-      <div class="row mb-3">
+        <form
+            action="{{ route('users.store') }}"
+            method="POST"
+            class="row g-3"
+        >
+            @csrf
 
-        <div class="col-md-6">
-        <label class="form-label" for="nome">Nome Completo:*</label>
-        <input type="text" class="form-control" id="nome" placeholder="Digite seu Nome Completo." name="nome" required>
-        </div>
+            <div class="campos">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label
+                            class="form-label"
+                            for="nome"
+                        >
+                            Nome Completo:*
+                        </label>
 
-        <div class="col-md-6">
-            <label class="form-label" for="email">E-mail:*</label>
-            <input type="email" class="form-control" id="email" placeholder="Digite o seu Email." name="email" required>
-        </div>
-        
-      </div>
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="nome"
+                            name="nome"
+                            value="{{ old('nome') }}"
+                            placeholder="Digite o nome completo."
+                            maxlength="255"
+                            required
+                        >
+                    </div>
 
-      <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label
+                            class="form-label"
+                            for="email"
+                        >
+                            E-mail:*
+                        </label>
 
-          <div class="col-md-3"> 
-            <label class="form-label" for="rg">RG:</label>
-            <input type="text" class="form-control" id="rg" placeholder="0123456-7" name="rg">
-          </div>
+                        <input
+                            type="email"
+                            class="form-control"
+                            id="email"
+                            name="email"
+                            value="{{ old('email') }}"
+                            placeholder="Digite o e-mail."
+                            maxlength="255"
+                            required
+                        >
+                    </div>
+                </div>
 
-          <div class="col-md-2">          
-            <label class="form-label" for="cpf">CPF:*</label>
-            <input maxlength="14" type="text" class="form-control" id="cpf" placeholder="999.999.999-99" name="cpf" required>
-          </div>
-        
-        <div class="col-md-3">
-          <label class="form-label" for="telefone_1">Telefone Principal:*</label>
-          <input maxlength="16" type="text" class="form-control" id="telefone_1" placeholder="(99) 9 9999-9999" name="telefone_1" required>
-        </div>
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label
+                            class="form-label"
+                            for="rg"
+                        >
+                            RG:
+                        </label>
 
-        <div class="col-md-3">
-          <label class="form-label" for="telefone_2">Telefone Secundario:*</label>
-          <input maxlength="16" type="text" class="form-control" id="telefone_2" placeholder="(99) 9 9999-9999" name="telefone_2" required>
-        </div>
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="rg"
+                            name="rg"
+                            value="{{ old('rg') }}"
+                            placeholder="00.000.000-0"
+                            maxlength="20"
+                        >
+                    </div>
 
-      </div>
+                    <div class="col-md-3">
+                        <label
+                            class="form-label"
+                            for="cpf"
+                        >
+                            CPF:
+                        </label>
 
-      <div class="row mb-3">
-        <div class="col-2">
-          <label class="form-label" for="data_nascimento">Data Nascimento:*</label>
-          <input type="date" class="form-control" id="data_nascimento" name="data_nascimento" required>
-        </div>
-      </div>
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="cpf"
+                            name="cpf"
+                            value="{{ old('cpf') }}"
+                            placeholder="000.000.000-00"
+                            maxlength="14"
+                        >
+                    </div>
 
-    <div class="row mb-3">
-      <div class="col">
-        <input class="form-check-input" type="checkbox" id="confirmacao">
-        <label for="confirmacao" name="confirmacao" required>
-          Confirmo que toda as informações adicionadas são verdadeiras.
-        </label>
-      </div>
+                    <div class="col-md-3">
+                        <label
+                            class="form-label"
+                            for="telefone_1"
+                        >
+                            Telefone Principal:
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="telefone_1"
+                            name="telefone_1"
+                            value="{{ old('telefone_1') }}"
+                            placeholder="(00) 00000-0000"
+                            maxlength="16"
+                        >
+                    </div>
+
+                    <div class="col-md-3">
+                        <label
+                            class="form-label"
+                            for="telefone_2"
+                        >
+                            Telefone Secundário:
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="telefone_2"
+                            name="telefone_2"
+                            value="{{ old('telefone_2') }}"
+                            placeholder="(00) 00000-0000"
+                            maxlength="16"
+                        >
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label
+                            class="form-label"
+                            for="data_nascimento"
+                        >
+                            Data de Nascimento:
+                        </label>
+
+                        <input
+                            type="date"
+                            class="form-control"
+                            id="data_nascimento"
+                            name="data_nascimento"
+                            value="{{ old('data_nascimento') }}"
+                        >
+                    </div>
+                </div>
+
+                <div class="col text-center">
+                    <a
+                        href="{{ route('users.index') }}"
+                        class="btn btn-secondary"
+                    >
+                        Voltar
+                    </a>
+
+                    <button
+                        type="submit"
+                        class="btn btn-success"
+                    >
+                        Cadastrar
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
-
-    <div class="col text-center">
-        <button type="submit" class="btn btn-success">Cadastrar</button>
-    </div>
-
-  </div>
-</form>
-</div>
 @endsection
 
 @section('scripts')
-    @vite(['resources/js/cadUser.js', 'resources/js/cep.js'])
+    @vite(['resources/js/cadUser.js'])
 @endsection

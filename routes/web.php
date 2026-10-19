@@ -45,14 +45,18 @@ Route::middleware([
     'auth',
     'check.blocked',
 ])->group(function () {
-    Route::get('/perfil', function () {
-        return view('cliente/editarcliente');
-    })->name('perfil');
+    Route::get(
+        '/perfil',
+        [UserController::class, 'perfil']
+    )->name('perfil');
 
     Route::put(
-        '/perfil/{id_user}/update',
-        [UserController::class, 'update']
-    );
+        '/perfil',
+        [
+            UserController::class,
+            'atualizarPerfil',
+        ]
+    )->name('perfil.update');
 
     Route::resource(
         'veiculosclientes',
@@ -263,16 +267,6 @@ Route::middleware([
             UserController::class
         );
 
-        Route::patch(
-            '/users/{id}/block',
-            [
-                UserController::class,
-                'toggleBlock',
-            ]
-        )->name(
-            'toggleBlock'
-        );
-
         // Clientes
 
         Route::resource(
@@ -309,7 +303,11 @@ Route::middleware([
         Route::resource(
             'colaboradores',
             ColaboradorController::class
-        );
+        )->parameters([
+            'colaboradores' => 'colaborador',
+        ])->except([
+            'show',
+        ]);
 
         // Endereços
 
@@ -353,8 +351,7 @@ Route::middleware([
             'formas-pagamento',
             FormaPagamentoController::class
         )->parameters([
-            'formas-pagamento' =>
-                'formaPagamento',
+            'formas-pagamento' => 'formaPagamento',
         ]);
 
         // Categorias Financeiras
@@ -363,8 +360,7 @@ Route::middleware([
             'categorias-financeiras',
             CategoriaFinanceiraController::class
         )->parameters([
-            'categorias-financeiras' =>
-                'categoriaFinanceira',
+            'categorias-financeiras' => 'categoriaFinanceira',
         ]);
 
         // Contas a Receber
@@ -373,8 +369,7 @@ Route::middleware([
             'contas-receber',
             ContaReceberController::class
         )->parameters([
-            'contas-receber' =>
-                'contaReceber',
+            'contas-receber' => 'contaReceber',
         ]);
 
         Route::get(
@@ -490,8 +485,7 @@ Route::middleware([
             'fornecedores',
             FornecedorController::class
         )->parameters([
-            'fornecedores' =>
-                'fornecedor',
+            'fornecedores' => 'fornecedor',
         ]);
 
         // Anexos
@@ -562,8 +556,7 @@ Route::middleware([
             'contas-pagar',
             ContaPagarController::class
         )->parameters([
-            'contas-pagar' =>
-                'conta',
+            'contas-pagar' => 'conta',
         ])->except([
             'destroy',
         ]);

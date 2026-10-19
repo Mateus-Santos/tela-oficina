@@ -2,69 +2,197 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\Colaborador\StoreColaboradorRequest;
+use App\Http\Requests\Colaborador\UpdateColaboradorRequest;
 use App\Models\Colaborador;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class ColaboradorController extends Controller
 {
     public function index()
     {
-        $colaboradores = Colaborador::with('user')->get();
-        return view('colaborador.listarcolaborador', compact('colaboradores'));
+        $colaboradores = Colaborador::query()
+            ->with('user.pessoa')
+            ->orderBy('id')
+            ->get();
+
+        return view(
+            'colaborador.listarcolaborador',
+            compact('colaboradores')
+        );
     }
 
     public function create()
     {
-        $users = User::all();
-        return view('colaborador.cadastrocolaborador', compact('users'));
+        $users = User::query()
+            ->with('pessoa')
+            ->where(
+                'perfil',
+                '!=',
+                User::PERFIL_ADMIN
+            )
+            ->whereDoesntHave('colaborador')
+            ->orderBy('email')
+            ->get();
+
+        return view(
+            'colaborador.cadastrocolaborador',
+            compact('users')
+        );
     }
 
-    public function store(Request $request)
-    {
-        $colaborador = new Colaborador();
-        $user = $request->input("id_user");
-        $user_json = json_decode($user, true);
-        $id_user = $user_json['id'];
-        $colaborador->conta_banco = $request->input("conta_banco");
-        $colaborador->chave_pix = $request->input("chave_pix");
-        $colaborador->id_user = $id_user;
-        $colaborador->save();
-        return redirect()->route('colaboradores.index');
+    public function store(
+        StoreColaboradorRequest $request
+    ) {
+        $validated = $request->validated();
+
+        DB::transaction(
+            function () use ($validated) {
+                $user = User::query()
+                    ->lockForUpdate()
+                    ->findOrFail(
+                        $validated['id_user']
+                    );
+
+                $colaborador = Colaborador::create([
+                    'id_user' => $user->id,
+                    'chave_pix' => $validated[
+                        'chave_pix'
+                    ],
+                    'conta_banco' => $validated[
+                        'conta_banco'
+                    ],
+                ]);
+
+                $user->update([
+                    'perfil' => User::PERFIL_COLABORADOR,
+                ]);
+
+                return $colaborador;
+            }
+        );
+
+        return redirect()
+            ->route('colaboradores.index');
     }
 
-
-    public function show(string $id)
+    public function edit(string $colaborador)
     {
-        //
+        $colaborador = Colaborador::query()
+            ->with('user.pessoa')
+            ->findOrFail($colaborador);
+
+        $users = User::query()
+            ->with('pessoa')
+            ->where(
+                'perfil',
+                '!=',
+                User::PERFIL_ADMIN
+            )
+            ->where(
+                function ($query) use ($colaborador) {
+                    $query
+                        ->whereDoesntHave('colaborador')
+                        ->orWhere(
+                            'id',
+                            $colaborador->id_user
+                        );
+                }
+            )
+            ->orderBy('email')
+            ->get();
+
+        return view(
+            'colaborador.editarcolaborador',
+            compact(
+                'colaborador',
+                'users'
+            )
+        );
     }
 
-    public function edit(string $id_colaborador)
-    {
-        $colaborador = Colaborador::where('id_colaborador', $id_colaborador)->first();
-        $colaborador_pessoa_users = Colaborador::with('user')->get();
-        return view('colaborador.editarcolaborador', array('colaborador' => $colaborador), array('colaborador_pessoa_users' => $colaborador_pessoa_users));
+    public function update(
+        UpdateColaboradorRequest $request,
+        string $colaborador
+    ) {
+        $validated = $request->validated();
+
+        DB::transaction(
+            function () use (
+                $validated,
+                $colaborador
+            ) {
+                $colaborador = Colaborador::query()
+                    ->lockForUpdate()
+                    ->findOrFail($colaborador);
+
+                $usuarioAnteriorId =
+                    $colaborador->id_user;
+
+                $novoUsuario = User::query()
+                    ->lockForUpdate()
+                    ->findOrFail(
+                        $validated['id_user']
+                    );
+
+                $colaborador->update([
+                    'id_user' => $novoUsuario->id,
+                    'chave_pix' => $validated[
+                        'chave_pix'
+                    ],
+                    'conta_banco' => $validated[
+                        'conta_banco'
+                    ],
+                ]);
+
+                $novoUsuario->update([
+                    'perfil' => User::PERFIL_COLABORADOR,
+                ]);
+
+                if (
+                    $usuarioAnteriorId
+                    !== $novoUsuario->id
+                ) {
+                    User::query()
+                        ->where(
+                            'id',
+                            $usuarioAnteriorId
+                        )
+                        ->update([
+                            'perfil' => User::PERFIL_CLIENTE,
+                        ]);
+                }
+            }
+        );
+
+        return redirect()
+            ->route('colaboradores.index');
     }
 
-
-    public function update(Request $request, string $id_colaborador)
+    public function destroy(string $colaborador)
     {
-        $colaborador = Colaborador::where('id_colaborador', $id_colaborador)->first();
+        DB::transaction(
+            function () use ($colaborador) {
+                $colaborador = Colaborador::query()
+                    ->lockForUpdate()
+                    ->findOrFail($colaborador);
 
-        $colaborador->update([
-            'id_colaborador' => $id_colaborador,
-            'id_user' => $request->id_user,
-            'chave_pix' => $request->chave_pix,
-            'conta_banco' => $request->conta_banco
-        ]);
+                $user = User::query()
+                    ->lockForUpdate()
+                    ->findOrFail(
+                        $colaborador->id_user
+                    );
 
-        return redirect()->route('colaboradores.index');
-    }
+                $colaborador->delete();
 
+                $user->update([
+                    'perfil' => User::PERFIL_CLIENTE,
+                ]);
+            }
+        );
 
-    public function destroy(string $id_colaborador)
-    {
-        $colaborador = Colaborador::where('id_colaborador', $id_colaborador)->delete();
-        return redirect()->route('colaboradores.index');
+        return redirect()
+            ->route('colaboradores.index');
     }
 }
