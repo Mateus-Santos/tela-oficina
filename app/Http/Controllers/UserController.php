@@ -6,6 +6,8 @@ use App\Models\Pessoa;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -90,14 +92,7 @@ class UserController extends Controller
 
                     'perfil' => User::PERFIL_CLIENTE,
 
-                    /*
-                     * Legado atual:
-                     * esta criação ainda usa senha padrão.
-                     *
-                     * Corrigiremos isso na refatoração
-                     * específica de usuários.
-                     */
-                    'password' => bcrypt('12345678'),
+                    'password' => Hash::make(Str::random(64)),
                 ]);
             }
         );
