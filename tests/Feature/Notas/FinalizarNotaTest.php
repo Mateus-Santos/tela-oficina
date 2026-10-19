@@ -996,7 +996,7 @@ class FinalizarNotaTest extends TestCase
         }
     }
 
-    public function test_nao_permite_finalizar_nota_sem_cliente(): void
+    public function test_permite_finalizar_venda_de_balcao_sem_cliente(): void
     {
         $produto = $this->criarProduto(10);
 
@@ -1020,32 +1020,33 @@ class FinalizarNotaTest extends TestCase
             100
         );
 
-        $this->expectException(
-            InvalidArgumentException::class
+        $this->finalizarNota(
+            $nota
         );
 
-        try {
-            $this->finalizarNota(
-                $nota
-            );
-        } finally {
-            $this->assertDatabaseCount(
-                'contas_receber',
-                0
-            );
+        $nota->refresh();
 
-            $this->assertDatabaseCount(
-                'movimentacao_estoques',
-                0
-            );
+        $produto->refresh();
 
-            $produto->refresh();
+        $this->assertSame(
+            'Finalizado',
+            $nota->status
+        );
 
-            $this->assertSame(
-                10,
-                $produto->quantidade
-            );
-        }
+        $this->assertSame(
+            9,
+            $produto->quantidade
+        );
+
+        $this->assertDatabaseCount(
+            'movimentacao_estoques',
+            1
+        );
+
+        $this->assertDatabaseCount(
+            'contas_receber',
+            0
+        );
     }
 
     public function test_cancelamento_reverte_baixa_de_estoque(): void

@@ -405,7 +405,7 @@ class FinalizarNota
              * 12. CRIAR CONTA A RECEBER SE NÃO EXISTIR
              * =====================================================
              */
-            if (! $jaPossuiContaReceber) {
+            if (! $jaPossuiContaReceber && $nota->cliente_id) {
                 $this->criarContaReceber->execute([
                     'cliente_id' => $nota->cliente_id,
 
