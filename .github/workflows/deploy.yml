@@ -166,9 +166,7 @@ jobs:
                           -T \
                           --interactive=false \
                           mysql \
-                          mysqladmin ping \
-                          -p"${DB_PASSWORD}" \
-                          --silent \
+                          sh -lc 'mysqladmin ping -p"$MYSQL_ROOT_PASSWORD" --silent' \
                           2>/dev/null </dev/null; then
 
                           MYSQL_READY=1
