@@ -14,7 +14,7 @@
 
         <form method="POST" action="{{ route('login') }}">
             @csrf
-            
+
             <div>
                 <div class="icons_login">
                     <a href="/login/google/redirect"><i class="bi bi-google"></i></a>
@@ -49,18 +49,21 @@
                 </x-button>
             </div>
         </form>
+        @if (Route::has('register'))
+            <form action="/register">
+                @csrf
+                <div class="flex items-center justify-end mt-4">
+                    <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('register') }}">
+                        {{ __('Não está registrado?') }}
+                    </a>
 
-        <form action="/register">
-            @csrf
-            <div class="flex items-center justify-end mt-4">
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('register') }}">
-                    {{ __('Não está registrado?') }}
-                </a>
-
-                <x-button class="ms-4">
-                    {{ __('Cadastre-se') }}
-                </x-button>
-            </div>
-        </form>
+                    @if (Route::has('register'))
+                        <x-button class="ms-4">
+                            {{ __('Cadastre-se') }}
+                        </x-button>
+                    @endif
+                </div>
+            </form>
+        @endif
     </x-authentication-card>
 </x-guest-layout>
