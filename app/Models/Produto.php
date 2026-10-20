@@ -162,4 +162,9 @@ class Produto extends Model
     {
         return $this->hasMany(MovimentacaoEstoque::class);
     }
+
+    public function catalogos(): HasMany
+    {
+        return $this->hasMany(CatalogoProduto::class);
+    }
 }
