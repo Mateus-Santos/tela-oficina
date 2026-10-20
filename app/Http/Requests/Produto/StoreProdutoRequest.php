@@ -113,7 +113,15 @@ class StoreProdutoRequest extends FormRequest
             'codigo_fabricante' => [
                 'required',
                 'string',
-                Rule::unique('produtos', 'codigo_fabricante'),
+                Rule::unique(
+                    'produtos',
+                    'codigo_fabricante'
+                )->where(
+                    fn ($query) => $query->where(
+                        'marca_id',
+                        $this->input('marca_id')
+                    )
+                ),
             ],
 
             'codigo_barras' => [
@@ -234,7 +242,7 @@ class StoreProdutoRequest extends FormRequest
 
             'codigo_fabricante.required' => 'O código do fabricante é obrigatório.',
             'codigo_fabricante.string' => 'O código do fabricante é inválido.',
-            'codigo_fabricante.unique' => 'Já existe um produto cadastrado com este código de fabricante.',
+            'codigo_fabricante.unique' => 'Já existe um produto desta marca com este código de fabricante.',
 
             'codigo_barras.string' => 'O código de barras é inválido.',
             'codigo_barras.unique' => 'Já existe outro produto cadastrado com este código de barras.',

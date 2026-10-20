@@ -123,7 +123,14 @@ class UpdateProdutoRequest extends FormRequest
                 Rule::unique(
                     'produtos',
                     'codigo_fabricante'
-                )->ignore($produtoId),
+                )
+                    ->where(
+                        fn ($query) => $query->where(
+                            'marca_id',
+                            $this->input('marca_id')
+                        )
+                    )
+                    ->ignore($produtoId),
             ],
 
             'codigo_barras' => [
@@ -281,7 +288,7 @@ class UpdateProdutoRequest extends FormRequest
 
             'codigo_fabricante.required' => 'O código do fabricante é obrigatório.',
             'codigo_fabricante.string' => 'O código do fabricante é inválido.',
-            'codigo_fabricante.unique' => 'Já existe outro produto cadastrado com este código de fabricante.',
+            'codigo_fabricante.unique' => 'Já existe outro produto desta marca com este código de fabricante.',
 
             'codigo_barras.string' => 'O código de barras é inválido.',
             'codigo_barras.unique' => 'Já existe outro produto cadastrado com este código de barras.',
