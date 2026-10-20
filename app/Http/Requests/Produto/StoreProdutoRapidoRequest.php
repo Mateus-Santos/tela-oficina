@@ -113,6 +113,11 @@ class StoreProdutoRapidoRequest extends FormRequest
                 Rule::unique(
                     'produtos',
                     'codigo_fabricante'
+                )->where(
+                    fn ($query) => $query->where(
+                        'marca_id',
+                        $this->input('marca_id')
+                    )
                 ),
             ],
 
@@ -170,7 +175,7 @@ class StoreProdutoRapidoRequest extends FormRequest
                 'Informe o código do fabricante.',
 
             'codigo_fabricante.unique' =>
-                'Já existe um produto com este código de fabricante.',
+                'Já existe um produto desta marca com este código de fabricante.',
 
             'codigo_barras.unique' =>
                 'Já existe um produto com este código de barras.',
