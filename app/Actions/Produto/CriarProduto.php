@@ -49,6 +49,10 @@ class CriarProduto
 
                     $produto =
                         Produto::create([
+                            'codigo' =>
+                                $dados['codigo']
+                                ?? null,
+
                             'nome' => $dados['nome'],
 
                             'marca_id' => $marca->id,

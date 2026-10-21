@@ -30,6 +30,20 @@ class EstoqueController extends Controller
             );
         }
 
+        if ($request->filled('codigo')) {
+            $codigo = trim(
+                (string) $request->input(
+                    'codigo'
+                )
+            );
+
+            $query->where(
+                'codigo',
+                'like',
+                "%{$codigo}%"
+            );
+        }
+
         if ($request->filled('codigo_fabricante')) {
             $codigoFabricante = trim(
                 (string) $request->input(

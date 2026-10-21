@@ -51,6 +51,10 @@ class AtualizarProduto
                             );
 
                     $produto->update([
+                        'codigo' =>
+                            $dados['codigo']
+                            ?? $produto->codigo,
+
                         'nome' => $dados['nome'],
 
                         'marca_id' => $marca->id,

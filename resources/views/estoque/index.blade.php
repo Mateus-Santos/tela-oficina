@@ -93,6 +93,7 @@
         id="filtros-estoque"
         :collapsible="true"
         :expanded="request()->hasAny([
+            'codigo',
             'codigo_fabricante',
             'codigo_barras',
             'marca',
@@ -123,7 +124,7 @@
 
                 </div>
 
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-3">
 
                     <label for="situacao" class="form-label">
                         Situação do estoque
@@ -197,7 +198,28 @@
 
             <div class="row g-3">
 
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-3">
+
+                    <label
+                        for="codigo"
+                        class="form-label"
+                    >
+                        Código do produto
+                    </label>
+
+                    <input
+                        type="text"
+                        name="codigo"
+                        id="codigo"
+                        class="filtros-container__input"
+                        placeholder="Ex.: PRD-00001235"
+                        value="{{ request('codigo') }}"
+                        autocomplete="off"
+                    >
+
+                </div>
+
+                <div class="col-12 col-md-3">
 
                     <label
                         for="codigo_fabricante"
@@ -218,7 +240,7 @@
 
                 </div>
 
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-3">
 
                     <label
                         for="codigo_barras"
@@ -496,6 +518,18 @@
                             <td>
 
                                 <div class="small">
+
+                                    <span class="text-muted">
+                                        Produto:
+                                    </span>
+
+                                    <strong class="font-monospace">
+                                        {{ $produto->codigo ?: '—' }}
+                                    </strong>
+
+                                </div>
+
+                                <div class="small mt-1">
 
                                     <span class="text-muted">
                                         Fabricante:

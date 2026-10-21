@@ -81,6 +81,10 @@ class NotaProdutoRapidoController extends Controller
                 'nome' =>
                     $dados['nome'],
 
+                'codigo' =>
+                    $dados['codigo']
+                    ?? null,
+
                 'marca_id' =>
                     $dados['marca_id'],
 
@@ -132,10 +136,7 @@ class NotaProdutoRapidoController extends Controller
                     $produto->descricao,
 
                 'codigo' =>
-                    $produto
-                        ->codigo_fabricante
-                    ?: $produto
-                        ->codigo_barras,
+                    $produto->codigo,
 
                 'codigo_fabricante' =>
                     $produto

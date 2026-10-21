@@ -369,9 +369,9 @@ import BuscaItens from '../busca/busca-itens.js';
 
             if (tipo === 'produto') {
                 return (
-                    item.codigo_fabricante
+                    item.codigo
+                    || item.codigo_fabricante
                     || item.codigo_barras
-                    || item.codigo
                     || item.sku
                     || ''
                 );

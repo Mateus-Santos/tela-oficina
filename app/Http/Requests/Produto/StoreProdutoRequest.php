@@ -23,6 +23,12 @@ class StoreProdutoRequest extends FormRequest
                 ? trim($this->descricao)
                 : null,
 
+            'codigo' => $this->codigo
+                ? mb_strtoupper(
+                    trim($this->codigo)
+                )
+                : null,
+
             'codigo_fabricante' => $this->codigo_fabricante
                 ? trim($this->codigo_fabricante)
                 : null,
@@ -108,6 +114,16 @@ class StoreProdutoRequest extends FormRequest
             'status' => [
                 'required',
                 'boolean',
+            ],
+
+            'codigo' => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique(
+                    'produtos',
+                    'codigo'
+                ),
             ],
 
             'codigo_fabricante' => [
@@ -239,6 +255,11 @@ class StoreProdutoRequest extends FormRequest
 
             'status.required' => 'Informe o status do produto.',
             'status.boolean' => 'O status informado é inválido.',
+
+            'codigo.required' => 'O código do produto é obrigatório.',
+            'codigo.string' => 'O código do produto é inválido.',
+            'codigo.max' => 'O código do produto não pode ultrapassar 50 caracteres.',
+            'codigo.unique' => 'Já existe outro produto com este código.',
 
             'codigo_fabricante.required' => 'O código do fabricante é obrigatório.',
             'codigo_fabricante.string' => 'O código do fabricante é inválido.',

@@ -280,20 +280,55 @@ function criarSvg(codigo) {
 }
 
 function renderizarBarcode(elemento) {
-    const codigo = normalizarCodigo(
-        elemento.dataset.barcode
-    );
+    const valorOriginal =
+        String(
+            elemento.dataset.barcode || ''
+        ).trim();
 
     elemento.innerHTML = '';
+    elemento.classList.remove(
+        'text-muted'
+    );
 
-    if (!codigo) {
-        elemento.textContent = 'Código EAN-13 inválido';
-        elemento.classList.add('text-muted');
+    if (!valorOriginal) {
+        elemento.textContent =
+            'Código não informado';
+
+        elemento.classList.add(
+            'text-muted'
+        );
+
         return;
     }
 
+    const codigoEan13 =
+        normalizarCodigo(
+            valorOriginal
+        );
+
+    if (codigoEan13) {
+        elemento.appendChild(
+            criarSvg(
+                codigoEan13
+            )
+        );
+
+        return;
+    }
+
+    const codigoTexto =
+        document.createElement(
+            'span'
+        );
+
+    codigoTexto.className =
+        'fw-semibold font-monospace';
+
+    codigoTexto.textContent =
+        valorOriginal;
+
     elemento.appendChild(
-        criarSvg(codigo)
+        codigoTexto
     );
 }
 

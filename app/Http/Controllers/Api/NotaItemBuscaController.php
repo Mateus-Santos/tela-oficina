@@ -6,14 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Models\NotasItem;
 use App\Models\OrdemServico;
 use App\Models\Produto;
+use App\Services\Produto\ResolverDadosCatalogoProduto;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class NotaItemBuscaController extends Controller
 {
-    public function __invoke(Request $request): JsonResponse
-    {
+    public function __invoke(
+        Request $request,
+        ResolverDadosCatalogoProduto $resolverCatalogo
+    ): JsonResponse {
+
         $dados = $request->validate([
             'tipo' => [
                 'required',
@@ -61,7 +65,8 @@ class NotaItemBuscaController extends Controller
 
         if ($dados['tipo'] === 'produto') {
             return $this->buscarProdutos(
-                $busca
+                $busca,
+                $resolverCatalogo
             );
         }
 
@@ -76,7 +81,8 @@ class NotaItemBuscaController extends Controller
      * Busca produtos disponíveis para inclusão na Nota.
      */
     private function buscarProdutos(
-        string $busca
+        string $busca,
+        ResolverDadosCatalogoProduto $resolverCatalogo
     ): JsonResponse {
         if ($busca === '') {
             return response()->json([
@@ -88,6 +94,11 @@ class NotaItemBuscaController extends Controller
             ->with([
                 'marcaRelacionada:id,nome',
                 'imagens',
+                'catalogos.fonte',
+                'catalogos.estado',
+                'catalogos.imagens',
+                'catalogos.aplicacoes',
+                'catalogos.atributos',
             ])
             ->select([
                 'id',
@@ -96,6 +107,7 @@ class NotaItemBuscaController extends Controller
                 'quantidade',
                 'estoque_minimo',
                 'preco_uni',
+                'codigo',
                 'codigo_fabricante',
                 'codigo_barras',
                 'marca_id',
@@ -118,6 +130,11 @@ class NotaItemBuscaController extends Controller
                             "%{$busca}%"
                         )
                         ->orWhere(
+                            'codigo',
+                            'like',
+                            "%{$busca}%"
+                        )
+                                ->orWhere(
                             'codigo_fabricante',
                             'like',
                             "%{$busca}%"
@@ -136,7 +153,15 @@ class NotaItemBuscaController extends Controller
         return response()->json([
             'data' => $produtos
                 ->map(
-                    function ($produto) {
+                    function ($produto) use (
+                        $resolverCatalogo
+                    ) {
+                        $catalogo =
+                            $resolverCatalogo
+                                ->resolver(
+                                    $produto
+                                );
+
                         $imagem =
                             $produto
                                 ->imagens
@@ -150,7 +175,25 @@ class NotaItemBuscaController extends Controller
 
                             'descricao' => $produto->descricao,
 
-                            'preco' => (float) $produto->preco_uni,
+                            'preco' =>
+                                (float) $catalogo[
+                                    'preco_venda'
+                                ],
+
+                            'preco_jaime' =>
+                                (float) $produto
+                                    ->preco_uni,
+
+                            'origem_preco' =>
+                                $catalogo[
+                                    'origem_preco'
+                                ],
+
+                            'codigo' =>
+
+
+                                $produto->codigo,
+
 
                             'codigo_fabricante' => $produto->codigo_fabricante,
 
@@ -164,7 +207,12 @@ class NotaItemBuscaController extends Controller
                                     ? asset(
                                         'storage/'.$imagem
                                     )
-                                    : null,
+                                    : $catalogo[
+                                        'imagem_url'
+                                    ],
+
+                            'catalogo' =>
+                                $catalogo,
 
                             'estoque_atual' => (float) $produto->quantidade,
 

@@ -319,6 +319,47 @@
 
     </div>
 
+    <div class="row mb-3">
+
+        <div class="col-md-4">
+
+            <label
+                class="form-label"
+                for="codigo"
+            >
+                Código do Produto:*
+            </label>
+
+            <input
+                type="text"
+                class="form-control @error('codigo') is-invalid @enderror @if($codigoDuplicado) is-invalid @endif"
+                id="codigo"
+                name="codigo"
+                wire:model.live.debounce.500ms="codigo"
+                maxlength="50"
+                required
+            >
+
+            @if($codigoDuplicado)
+
+                <div class="invalid-feedback d-block">
+                    Este código de produto já está cadastrado.
+                </div>
+
+            @endif
+
+            @error('codigo')
+
+                <div class="invalid-feedback d-block">
+                    {{ $message }}
+                </div>
+
+            @enderror
+
+        </div>
+
+    </div>
+
     <div class="row">
 
         {{-- CÓDIGO DO FABRICANTE --}}

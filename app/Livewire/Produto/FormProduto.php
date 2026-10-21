@@ -18,6 +18,7 @@ class FormProduto extends Component
 {
     public ?Produto $produto = null;
 
+    public string $codigo = '';
     public string $codigoFabricante = '';
     public string $codigoBarras = '';
 
@@ -30,6 +31,7 @@ class FormProduto extends Component
     public array $resultadosVeiculos = [];
     public array $veiculosSelecionados = [];
 
+    public bool $codigoDuplicado = false;
     public bool $codigoFabricanteDuplicado = false;
     public bool $codigoBarrasDuplicado = false;
 
@@ -52,6 +54,7 @@ class FormProduto extends Component
             return;
         }
 
+        $this->codigo = $produto->codigo ?? '';
         $this->codigoFabricante = $produto->codigo_fabricante ?? '';
         $this->codigoBarras = $produto->codigo_barras ?? '';
 
@@ -112,22 +115,75 @@ class FormProduto extends Component
         $this->resetValidation('novaMarcaNome');
     }
 
-    public function updatedCodigoFabricante(): void
+    public function updatedMarcaSelecionada(): void
     {
-        $codigo = trim($this->codigoFabricante);
+        $this->updatedCodigoFabricante();
+    }
+
+    public function updatedCodigo(): void
+    {
+        $codigo = mb_strtoupper(
+            trim($this->codigo)
+        );
+
+        $this->codigo = $codigo;
 
         if ($codigo === '') {
-            $this->codigoFabricanteDuplicado = false;
+            $this->codigoDuplicado = false;
+
             return;
         }
 
-        $query = Produto::where('codigo_fabricante', $codigo);
+        $query = Produto::query()
+            ->where('codigo', $codigo);
 
         if ($this->produto) {
-            $query->where('id', '!=', $this->produto->id);
+            $query->where(
+                'id',
+                '!=',
+                $this->produto->id
+            );
         }
 
-        $this->codigoFabricanteDuplicado = $query->exists();
+        $this->codigoDuplicado =
+            $query->exists();
+    }
+
+    public function updatedCodigoFabricante(): void
+    {
+        $codigo =
+            trim($this->codigoFabricante);
+
+        if (
+            $codigo === ''
+            || !$this->marcaSelecionada
+        ) {
+            $this->codigoFabricanteDuplicado =
+                false;
+
+            return;
+        }
+
+        $query = Produto::query()
+            ->where(
+                'codigo_fabricante',
+                $codigo
+            )
+            ->where(
+                'marca_id',
+                $this->marcaSelecionada
+            );
+
+        if ($this->produto) {
+            $query->where(
+                'id',
+                '!=',
+                $this->produto->id
+            );
+        }
+
+        $this->codigoFabricanteDuplicado =
+            $query->exists();
     }
 
     public function updatedCodigoBarras(): void

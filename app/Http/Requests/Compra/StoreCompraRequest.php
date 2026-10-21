@@ -142,6 +142,7 @@ class StoreCompraRequest extends FormRequest
                 'required',
                 'integer',
                 'exists:produtos,id',
+                'distinct',
             ],
             'itens.*.descricao' => [
                 'required',
@@ -241,6 +242,7 @@ class StoreCompraRequest extends FormRequest
             'itens.*.produto_id.required' => 'O produto é obrigatório.',
             'itens.*.produto_id.integer' => 'O produto informado é inválido.',
             'itens.*.produto_id.exists' => 'O produto selecionado não existe.',
+            'itens.*.produto_id.distinct' => 'O mesmo produto não pode ser incluído mais de uma vez na compra.',
             'itens.*.descricao.required' => 'A descrição do item é obrigatória.',
             'itens.*.descricao.string' => 'A descrição do item é inválida.',
             'itens.*.descricao.max' => 'A descrição do item não pode ter mais de 255 caracteres.',

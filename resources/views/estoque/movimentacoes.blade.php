@@ -344,6 +344,20 @@
 
                                             <div class="small">
 
+                                                @if($produto->codigo)
+
+                                                    <span class="me-2">
+                                                        <span class="text-muted">
+                                                            Código:
+                                                        </span>
+
+                                                        <strong>
+                                                            {{ $produto->codigo }}
+                                                        </strong>
+                                                    </span>
+
+                                                @endif
+
                                                 @if($produto->codigo_fabricante)
 
                                                     <span class="me-2">
