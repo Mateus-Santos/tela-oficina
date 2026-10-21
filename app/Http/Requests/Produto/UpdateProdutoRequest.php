@@ -237,6 +237,64 @@ class UpdateProdutoRequest extends FormRequest
             'veiculos.*' => [
                 'exists:veiculos,id',
             ],
+
+            'aplicacoes' => [
+                'nullable',
+                'array',
+            ],
+
+            'aplicacoes.*.veiculo_id' => [
+                'required',
+                'integer',
+                'exists:veiculos,id',
+            ],
+
+            'aplicacoes.*.mes_ano' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
+
+            'aplicacoes.*.modelo' => [
+                'nullable',
+                'string',
+                'max:191',
+            ],
+
+            'aplicacoes.*.motor' => [
+                'nullable',
+                'string',
+                'max:191',
+            ],
+
+            'aplicacoes.*.comp' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
+
+            'aplicacoes.*.valvulas' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
+
+            'aplicacoes.*.cilindros' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
+
+            'aplicacoes.*.combustivel' => [
+                'nullable',
+                'string',
+                'max:191',
+            ],
+
+            'aplicacoes.*.complemento' => [
+                'nullable',
+                'string',
+            ],
         ];
     }
 

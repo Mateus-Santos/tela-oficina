@@ -6,7 +6,9 @@ use App\Actions\Marca\CriarMarca;
 use App\Models\Marca;
 use App\Models\Montadora;
 use App\Models\Produto;
+use App\Models\ProdutoAplicacao;
 use App\Models\Veiculo;
+use App\Services\Produto\GerarChaveAplicacao;
 use App\Services\Produto\ParserAplicacoes;
 use App\Services\Produto\ResolverAplicacoes;
 use App\Services\Produto\ValidadorAplicacoes;
@@ -30,6 +32,7 @@ class FormProduto extends Component
     public string $buscaVeiculo = '';
     public array $resultadosVeiculos = [];
     public array $veiculosSelecionados = [];
+    public array $aplicacoesManuais = [];
 
     public bool $codigoDuplicado = false;
     public bool $codigoFabricanteDuplicado = false;
@@ -58,15 +61,9 @@ class FormProduto extends Component
         $this->codigoFabricante = $produto->codigo_fabricante ?? '';
         $this->codigoBarras = $produto->codigo_barras ?? '';
 
-        $this->veiculosSelecionados = $produto->veiculos
-            ->load('montadora')
-            ->map(fn ($veiculo) => [
-                'id' => $veiculo->id,
-                'nome' => $veiculo->nome,
-                'montadora' => $veiculo->montadora?->nome,
-            ])
-            ->values()
-            ->toArray();
+        $this->carregarAplicacoesManuais(
+            $produto
+        );
     }
 
     public function abrirCadastroMarca(): void
@@ -339,21 +336,18 @@ class FormProduto extends Component
 
     public function adicionarVeiculo(int $veiculoId): void
     {
-        if (collect($this->veiculosSelecionados)->contains('id', $veiculoId)) {
-            return;
-        }
-
-        $veiculo = Veiculo::with('montadora')->find($veiculoId);
+        $veiculo = Veiculo::with(
+            'montadora'
+        )->find($veiculoId);
 
         if (!$veiculo) {
             return;
         }
 
-        $this->veiculosSelecionados[] = [
-            'id' => $veiculo->id,
-            'nome' => $veiculo->nome,
-            'montadora' => $veiculo->montadora?->nome,
-        ];
+        $this->adicionarAplicacaoManual(
+            $veiculo,
+            []
+        );
 
         $this->buscaVeiculo = '';
         $this->resultadosVeiculos = [];
@@ -361,12 +355,46 @@ class FormProduto extends Component
 
     public function removerVeiculo(int $veiculoId): void
     {
-        $this->veiculosSelecionados = collect($this->veiculosSelecionados)
-            ->reject(fn ($veiculo) => (int) $veiculo['id'] === $veiculoId)
-            ->values()
-            ->toArray();
+        $this->veiculosSelecionados =
+            collect(
+                $this->veiculosSelecionados
+            )
+                ->reject(
+                    fn ($veiculo) =>
+                        (int) $veiculo['id']
+                        === $veiculoId
+                )
+                ->values()
+                ->toArray();
 
-        if (trim($this->buscaVeiculo) !== '') {
+        /*
+         * Remover um veículo na interface remove somente
+         * aplicações MANUAIS daquele veículo.
+         *
+         * Aplicações provenientes de catálogo não vivem
+         * neste array e não são afetadas.
+         */
+        $this->aplicacoesManuais =
+            collect(
+                $this->aplicacoesManuais
+            )
+                ->reject(
+                    fn ($aplicacao) =>
+                        (int) (
+                            $aplicacao[
+                                'veiculo_id'
+                            ]
+                            ?? 0
+                        ) === $veiculoId
+                )
+                ->values()
+                ->toArray();
+
+        if (
+            trim(
+                $this->buscaVeiculo
+            ) !== ''
+        ) {
             $this->updatedBuscaVeiculo();
         }
     }
@@ -402,37 +430,386 @@ class FormProduto extends Component
 
     public function confirmarImportacao(): void
     {
-        if (!$this->mostrarPreviaImportacao || $this->aplicacoesImportadas === []) {
-            $this->mensagemImportacao = 'Nenhuma importação aguardando confirmação.';
+        if (
+            !$this->mostrarPreviaImportacao
+            || $this->aplicacoesImportadas === []
+        ) {
+            $this->mensagemImportacao =
+                'Nenhuma importação aguardando confirmação.';
+
             return;
         }
 
-        DB::transaction(function () {
-            foreach ($this->aplicacoesImportadas as $aplicacao) {
-                $montadora = Montadora::query()->firstOrCreate([
-                    'nome' => $aplicacao['montadora'],
-                ]);
+        $resolver =
+            app(
+                ResolverAplicacoes::class
+            );
 
-                $veiculo = Veiculo::query()
-                    ->where('montadora_id', $montadora->id)
-                    ->where('nome', $aplicacao['veiculo'])
-                    ->first();
+        DB::transaction(
+            function () use (
+                $resolver
+            ) {
+                foreach (
+                    $this->aplicacoesImportadas
+                    as $aplicacao
+                ) {
+                    $veiculo =
+                        $resolver
+                            ->resolverOuCriarVeiculo(
+                                $aplicacao
+                            );
 
-                if (!$veiculo) {
-                    $veiculo = Veiculo::create([
-                        'nome' => $aplicacao['veiculo'],
-                        'montadora_id' => $montadora->id,
-                    ]);
+                    $veiculo->loadMissing(
+                        'montadora'
+                    );
+
+                    $this
+                        ->adicionarAplicacaoManual(
+                            $veiculo,
+                            $aplicacao
+                        );
                 }
-
-                $this->adicionarVeiculo($veiculo->id);
             }
-        });
+        );
 
-        $total = count($this->aplicacoesImportadas);
+        $total =
+            count(
+                $this->aplicacoesImportadas
+            );
 
         $this->limparImportacao();
-        $this->mensagemImportacao = "{$total} aplicações importadas com sucesso.";
+
+        $this->mensagemImportacao =
+            "{$total} aplicações importadas com sucesso.";
+    }
+
+    private function carregarAplicacoesManuais(
+        Produto $produto
+    ): void {
+        $possuiQualquerAplicacao =
+            $produto
+                ->aplicacoes()
+                ->exists();
+
+        $aplicacoes =
+            $produto
+                ->aplicacoes()
+                ->where(
+                    'origem',
+                    ProdutoAplicacao::
+                        ORIGEM_MANUAL
+                )
+                ->with(
+                    'veiculo.montadora'
+                )
+                ->get();
+
+        $this->aplicacoesManuais =
+            $aplicacoes
+                ->map(
+                    fn ($aplicacao) => [
+                        'veiculo_id' =>
+                            $aplicacao
+                                ->veiculo_id,
+
+                        'mes_ano' =>
+                            $aplicacao
+                                ->mes_ano,
+
+                        'modelo' =>
+                            $aplicacao
+                                ->modelo,
+
+                        'motor' =>
+                            $aplicacao
+                                ->motor,
+
+                        'comp' =>
+                            $aplicacao
+                                ->comp,
+
+                        'valvulas' =>
+                            $aplicacao
+                                ->valvulas,
+
+                        'cilindros' =>
+                            $aplicacao
+                                ->cilindros,
+
+                        'combustivel' =>
+                            $aplicacao
+                                ->combustivel,
+
+                        'complemento' =>
+                            $aplicacao
+                                ->complemento,
+                    ]
+                )
+                ->values()
+                ->toArray();
+
+        $this->veiculosSelecionados =
+            $aplicacoes
+                ->filter(
+                    fn ($aplicacao) =>
+                        $aplicacao->veiculo
+                            !== null
+                )
+                ->unique(
+                    'veiculo_id'
+                )
+                ->map(
+                    fn ($aplicacao) => [
+                        'id' =>
+                            $aplicacao
+                                ->veiculo
+                                ->id,
+
+                        'nome' =>
+                            $aplicacao
+                                ->veiculo
+                                ->nome,
+
+                        'montadora' =>
+                            $aplicacao
+                                ->veiculo
+                                ->montadora
+                                ?->nome,
+                    ]
+                )
+                ->values()
+                ->toArray();
+
+        /*
+         * Compatibilidade defensiva para algum Produto
+         * legado que possua somente produtos_veiculos
+         * e ainda não tenha sido convertido.
+         *
+         * Se já existir QUALQUER produto_aplicacao
+         * (inclusive Sky), não transformamos a pivot em
+         * conhecimento manual.
+         */
+        if (
+            $possuiQualquerAplicacao
+            || $this->veiculosSelecionados !== []
+        ) {
+            return;
+        }
+
+        $produto->loadMissing(
+            'veiculos.montadora'
+        );
+
+        foreach (
+            $produto->veiculos
+            as $veiculo
+        ) {
+            $this->adicionarAplicacaoManual(
+                $veiculo,
+                []
+            );
+        }
+    }
+
+    private function adicionarAplicacaoManual(
+        Veiculo $veiculo,
+        array $dados
+    ): void {
+        $aplicacao = [
+            'veiculo_id' =>
+                (int) $veiculo->id,
+
+            'mes_ano' =>
+                $this->valorAplicacao(
+                    $dados['mes_ano']
+                    ?? null
+                ),
+
+            'modelo' =>
+                $this->valorAplicacao(
+                    $dados['modelo']
+                    ?? null
+                ),
+
+            'motor' =>
+                $this->valorAplicacao(
+                    $dados['motor']
+                    ?? null
+                ),
+
+            'comp' =>
+                $this->valorAplicacao(
+                    $dados['comp']
+                    ?? null
+                ),
+
+            'valvulas' =>
+                $this->valorAplicacao(
+                    $dados['valvulas']
+                    ?? null
+                ),
+
+            'cilindros' =>
+                $this->valorAplicacao(
+                    $dados['cilindros']
+                    ?? null
+                ),
+
+            'combustivel' =>
+                $this->valorAplicacao(
+                    $dados['combustivel']
+                    ?? null
+                ),
+
+            'complemento' =>
+                $this->valorAplicacao(
+                    $dados['complemento']
+                    ?? null
+                ),
+        ];
+
+        $possuiDetalhes =
+            $this->aplicacaoPossuiDetalhes(
+                $aplicacao
+            );
+
+        /*
+         * Se já havia uma seleção simples do mesmo
+         * veículo e depois chegou uma aplicação rica
+         * pelo importador, removemos apenas o placeholder
+         * vazio. Aplicações técnicas distintas do mesmo
+         * veículo continuam coexistindo.
+         */
+        if ($possuiDetalhes) {
+            $this->aplicacoesManuais =
+                collect(
+                    $this->aplicacoesManuais
+                )
+                    ->reject(
+                        fn ($existente) =>
+                            (int) (
+                                $existente[
+                                    'veiculo_id'
+                                ]
+                                ?? 0
+                            )
+                                === (int) $veiculo->id
+                            && !$this
+                                ->aplicacaoPossuiDetalhes(
+                                    $existente
+                                )
+                    )
+                    ->values()
+                    ->toArray();
+        }
+
+        $gerador =
+            app(
+                GerarChaveAplicacao::class
+            );
+
+        $chaveNova =
+            $gerador->gerar(
+                (int) $veiculo->id,
+                $aplicacao
+            );
+
+        $jaExiste =
+            collect(
+                $this->aplicacoesManuais
+            )
+                ->contains(
+                    fn ($existente) =>
+                        $gerador->gerar(
+                            isset(
+                                $existente[
+                                    'veiculo_id'
+                                ]
+                            )
+                                ? (int) $existente[
+                                    'veiculo_id'
+                                ]
+                                : null,
+                            $existente
+                        ) === $chaveNova
+                );
+
+        if (!$jaExiste) {
+            $this->aplicacoesManuais[] =
+                $aplicacao;
+        }
+
+        if (
+            !collect(
+                $this->veiculosSelecionados
+            )->contains(
+                'id',
+                $veiculo->id
+            )
+        ) {
+            $this->veiculosSelecionados[] = [
+                'id' =>
+                    $veiculo->id,
+
+                'nome' =>
+                    $veiculo->nome,
+
+                'montadora' =>
+                    $veiculo
+                        ->montadora
+                        ?->nome,
+            ];
+        }
+    }
+
+    private function aplicacaoPossuiDetalhes(
+        array $aplicacao
+    ): bool {
+        foreach (
+            [
+                'mes_ano',
+                'modelo',
+                'motor',
+                'comp',
+                'valvulas',
+                'cilindros',
+                'combustivel',
+                'complemento',
+            ]
+            as $campo
+        ) {
+            if (
+                trim(
+                    (string) (
+                        $aplicacao[
+                            $campo
+                        ]
+                        ?? ''
+                    )
+                ) !== ''
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function valorAplicacao(
+        mixed $valor
+    ): ?string {
+        if ($valor === null) {
+            return null;
+        }
+
+        $valor =
+            trim(
+                (string) $valor
+            );
+
+        return $valor !== ''
+            ? $valor
+            : null;
     }
 
     public function cancelarImportacao(): void

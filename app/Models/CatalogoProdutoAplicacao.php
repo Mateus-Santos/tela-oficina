@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class CatalogoProdutoAplicacao extends Model
 {
@@ -16,6 +17,22 @@ class CatalogoProdutoAplicacao extends Model
         'primeira_coleta_em' => 'datetime',
         'ultima_confirmacao_em' => 'datetime',
     ];
+
+    public function produtoAplicacao(): HasOne
+    {
+        return $this->hasOne(
+            ProdutoAplicacao::class,
+            'catalogo_produto_aplicacao_id'
+        );
+    }
+
+    public function catalogoVeiculo(): BelongsTo
+    {
+        return $this->belongsTo(
+            CatalogoVeiculo::class,
+            'catalogo_veiculo_id'
+        );
+    }
 
     public function catalogoProduto(): BelongsTo
     {

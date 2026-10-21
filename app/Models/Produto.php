@@ -189,6 +189,14 @@ class Produto extends Model
             ->orderBy('id');
     }
 
+    public function aplicacoes(): HasMany
+    {
+        return $this->hasMany(
+            ProdutoAplicacao::class
+        )
+            ->orderBy('id');
+    }
+
     public function veiculos(): BelongsToMany
     {
         return $this->belongsToMany(

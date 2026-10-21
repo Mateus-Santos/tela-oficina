@@ -12,7 +12,7 @@ class ParserAplicacoes
         'motor',
         'comp',
         'valvulas',
-        'cilindrada',
+        'cilindros',
         'combustivel',
         'complemento',
     ];

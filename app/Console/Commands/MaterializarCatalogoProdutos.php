@@ -2,94 +2,34 @@
 
 namespace App\Console\Commands;
 
-use App\Services\Catalogo\MaterializarProdutosCatalogo;
 use Illuminate\Console\Command;
-use Throwable;
 
 class MaterializarCatalogoProdutos extends Command
 {
-    protected $signature = 'catalogo:materializar-produtos
-        {--fonte=sky : Código da fonte do catálogo}
-        {--dry-run : Simula a materialização sem alterar dados}
-        {--limite= : Limita a quantidade de registros processados}';
+    protected $signature =
+        'catalogo:materializar-produtos
+        {--fonte=sky : Mantido apenas por compatibilidade}
+        {--dry-run : Mantido apenas por compatibilidade}
+        {--limite= : Mantido apenas por compatibilidade}';
 
     protected $description =
-        'Materializa produtos do catálogo externo no cadastro operacional do Jaime';
+        'OBSOLETO: materialização automática de produtos foi descontinuada';
 
-    public function handle(
-        MaterializarProdutosCatalogo $service
-    ): int {
-        $fonte = (string) $this->option(
-            'fonte'
+    public function handle(): int
+    {
+        $this->error(
+            'Este comando foi descontinuado.'
         );
 
-        $dryRun = (bool) $this->option(
-            'dry-run'
+        $this->warn(
+            'O catálogo não pode criar produtos operacionais.'
         );
 
-        $limite = $this->option(
-            'limite'
+        $this->info(
+            'Use catalogo:vincular-produtos para tentar '
+            .'vincular produtos já existentes.'
         );
 
-        $limite = $limite !== null
-            && $limite !== ''
-            ? (int) $limite
-            : null;
-
-        if ($dryRun) {
-            $this->warn(
-                'MODO DRY-RUN: nenhuma alteração será gravada.'
-            );
-        } else {
-            $this->warn(
-                'MODO EXECUÇÃO: produtos e vínculos poderão ser criados.'
-            );
-        }
-
-        try {
-            $resumo = $service->executar(
-                fonteCodigo: $fonte,
-                dryRun: $dryRun,
-                limite: $limite
-            );
-        } catch (Throwable $e) {
-            $this->error(
-                $e->getMessage()
-            );
-
-            return self::FAILURE;
-        }
-
-        $this->newLine();
-
-        $this->table(
-            [
-                'Métrica',
-                'Quantidade',
-            ],
-            collect($resumo)
-                ->map(
-                    fn ($valor, $chave) => [
-                        $chave,
-                        $valor,
-                    ]
-                )
-                ->values()
-                ->all()
-        );
-
-        $this->newLine();
-
-        if ($dryRun) {
-            $this->info(
-                'Simulação concluída. Nenhum registro foi alterado.'
-            );
-        } else {
-            $this->info(
-                'Materialização concluída.'
-            );
-        }
-
-        return self::SUCCESS;
+        return self::FAILURE;
     }
 }

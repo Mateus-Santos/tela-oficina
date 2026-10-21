@@ -5,6 +5,7 @@ namespace App\Actions\Produto;
 use App\Models\Marca;
 use App\Models\Produto;
 use App\Services\ImagemService;
+use App\Services\Produto\PersistirAplicacoesProduto;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -12,7 +13,9 @@ use Illuminate\Support\Facades\Storage;
 class CriarProduto
 {
     public function __construct(
-        private readonly ImagemService $imagemService
+        private readonly ImagemService $imagemService,
+        private readonly PersistirAplicacoesProduto
+            $persistirAplicacoesProduto
     ) {}
 
     public function execute(array $dados): Produto
@@ -117,10 +120,13 @@ class CriarProduto
                             ]);
                     }
 
-                    $produto
-                        ->veiculos()
-                        ->sync(
-                            $dados['veiculos']
+                    $this
+                        ->persistirAplicacoesProduto
+                        ->sincronizarManuais(
+                            $produto,
+                            $this->aplicacoesDosDados(
+                                $dados
+                            )
                         );
 
                     return $produto->fresh([
@@ -139,4 +145,30 @@ class CriarProduto
             throw $e;
         }
     }
+
+    private function aplicacoesDosDados(
+        array $dados
+    ): array {
+        if (
+            isset($dados['aplicacoes'])
+            && is_array(
+                $dados['aplicacoes']
+            )
+            && $dados['aplicacoes'] !== []
+        ) {
+            return $dados[
+                'aplicacoes'
+            ];
+        }
+
+        return array_map(
+            fn ($veiculoId) => [
+                'veiculo_id' =>
+                    (int) $veiculoId,
+            ],
+            $dados['veiculos']
+                ?? []
+        );
+    }
+
 }
