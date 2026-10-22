@@ -20,6 +20,7 @@ use App\Models\FormaPagamento;
 use App\Models\Fornecedor;
 use App\Models\Nota;
 use App\Models\PagamentoContaPagar;
+use App\Models\ParcelaContaPagar;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use InvalidArgumentException;
@@ -28,119 +29,320 @@ class ContaPagarController extends Controller
 {
     public function index(): View
     {
-        $query = ContaPagar::query()
+        $query = ParcelaContaPagar::query()
             ->with([
-                'fornecedor',
-                'categoriaFinanceira',
-                'formaPagamento',
+                'contaPagar' => fn ($query) => $query
+                    ->with([
+                        'fornecedor',
+                        'categoriaFinanceira',
+                        'formaPagamento',
+                    ])
+                    ->withCount('parcelas'),
             ])
-            ->withSum([
-                'pagamentos as valor_pago' => fn ($query) => $query
-                    ->whereNull('estornado_em'),
-            ], 'valor');
+            ->withSum(
+                'pagamentosAtivos as valor_pago',
+                'valor'
+            );
+
+        $valorPagoSubquery = function ($query) {
+            $query
+                ->from(
+                    (new PagamentoContaPagar())
+                        ->getTable()
+                )
+                ->selectRaw(
+                    'COALESCE(SUM(valor), 0)'
+                )
+                ->whereColumn(
+                    'parcela_conta_pagar_id',
+                    'parcelas_contas_pagar.id'
+                )
+                ->whereNull('estornado_em');
+        };
+
+        $aplicarPendente = function ($query) use (
+            $valorPagoSubquery
+        ) {
+            $query->where(
+                'valor',
+                '>',
+                $valorPagoSubquery
+            );
+        };
+
+        $aplicarPaga = function ($query) use (
+            $valorPagoSubquery
+        ) {
+            $query->where(
+                'valor',
+                '<=',
+                $valorPagoSubquery
+            );
+        };
 
         if (request()->filled('descricao')) {
-            $descricao = trim(request('descricao'));
+            $descricao = trim(
+                request('descricao')
+            );
 
-            $query->where(
-                'descricao',
-                'like',
-                '%' . $descricao . '%'
+            $query->whereHas(
+                'contaPagar',
+                fn ($query) => $query->where(
+                    'descricao',
+                    'like',
+                    '%' . $descricao . '%'
+                )
             );
         }
 
         if (request()->filled('fornecedor_id')) {
-            $query->where(
-                'fornecedor_id',
-                request('fornecedor_id')
+            $fornecedorId = request(
+                'fornecedor_id'
+            );
+
+            $query->whereHas(
+                'contaPagar',
+                fn ($query) => $query->where(
+                    'fornecedor_id',
+                    $fornecedorId
+                )
             );
         }
 
-        if (request()->filled('status')) {
-            $status = request('status');
+        $status = request('status');
 
-            if ($status === 'vencida') {
-                $query->where('status', '!=', 'cancelada')
-                    ->where('status', '!=', 'paga')
-                    ->whereDate(
-                        'data_vencimento',
-                        '<',
-                        today()
-                    );
-            } else {
-                $query->where('status', $status);
-            }
-        } else {
-            $query->where('status', '!=', 'cancelada');
+        switch ($status) {
+            case 'aberta':
+                $query->whereHas(
+                    'contaPagar',
+                    fn ($query) => $query->where(
+                        'status',
+                        'aberta'
+                    )
+                );
+
+                $aplicarPendente($query);
+                break;
+
+            case 'parcialmente_paga':
+                $query->whereHas(
+                    'contaPagar',
+                    fn ($query) => $query->where(
+                        'status',
+                        'parcialmente_paga'
+                    )
+                );
+
+                $aplicarPendente($query);
+                break;
+
+            case 'paga':
+                $query->whereHas(
+                    'contaPagar',
+                    fn ($query) => $query->where(
+                        'status',
+                        '!=',
+                        'cancelada'
+                    )
+                );
+
+                $aplicarPaga($query);
+                break;
+
+            case 'vencida':
+                $query->whereHas(
+                    'contaPagar',
+                    fn ($query) => $query->where(
+                        'status',
+                        '!=',
+                        'cancelada'
+                    )
+                );
+
+                $aplicarPendente($query);
+
+                $query->whereDate(
+                    'data_vencimento',
+                    '<',
+                    today()
+                );
+                break;
+
+            case 'cancelada':
+                $query->whereHas(
+                    'contaPagar',
+                    fn ($query) => $query->where(
+                        'status',
+                        'cancelada'
+                    )
+                );
+                break;
+
+            case 'todas':
+                break;
+
+            default:
+                $query->whereHas(
+                    'contaPagar',
+                    fn ($query) => $query->where(
+                        'status',
+                        '!=',
+                        'cancelada'
+                    )
+                );
+
+                $aplicarPendente($query);
+                break;
         }
 
-        if (request()->filled('data_emissao_inicio')) {
-            $query->whereDate(
-                'data_emissao',
-                '>=',
-                request('data_emissao_inicio')
+        if (
+            request()->filled(
+                'data_emissao_inicio'
+            )
+        ) {
+            $data = request(
+                'data_emissao_inicio'
+            );
+
+            $query->whereHas(
+                'contaPagar',
+                fn ($query) => $query->whereDate(
+                    'data_emissao',
+                    '>=',
+                    $data
+                )
             );
         }
 
-        if (request()->filled('data_emissao_fim')) {
-            $query->whereDate(
-                'data_emissao',
-                '<=',
-                request('data_emissao_fim')
+        if (
+            request()->filled(
+                'data_emissao_fim'
+            )
+        ) {
+            $data = request(
+                'data_emissao_fim'
+            );
+
+            $query->whereHas(
+                'contaPagar',
+                fn ($query) => $query->whereDate(
+                    'data_emissao',
+                    '<=',
+                    $data
+                )
             );
         }
 
-        if (request()->filled('data_vencimento_inicio')) {
+        if (
+            request()->filled(
+                'data_vencimento_inicio'
+            )
+        ) {
             $query->whereDate(
                 'data_vencimento',
                 '>=',
-                request('data_vencimento_inicio')
+                request(
+                    'data_vencimento_inicio'
+                )
             );
         }
 
-        if (request()->filled('data_vencimento_fim')) {
+        if (
+            request()->filled(
+                'data_vencimento_fim'
+            )
+        ) {
             $query->whereDate(
                 'data_vencimento',
                 '<=',
-                request('data_vencimento_fim')
+                request(
+                    'data_vencimento_fim'
+                )
             );
         }
 
-        $contasResumo = (clone $query)
-            ->withSum([
-                'pagamentos as valor_pago' => fn ($query) => $query
-                    ->whereNull('estornado_em'),
-            ], 'valor')
+        $parcelasResumo = (clone $query)
             ->get();
 
-        $total = (float) $contasResumo->sum(
-            fn ($conta) => (float) $conta->valor
-        );
-
-        $totalPago = (float) $contasResumo->sum(
-            fn ($conta) => (float) ($conta->valor_pago ?? 0)
-        );
-
-        $totalEmAberto = max(
-            0,
-            round($total - $totalPago, 2)
-        );
-
-        $totalVencido = (float) $contasResumo
-            ->filter(
-                fn ($conta) => $conta->status !== 'cancelada'
-                    && (float) ($conta->valor_pago ?? 0) < (float) $conta->valor
-                    && $conta->data_vencimento->isBefore(today())
-            )
+        $total = (float) $parcelasResumo
             ->sum(
-                fn ($conta) => max(
+                fn ($parcela) =>
+                    (float) $parcela->valor
+            );
+
+        $totalPago = (float) $parcelasResumo
+            ->sum(
+                fn ($parcela) =>
+                    (float) (
+                        $parcela->valor_pago
+                        ?? 0
+                    )
+            );
+
+        $totalEmAberto = (float)
+            $parcelasResumo->sum(
+                fn ($parcela) => max(
                     0,
                     round(
-                        (float) $conta->valor - (float) ($conta->valor_pago ?? 0),
+                        (float) $parcela->valor
+                        - (float) (
+                            $parcela->valor_pago
+                            ?? 0
+                        ),
                         2
                     )
                 )
             );
+
+        $totalVencido = (float)
+            $parcelasResumo
+                ->filter(
+                    function ($parcela) {
+                        $conta =
+                            $parcela->contaPagar;
+
+                        $saldo = max(
+                            0,
+                            round(
+                                (float)
+                                    $parcela->valor
+                                - (float) (
+                                    $parcela
+                                        ->valor_pago
+                                    ?? 0
+                                ),
+                                2
+                            )
+                        );
+
+                        return
+                            $conta->status
+                                !== 'cancelada'
+                            && $saldo > 0
+                            && $parcela
+                                ->data_vencimento
+                                ->isBefore(
+                                    today()
+                                );
+                    }
+                )
+                ->sum(
+                    function ($parcela) {
+                        return max(
+                            0,
+                            round(
+                                (float)
+                                    $parcela->valor
+                                - (float) (
+                                    $parcela
+                                        ->valor_pago
+                                    ?? 0
+                                ),
+                                2
+                            )
+                        );
+                    }
+                );
 
         $resumo = [
             'total' => $total,
@@ -149,9 +351,10 @@ class ContaPagarController extends Controller
             'total_vencido' => $totalVencido,
         ];
 
-        $contas = $query
+        $parcelasPagar = $query
             ->orderBy('data_vencimento')
-            ->orderBy('id')
+            ->orderBy('conta_pagar_id')
+            ->orderBy('numero')
             ->paginate(15)
             ->withQueryString();
 
@@ -162,7 +365,7 @@ class ContaPagarController extends Controller
         return view(
             'contas_pagar.index',
             compact(
-                'contas',
+                'parcelasPagar',
                 'fornecedores',
                 'resumo'
             )
