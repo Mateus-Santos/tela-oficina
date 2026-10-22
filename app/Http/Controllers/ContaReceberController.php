@@ -283,6 +283,7 @@ class ContaReceberController extends Controller
             'cliente.pessoa',
             'nota.cliente.pessoa',
             'categoriaFinanceira',
+            'anexosVinculos.anexo',
             'parcelas.recebimentosAtivos',
             'recebimentos.parcela',
             'recebimentos.formaPagamento',

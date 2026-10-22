@@ -287,98 +287,92 @@
             </span>
         </div>
 
-        @if (!in_array($compra->status, ['aprovada', 'cancelada'], true))
-            <form
-                method="POST"
-                action="{{ route('compras.anexos.store', $compra) }}"
-                enctype="multipart/form-data"
-                class="mb-4"
-            >
-                @csrf
+        <form
+            method="POST"
+            action="{{ route('compras.anexos.store', $compra) }}"
+            enctype="multipart/form-data"
+            class="mb-4"
+        >
+            @csrf
 
-                <div class="row g-3">
-                    <div class="col-12 col-md-4">
-                        <label for="tipo" class="form-label">
-                            Tipo do documento
-                        </label>
+            <div class="row g-3">
+                <div class="col-12 col-md-4">
+                    <label for="tipo-anexo-compra" class="form-label">
+                        Tipo do documento
+                    </label>
 
-                        <select
-                            name="tipo"
-                            id="tipo"
-                            class="form-select"
-                            required
-                        >
-                            <option value="">Selecione...</option>
-                            <option value="nf">Nota fiscal</option>
-                            <option value="nf_xml">NF-e XML</option>
-                            <option value="foto">Foto</option>
-                            <option value="comprovante">Comprovante</option>
-                            <option value="boleto">Boleto</option>
-                            <option value="contrato">Contrato</option>
-                            <option value="orcamento">Orçamento</option>
-                            <option value="conta_luz">Conta de luz</option>
-                            <option value="conta_agua">Conta de água</option>
-                            <option value="conta_telefone">Conta de telefone</option>
-                            <option value="recibo">Recibo</option>
-                            <option value="outro">Outro</option>
-                        </select>
-                    </div>
-
-                    <div class="col-12 col-md-5">
-                        <label for="arquivo" class="form-label">
-                            Arquivo
-                        </label>
-
-                        <input
-                            type="file"
-                            name="arquivo"
-                            id="arquivo"
-                            class="form-control"
-                            accept=".pdf,.jpg,.jpeg,.png,.webp,.xml"
-                            required
-                        >
-
-                        <small class="text-muted">
-                            PDF, JPG, JPEG, PNG, WEBP ou XML — máximo de 2 MB.
-                        </small>
-                    </div>
-
-                    <div class="col-12 col-md-3">
-                        <label for="observacoes" class="form-label">
-                            Observações
-                        </label>
-
-                        <input
-                            type="text"
-                            name="observacoes"
-                            id="observacoes"
-                            class="form-control"
-                            maxlength="1000"
-                        >
-                    </div>
-
-                    <div class="col-12">
-                        <button
-                            type="submit"
-                            class="btn btn-primary"
-                        >
-                            <i class="bi bi-cloud-arrow-up"></i>
-                            Enviar anexo
-                        </button>
-                    </div>
+                    <select
+                        name="tipo"
+                        id="tipo-anexo-compra"
+                        class="form-select"
+                        required
+                    >
+                        <option value="">Selecione...</option>
+                        <option value="nf">Nota fiscal</option>
+                        <option value="nf_xml">NF-e XML</option>
+                        <option value="foto">Foto</option>
+                        <option value="comprovante">Comprovante</option>
+                        <option value="boleto">Boleto</option>
+                        <option value="contrato">Contrato</option>
+                        <option value="orcamento">Orçamento</option>
+                        <option value="conta_luz">Conta de luz</option>
+                        <option value="conta_agua">Conta de água</option>
+                        <option value="conta_telefone">Conta de telefone</option>
+                        <option value="recibo">Recibo</option>
+                        <option value="outro">Outro</option>
+                    </select>
                 </div>
-            </form>
-        @elseif ($compra->status === 'aprovada')
-            <div class="alert alert-info mb-4">
-                <i class="bi bi-lock"></i>
-                Esta compra está aprovada. Novos anexos não podem ser adicionados.
+
+                <div class="col-12 col-md-5">
+                    <label for="arquivo-anexo-compra" class="form-label">
+                        Arquivo
+                    </label>
+
+                    <input
+                        type="file"
+                        name="arquivo"
+                        id="arquivo-anexo-compra"
+                        class="form-control"
+                        accept=".pdf,.jpg,.jpeg,.png,.webp,.xml"
+                        required
+                    >
+
+                    <small class="text-muted">
+                        PDF, JPG, JPEG, PNG, WEBP ou XML — máximo de 2 MB.
+                    </small>
+                </div>
+
+                <div class="col-12 col-md-3">
+                    <label for="observacoes-anexo-compra" class="form-label">
+                        Observações
+                    </label>
+
+                    <input
+                        type="text"
+                        name="observacoes"
+                        id="observacoes-anexo-compra"
+                        class="form-control"
+                        maxlength="1000"
+                    >
+                </div>
+
+                <div class="col-12">
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        <i class="bi bi-cloud-arrow-up"></i>
+                        Enviar anexo
+                    </button>
+
+                    @if(in_array($compra->status, ['aprovada', 'cancelada'], true))
+                        <small class="text-muted ms-2">
+                            O status da compra não impede a gestão dos documentos.
+                        </small>
+                    @endif
+                </div>
             </div>
-        @else
-            <div class="alert alert-warning mb-4">
-                <i class="bi bi-lock"></i>
-                Esta compra está cancelada. Novos anexos não podem ser adicionados.
-            </div>
-        @endif
+        </form>
 
         @if ($compra->anexosVinculos->isNotEmpty())
             <div class="table-responsive">
@@ -398,6 +392,7 @@
                         @foreach ($compra->anexosVinculos as $vinculo)
                             @php
                                 $anexo = $vinculo->anexo;
+
                                 $tipoAnexo = match ($vinculo->tipo) {
                                     'nf' => ['label' => 'Nota fiscal', 'icon' => 'bi-receipt'],
                                     'nf_xml' => ['label' => 'NF-e XML', 'icon' => 'bi-filetype-xml'],
@@ -426,6 +421,7 @@
                                     <div class="fw-semibold text-break">
                                         {{ $anexo->nome_original }}
                                     </div>
+
                                     <small class="text-muted">
                                         {{ $anexo->mime_type }}
                                     </small>
@@ -446,6 +442,14 @@
                                 <td>
                                     <div class="d-flex justify-content-end gap-1">
                                         <a
+                                            href="{{ route('anexos.show', $anexo) }}"
+                                            class="btn btn-sm btn-outline-secondary"
+                                            title="Visualizar anexo"
+                                        >
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+
+                                        <a
                                             href="{{ route('anexos.download', $anexo) }}"
                                             class="btn btn-sm btn-outline-primary"
                                             title="Baixar arquivo"
@@ -453,24 +457,32 @@
                                             <i class="bi bi-download"></i>
                                         </a>
 
-                                        @if (!in_array($compra->status, ['aprovada', 'cancelada'], true))
-                                            <form
-                                                method="POST"
-                                                action="{{ route('anexos.destroy', $vinculo) }}"
-                                                onsubmit="return confirm('Tem certeza que deseja excluir este anexo?');"
-                                            >
-                                                @csrf
-                                                @method('DELETE')
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm btn-outline-warning"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modalEditarAnexoCompra{{ $vinculo->id }}"
+                                            title="Editar anexo"
+                                        >
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
 
-                                                <button
-                                                    type="submit"
-                                                    class="btn btn-sm btn-outline-danger"
-                                                    title="Excluir anexo"
-                                                >
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </form>
-                                        @endif
+                                        <form
+                                            method="POST"
+                                            action="{{ route('anexos.destroy', $vinculo) }}"
+                                            onsubmit="return confirm('Tem certeza que deseja excluir este anexo?');"
+                                        >
+                                            @csrf
+                                            @method('DELETE')
+
+                                            <button
+                                                type="submit"
+                                                class="btn btn-sm btn-outline-danger"
+                                                title="Excluir anexo"
+                                            >
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
@@ -478,6 +490,133 @@
                     </tbody>
                 </table>
             </div>
+
+            @foreach ($compra->anexosVinculos as $vinculo)
+                @php
+                    $anexo = $vinculo->anexo;
+                @endphp
+
+                <div
+                    class="modal fade"
+                    id="modalEditarAnexoCompra{{ $vinculo->id }}"
+                    tabindex="-1"
+                    aria-hidden="true"
+                >
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                            <form
+                                method="POST"
+                                action="{{ route('anexos.update', $vinculo) }}"
+                                enctype="multipart/form-data"
+                            >
+                                @csrf
+                                @method('PATCH')
+
+                                <div class="modal-header">
+                                    <h5 class="modal-title">
+                                        <i class="bi bi-pencil-square"></i>
+                                        Editar anexo
+                                    </h5>
+
+                                    <button
+                                        type="button"
+                                        class="btn-close"
+                                        data-bs-dismiss="modal"
+                                        aria-label="Fechar"
+                                    ></button>
+                                </div>
+
+                                <div class="modal-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">
+                                                Tipo
+                                            </label>
+
+                                            <select
+                                                name="tipo"
+                                                class="form-select"
+                                                required
+                                            >
+                                                @foreach([
+                                                    'nf' => 'Nota fiscal',
+                                                    'nf_xml' => 'NF-e XML',
+                                                    'foto' => 'Foto',
+                                                    'comprovante' => 'Comprovante',
+                                                    'boleto' => 'Boleto',
+                                                    'contrato' => 'Contrato',
+                                                    'orcamento' => 'Orçamento',
+                                                    'conta_luz' => 'Conta de luz',
+                                                    'conta_agua' => 'Conta de água',
+                                                    'conta_telefone' => 'Conta de telefone',
+                                                    'recibo' => 'Recibo',
+                                                    'outro' => 'Outro',
+                                                ] as $valor => $label)
+                                                    <option
+                                                        value="{{ $valor }}"
+                                                        @selected($vinculo->tipo === $valor)
+                                                    >
+                                                        {{ $label }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label">
+                                                Substituir arquivo
+                                            </label>
+
+                                            <input
+                                                type="file"
+                                                name="arquivo"
+                                                class="form-control"
+                                                accept=".pdf,.jpg,.jpeg,.png,.webp,.xml"
+                                            >
+
+                                            <small class="text-muted">
+                                                Atual: {{ $anexo->nome_original }}.
+                                                Deixe vazio para manter.
+                                            </small>
+                                        </div>
+
+                                        <div class="col-12">
+                                            <label class="form-label">
+                                                Observações
+                                            </label>
+
+                                            <textarea
+                                                name="observacoes"
+                                                class="form-control"
+                                                rows="3"
+                                                maxlength="1000"
+                                            >{{ $vinculo->observacoes }}</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="modal-footer">
+                                    <button
+                                        type="button"
+                                        class="btn btn-secondary"
+                                        data-bs-dismiss="modal"
+                                    >
+                                        Cancelar
+                                    </button>
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-primary"
+                                    >
+                                        <i class="bi bi-check-lg"></i>
+                                        Salvar alterações
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
         @else
             <div class="alert alert-light border mb-0">
                 <i class="bi bi-info-circle"></i>
