@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ContaPagar extends Model
@@ -36,6 +37,18 @@ class ContaPagar extends Model
     public function compra(): BelongsTo
     {
         return $this->belongsTo(Compra::class);
+    }
+
+    public function compras(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Compra::class,
+            'compra_conta_pagar',
+            'conta_pagar_id',
+            'compra_id'
+        )
+            ->withPivot('valor_vinculado')
+            ->withTimestamps();
     }
 
     public function fornecedor(): BelongsTo

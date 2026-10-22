@@ -69,6 +69,17 @@ class ContaReceber extends Model
         )->orderBy('numero');
     }
 
+    public function anexosVinculos(): HasMany
+    {
+        return $this->hasMany(
+            AnexoVinculo::class,
+            'vinculavel_id'
+        )->where(
+            'vinculavel_type',
+            self::class
+        );
+    }
+
     public function recebimentos(): HasMany
     {
         return $this->hasMany(

@@ -117,12 +117,13 @@
                 <div class="col-12 col-md-3">
                     <label for="status" class="form-label"><i class="bi bi-info-circle"></i> Status</label>
                     <select id="status" name="status" class="filtros-container__select">
-                        <option value="">Todos</option>
+                        <option value="">Pendentes</option>
                         <option value="aberta" @selected(request('status') === 'aberta')>Aberta</option>
                         <option value="parcial" @selected(request('status') === 'parcial')>Parcial</option>
                         <option value="quitada" @selected(request('status') === 'quitada')>Quitada</option>
                         <option value="vencida" @selected(request('status') === 'vencida')>Vencida</option>
                         <option value="cancelada" @selected(request('status') === 'cancelada')>Cancelada</option>
+                        <option value="todas" @selected(request('status') === 'todas')>Todas</option>
                     </select>
                 </div>
 
@@ -170,7 +171,7 @@
                         <i class="bi bi-x-lg me-1"></i> Limpar filtros
                     </a>
                 @else
-                    <p class="text-muted mb-3">Ainda não existem parcelas de contas a receber cadastradas.</p>
+                    <p class="text-muted mb-3">Não existem parcelas pendentes para recebimento.</p>
                     <a href="{{ route('contas-receber.create') }}" class="btn btn-primary">
                         <i class="bi bi-plus-lg me-1"></i> Nova Conta
                     </a>

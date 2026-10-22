@@ -615,5 +615,46 @@
 
 @yield('scripts')
 
+
+<script id="bootstrap-modal-body-portal">
+document.addEventListener('DOMContentLoaded', function () {
+    /*
+     * Bootstrap cria o backdrop diretamente sob o <body>.
+     *
+     * Se um .modal estiver dentro de um elemento que cria
+     * stacking context (como .cadastro, que possui z-index),
+     * o modal pode ficar atrás do backdrop mesmo tendo um
+     * z-index numericamente maior.
+     *
+     * Todos os modais Bootstrap são promovidos para o body,
+     * eliminando esse conflito de empilhamento globalmente.
+     */
+    const moverModalParaBody = function (modal) {
+        if (
+            modal instanceof HTMLElement
+            && modal.classList.contains('modal')
+            && modal.parentElement !== document.body
+        ) {
+            document.body.appendChild(modal);
+        }
+    };
+
+    document
+        .querySelectorAll('.modal')
+        .forEach(moverModalParaBody);
+
+    /*
+     * Proteção adicional para modais inseridos
+     * dinamicamente depois do carregamento.
+     */
+    document.addEventListener(
+        'show.bs.modal',
+        function (event) {
+            moverModalParaBody(event.target);
+        }
+    );
+});
+</script>
+
 </body>
 </html>

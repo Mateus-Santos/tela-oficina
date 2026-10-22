@@ -421,8 +421,16 @@
                                     Descrição
                                 </small>
 
-                                {{ $produto->descricao
-                                    ?: 'Não informada' }}
+                                <div
+                                    class="overflow-auto text-break"
+                                    style="
+                                        max-height: 180px;
+                                        white-space: pre-line;
+                                    "
+                                >
+                                    {{ $produto->descricao
+                                        ?: 'Não informada' }}
+                                </div>
 
                             </div>
 

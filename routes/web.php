@@ -510,6 +510,26 @@ Route::middleware([
             'contas-pagar.anexos.store'
         );
 
+        Route::post(
+            'contas-receber/{contaReceber}/anexos',
+            [
+                AnexoController::class,
+                'storeContaReceber',
+            ]
+        )->name(
+            'contas-receber.anexos.store'
+        );
+
+        Route::patch(
+            'anexos/{vinculo}',
+            [
+                AnexoController::class,
+                'update',
+            ]
+        )->name(
+            'anexos.update'
+        );
+
         Route::get(
             'anexos/{anexo}',
             [

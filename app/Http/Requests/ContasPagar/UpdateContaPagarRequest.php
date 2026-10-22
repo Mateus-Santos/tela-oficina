@@ -77,6 +77,15 @@ class UpdateContaPagarRequest extends FormRequest
                 'date',
                 'after_or_equal:data_emissao',
             ],
+            'compras' => [
+                'nullable',
+                'array',
+            ],
+            'compras.*' => [
+                'integer',
+                'distinct',
+                'exists:compras,id',
+            ],
             'observacoes' => [
                 'nullable',
                 'string',
@@ -98,6 +107,14 @@ class UpdateContaPagarRequest extends FormRequest
             'valor.required' => 'O valor é obrigatório.',
             'valor.numeric' => 'O valor deve ser numérico.',
             'valor.gt' => 'O valor deve ser maior que zero.',
+            'compras.array' =>
+                'As compras vinculadas devem ser informadas em uma lista válida.',
+            'compras.*.integer' =>
+                'Uma das compras informadas é inválida.',
+            'compras.*.distinct' =>
+                'Uma compra não pode ser informada mais de uma vez.',
+            'compras.*.exists' =>
+                'Uma das compras informadas não existe.',
             'data_emissao.required' => 'A data de emissão é obrigatória.',
             'data_emissao.date' => 'A data de emissão deve ser uma data válida.',
             'data_vencimento.required' => 'A data de vencimento é obrigatória.',

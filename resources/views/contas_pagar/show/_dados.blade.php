@@ -61,21 +61,90 @@
                 </div>
             </div>
 
-            <div class="col-md-4">
-                <div class="text-muted small">Compra vinculada</div>
-                <div class="fw-semibold">
-                    @if ($conta->compra)
-                        <a
-                            href="{{ route('compras.show', $conta->compra) }}"
-                            class="text-decoration-none"
-                        >
-                            <i class="bi bi-box-arrow-up-right me-1"></i>
-                            #{{ str_pad($conta->compra->id, 6, '0', STR_PAD_LEFT) }}
-                        </a>
-                    @else
-                        Não vinculada
-                    @endif
+            <div class="col-12">
+                <div class="text-muted small mb-2">
+                    Compras vinculadas
                 </div>
+
+                @if ($conta->compras->isNotEmpty())
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Compra</th>
+                                    <th>NF</th>
+                                    <th>Emissão</th>
+                                    <th class="text-end">
+                                        Valor vinculado
+                                    </th>
+                                    <th class="text-center">
+                                        Ação
+                                    </th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                @foreach ($conta->compras as $compraVinculada)
+                                    <tr>
+                                        <td>
+                                            #{{ str_pad($compraVinculada->id, 6, '0', STR_PAD_LEFT) }}
+                                        </td>
+
+                                        <td>
+                                            {{ $compraVinculada->numero_nf ?: 'Não informada' }}
+                                        </td>
+
+                                        <td>
+                                            {{ $compraVinculada->data_emissao?->format('d/m/Y') ?? 'Não informada' }}
+                                        </td>
+
+                                        <td class="text-end fw-semibold">
+                                            R$
+                                            {{ number_format((float) $compraVinculada->pivot->valor_vinculado, 2, ',', '.') }}
+                                        </td>
+
+                                        <td class="text-center">
+                                            <a
+                                                href="{{ route('compras.show', $compraVinculada) }}"
+                                                class="btn btn-sm btn-outline-primary"
+                                            >
+                                                <i class="bi bi-box-arrow-up-right"></i>
+                                                Abrir
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+
+                            <tfoot>
+                                <tr>
+                                    <th colspan="3">
+                                        Total vinculado
+                                    </th>
+
+                                    <th class="text-end">
+                                        R$
+                                        {{ number_format(
+                                            (float) $conta->compras->sum(
+                                                fn ($compraVinculada) =>
+                                                    (float) $compraVinculada->pivot->valor_vinculado
+                                            ),
+                                            2,
+                                            ',',
+                                            '.'
+                                        ) }}
+                                    </th>
+
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                @else
+                    <div class="fw-semibold">
+                        Nenhuma compra vinculada
+                    </div>
+                @endif
             </div>
 
             @if ($conta->observacoes)
