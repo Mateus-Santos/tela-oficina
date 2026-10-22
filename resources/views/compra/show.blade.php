@@ -18,7 +18,12 @@
             && (float) $item->quantidade_conferida > 0
     );
 
-    $contaPagar = $compra->contaPagar;
+    /*
+     * A pivô é a fonte de verdade do vínculo.
+     * Uma compra continua pertencendo a no máximo
+     * uma conta por causa do UNIQUE(compra_id).
+     */
+    $contaPagar = $compra->contasPagar->first();
 @endphp
 
 <x-list-header title="VISUALIZAR COMPRA" icon="bi-cart-check" />

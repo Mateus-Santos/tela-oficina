@@ -15,6 +15,7 @@ use App\Http\Requests\ContasPagar\RegistrarPagamentoContaPagarRequest;
 use App\Http\Requests\ContasPagar\StoreContaPagarRequest;
 use App\Http\Requests\ContasPagar\UpdateContaPagarRequest;
 use App\Models\CategoriaFinanceira;
+use App\Models\Compra;
 use App\Models\ContaPagar;
 use App\Models\FormaPagamento;
 use App\Models\Fornecedor;
@@ -378,6 +379,17 @@ class ContaPagarController extends Controller
             ->orderBy('nome')
             ->get();
 
+        $comprasDisponiveis = Compra::query()
+            ->with('fornecedor')
+            ->where(
+                'status',
+                Compra::STATUS_APROVADA
+            )
+            ->whereDoesntHave('contasPagar')
+            ->orderByDesc('data_emissao')
+            ->orderByDesc('id')
+            ->get();
+
         $notas = Nota::query()
             ->with('cliente.pessoa')
             ->where('status', '!=', 'Cancelado')
@@ -399,6 +411,7 @@ class ContaPagarController extends Controller
             'contas_pagar.create',
             compact(
                 'fornecedores',
+                'comprasDisponiveis',
                 'notas',
                 'categoriasFinanceiras',
                 'formasPagamento'
@@ -410,9 +423,19 @@ class ContaPagarController extends Controller
         StoreContaPagarRequest $request,
         CriarContaPagar $action
     ): RedirectResponse {
-        $conta = $action->execute(
-            $request->validated()
-        );
+        try {
+            $conta = $action->execute(
+                $request->validated()
+            );
+        } catch (InvalidArgumentException $exception) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->withErrors([
+                    'compras' =>
+                        $exception->getMessage(),
+                ]);
+        }
 
         return redirect()
             ->route(
@@ -433,6 +456,10 @@ class ContaPagarController extends Controller
                     ->with('anexo')
                     ->latest(),
             ]),
+            'compras' => fn ($query) => $query
+                ->with('fornecedor')
+                ->orderBy('data_emissao')
+                ->orderBy('compras.id'),
             'fornecedor',
             'nota',
             'categoriaFinanceira',
@@ -474,6 +501,8 @@ class ContaPagarController extends Controller
 
     public function edit(ContaPagar $conta): View
     {
+        $conta->load('compras');
+
         $valorPago = (float) $conta
             ->pagamentosAtivos()
             ->sum('valor');
@@ -485,6 +514,32 @@ class ContaPagarController extends Controller
 
         $fornecedores = Fornecedor::query()
             ->orderBy('nome')
+            ->get();
+
+        $comprasDisponiveis = Compra::query()
+            ->with('fornecedor')
+            ->where(
+                'status',
+                Compra::STATUS_APROVADA
+            )
+            ->where(
+                function ($query) use ($conta) {
+                    $query
+                        ->whereDoesntHave(
+                            'contasPagar'
+                        )
+                        ->orWhereHas(
+                            'contasPagar',
+                            fn ($query) =>
+                                $query->where(
+                                    'contas_pagar.id',
+                                    $conta->id
+                                )
+                        );
+                }
+            )
+            ->orderByDesc('data_emissao')
+            ->orderByDesc('id')
             ->get();
 
         $notas = Nota::query()
@@ -524,6 +579,7 @@ class ContaPagarController extends Controller
             compact(
                 'conta',
                 'fornecedores',
+                'comprasDisponiveis',
                 'notas',
                 'categoriasFinanceiras',
                 'formasPagamento'
@@ -537,9 +593,26 @@ class ContaPagarController extends Controller
         AtualizarContaPagar $action
     ): RedirectResponse {
         try {
+            $dados = $request->validated();
+
+            /*
+             * Um select multiple vazio não envia
+             * o campo "compras". O marcador da
+             * interface diferencia "não alterar"
+             * de "remover todos os vínculos".
+             */
+            if (
+                $request->has(
+                    'gerenciar_compras'
+                )
+            ) {
+                $dados['compras'] =
+                    $dados['compras'] ?? [];
+            }
+
             $action->execute(
                 $conta,
-                $request->validated()
+                $dados
             );
         } catch (InvalidArgumentException $exception) {
             return redirect()
