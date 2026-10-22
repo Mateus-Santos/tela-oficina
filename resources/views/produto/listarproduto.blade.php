@@ -662,8 +662,14 @@
                         </span>
 
                         <p>
-                            {{ $produto->descricao
-                                ?: 'Não informada' }}
+                            {{
+                                filled($produto->descricao)
+                                    ? \Illuminate\Support\Str::limit(
+                                        trim($produto->descricao),
+                                        180
+                                    )
+                                    : 'Não informada'
+                            }}
                         </p>
 
                     </div>
