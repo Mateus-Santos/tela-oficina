@@ -142,6 +142,368 @@
         </div>
     </div>
 
+    {{-- DOCUMENTOS E ANEXOS --}}
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center gap-2 flex-wrap">
+            <span>
+                <i class="bi bi-paperclip"></i>
+                Documentos e anexos
+            </span>
+
+            <span class="badge bg-secondary">
+                {{ $contaReceber->anexosVinculos->count() }}
+                {{ $contaReceber->anexosVinculos->count() === 1 ? 'arquivo' : 'arquivos' }}
+            </span>
+        </div>
+
+        <div class="card-body">
+            <form
+                method="POST"
+                action="{{ route('contas-receber.anexos.store', $contaReceber) }}"
+                enctype="multipart/form-data"
+                class="mb-4"
+            >
+                @csrf
+
+                <div class="row g-3">
+                    <div class="col-12 col-md-4">
+                        <label
+                            for="tipo-anexo-conta-receber"
+                            class="form-label"
+                        >
+                            Tipo do documento
+                        </label>
+
+                        <select
+                            name="tipo"
+                            id="tipo-anexo-conta-receber"
+                            class="form-select"
+                            required
+                        >
+                            <option value="">Selecione...</option>
+                            <option value="nf">Nota fiscal</option>
+                            <option value="nf_xml">NF-e XML</option>
+                            <option value="foto">Foto</option>
+                            <option value="comprovante">Comprovante</option>
+                            <option value="boleto">Boleto</option>
+                            <option value="contrato">Contrato</option>
+                            <option value="orcamento">Orçamento</option>
+                            <option value="conta_luz">Conta de luz</option>
+                            <option value="conta_agua">Conta de água</option>
+                            <option value="conta_telefone">Conta de telefone</option>
+                            <option value="recibo">Recibo</option>
+                            <option value="outro">Outro</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-md-5">
+                        <label
+                            for="arquivo-anexo-conta-receber"
+                            class="form-label"
+                        >
+                            Arquivo
+                        </label>
+
+                        <input
+                            type="file"
+                            name="arquivo"
+                            id="arquivo-anexo-conta-receber"
+                            class="form-control"
+                            accept=".pdf,.jpg,.jpeg,.png,.webp,.xml"
+                            required
+                        >
+
+                        <small class="text-muted">
+                            PDF, JPG, JPEG, PNG, WEBP ou XML — máximo de 2 MB.
+                        </small>
+                    </div>
+
+                    <div class="col-12 col-md-3">
+                        <label
+                            for="observacoes-anexo-conta-receber"
+                            class="form-label"
+                        >
+                            Observações
+                        </label>
+
+                        <input
+                            type="text"
+                            name="observacoes"
+                            id="observacoes-anexo-conta-receber"
+                            class="form-control"
+                            maxlength="1000"
+                        >
+                    </div>
+
+                    <div class="col-12">
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                        >
+                            <i class="bi bi-cloud-arrow-up"></i>
+                            Enviar anexo
+                        </button>
+
+                        @if(in_array($contaReceber->status, ['quitada', 'cancelada'], true))
+                            <small class="text-muted ms-2">
+                                O encerramento da conta não impede a gestão documental.
+                            </small>
+                        @endif
+                    </div>
+                </div>
+            </form>
+
+            @if($contaReceber->anexosVinculos->isEmpty())
+                <div class="alert alert-light border mb-0">
+                    <i class="bi bi-info-circle"></i>
+                    Nenhum documento ou anexo cadastrado nesta conta.
+                </div>
+            @else
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Tipo</th>
+                                <th>Arquivo</th>
+                                <th>Tamanho</th>
+                                <th>Observações</th>
+                                <th>Data</th>
+                                <th class="text-end">Ações</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach($contaReceber->anexosVinculos as $vinculo)
+                                @php
+                                    $anexo = $vinculo->anexo;
+
+                                    $tipoAnexo = match ($vinculo->tipo) {
+                                        'nf' => 'Nota fiscal',
+                                        'nf_xml' => 'NF-e XML',
+                                        'foto' => 'Foto',
+                                        'comprovante' => 'Comprovante',
+                                        'boleto' => 'Boleto',
+                                        'contrato' => 'Contrato',
+                                        'orcamento' => 'Orçamento',
+                                        'conta_luz' => 'Conta de luz',
+                                        'conta_agua' => 'Conta de água',
+                                        'conta_telefone' => 'Conta de telefone',
+                                        'recibo' => 'Recibo',
+                                        default => 'Outro',
+                                    };
+                                @endphp
+
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-secondary">
+                                            {{ $tipoAnexo }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <div class="fw-semibold text-break">
+                                            {{ $anexo->nome_original }}
+                                        </div>
+
+                                        <small class="text-muted">
+                                            {{ $anexo->mime_type }}
+                                        </small>
+                                    </td>
+
+                                    <td>
+                                        {{ number_format($anexo->tamanho / 1024, 1, ',', '.') }} KB
+                                    </td>
+
+                                    <td>
+                                        {{ $vinculo->observacoes ?: '-' }}
+                                    </td>
+
+                                    <td>
+                                        {{ $vinculo->created_at?->format('d/m/Y H:i') }}
+                                    </td>
+
+                                    <td class="text-end">
+                                        <div class="d-flex justify-content-end gap-1">
+                                            <a
+                                                href="{{ route('anexos.show', $anexo) }}"
+                                                class="btn btn-sm btn-outline-secondary"
+                                                title="Visualizar anexo"
+                                            >
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+
+                                            <a
+                                                href="{{ route('anexos.download', $anexo) }}"
+                                                class="btn btn-sm btn-outline-primary"
+                                                title="Baixar anexo"
+                                            >
+                                                <i class="bi bi-download"></i>
+                                            </a>
+
+                                            <button
+                                                type="button"
+                                                class="btn btn-sm btn-outline-warning"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modalEditarAnexoReceber{{ $vinculo->id }}"
+                                                title="Editar anexo"
+                                            >
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+
+                                            <form
+                                                method="POST"
+                                                action="{{ route('anexos.destroy', $vinculo) }}"
+                                                onsubmit="return confirm('Tem certeza que deseja excluir este anexo?');"
+                                            >
+                                                @csrf
+                                                @method('DELETE')
+
+                                                <button
+                                                    type="submit"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    title="Excluir anexo"
+                                                >
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+
+                @foreach($contaReceber->anexosVinculos as $vinculo)
+                    @php
+                        $anexo = $vinculo->anexo;
+                    @endphp
+
+                    <div
+                        class="modal fade"
+                        id="modalEditarAnexoReceber{{ $vinculo->id }}"
+                        tabindex="-1"
+                        aria-hidden="true"
+                    >
+                        <div class="modal-dialog modal-lg modal-dialog-centered">
+                            <div class="modal-content">
+                                <form
+                                    method="POST"
+                                    action="{{ route('anexos.update', $vinculo) }}"
+                                    enctype="multipart/form-data"
+                                >
+                                    @csrf
+                                    @method('PATCH')
+
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">
+                                            <i class="bi bi-pencil-square"></i>
+                                            Editar anexo
+                                        </h5>
+
+                                        <button
+                                            type="button"
+                                            class="btn-close"
+                                            data-bs-dismiss="modal"
+                                            aria-label="Fechar"
+                                        ></button>
+                                    </div>
+
+                                    <div class="modal-body">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">
+                                                    Tipo
+                                                </label>
+
+                                                <select
+                                                    name="tipo"
+                                                    class="form-select"
+                                                    required
+                                                >
+                                                    @foreach([
+                                                        'nf' => 'Nota fiscal',
+                                                        'nf_xml' => 'NF-e XML',
+                                                        'foto' => 'Foto',
+                                                        'comprovante' => 'Comprovante',
+                                                        'boleto' => 'Boleto',
+                                                        'contrato' => 'Contrato',
+                                                        'orcamento' => 'Orçamento',
+                                                        'conta_luz' => 'Conta de luz',
+                                                        'conta_agua' => 'Conta de água',
+                                                        'conta_telefone' => 'Conta de telefone',
+                                                        'recibo' => 'Recibo',
+                                                        'outro' => 'Outro',
+                                                    ] as $valor => $label)
+                                                        <option
+                                                            value="{{ $valor }}"
+                                                            @selected($vinculo->tipo === $valor)
+                                                        >
+                                                            {{ $label }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label class="form-label">
+                                                    Substituir arquivo
+                                                </label>
+
+                                                <input
+                                                    type="file"
+                                                    name="arquivo"
+                                                    class="form-control"
+                                                    accept=".pdf,.jpg,.jpeg,.png,.webp,.xml"
+                                                >
+
+                                                <small class="text-muted">
+                                                    Atual: {{ $anexo->nome_original }}.
+                                                    Deixe vazio para manter.
+                                                </small>
+                                            </div>
+
+                                            <div class="col-12">
+                                                <label class="form-label">
+                                                    Observações
+                                                </label>
+
+                                                <textarea
+                                                    name="observacoes"
+                                                    class="form-control"
+                                                    rows="3"
+                                                    maxlength="1000"
+                                                >{{ $vinculo->observacoes }}</textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="modal-footer">
+                                        <button
+                                            type="button"
+                                            class="btn btn-secondary"
+                                            data-bs-dismiss="modal"
+                                        >
+                                            Cancelar
+                                        </button>
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-primary"
+                                        >
+                                            <i class="bi bi-check-lg"></i>
+                                            Salvar alterações
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            @endif
+        </div>
+    </div>
+
     {{-- PARCELAS --}}
     <div class="card mb-4">
         <div class="card-header">

@@ -8,12 +8,28 @@ use InvalidArgumentException;
 
 class AtualizarContaPagar
 {
+    public function __construct(
+        private VincularComprasContaPagar $vincularCompras
+    ) {
+    }
+
     public function execute(ContaPagar $conta, array $dados): ContaPagar
     {
         return DB::transaction(function () use ($conta, $dados) {
+            $alterarCompras = array_key_exists(
+                'compras',
+                $dados
+            );
+
+            $compraIds = $dados['compras'] ?? [];
+
+            unset($dados['compras']);
             $conta = ContaPagar::query()
                 ->lockForUpdate()
-                ->with('parcelas')
+                ->with([
+                    'parcelas',
+                    'compras',
+                ])
                 ->findOrFail($conta->id);
 
             if ($conta->status === 'cancelada') {
@@ -34,6 +50,61 @@ class AtualizarContaPagar
             }
 
             $quantidadeParcelas = $conta->parcelas->count();
+
+            /*
+             * Se a conta já possui compras vinculadas
+             * e o agrupamento não está sendo alterado,
+             * valor e fornecedor precisam continuar
+             * coerentes com os vínculos existentes.
+             */
+            if (
+                !$alterarCompras
+                && $conta->compras->isNotEmpty()
+            ) {
+                $valorVinculado = round(
+                    (float) $conta->compras->sum(
+                        fn ($compra) =>
+                            (float) $compra
+                                ->pivot
+                                ->valor_vinculado
+                    ),
+                    2
+                );
+
+                if (
+                    array_key_exists('valor', $dados)
+                    && abs(
+                        round(
+                            (float) $dados['valor'],
+                            2
+                        )
+                        - $valorVinculado
+                    ) > 0.009
+                ) {
+                    throw new InvalidArgumentException(
+                        'O valor de uma conta com compras vinculadas deve permanecer igual ao total das compras.'
+                    );
+                }
+
+                $fornecedorVinculado = (int)
+                    $conta->compras
+                        ->first()
+                        ->fornecedor_id;
+
+                if (
+                    array_key_exists(
+                        'fornecedor_id',
+                        $dados
+                    )
+                    && $dados['fornecedor_id'] !== null
+                    && (int) $dados['fornecedor_id']
+                        !== $fornecedorVinculado
+                ) {
+                    throw new InvalidArgumentException(
+                        'O fornecedor da conta deve permanecer igual ao fornecedor das compras vinculadas.'
+                    );
+                }
+            }
 
             if ($quantidadeParcelas > 1) {
                 if (
@@ -101,7 +172,19 @@ class AtualizarContaPagar
                 'status' => $status,
             ]);
 
-            return $conta->fresh('parcelas');
+            if ($alterarCompras) {
+                $conta = $this
+                    ->vincularCompras
+                    ->execute(
+                        $conta,
+                        $compraIds
+                    );
+            }
+
+            return $conta->fresh([
+                'parcelas',
+                'compras',
+            ]);
         });
     }
 }

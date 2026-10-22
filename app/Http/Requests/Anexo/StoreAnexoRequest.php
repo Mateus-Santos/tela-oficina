@@ -35,7 +35,7 @@ class StoreAnexoRequest extends FormRequest
                     'outro',
                 ]),
             ],
-            'observacoes' => ['nullable', 'string'],
+            'observacoes' => ['nullable', 'string', 'max:1000'],
         ];
     }
 
@@ -49,6 +49,7 @@ class StoreAnexoRequest extends FormRequest
             'tipo.required' => 'O tipo do anexo é obrigatório.',
             'tipo.in' => 'O tipo de anexo informado é inválido.',
             'observacoes.string' => 'As observações informadas são inválidas.',
+            'observacoes.max' => 'As observações não podem ter mais de 1000 caracteres.',
         ];
     }
 }

@@ -124,12 +124,13 @@
             <div class="col-12 col-md-4">
                 <label for="status" class="form-label">Status</label>
                 <select name="status" id="status" class="form-select">
-                    <option value="">Todas em aberto</option>
+                    <option value="">Pendentes</option>
                     <option value="aberta" @selected(request('status') === 'aberta')>Aberta</option>
                     <option value="parcialmente_paga" @selected(request('status') === 'parcialmente_paga')>Parcialmente paga</option>
                     <option value="paga" @selected(request('status') === 'paga')>Paga</option>
                     <option value="vencida" @selected(request('status') === 'vencida')>Vencida</option>
                     <option value="cancelada" @selected(request('status') === 'cancelada')>Cancelada</option>
+                    <option value="todas" @selected(request('status') === 'todas')>Todas</option>
                 </select>
             </div>
 
@@ -191,11 +192,14 @@
         </div>
     </x-filtros-container>
 
-    @if($contas->isEmpty())
+    @if($parcelasPagar->isEmpty())
         <div class="card border-0 shadow-sm">
             <div class="card-body text-center py-5">
                 <i class="bi bi-wallet2 fs-1 text-muted"></i>
-                <h5 class="mt-3">Nenhuma conta encontrada</h5>
+
+                <h5 class="mt-3">
+                    Nenhuma parcela encontrada
+                </h5>
 
                 @if(request()->hasAny([
                     'descricao',
@@ -207,59 +211,95 @@
                     'data_vencimento_fim'
                 ]))
                     <p class="text-muted mb-3">
-                        Nenhuma conta corresponde aos filtros informados.
+                        Nenhuma parcela corresponde aos filtros informados.
                     </p>
 
-                    <a href="{{ route('contas-pagar.index') }}" class="btn btn-outline-secondary">
+                    <a
+                        href="{{ route('contas-pagar.index') }}"
+                        class="btn btn-outline-secondary"
+                    >
                         <i class="bi bi-x-lg me-1"></i>
                         Limpar filtros
                     </a>
                 @else
                     <p class="text-muted mb-3">
-                        Ainda não existem contas a pagar cadastradas.
+                        Não existem parcelas pendentes para pagamento.
                     </p>
-
-                    <a href="{{ route('contas-pagar.create') }}" class="btn btn-primary">
-                        <i class="bi bi-plus-lg me-1"></i>
-                        Nova Conta
-                    </a>
                 @endif
             </div>
         </div>
     @else
         @php
-            $gruposPorVencimento = $contas->getCollection()->groupBy(
-                fn ($conta) => $conta->data_vencimento->format('Y-m-d')
-            );
+            $gruposPorVencimento = $parcelasPagar
+                ->getCollection()
+                ->groupBy(
+                    fn ($parcela) =>
+                        $parcela
+                            ->data_vencimento
+                            ->format('Y-m-d')
+                );
         @endphp
 
         <div class="d-flex align-items-center justify-content-between mb-3">
             <div>
-                <h5 class="mb-1">Agenda de vencimentos</h5>
+                <h5 class="mb-1">
+                    Agenda de pagamentos
+                </h5>
+
                 <div class="text-muted small">
-                    {{ $contas->total() }} {{ $contas->total() === 1 ? 'conta encontrada' : 'contas encontradas' }}
+                    {{ $parcelasPagar->total() }}
+                    {{ $parcelasPagar->total() === 1 ? 'parcela encontrada' : 'parcelas encontradas' }}
                 </div>
             </div>
         </div>
 
-        @foreach($gruposPorVencimento as $data => $contasDoDia)
+        @foreach($gruposPorVencimento as $parcelasDoDia)
             @php
-                $dataVencimento = $contasDoDia->first()->data_vencimento;
-                $totalGrupo = 0;
-                $pagoGrupo = 0;
-                $saldoGrupo = 0;
+                $dataVencimento =
+                    $parcelasDoDia
+                        ->first()
+                        ->data_vencimento;
 
-                foreach ($contasDoDia as $conta) {
-                    $valorPago = (float) ($conta->valor_pago ?? 0);
-                    $saldo = max(0, round((float) $conta->valor - $valorPago, 2));
+                $totalGrupo =
+                    $parcelasDoDia->sum(
+                        fn ($parcela) =>
+                            (float) $parcela->valor
+                    );
 
-                    $totalGrupo += (float) $conta->valor;
-                    $pagoGrupo += $valorPago;
-                    $saldoGrupo += $saldo;
-                }
+                $pagoGrupo =
+                    $parcelasDoDia->sum(
+                        fn ($parcela) =>
+                            (float) (
+                                $parcela->valor_pago
+                                ?? 0
+                            )
+                    );
 
-                $estaVencido = $dataVencimento->isBefore(today()) && $saldoGrupo > 0;
-                $venceHoje = $dataVencimento->isToday();
+                $saldoGrupo =
+                    $parcelasDoDia->sum(
+                        fn ($parcela) => max(
+                            0,
+                            round(
+                                (float)
+                                    $parcela->valor
+                                - (float) (
+                                    $parcela
+                                        ->valor_pago
+                                    ?? 0
+                                ),
+                                2
+                            )
+                        )
+                    );
+
+                $estaVencido =
+                    $dataVencimento
+                        ->isBefore(today())
+                    && $saldoGrupo > 0;
+
+                $venceHoje =
+                    $dataVencimento->isToday()
+                    && $saldoGrupo > 0;
             @endphp
 
             <div class="card border-0 shadow-sm mb-4">
@@ -281,13 +321,17 @@
                                     </div>
 
                                     <div class="small text-muted">
-                                        {{ $contasDoDia->count() }}
-                                        {{ $contasDoDia->count() === 1 ? 'conta' : 'contas' }}
+                                        {{ $parcelasDoDia->count() }}
+                                        {{ $parcelasDoDia->count() === 1 ? 'parcela' : 'parcelas' }}
 
                                         @if($estaVencido)
-                                            <span class="badge bg-danger ms-1">VENCIDO</span>
+                                            <span class="badge bg-danger ms-1">
+                                                VENCIDO
+                                            </span>
                                         @elseif($venceHoje)
-                                            <span class="badge bg-warning text-dark ms-1">VENCE HOJE</span>
+                                            <span class="badge bg-warning text-dark ms-1">
+                                                VENCE HOJE
+                                            </span>
                                         @endif
                                     </div>
                                 </div>
@@ -297,22 +341,31 @@
                         <div class="col-12 col-lg-8">
                             <div class="row g-2 text-lg-end">
                                 <div class="col-4">
-                                    <div class="small text-muted">Total</div>
+                                    <div class="small text-muted">
+                                        Total
+                                    </div>
+
                                     <div class="fw-bold">
                                         R$ {{ number_format($totalGrupo, 2, ',', '.') }}
                                     </div>
                                 </div>
 
                                 <div class="col-4">
-                                    <div class="small text-muted">Pago</div>
+                                    <div class="small text-muted">
+                                        Pago
+                                    </div>
+
                                     <div class="fw-bold text-success">
                                         R$ {{ number_format($pagoGrupo, 2, ',', '.') }}
                                     </div>
                                 </div>
 
                                 <div class="col-4">
-                                    <div class="small text-muted">Saldo</div>
-                                    <div class="fw-bold {{ $saldoGrupo > 0 && $estaVencido ? 'text-danger' : '' }}">
+                                    <div class="small text-muted">
+                                        Saldo
+                                    </div>
+
+                                    <div class="fw-bold {{ $estaVencido ? 'text-danger' : '' }}">
                                         R$ {{ number_format($saldoGrupo, 2, ',', '.') }}
                                     </div>
                                 </div>
@@ -325,36 +378,83 @@
                     <table class="table table-hover align-middle mb-0">
                         <thead>
                             <tr>
-                                <th class="ps-3">ID</th>
+                                <th class="ps-3">Conta</th>
+                                <th>Parcela</th>
                                 <th>Descrição</th>
                                 <th>Fornecedor</th>
                                 <th>Valor</th>
                                 <th>Pago</th>
                                 <th>Saldo</th>
                                 <th>Status</th>
-                                <th class="text-end pe-3">Ações</th>
+                                <th class="text-end pe-3">
+                                    Ações
+                                </th>
                             </tr>
                         </thead>
 
                         <tbody>
-                            @foreach($contasDoDia as $conta)
+                            @foreach($parcelasDoDia as $parcela)
                                 @php
-                                    $valorPago = (float) ($conta->valor_pago ?? 0);
-                                    $saldo = max(0, round((float) $conta->valor - $valorPago, 2));
+                                    $conta =
+                                        $parcela->contaPagar;
 
-                                    $estaCancelada = $conta->status === 'cancelada';
-                                    $estaPaga = $saldo <= 0;
-                                    $estaVencida = !$estaCancelada
+                                    $valorParcela =
+                                        (float)
+                                            $parcela->valor;
+
+                                    $valorPago =
+                                        (float) (
+                                            $parcela
+                                                ->valor_pago
+                                            ?? 0
+                                        );
+
+                                    $saldo = max(
+                                        0,
+                                        round(
+                                            $valorParcela
+                                            - $valorPago,
+                                            2
+                                        )
+                                    );
+
+                                    $estaCancelada =
+                                        $conta->status
+                                        === 'cancelada';
+
+                                    $estaPaga =
+                                        !$estaCancelada
+                                        && $saldo <= 0;
+
+                                    $estaVencida =
+                                        !$estaCancelada
                                         && !$estaPaga
-                                        && $conta->data_vencimento->isBefore(today());
-                                    $estaParcial = !$estaCancelada
+                                        && $parcela
+                                            ->data_vencimento
+                                            ->isBefore(
+                                                today()
+                                            );
+
+                                    $estaParcial =
+                                        !$estaCancelada
                                         && !$estaPaga
                                         && $valorPago > 0;
+
+                                    $totalParcelas =
+                                        $conta
+                                            ->parcelas_count
+                                        ?? 1;
                                 @endphp
 
                                 <tr>
-                                    <td class="ps-3">
-                                        #{{ $conta->id }}
+                                    <td class="ps-3 text-nowrap">
+                                        #{{ str_pad($conta->id, 6, '0', STR_PAD_LEFT) }}
+                                    </td>
+
+                                    <td class="text-nowrap">
+                                        <span class="fw-semibold">
+                                            {{ $parcela->numero }}/{{ $totalParcelas }}
+                                        </span>
                                     </td>
 
                                     <td>
@@ -373,19 +473,21 @@
                                         @if($conta->fornecedor)
                                             {{ $conta->fornecedor->nome }}
                                         @else
-                                            <span class="text-muted">Não informado</span>
+                                            <span class="text-muted">
+                                                Não informado
+                                            </span>
                                         @endif
                                     </td>
 
-                                    <td class="fw-semibold">
-                                        R$ {{ number_format($conta->valor, 2, ',', '.') }}
+                                    <td class="fw-semibold text-nowrap">
+                                        R$ {{ number_format($valorParcela, 2, ',', '.') }}
                                     </td>
 
-                                    <td class="text-success">
+                                    <td class="text-success text-nowrap">
                                         R$ {{ number_format($valorPago, 2, ',', '.') }}
                                     </td>
 
-                                    <td class="fw-semibold {{ $estaVencida ? 'text-danger' : '' }}">
+                                    <td class="fw-semibold text-nowrap {{ $estaVencida ? 'text-danger' : '' }}">
                                         R$ {{ number_format($saldo, 2, ',', '.') }}
                                     </td>
 
@@ -404,7 +506,7 @@
                                             </span>
                                         @elseif($estaParcial)
                                             <span class="badge bg-warning text-dark">
-                                                Parcialmente paga
+                                                Parcial
                                             </span>
                                         @else
                                             <span class="badge bg-primary">
@@ -418,7 +520,7 @@
                                             <a
                                                 href="{{ route('contas-pagar.show', $conta) }}"
                                                 class="btn btn-sm btn-outline-primary"
-                                                title="Visualizar"
+                                                title="Visualizar conta"
                                             >
                                                 <i class="bi bi-eye"></i>
                                             </a>
@@ -427,16 +529,16 @@
                                                 <a
                                                     href="{{ route('contas-pagar.edit', $conta) }}"
                                                     class="btn btn-sm btn-outline-secondary"
-                                                    title="Editar"
+                                                    title="Editar conta"
                                                 >
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
 
-                                                @if($saldo > 0)
+                                                @if(!$estaPaga && $saldo > 0)
                                                     <a
                                                         href="{{ route('contas-pagar.show', $conta) }}"
-                                                        class="btn btn-sm btn-outline-success"
-                                                        title="Registrar pagamento"
+                                                        class="btn btn-sm {{ $estaVencida ? 'btn-outline-danger' : 'btn-outline-success' }}"
+                                                        title="{{ $estaVencida ? 'Registrar pagamento de parcela vencida' : 'Registrar pagamento' }}"
                                                     >
                                                         <i class="bi bi-cash-coin"></i>
                                                     </a>
@@ -453,8 +555,9 @@
         @endforeach
 
         <div class="mt-4">
-            {{ $contas->links() }}
+            {{ $parcelasPagar->links() }}
         </div>
     @endif
+
 </div>
 @endsection
