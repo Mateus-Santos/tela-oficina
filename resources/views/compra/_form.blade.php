@@ -277,11 +277,18 @@
                                                     {{ $produtoSelecionado['nome'] ?? $produtoSelecionado->nome }}
                                                 </div>
 
+                                                @if ($produtoSelecionado['codigo'] ?? $produtoSelecionado->codigo ?? null)
+                                                    <div class="small text-muted">
+                                                        Código do produto:
+                                                        {{ $produtoSelecionado['codigo'] ?? $produtoSelecionado->codigo }}
+                                                    </div>
+                                                @endif
+
                                                 @if ($produtoSelecionado['codigo_fabricante'] ?? $produtoSelecionado->codigo_fabricante ?? null)
-                                                    <small class="text-muted">
-                                                        Código:
+                                                    <div class="small text-muted">
+                                                        Ref. fabricante:
                                                         {{ $produtoSelecionado['codigo_fabricante'] ?? $produtoSelecionado->codigo_fabricante }}
-                                                    </small>
+                                                    </div>
                                                 @endif
                                             @elseif (!empty($item['produto_id']))
                                                 <div class="fw-semibold">

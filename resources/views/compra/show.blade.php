@@ -623,10 +623,19 @@
                                         {{ $item->produto->nome ?? 'Produto não encontrado' }}
                                     </strong>
 
+                                    @if ($item->produto?->codigo)
+                                        <br>
+                                        <small class="text-muted">
+                                            Código:
+                                            {{ $item->produto->codigo }}
+                                        </small>
+                                    @endif
+
                                     @if ($item->produto?->codigo_fabricante)
                                         <br>
                                         <small class="text-muted">
-                                            Código: {{ $item->produto->codigo_fabricante }}
+                                            Ref. fabricante:
+                                            {{ $item->produto->codigo_fabricante }}
                                         </small>
                                     @endif
                                 </td>

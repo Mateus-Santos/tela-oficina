@@ -13,6 +13,7 @@ class Produto extends Model
     use HasFactory;
 
     protected $fillable = [
+        'codigo',
         'nome',
         'descricao',
         'quantidade',
@@ -45,6 +46,11 @@ class Produto extends Model
     public function scopeFiltro($query, array $filtros)
     {
         return $query
+            ->when(
+                $filtros['codigo'] ?? null,
+                fn ($q, $v) =>
+                    $q->where('codigo', $v)
+            )
             ->when(
                 $filtros['nome'] ?? null,
                 fn ($q, $v) => $q->where('nome', 'like', "%{$v}%")
@@ -121,6 +127,56 @@ class Produto extends Model
             );
     }
 
+    protected static function booted(): void
+    {
+        static::created(function (Produto $produto) {
+            if (
+                $produto->codigo !== null
+                && trim($produto->codigo) !== ''
+            ) {
+                return;
+            }
+
+            $produto->forceFill([
+                'codigo' =>
+                    $produto->gerarCodigoAutomatico(),
+            ])->saveQuietly();
+        });
+    }
+
+    public function gerarCodigoAutomatico(): string
+    {
+        $base =
+            'PRD-'
+            .str_pad(
+                (string) $this->getKey(),
+                8,
+                '0',
+                STR_PAD_LEFT
+            );
+
+        $codigo = $base;
+        $sufixo = 1;
+
+        while (
+            static::query()
+                ->where('codigo', $codigo)
+                ->where(
+                    $this->getKeyName(),
+                    '!=',
+                    $this->getKey()
+                )
+                ->exists()
+        ) {
+            $codigo =
+                $base.'-'.$sufixo;
+
+            $sufixo++;
+        }
+
+        return $codigo;
+    }
+
     public function marcaRelacionada(): BelongsTo
     {
         return $this->belongsTo(Marca::class, 'marca_id');
@@ -130,6 +186,14 @@ class Produto extends Model
     {
         return $this->hasMany(ProdutoImagem::class)
             ->orderBy('ordem')
+            ->orderBy('id');
+    }
+
+    public function aplicacoes(): HasMany
+    {
+        return $this->hasMany(
+            ProdutoAplicacao::class
+        )
             ->orderBy('id');
     }
 
@@ -161,5 +225,10 @@ class Produto extends Model
     public function movimentacoesEstoque(): HasMany
     {
         return $this->hasMany(MovimentacaoEstoque::class);
+    }
+
+    public function catalogos(): HasMany
+    {
+        return $this->hasMany(CatalogoProduto::class);
     }
 }

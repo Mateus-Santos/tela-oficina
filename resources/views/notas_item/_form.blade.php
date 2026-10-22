@@ -517,6 +517,10 @@
                                     $produtoItem =
                                         $item->itemable;
 
+                                    $codigoProdutoItem =
+                                        $produtoItem->codigo
+                                        ?: '';
+
                                     $codigoFabricanteItem =
                                         $produtoItem->codigo_fabricante
                                         ?: '';
@@ -526,7 +530,8 @@
                                         ?: '';
 
                                     $codigoItem =
-                                        $codigoFabricanteItem
+                                        $codigoProdutoItem
+                                        ?: $codigoFabricanteItem
                                         ?: $codigoBarrasItem
                                         ?: '';
 

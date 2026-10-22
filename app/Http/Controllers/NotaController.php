@@ -527,7 +527,8 @@ class NotaController extends Controller
                                     ->codigo_barras;
 
                             $codigo =
-                                $codigoFabricante
+                                $produto->codigo
+                                ?: $codigoFabricante
                                 ?: $codigoBarras
                                 ?: '—';
 

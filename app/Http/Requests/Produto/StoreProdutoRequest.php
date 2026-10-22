@@ -23,6 +23,12 @@ class StoreProdutoRequest extends FormRequest
                 ? trim($this->descricao)
                 : null,
 
+            'codigo' => $this->codigo
+                ? mb_strtoupper(
+                    trim($this->codigo)
+                )
+                : null,
+
             'codigo_fabricante' => $this->codigo_fabricante
                 ? trim($this->codigo_fabricante)
                 : null,
@@ -110,10 +116,28 @@ class StoreProdutoRequest extends FormRequest
                 'boolean',
             ],
 
+            'codigo' => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique(
+                    'produtos',
+                    'codigo'
+                ),
+            ],
+
             'codigo_fabricante' => [
                 'required',
                 'string',
-                Rule::unique('produtos', 'codigo_fabricante'),
+                Rule::unique(
+                    'produtos',
+                    'codigo_fabricante'
+                )->where(
+                    fn ($query) => $query->where(
+                        'marca_id',
+                        $this->input('marca_id')
+                    )
+                ),
             ],
 
             'codigo_barras' => [
@@ -201,6 +225,64 @@ class StoreProdutoRequest extends FormRequest
             'veiculos.*' => [
                 'exists:veiculos,id',
             ],
+
+            'aplicacoes' => [
+                'nullable',
+                'array',
+            ],
+
+            'aplicacoes.*.veiculo_id' => [
+                'required',
+                'integer',
+                'exists:veiculos,id',
+            ],
+
+            'aplicacoes.*.mes_ano' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
+
+            'aplicacoes.*.modelo' => [
+                'nullable',
+                'string',
+                'max:191',
+            ],
+
+            'aplicacoes.*.motor' => [
+                'nullable',
+                'string',
+                'max:191',
+            ],
+
+            'aplicacoes.*.comp' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
+
+            'aplicacoes.*.valvulas' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
+
+            'aplicacoes.*.cilindros' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
+
+            'aplicacoes.*.combustivel' => [
+                'nullable',
+                'string',
+                'max:191',
+            ],
+
+            'aplicacoes.*.complemento' => [
+                'nullable',
+                'string',
+            ],
         ];
     }
 
@@ -232,9 +314,14 @@ class StoreProdutoRequest extends FormRequest
             'status.required' => 'Informe o status do produto.',
             'status.boolean' => 'O status informado é inválido.',
 
+            'codigo.required' => 'O código do produto é obrigatório.',
+            'codigo.string' => 'O código do produto é inválido.',
+            'codigo.max' => 'O código do produto não pode ultrapassar 50 caracteres.',
+            'codigo.unique' => 'Já existe outro produto com este código.',
+
             'codigo_fabricante.required' => 'O código do fabricante é obrigatório.',
             'codigo_fabricante.string' => 'O código do fabricante é inválido.',
-            'codigo_fabricante.unique' => 'Já existe um produto cadastrado com este código de fabricante.',
+            'codigo_fabricante.unique' => 'Já existe um produto desta marca com este código de fabricante.',
 
             'codigo_barras.string' => 'O código de barras é inválido.',
             'codigo_barras.unique' => 'Já existe outro produto cadastrado com este código de barras.',

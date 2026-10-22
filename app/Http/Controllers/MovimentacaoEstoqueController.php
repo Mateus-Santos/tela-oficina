@@ -45,6 +45,11 @@ class MovimentacaoEstoqueController extends Controller
                                     "%{$produto}%"
                                 )
                                 ->orWhere(
+                                    'codigo',
+                                    'like',
+                                    "%{$produto}%"
+                                )
+                                ->orWhere(
                                     'codigo_fabricante',
                                     'like',
                                     "%{$produto}%"

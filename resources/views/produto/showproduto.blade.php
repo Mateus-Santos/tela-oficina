@@ -2,14 +2,153 @@
 
 @section('content')
 
+@php
+    $possuiCatalogo =
+        $dadosCatalogo['possui_catalogo']
+        ?? false;
+
+    $fonteCatalogo =
+        $dadosCatalogo['fonte']
+        ?? 'Catálogo externo';
+
+    $precoVenda =
+        (float) (
+            $dadosCatalogo['preco_venda']
+            ?? $produto->preco_uni
+        );
+
+    $origemPreco =
+        $dadosCatalogo['origem_preco']
+        ?? 'Cadastro Jaime';
+
+    $estoqueFornecedor =
+        $dadosCatalogo['estoque_observado']
+        ?? null;
+
+    $ultimaColeta =
+        $dadosCatalogo['ultima_coleta_em']
+        ?? null;
+
+    $galeria = collect();
+
+    foreach ($produto->imagens as $imagem) {
+        if (! $imagem->caminho) {
+            continue;
+        }
+
+        $galeria->push([
+            'url' => asset(
+                'storage/'.$imagem->caminho
+            ),
+            'origem' => 'Jaime',
+            'remota' => false,
+        ]);
+    }
+
+    if ($catalogoPrincipal) {
+        foreach (
+            $catalogoPrincipal
+                ->imagens
+                ->sortByDesc(
+                    fn ($imagem) =>
+                        (int) $imagem->principal
+                )
+            as $imagem
+        ) {
+            $url =
+                $imagem->url_original
+                ?: $imagem->url_thumb;
+
+            if (! $url) {
+                continue;
+            }
+
+            $galeria->push([
+                'url' => $url,
+                'origem' => $fonteCatalogo,
+                'remota' => true,
+            ]);
+        }
+
+        $fallback =
+            $catalogoPrincipal->imagem_url
+            ?: $catalogoPrincipal
+                ->imagem_thumb_url;
+
+        if (
+            $fallback
+            && ! $galeria->contains(
+                'url',
+                $fallback
+            )
+        ) {
+            $galeria->push([
+                'url' => $fallback,
+                'origem' => $fonteCatalogo,
+                'remota' => true,
+            ]);
+        }
+    }
+
+    $galeria = $galeria
+        ->unique('url')
+        ->values();
+
+    $atributos =
+        $catalogoPrincipal?->atributos
+        ?? collect();
+@endphp
+
 <section class="container cadastro">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    {{-- CABEÇALHO --}}
+    <div
+        class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4"
+    >
 
-        <h1>
-            <i class="bi bi-box-seam"></i>
-            VISUALIZAR PRODUTO
-        </h1>
+        <div>
+
+            <div
+                class="d-flex flex-wrap align-items-center gap-2"
+            >
+
+                <h1 class="mb-0">
+                    <i class="bi bi-box-seam"></i>
+                    VISUALIZAR PRODUTO
+                </h1>
+
+                @if($produto->status)
+
+                    <span class="badge text-bg-success">
+                        Ativo
+                    </span>
+
+                @else
+
+                    <span class="badge text-bg-secondary">
+                        Inativo
+                    </span>
+
+                @endif
+
+                @if($possuiCatalogo)
+
+                    <span class="badge text-bg-info">
+                        <i class="bi bi-cloud-arrow-down me-1"></i>
+                        {{ $fonteCatalogo }}
+                    </span>
+
+                @endif
+
+            </div>
+
+            <div class="text-body-secondary mt-1">
+                Código {{ $produto->codigo }}
+                · Ref. {{ $produto->codigo_fabricante }}
+                · ID #{{ $produto->id }}
+            </div>
+
+        </div>
 
         <div class="d-flex gap-2">
 
@@ -24,7 +163,10 @@
             @if(auth()->user()?->isAdmin())
 
                 <a
-                    href="{{ route('produtos.edit', $produto->id) }}"
+                    href="{{ route(
+                        'produtos.edit',
+                        $produto->id
+                    ) }}"
                     class="btn btn-primary"
                 >
                     <i class="bi bi-pencil"></i>
@@ -37,55 +179,55 @@
 
     </div>
 
-    {{-- INFORMAÇÕES PRINCIPAIS --}}
+    {{-- PRINCIPAL --}}
     <div class="card mb-4">
-
-        <div class="card-header">
-
-            <strong>
-                <i class="bi bi-info-circle"></i>
-                Informações do produto
-            </strong>
-
-        </div>
 
         <div class="card-body">
 
             <div class="row g-4">
 
-                {{-- IMAGENS --}}
-                <div class="col-12 col-md-4">
+                {{-- GALERIA --}}
+                <div class="col-12 col-lg-4">
 
-                    @php
-                        $totalImagens = $produto->imagens->count();
-                    @endphp
-
-                    @if($totalImagens > 0)
+                    @if($galeria->isNotEmpty())
 
                         <div
                             id="produtoImagensCarousel"
                             class="carousel slide border rounded bg-light overflow-hidden"
-                            data-bs-ride="false"
                         >
 
                             <div class="carousel-inner">
 
-                                @foreach($produto->imagens as $imagem)
+                                @foreach($galeria as $imagem)
 
                                     <div
                                         class="carousel-item {{ $loop->first ? 'active' : '' }}"
                                     >
 
-                                        <img
-                                            src="{{ asset('storage/' . $imagem->caminho) }}"
-                                            class="d-block w-100"
-                                            alt="{{ $produto->nome }}"
-                                            style="
-                                                height:300px;
-                                                object-fit:contain;
-                                                padding:10px;
-                                            "
-                                        >
+                                        <div class="position-relative bg-white">
+
+                                            <img
+                                                src="{{ $imagem['url'] }}"
+                                                alt="{{ $produto->nome }}"
+                                                class="d-block w-100"
+                                                loading="lazy"
+                                                @if($imagem['remota'])
+                                                    referrerpolicy="no-referrer"
+                                                @endif
+                                                style="
+                                                    height:340px;
+                                                    object-fit:contain;
+                                                    padding:16px;
+                                                "
+                                            >
+
+                                            <span
+                                                class="badge text-bg-dark position-absolute bottom-0 end-0 m-2"
+                                            >
+                                                {{ $imagem['origem'] }}
+                                            </span>
+
+                                        </div>
 
                                     </div>
 
@@ -93,7 +235,7 @@
 
                             </div>
 
-                            @if($totalImagens > 1)
+                            @if($galeria->count() > 1)
 
                                 <button
                                     class="carousel-control-prev"
@@ -102,18 +244,8 @@
                                     data-bs-slide="prev"
                                 >
                                     <span
-                                        class="d-flex align-items-center justify-content-center bg-dark bg-opacity-75 rounded-circle"
-                                        style="width:42px;height:42px;"
-                                    >
-                                        <span
-                                            class="carousel-control-prev-icon"
-                                            aria-hidden="true"
-                                        ></span>
-                                    </span>
-
-                                    <span class="visually-hidden">
-                                        Anterior
-                                    </span>
+                                        class="carousel-control-prev-icon bg-dark rounded-circle p-3"
+                                    ></span>
                                 </button>
 
                                 <button
@@ -123,176 +255,176 @@
                                     data-bs-slide="next"
                                 >
                                     <span
-                                        class="d-flex align-items-center justify-content-center bg-dark bg-opacity-75 rounded-circle"
-                                        style="width:42px;height:42px;"
-                                    >
-                                        <span
-                                            class="carousel-control-next-icon"
-                                            aria-hidden="true"
-                                        ></span>
-                                    </span>
-
-                                    <span class="visually-hidden">
-                                        Próxima
-                                    </span>
+                                        class="carousel-control-next-icon bg-dark rounded-circle p-3"
+                                    ></span>
                                 </button>
 
                             @endif
 
                         </div>
 
-                        @if($totalImagens > 1)
-
-                            <div class="text-center mt-2">
-
-                                <span class="badge text-bg-dark">
-                                    <i class="bi bi-images me-1"></i>
-                                    {{ $totalImagens }} imagens
-                                </span>
-
-                            </div>
-
-                        @endif
-
                     @else
 
-                        <div class="d-flex flex-column align-items-center justify-content-center bg-light border rounded p-5">
-
-                            <i class="bi bi-image fs-1 text-secondary"></i>
-
-                            <span class="text-dark fw-medium mt-2">
+                        <div
+                            class="border rounded bg-light d-flex flex-column align-items-center justify-content-center text-body-secondary"
+                            style="height:340px;"
+                        >
+                            <i class="bi bi-image fs-1"></i>
+                            <strong class="mt-2">
                                 Sem imagens
-                            </span>
-
+                            </strong>
                         </div>
 
                     @endif
 
                 </div>
 
-                {{-- DADOS PRINCIPAIS --}}
-                <div class="col-12 col-md-8">
+                {{-- IDENTIFICAÇÃO --}}
+                <div class="col-12 col-lg-8">
 
-                    <div class="row g-3">
+                    <div
+                        class="d-flex align-items-center gap-3 mb-4"
+                    >
 
-                        <div class="col-12">
+                        <div
+                            class="border rounded bg-light d-flex align-items-center justify-content-center overflow-hidden"
+                            style="
+                                width:64px;
+                                height:64px;
+                                flex:0 0 64px;
+                            "
+                        >
 
-                            <span class="text-body-secondary d-block">
-                                Nome
-                            </span>
+                            @if(
+                                $produto
+                                    ->marcaRelacionada
+                                    ?->logo_path
+                            )
 
-                            <strong class="fs-5">
-                                {{ $produto->nome }}
-                            </strong>
-
-                        </div>
-
-                        {{-- MARCA + LOGO --}}
-                        <div class="col-12 col-md-6">
-
-                            <span class="text-body-secondary d-block mb-1">
-                                Marca
-                            </span>
-
-                            <div class="d-flex align-items-center gap-3">
-
-                                <div
-                                    class="border rounded bg-light d-flex align-items-center justify-content-center"
+                                <img
+                                    src="{{ asset(
+                                        'storage/'
+                                        .$produto
+                                            ->marcaRelacionada
+                                            ->logo_path
+                                    ) }}"
                                     style="
-                                        width:60px;
-                                        height:60px;
-                                        flex:0 0 60px;
-                                        overflow:hidden;
+                                        width:100%;
+                                        height:100%;
+                                        object-fit:contain;
+                                        padding:6px;
                                     "
                                 >
 
-                                    @if($produto->marcaRelacionada?->logo_path)
+                            @elseif(
+                                $produto
+                                    ->marcaRelacionada
+                                    ?->logo_url
+                            )
 
-                                        <img
-                                            src="{{ asset('storage/' . $produto->marcaRelacionada->logo_path) }}"
-                                            alt="Logo {{ $produto->marcaRelacionada->nome }}"
-                                            style="
-                                                width:100%;
-                                                height:100%;
-                                                object-fit:contain;
-                                                padding:5px;
-                                            "
-                                        >
+                                <img
+                                    src="{{ $produto->marcaRelacionada->logo_url }}"
+                                    style="
+                                        width:100%;
+                                        height:100%;
+                                        object-fit:contain;
+                                        padding:6px;
+                                    "
+                                >
 
-                                    @elseif($produto->marcaRelacionada?->logo_url)
+                            @else
 
-                                        <img
-                                            src="{{ $produto->marcaRelacionada->logo_url }}"
-                                            alt="Logo {{ $produto->marcaRelacionada->nome }}"
-                                            style="
-                                                width:100%;
-                                                height:100%;
-                                                object-fit:contain;
-                                                padding:5px;
-                                            "
-                                        >
+                                <i class="bi bi-tag fs-4"></i>
 
-                                    @else
+                            @endif
 
-                                        <i class="bi bi-tag fs-4 text-secondary"></i>
+                        </div>
 
-                                    @endif
+                        <div>
 
-                                </div>
+                            <div
+                                class="text-body-secondary small fw-semibold text-uppercase"
+                            >
+                                {{ $produto
+                                    ->marcaRelacionada
+                                    ?->nome
+                                    ?: 'Marca não informada' }}
+                            </div>
 
-                                <strong>
-                                    {{ $produto->marcaRelacionada?->nome ?: 'Não informada' }}
+                            <h2 class="h4 mb-0">
+                                {{ $produto->nome }}
+                            </h2>
+
+                        </div>
+
+                    </div>
+
+                    <div class="row g-3">
+
+                        <div class="col-12 col-md-4">
+
+                            <div class="border rounded p-3 h-100">
+
+                                <small class="text-body-secondary d-block">
+                                    Código do produto
+                                </small>
+
+                                <strong class="fs-5 font-monospace">
+                                    {{ $produto->codigo }}
                                 </strong>
 
                             </div>
 
                         </div>
 
-                        <div class="col-12 col-md-6">
+                        <div class="col-12 col-md-4">
 
-                            <span class="text-body-secondary d-block">
-                                Código do fabricante
-                            </span>
+                            <div class="border rounded p-3 h-100">
 
-                            <strong>
-                                {{ $produto->codigo_fabricante }}
-                            </strong>
+                                <small class="text-body-secondary d-block">
+                                    Código do fabricante
+                                </small>
 
-                        </div>
+                                <strong class="fs-5">
+                                    {{ $produto->codigo_fabricante
+                                        ?: 'Não informado' }}
+                                </strong>
 
-                        <div class="col-12 col-md-6">
-
-                            <span class="text-body-secondary d-block">
-                                Código de barras
-                            </span>
-
-                            <strong>
-                                {{ $produto->codigo_barras ?: 'Não informado' }}
-                            </strong>
+                            </div>
 
                         </div>
 
-                        <div class="col-12 col-md-6">
+                        <div class="col-12 col-md-4">
 
-                            <span class="text-body-secondary d-block">
-                                ID do produto
-                            </span>
+                            <div class="border rounded p-3 h-100">
 
-                            <strong>
-                                {{ $produto->id }}
-                            </strong>
+                                <small class="text-body-secondary d-block">
+                                    Código de barras
+                                </small>
+
+                                <strong class="font-monospace">
+                                    {{ $produto->codigo_barras
+                                        ?: 'Não informado' }}
+                                </strong>
+
+                            </div>
 
                         </div>
 
                         <div class="col-12">
 
-                            <span class="text-body-secondary d-block">
-                                Descrição
-                            </span>
+                            <div class="border rounded bg-light p-3">
 
-                            <span>
-                                {{ $produto->descricao ?: 'Não informada' }}
-                            </span>
+                                <small
+                                    class="text-body-secondary d-block mb-1"
+                                >
+                                    Descrição
+                                </small>
+
+                                {{ $produto->descricao
+                                    ?: 'Não informada' }}
+
+                            </div>
 
                         </div>
 
@@ -306,77 +438,212 @@
 
     </div>
 
-    {{-- ESTOQUE E VALORES --}}
-    <div class="card mb-4">
+    {{-- RESUMO --}}
+    <div class="row g-3 mb-4">
 
-        <div class="card-header">
+        <div class="col-12 col-sm-6 col-xl-3">
 
-            <strong>
-                <i class="bi bi-boxes"></i>
-                Estoque e valores
-            </strong>
+            <div class="card h-100">
+                <div class="card-body">
+
+                    <small class="text-body-secondary">
+                        <i class="bi bi-tag"></i>
+                        Preço de venda
+                    </small>
+
+                    <div class="fs-4 fw-bold mt-1">
+                        R$ {{ number_format(
+                            $precoVenda,
+                            2,
+                            ',',
+                            '.'
+                        ) }}
+                    </div>
+
+                    <small class="text-body-secondary">
+                        {{ $origemPreco }}
+                    </small>
+
+                </div>
+            </div>
 
         </div>
 
-        <div class="card-body">
+        <div class="col-12 col-sm-6 col-xl-3">
 
-            <div class="row g-3">
+            <div class="card h-100">
+                <div class="card-body">
 
-                <div class="col-12 col-md-4">
+                    <small class="text-body-secondary">
+                        <i class="bi bi-house-gear"></i>
+                        Estoque Jaime
+                    </small>
 
-                    <span class="text-body-secondary d-block">
-                        Estoque atual
-                    </span>
-
-                    <strong>
+                    <div class="fs-4 fw-bold mt-1">
                         {{ $produto->quantidade }}
-                    </strong>
+                    </div>
+
+                    <small class="text-body-secondary">
+                        Estoque físico
+                    </small>
 
                 </div>
+            </div>
 
-                <div class="col-12 col-md-4">
+        </div>
 
-                    <span class="text-body-secondary d-block">
+        <div class="col-12 col-sm-6 col-xl-3">
+
+            <div class="card h-100">
+                <div class="card-body">
+
+                    <small class="text-body-secondary">
+                        <i class="bi bi-truck"></i>
+                        Estoque fornecedor
+                    </small>
+
+                    <div class="fs-4 fw-bold mt-1">
+                        {{ $estoqueFornecedor !== null
+                            ? $estoqueFornecedor
+                            : '—' }}
+                    </div>
+
+                    <small class="text-body-secondary">
+                        {{ $possuiCatalogo
+                            ? $fonteCatalogo
+                            : 'Sem catálogo' }}
+                    </small>
+
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+
+            <div class="card h-100">
+                <div class="card-body">
+
+                    <small class="text-body-secondary">
+                        <i class="bi bi-boxes"></i>
                         Estoque mínimo
-                    </span>
+                    </small>
 
-                    <strong>
+                    <div class="fs-4 fw-bold mt-1">
                         {{ $produto->estoque_minimo }}
-                    </strong>
+                    </div>
+
+                    <small class="text-body-secondary">
+                        Cadastro Jaime
+                    </small>
 
                 </div>
+            </div>
 
-                <div class="col-12 col-md-4">
+        </div>
 
-                    <span class="text-body-secondary d-block">
-                        Preço unitário
-                    </span>
+    </div>
 
-                    <strong>
-                        R$ {{ number_format($produto->preco_uni, 2, ',', '.') }}
-                    </strong>
+    {{-- DADOS DO CATÁLOGO --}}
+    @if($possuiCatalogo && $catalogoPrincipal)
 
-                </div>
+        <div class="card mb-4">
 
-                <div class="col-12 col-md-4">
+            <div
+                class="card-header d-flex justify-content-between align-items-center gap-2"
+            >
 
-                    <span class="text-body-secondary d-block mb-1">
-                        Status
-                    </span>
+                <strong>
+                    <i class="bi bi-cloud-arrow-down"></i>
+                    Dados externos
+                </strong>
 
-                    @if($produto->status)
+                <span class="badge text-bg-info">
+                    {{ $fonteCatalogo }}
+                </span>
 
-                        <span class="badge text-bg-success">
-                            <i class="bi bi-check-circle me-1"></i>
-                            Ativo
-                        </span>
+            </div>
 
-                    @else
+            <div class="card-body">
 
-                        <span class="badge text-bg-secondary">
-                            <i class="bi bi-x-circle me-1"></i>
-                            Inativo
-                        </span>
+                <div class="row g-3">
+
+                    <div class="col-12 col-md-4">
+
+                        <small class="text-body-secondary d-block">
+                            Código externo
+                        </small>
+
+                        <strong>
+                            {{ $dadosCatalogo['codigo_externo']
+                                ?: 'Não informado' }}
+                        </strong>
+
+                    </div>
+
+                    <div class="col-12 col-md-4">
+
+                        <small class="text-body-secondary d-block">
+                            Estoque observado
+                        </small>
+
+                        <strong>
+                            {{ $estoqueFornecedor !== null
+                                ? $estoqueFornecedor
+                                : 'Não informado' }}
+                        </strong>
+
+                    </div>
+
+                    <div class="col-12 col-md-4">
+
+                        <small class="text-body-secondary d-block">
+                            Última coleta
+                        </small>
+
+                        <strong>
+                            {{ $ultimaColeta
+                                ? $ultimaColeta
+                                    ->timezone(
+                                        config('app.timezone')
+                                    )
+                                    ->format(
+                                        'd/m/Y H:i'
+                                    )
+                                : 'Não informada' }}
+                        </strong>
+
+                    </div>
+
+                    @if(
+                        $dadosCatalogo['promocao']
+                        ?? false
+                    )
+
+                        <div class="col-12">
+
+                            <div class="alert alert-warning mb-0">
+
+                                <i class="bi bi-percent me-1"></i>
+
+                                Promoção detectada
+
+                                @if(
+                                    !empty(
+                                        $dadosCatalogo[
+                                            'promocao_texto'
+                                        ]
+                                    )
+                                )
+                                    —
+                                    {{ $dadosCatalogo[
+                                        'promocao_texto'
+                                    ] }}
+                                @endif
+
+                            </div>
+
+                        </div>
 
                     @endif
 
@@ -386,152 +653,48 @@
 
         </div>
 
-    </div>
+    @endif
 
-    {{-- DADOS FISCAIS E COMERCIAIS --}}
-    <div class="card mb-4">
+    {{-- ATRIBUTOS --}}
+    @if($atributos->isNotEmpty())
 
-        <div class="card-header">
+        <div class="card mb-4">
 
-            <strong>
-                <i class="bi bi-receipt"></i>
-                Dados fiscais e comerciais
-            </strong>
+            <div class="card-header">
+                <strong>
+                    <i class="bi bi-sliders"></i>
+                    Atributos técnicos
+                </strong>
+            </div>
 
-        </div>
+            <div class="card-body">
 
-        <div class="card-body">
+                <div class="row g-3">
 
-            <div class="row g-3">
+                    @foreach(
+                        $atributos->sortBy('chave')
+                        as $atributo
+                    )
 
-                <div class="col-12 col-md-4">
+                        <div class="col-12 col-md-6 col-xl-4">
 
-                    <span class="text-body-secondary d-block">
-                        NCM
-                    </span>
+                            <div class="border rounded p-3 h-100">
 
-                    <strong>
-                        {{ $produto->ncm ?: 'Não informado' }}
-                    </strong>
+                                <small class="text-body-secondary d-block">
+                                    {{ $atributo->chave_raw
+                                        ?: $atributo->chave }}
+                                </small>
 
-                </div>
+                                <strong>
+                                    {{ $atributo->valor
+                                        ?: 'Não informado' }}
+                                </strong>
 
-                <div class="col-12 col-md-4">
+                            </div>
 
-                    <span class="text-body-secondary d-block">
-                        CEST
-                    </span>
+                        </div>
 
-                    <strong>
-                        {{ $produto->cest ?: 'Não informado' }}
-                    </strong>
-
-                </div>
-
-                <div class="col-12 col-md-4">
-
-                    <span class="text-body-secondary d-block">
-                        EX-TIPI
-                    </span>
-
-                    <strong>
-                        {{ $produto->ex_tipi ?: 'Não informado' }}
-                    </strong>
-
-                </div>
-
-                <div class="col-12 col-md-4">
-
-                    <span class="text-body-secondary d-block">
-                        Origem da mercadoria
-                    </span>
-
-                    <strong>
-                        {{ $produto->origem_mercadoria !== null
-                            ? $produto->origem_mercadoria
-                            : 'Não informado' }}
-                    </strong>
-
-                </div>
-
-                <div class="col-12 col-md-4">
-
-                    <span class="text-body-secondary d-block">
-                        Unidade comercial
-                    </span>
-
-                    <strong>
-                        {{ $produto->unidade_comercial ?: 'Não informado' }}
-                    </strong>
-
-                </div>
-
-                <div class="col-12 col-md-4">
-
-                    <span class="text-body-secondary d-block">
-                        Unidade tributável
-                    </span>
-
-                    <strong>
-                        {{ $produto->unidade_tributavel ?: 'Não informado' }}
-                    </strong>
-
-                </div>
-
-                <div class="col-12 col-md-4">
-
-                    <span class="text-body-secondary d-block">
-                        Fator de conversão
-                    </span>
-
-                    <strong>
-                        {{ $produto->fator_conversao !== null
-                            ? number_format(
-                                (float) $produto->fator_conversao,
-                                6,
-                                ',',
-                                '.'
-                            )
-                            : 'Não informado' }}
-                    </strong>
-
-                </div>
-
-                <div class="col-12 col-md-4">
-
-                    <span class="text-body-secondary d-block">
-                        Peso líquido
-                    </span>
-
-                    <strong>
-                        {{ $produto->peso_liquido !== null
-                            ? number_format(
-                                (float) $produto->peso_liquido,
-                                3,
-                                ',',
-                                '.'
-                            ) . ' kg'
-                            : 'Não informado' }}
-                    </strong>
-
-                </div>
-
-                <div class="col-12 col-md-4">
-
-                    <span class="text-body-secondary d-block">
-                        Peso bruto
-                    </span>
-
-                    <strong>
-                        {{ $produto->peso_bruto !== null
-                            ? number_format(
-                                (float) $produto->peso_bruto,
-                                3,
-                                ',',
-                                '.'
-                            ) . ' kg'
-                            : 'Não informado' }}
-                    </strong>
+                    @endforeach
 
                 </div>
 
@@ -539,18 +702,61 @@
 
         </div>
 
-    </div>
+    @endif
 
-    {{-- FORNECEDOR --}}
+    {{-- DADOS FISCAIS --}}
     <div class="card mb-4">
 
         <div class="card-header">
-
             <strong>
-                <i class="bi bi-truck"></i>
-                Fornecedor
+                <i class="bi bi-receipt"></i>
+                Dados fiscais e comerciais
             </strong>
+        </div>
 
+        <div class="card-body">
+
+            <div class="row g-3">
+
+                @foreach([
+                    'NCM' => $produto->ncm,
+                    'CEST' => $produto->cest,
+                    'EX-TIPI' => $produto->ex_tipi,
+                    'Origem' => $produto->origem_mercadoria,
+                    'Unidade comercial' => $produto->unidade_comercial,
+                    'Unidade tributável' => $produto->unidade_tributavel,
+                ] as $rotulo => $valor)
+
+                    <div class="col-6 col-md-4">
+
+                        <small class="text-body-secondary d-block">
+                            {{ $rotulo }}
+                        </small>
+
+                        <strong>
+                            {{ $valor !== null && $valor !== ''
+                                ? $valor
+                                : 'Não informado' }}
+                        </strong>
+
+                    </div>
+
+                @endforeach
+
+            </div>
+
+        </div>
+
+    </div>
+
+    {{-- FORNECEDOR INTERNO --}}
+    <div class="card mb-4">
+
+        <div class="card-header">
+            <strong>
+                <i class="bi bi-building"></i>
+                Fornecedor cadastrado no Jaime
+            </strong>
         </div>
 
         <div class="card-body">
@@ -561,9 +767,9 @@
 
                     <div class="col-12 col-md-6">
 
-                        <span class="text-body-secondary d-block">
+                        <small class="text-body-secondary d-block">
                             Nome
-                        </span>
+                        </small>
 
                         <strong>
                             {{ $produto->fornecedor->nome }}
@@ -573,12 +779,13 @@
 
                     <div class="col-12 col-md-6">
 
-                        <span class="text-body-secondary d-block">
+                        <small class="text-body-secondary d-block">
                             CNPJ
-                        </span>
+                        </small>
 
                         <strong>
-                            {{ $produto->fornecedor->cnpj ?: 'Não informado' }}
+                            {{ $produto->fornecedor->cnpj
+                                ?: 'Não informado' }}
                         </strong>
 
                     </div>
@@ -587,8 +794,8 @@
 
             @else
 
-                <span class="text-dark-emphasis">
-                    Nenhum fornecedor vinculado.
+                <span class="text-body-secondary">
+                    Nenhum fornecedor interno vinculado.
                 </span>
 
             @endif
@@ -597,16 +804,14 @@
 
     </div>
 
-    {{-- APLICAÇÕES --}}
+    {{-- APLICAÇÕES JAIME --}}
     <div class="card mb-4">
 
         <div class="card-header">
-
             <strong>
                 <i class="bi bi-car-front"></i>
-                Aplicações
+                Aplicações cadastradas no Jaime
             </strong>
-
         </div>
 
         <div class="card-body">
@@ -615,7 +820,9 @@
 
                 <div class="table-responsive">
 
-                    <table class="table table-striped table-hover mb-0">
+                    <table
+                        class="table table-striped table-hover align-middle mb-0"
+                    >
 
                         <thead>
                             <tr>
@@ -626,12 +833,18 @@
 
                         <tbody>
 
-                            @foreach($produto->veiculos as $veiculo)
+                            @foreach(
+                                $produto->veiculos
+                                as $veiculo
+                            )
 
                                 <tr>
 
                                     <td>
-                                        {{ $veiculo->montadora->nome ?? 'Não informado' }}
+                                        {{ $veiculo
+                                            ->montadora
+                                            ->nome
+                                            ?? 'Não informado' }}
                                     </td>
 
                                     <td>
@@ -650,8 +863,8 @@
 
             @else
 
-                <span class="text-dark-emphasis">
-                    Nenhuma aplicação cadastrada.
+                <span class="text-body-secondary">
+                    Nenhuma aplicação manual cadastrada.
                 </span>
 
             @endif

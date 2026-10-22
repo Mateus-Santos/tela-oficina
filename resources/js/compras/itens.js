@@ -201,6 +201,19 @@ export default function inicializarItensCompra() {
                         }
 
                         ${
+                            produto.codigo
+                                ? `
+                                    <div class="small text-muted">
+                                        Código do produto:
+                                        ${escapeHtml(
+                                            produto.codigo
+                                        )}
+                                    </div>
+                                `
+                                : ''
+                        }
+
+                        ${
                             produto.codigo_fabricante
                                 ? `
                                     <div class="small text-muted">
@@ -278,9 +291,53 @@ export default function inicializarItensCompra() {
         if (status) {
             status.textContent =
                 'Digite para pesquisar.';
+
+            status.classList.remove(
+                'text-danger',
+                'fw-semibold'
+            );
+
+            status.classList.add(
+                'text-muted'
+            );
         }
 
         calcularTotais();
+    }
+
+    function produtoJaIncluido(
+        produtoId,
+        itemAtual
+    ) {
+        const id =
+            String(produtoId || '');
+
+        if (!id) {
+            return false;
+        }
+
+        return Array
+            .from(
+                document.querySelectorAll(
+                    '.compra-item'
+                )
+            )
+            .some(function (item) {
+                if (item === itemAtual) {
+                    return false;
+                }
+
+                const input =
+                    item.querySelector(
+                        '.item-produto-id'
+                    );
+
+                return (
+                    String(
+                        input?.value || ''
+                    ) === id
+                );
+            });
     }
 
     function configurarBuscaProduto(item) {
@@ -364,6 +421,24 @@ export default function inicializarItensCompra() {
                     container.appendChild(marca);
                 }
 
+                if (produto.codigo) {
+                    const codigoProduto =
+                        document.createElement(
+                            'small'
+                        );
+
+                    codigoProduto.className =
+                        'text-muted';
+
+                    codigoProduto.textContent =
+                        'Código do produto: '
+                        + produto.codigo;
+
+                    container.appendChild(
+                        codigoProduto
+                    );
+                }
+
                 if (produto.codigo_fabricante) {
                     const codigo =
                         document.createElement('small');
@@ -392,22 +467,104 @@ export default function inicializarItensCompra() {
                     container.appendChild(codigoBarras);
                 }
 
+                const catalogo =
+                    produto.catalogo || null;
+
+                const precoVenda =
+                    catalogo
+                    && catalogo.preco_observado !== null
+                        ? Number(
+                            catalogo.preco_observado
+                        )
+                        : Number(
+                            produto.preco || 0
+                        );
+
                 const preco =
-                    document.createElement('small');
+                    document.createElement(
+                        'small'
+                    );
 
                 preco.className =
                     'text-muted';
 
                 preco.textContent =
-                    'Preço atual: R$ ' +
-                    formatarMoeda(produto.preco);
+                    'Preço de venda: R$ '
+                    + formatarMoeda(
+                        precoVenda
+                    );
 
-                container.appendChild(preco);
+                container.appendChild(
+                    preco
+                );
+
+                if (
+                    catalogo
+                    && catalogo.possui_catalogo
+                    && catalogo.estoque_observado
+                        !== null
+                ) {
+                    const estoque =
+                        document.createElement(
+                            'small'
+                        );
+
+                    estoque.className =
+                        'text-muted';
+
+                    estoque.textContent =
+                        'Estoque fornecedor: '
+                        + catalogo
+                            .estoque_observado;
+
+                    container.appendChild(
+                        estoque
+                    );
+                }
 
                 return container;
             },
 
             aoSelecionar: function (produto) {
+                if (
+                    produtoJaIncluido(
+                        produto.id,
+                        item
+                    )
+                ) {
+                    if (status) {
+                        status.textContent =
+                            'Este produto já foi incluído nesta compra.';
+
+                        status.classList.remove(
+                            'text-muted'
+                        );
+
+                        status.classList.add(
+                            'text-danger',
+                            'fw-semibold'
+                        );
+                    }
+
+                    resultados.innerHTML = '';
+
+                    return;
+                }
+
+                if (status) {
+                    status.textContent =
+                        'Produto selecionado.';
+
+                    status.classList.remove(
+                        'text-danger',
+                        'fw-semibold'
+                    );
+
+                    status.classList.add(
+                        'text-muted'
+                    );
+                }
+
                 produtoIdInput.value =
                     produto.id || '';
 
@@ -417,23 +574,6 @@ export default function inicializarItensCompra() {
                 if (descricaoInput) {
                     descricaoInput.value =
                         produto.nome || '';
-                }
-
-                if (
-                    valorUnitarioInput &&
-                    !valorUnitarioInput.value
-                ) {
-                    const preco =
-                        Number(produto.preco || 0);
-
-                    valorUnitarioInput.value =
-                        preco.toLocaleString(
-                            'pt-BR',
-                            {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                            }
-                        );
                 }
 
                 mostrarProdutoSelecionado(

@@ -167,7 +167,7 @@
                 </strong>
 
                 os dados técnicos da tabela, como ano, motor,
-                válvulas, cilindrada e combustível, foram
+                válvulas, cilindros e combustível, foram
                 preservados durante a importação, mas ainda não
                 são gravados na estrutura atual.
 
@@ -474,3 +474,35 @@
     </div>
 
 </div>
+
+{{-- =========================================================
+     PERSISTÊNCIA RICA DAS APLICAÇÕES MANUAIS
+     ========================================================= --}}
+@foreach($aplicacoesManuais as $indice => $aplicacao)
+
+    <input
+        type="hidden"
+        name="aplicacoes[{{ $indice }}][veiculo_id]"
+        value="{{ $aplicacao['veiculo_id'] }}"
+    >
+
+    @foreach([
+        'mes_ano',
+        'modelo',
+        'motor',
+        'comp',
+        'valvulas',
+        'cilindros',
+        'combustivel',
+        'complemento',
+    ] as $campo)
+
+        <input
+            type="hidden"
+            name="aplicacoes[{{ $indice }}][{{ $campo }}]"
+            value="{{ $aplicacao[$campo] ?? '' }}"
+        >
+
+    @endforeach
+
+@endforeach

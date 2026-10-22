@@ -29,7 +29,12 @@
                 </h5>
 
                 <div class="text-muted">
-                    Código do fabricante:
+                    Código do produto:
+                    <strong>{{ $produto->codigo }}</strong>
+
+                    <span class="mx-1">·</span>
+
+                    Ref. fabricante:
                     <strong>{{ $produto->codigo_fabricante }}</strong>
                 </div>
             </div>

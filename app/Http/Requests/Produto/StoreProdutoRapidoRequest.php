@@ -25,6 +25,13 @@ class StoreProdutoRapidoRequest extends FormRequest
                 ? trim($this->descricao)
                 : null,
 
+            'codigo' =>
+                $this->codigo
+                    ? mb_strtoupper(
+                        trim($this->codigo)
+                    )
+                    : null,
+
             'codigo_fabricante' =>
                 $this->codigo_fabricante
                     ? trim(
@@ -107,12 +114,27 @@ class StoreProdutoRapidoRequest extends FormRequest
                 'string',
             ],
 
+            'codigo' => [
+                'nullable',
+                'string',
+                'max:50',
+                Rule::unique(
+                    'produtos',
+                    'codigo'
+                ),
+            ],
+
             'codigo_fabricante' => [
                 'required',
                 'string',
                 Rule::unique(
                     'produtos',
                     'codigo_fabricante'
+                )->where(
+                    fn ($query) => $query->where(
+                        'marca_id',
+                        $this->input('marca_id')
+                    )
                 ),
             ],
 
@@ -166,11 +188,14 @@ class StoreProdutoRapidoRequest extends FormRequest
             'descricao.required' =>
                 'Informe a descrição do produto.',
 
+            'codigo.unique' =>
+                'Já existe um produto com este código.',
+
             'codigo_fabricante.required' =>
                 'Informe o código do fabricante.',
 
             'codigo_fabricante.unique' =>
-                'Já existe um produto com este código de fabricante.',
+                'Já existe um produto desta marca com este código de fabricante.',
 
             'codigo_barras.unique' =>
                 'Já existe um produto com este código de barras.',

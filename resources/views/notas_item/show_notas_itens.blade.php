@@ -948,12 +948,28 @@
 
                                                     @endif
 
+                                                    @if($item['codigo'])
+
+                                                        <div class="small mt-1">
+
+                                                            <span class="text-muted">
+                                                                Código:
+                                                            </span>
+
+                                                            <strong>
+                                                                {{ $item['codigo'] }}
+                                                            </strong>
+
+                                                        </div>
+
+                                                    @endif
+
                                                     @if($item['codigo_fabricante'])
 
                                                         <div class="small mt-1">
 
                                                             <span class="text-muted">
-                                                                Fabricante:
+                                                                Ref. fabricante:
                                                             </span>
 
                                                             <strong>
