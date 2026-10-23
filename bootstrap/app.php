@@ -18,14 +18,16 @@ return Application::configure(
     )
     ->withMiddleware(
         function (Middleware $middleware): void {
+            $trustedProxies = array_values(array_filter(array_map(
+                'trim',
+                explode(',', (string) getenv('TRUSTED_PROXIES'))
+            )));
+
             $middleware->trustProxies(
-                at: '*',
+                at: $trustedProxies,
                 headers:
                     Request::HEADER_X_FORWARDED_FOR
-                    | Request::HEADER_X_FORWARDED_HOST
-                    | Request::HEADER_X_FORWARDED_PORT
                     | Request::HEADER_X_FORWARDED_PROTO
-                    | Request::HEADER_X_FORWARDED_AWS_ELB
             );
 
             $middleware->redirectGuestsTo(

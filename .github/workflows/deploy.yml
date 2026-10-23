@@ -203,6 +203,7 @@ jobs:
                   docker compose exec \
                       -T \
                       --interactive=false \
+                      --user sail \
                       laravel.sosmecanica \
                       composer install \
                       --no-interaction \
@@ -222,6 +223,7 @@ jobs:
                   docker compose exec \
                       -T \
                       --interactive=false \
+                      --user sail \
                       laravel.sosmecanica \
                       php artisan migrate --force </dev/null
 
@@ -237,6 +239,7 @@ jobs:
                   docker compose exec \
                       -T \
                       --interactive=false \
+                      --user sail \
                       laravel.sosmecanica \
                       php artisan optimize:clear </dev/null
 
@@ -252,6 +255,7 @@ jobs:
                   docker compose exec \
                       -T \
                       --interactive=false \
+                      --user sail \
                       laravel.sosmecanica \
                       sh -c '
                           if [ -e public/storage ] || [ -L public/storage ]; then
@@ -274,6 +278,7 @@ jobs:
                   docker compose exec \
                       -T \
                       --interactive=false \
+                      --user sail \
                       laravel.sosmecanica \
                       php artisan storage:link </dev/null
 
@@ -289,6 +294,7 @@ jobs:
                   docker compose exec \
                       -T \
                       --interactive=false \
+                      --user sail \
                       laravel.sosmecanica \
                       sh -c '
                           echo "Conteúdo de public:"
@@ -342,6 +348,7 @@ jobs:
                   docker compose exec \
                       -T \
                       --interactive=false \
+                      --user sail \
                       laravel.sosmecanica \
                       sh -c '
                           echo "Diretório storage/app/public:"
@@ -365,6 +372,7 @@ jobs:
                   docker compose exec \
                       -T \
                       --interactive=false \
+                      --user sail \
                       laravel.sosmecanica \
                       php artisan optimize </dev/null
 
