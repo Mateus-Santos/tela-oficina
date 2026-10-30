@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Financeiro\SincronizarContaReceberComNota;
 use App\Actions\Notas\AtualizarNota;
 use App\Actions\Notas\CriarNota;
 use App\Http\Requests\Notas\StoreNotaRequest;
 use App\Http\Requests\Notas\UpdateNotaRequest;
 use App\Models\Nota;
 use App\Models\NotasItem;
+use App\Services\Nota\CalculadorTotaisNota;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class NotasItemController extends Controller
 {
@@ -111,18 +115,17 @@ class NotasItemController extends Controller
     /**
      * Remove um item da Nota.
      */
-    public function destroy(string $id)
-    {
+    public function destroy(
+        string $id,
+        CalculadorTotaisNota $calculadorTotaisNota,
+        SincronizarContaReceberComNota $sincronizarContaReceberComNota
+    ) {
         $item = NotasItem::findOrFail($id);
 
         $nota = Nota::findOrFail(
             $item->nota_id
         );
 
-        /*
-         * Itens só podem ser removidos
-         * enquanto a Nota estiver aberta.
-         */
         if ($nota->status !== 'Aberto') {
             return redirect()
                 ->route(
@@ -134,40 +137,57 @@ class NotasItemController extends Controller
                 ]);
         }
 
-        $item->delete();
+        DB::transaction(function () use (
+            $id,
+            $nota,
+            $calculadorTotaisNota,
+            $sincronizarContaReceberComNota
+        ) {
+            $notaTransacional = Nota::query()
+                ->lockForUpdate()
+                ->findOrFail($nota->id);
 
-        /*
-         * Recalcula os valores da Nota.
-         */
-        $nota->load('itens');
+            if ($notaTransacional->status !== 'Aberto') {
+                throw ValidationException::withMessages([
+                    'nota' => 'A Nota deixou de estar aberta. A exclusão foi cancelada.',
+                ]);
+            }
 
-        $subtotalGeral =
-            $nota->itens->sum(
-                function ($item) {
-                    return
-                        (float) $item->quantidade
-                        * (float) $item->valor_unitario;
-                }
-            );
+            $itemTransacional = NotasItem::query()
+                ->where(
+                    'nota_id',
+                    $notaTransacional->id
+                )
+                ->lockForUpdate()
+                ->findOrFail($id);
 
-        $descontoGeral =
-            $nota->itens->sum(
-                function ($item) {
-                    return (float) $item->desconto;
-                }
-            );
+            $itemTransacional->delete();
 
-        $nota->update([
-            'subtotal' => $subtotalGeral,
+            $notaTransacional->load('itens');
 
-            'desconto' => $descontoGeral,
+            $totais = $calculadorTotaisNota
+                ->calcularItens(
+                    $notaTransacional->itens
+                );
 
-            'total' => max(
-                0,
-                $subtotalGeral
-                - $descontoGeral
-            ),
-        ]);
+            $notaTransacional->update([
+                'subtotal' => $totais['subtotal'],
+                'desconto' => $totais['desconto'],
+                'total' => $totais['total'],
+            ]);
+
+            /*
+             * Se houver Conta a Receber, sincroniza
+             * os valores e as parcelas.
+             *
+             * Qualquer falha financeira causa rollback
+             * de toda a exclusão.
+             */
+            $sincronizarContaReceberComNota
+                ->execute(
+                    $notaTransacional
+                );
+        });
 
         return redirect()
             ->route(

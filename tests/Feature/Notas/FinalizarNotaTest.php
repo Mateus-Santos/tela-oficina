@@ -783,12 +783,17 @@ class FinalizarNotaTest extends TestCase
             'total' => 500,
         ]);
 
-        $this->criarItemProduto(
+        $item = $this->criarItemProduto(
             $nota,
             $produto,
             1,
             600
         );
+
+        $item->update([
+            'desconto' => 100,
+            'valor_total' => 500,
+        ]);
 
         $this->finalizarNota(
             $nota
@@ -800,6 +805,253 @@ class FinalizarNotaTest extends TestCase
                 'nota_id' => $nota->id,
                 'valor_original' => 500,
             ]
+        );
+    }
+
+
+    public function test_bloqueia_finalizacao_com_total_da_nota_divergente(): void
+    {
+        $this->criarCategoriaVendasEServicos();
+
+        $cliente = $this->criarCliente();
+        $produto = $this->criarProduto(10);
+
+        $nota = $this->criarNota($cliente, 500);
+
+        $this->criarItemProduto(
+            $nota,
+            $produto,
+            1,
+            500
+        );
+
+        // Simula uma nota alterada indevidamente:
+        // itens = 500, cabeçalho = 515.
+        $nota->update([
+            'total' => 515,
+        ]);
+
+        try {
+            $this->finalizarNota($nota);
+
+            $this->fail(
+                'A finalização deveria ser bloqueada.'
+            );
+        } catch (
+            \Illuminate\Validation\ValidationException $e
+        ) {
+            $this->assertStringContainsString(
+                'campo total',
+                implode(
+                    ' ',
+                    $e->errors()['finalizacao'] ?? []
+                )
+            );
+        }
+
+        $this->assertSame(
+            'Aberto',
+            $nota->fresh()->status
+        );
+
+        $this->assertSame(
+            10,
+            $produto->fresh()->quantidade
+        );
+
+        $this->assertDatabaseCount(
+            'movimentacao_estoques',
+            0
+        );
+
+        $this->assertDatabaseCount(
+            'contas_receber',
+            0
+        );
+    }
+
+    public function test_bloqueia_finalizacao_com_total_do_item_divergente(): void
+    {
+        $this->criarCategoriaVendasEServicos();
+
+        $cliente = $this->criarCliente();
+        $produto = $this->criarProduto(10);
+
+        $nota = $this->criarNota($cliente, 100);
+
+        $item = $this->criarItemProduto(
+            $nota,
+            $produto,
+            1,
+            100
+        );
+
+        // O cálculo correto é 100, mas o
+        // valor_total foi alterado para 115.
+        $item->update([
+            'valor_total' => 115,
+        ]);
+
+        try {
+            $this->finalizarNota($nota);
+
+            $this->fail(
+                'A finalização deveria ser bloqueada.'
+            );
+        } catch (
+            \Illuminate\Validation\ValidationException $e
+        ) {
+            $this->assertStringContainsString(
+                'valor total divergente',
+                implode(
+                    ' ',
+                    $e->errors()['finalizacao'] ?? []
+                )
+            );
+        }
+
+        $this->assertSame(
+            'Aberto',
+            $nota->fresh()->status
+        );
+
+        $this->assertSame(
+            10,
+            $produto->fresh()->quantidade
+        );
+
+        $this->assertDatabaseCount(
+            'movimentacao_estoques',
+            0
+        );
+
+        $this->assertDatabaseCount(
+            'contas_receber',
+            0
+        );
+    }
+
+
+    public function test_exclusao_item_recalcula_total_da_nota(): void
+    {
+        $cliente = $this->criarCliente();
+
+        $produto1 = $this->criarProduto(10);
+        $produto2 = $this->criarProduto(10);
+
+        $nota = $this->criarNota($cliente, 300);
+
+        $itemExcluir = $this->criarItemProduto(
+            $nota, $produto1, 1, 100
+        );
+
+        $itemManter = $this->criarItemProduto(
+            $nota, $produto2, 1, 200
+        );
+
+        app()->call(
+            [
+                app(\App\Http\Controllers\NotasItemController::class),
+                'destroy',
+            ],
+            ['id' => (string) $itemExcluir->id]
+        );
+
+        $this->assertDatabaseMissing('notas_itens', [
+            'id' => $itemExcluir->id,
+        ]);
+
+        $this->assertDatabaseHas('notas_itens', [
+            'id' => $itemManter->id,
+        ]);
+
+        $notaAtualizada = $nota->fresh();
+
+        $this->assertEquals(
+            200.0,
+            (float) $notaAtualizada->subtotal
+        );
+
+        $this->assertEquals(
+            0.0,
+            (float) $notaAtualizada->desconto
+        );
+
+        $this->assertEquals(
+            200.0,
+            (float) $notaAtualizada->total
+        );
+    }
+
+    public function test_exclusao_item_faz_rollback_se_financeiro_rejeitar(): void
+    {
+        $categoria = $this->criarCategoriaVendasEServicos();
+
+        $cliente = $this->criarCliente();
+
+        $produto1 = $this->criarProduto(10);
+        $produto2 = $this->criarProduto(10);
+
+        $nota = $this->criarNota($cliente, 300);
+
+        $itemExcluir = $this->criarItemProduto(
+            $nota, $produto1, 1, 100
+        );
+
+        $this->criarItemProduto(
+            $nota, $produto2, 1, 200
+        );
+
+        $conta = ContaReceber::create([
+            'cliente_id' => $cliente->id,
+            'nota_id' => $nota->id,
+            'categoria_financeira_id' => $categoria->id,
+            'descricao' => 'Teste de rollback',
+            'valor_original' => 300,
+            'desconto' => 0,
+            'juros' => 0,
+            'multa' => 0,
+            'data_emissao' => now()->toDateString(),
+            'data_vencimento' => now()->addDays(30)->toDateString(),
+            'status' => 'cancelada',
+        ]);
+
+        try {
+            app()->call(
+                [
+                    app(\App\Http\Controllers\NotasItemController::class),
+                    'destroy',
+                ],
+                ['id' => (string) $itemExcluir->id]
+            );
+
+            $this->fail(
+                'A exclusão deveria ser bloqueada.'
+            );
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->assertStringContainsString(
+                'cancelada',
+                implode(' ', $e->errors()['nota'] ?? [])
+            );
+        }
+
+        $this->assertDatabaseHas('notas_itens', [
+            'id' => $itemExcluir->id,
+        ]);
+
+        $this->assertEquals(
+            300.0,
+            (float) $nota->fresh()->total
+        );
+
+        $this->assertEquals(
+            300.0,
+            (float) $conta->fresh()->valor_original
+        );
+
+        $this->assertSame(
+            'cancelada',
+            $conta->fresh()->status
         );
     }
 
@@ -835,6 +1087,115 @@ class FinalizarNotaTest extends TestCase
         $this->assertSame(
             $nota->cliente_id,
             $conta->cliente_id
+        );
+    }
+
+
+    public function test_exclusao_item_sincroniza_conta_a_receber_ativa(): void
+    {
+        $categoria = $this->criarCategoriaVendasEServicos();
+
+        $cliente = $this->criarCliente();
+
+        $produto1 = $this->criarProduto(10);
+        $produto2 = $this->criarProduto(10);
+
+        $nota = $this->criarNota($cliente, 300);
+
+        $itemExcluir = $this->criarItemProduto(
+            $nota,
+            $produto1,
+            1,
+            100
+        );
+
+        $itemManter = $this->criarItemProduto(
+            $nota,
+            $produto2,
+            1,
+            200
+        );
+
+        $conta = ContaReceber::create([
+            'cliente_id' => $cliente->id,
+            'nota_id' => $nota->id,
+            'categoria_financeira_id' => $categoria->id,
+            'descricao' => 'Teste de sincronização',
+            'valor_original' => 300,
+            'desconto' => 0,
+            'juros' => 0,
+            'multa' => 0,
+            'data_emissao' => now()->toDateString(),
+            'data_vencimento' => now()->addDays(30)->toDateString(),
+            'status' => 'aberta',
+        ]);
+
+        $parcela = $conta->parcelas()->create([
+            'numero' => 1,
+            'valor' => 300,
+            'data_vencimento' => now()->addDays(30)->toDateString(),
+        ]);
+
+        app()->call(
+            [
+                app(\App\Http\Controllers\NotasItemController::class),
+                'destroy',
+            ],
+            [
+                'id' => (string) $itemExcluir->id,
+            ]
+        );
+
+        // Confirma a exclusão do item correto.
+        $this->assertDatabaseMissing('notas_itens', [
+            'id' => $itemExcluir->id,
+        ]);
+
+        $this->assertDatabaseHas('notas_itens', [
+            'id' => $itemManter->id,
+        ]);
+
+        // Confirma o recálculo da Nota.
+        $nota->refresh();
+
+        $this->assertEquals(
+            200.0,
+            (float) $nota->subtotal
+        );
+
+        $this->assertEquals(
+            0.0,
+            (float) $nota->desconto
+        );
+
+        $this->assertEquals(
+            200.0,
+            (float) $nota->total
+        );
+
+        // Confirma a sincronização financeira.
+        $conta->refresh();
+        $parcela->refresh();
+
+        $this->assertEquals(
+            200.0,
+            (float) $conta->valor_original
+        );
+
+        $this->assertEquals(
+            200.0,
+            (float) $parcela->valor
+        );
+
+        $this->assertSame(
+            'aberta',
+            $conta->status
+        );
+
+        // Nenhuma parcela adicional deve ser criada.
+        $this->assertSame(
+            1,
+            $conta->parcelas()->count()
         );
     }
 

@@ -747,8 +747,10 @@ class NotaController extends Controller
                 'portrait'
             );
 
-        return $pdf->stream(
-            "nota-cliente-{$nota->id}.pdf"
+        return $this->respostaPdfSemCache(
+            $pdf->stream(
+                "nota-cliente-{$nota->id}.pdf"
+            )
         );
     }
 
@@ -773,8 +775,10 @@ class NotaController extends Controller
                 'portrait'
             );
 
-        return $pdf->download(
-            "nota-cliente-{$nota->id}.pdf"
+        return $this->respostaPdfSemCache(
+            $pdf->download(
+                "nota-cliente-{$nota->id}.pdf"
+            )
         );
     }
 
@@ -804,8 +808,31 @@ class NotaController extends Controller
             $senha
         );
 
-        return $pdf->download(
-            "nota-interna-{$nota->id}.pdf"
+        return $this->respostaPdfSemCache(
+            $pdf->download(
+                "nota-interna-{$nota->id}.pdf"
+            )
         );
+    }
+
+    private function respostaPdfSemCache(
+        \Symfony\Component\HttpFoundation\Response $resposta
+    ): \Symfony\Component\HttpFoundation\Response {
+        $resposta->headers->set(
+            'Cache-Control',
+            'private, no-store, no-cache, must-revalidate, max-age=0'
+        );
+
+        $resposta->headers->set(
+            'Pragma',
+            'no-cache'
+        );
+
+        $resposta->headers->set(
+            'Expires',
+            '0'
+        );
+
+        return $resposta;
     }
 }

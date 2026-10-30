@@ -9,12 +9,18 @@ use App\Models\NotasItem;
 use App\Models\OrdemServico;
 use App\Models\Produto;
 use App\Models\VeiculosCliente;
+use App\Services\Nota\CalculadorTotaisNota;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 
 class CriarNota
 {
+    public function __construct(
+        private CalculadorTotaisNota $calculadorTotaisNota
+    ) {
+    }
+
     public function execute(
         array $dados,
         ?int $userId = null
@@ -42,7 +48,7 @@ class CriarNota
                 $itens
             );
 
-            [$subtotalGeral, $descontoGeral] =
+            $totais =
                 $this->validarECalcularItens(
                     $itens,
                     $clienteId,
@@ -68,14 +74,14 @@ class CriarNota
                 'km_proxima_troca_oleo' => $dados['km_proxima_troca_oleo']
                     ?? null,
 
-                'subtotal' => $subtotalGeral,
+                'subtotal' =>
+                    $totais['subtotal'],
 
-                'desconto' => $descontoGeral,
+                'desconto' =>
+                    $totais['desconto'],
 
-                'total' => max(
-                    0,
-                    $subtotalGeral - $descontoGeral
-                ),
+                'total' =>
+                    $totais['total'],
             ]);
 
             NotaEtapaHistorico::create([
@@ -207,9 +213,6 @@ class CriarNota
         ?int $clienteId,
         ?int $veiculoClienteId
     ): array {
-        $subtotalGeral = 0;
-        $descontoGeral = 0;
-
         foreach ($itens as $index => $dadosItem) {
             $tipo =
                 $dadosItem['itemable_type'];
@@ -250,27 +253,53 @@ class CriarNota
                 );
             }
 
-            $subtotalItem =
-                $quantidade
-                * $valorUnitario;
+            $totaisItem =
+                $this
+                    ->calculadorTotaisNota
+                    ->calcularItem(
+                        $quantidade,
+                        $valorUnitario,
+                        $desconto
+                    );
 
-            if ($desconto > $subtotalItem) {
+            if (
+                $this
+                    ->calculadorTotaisNota
+                    ->paraCentavos(
+                        $desconto
+                    )
+                >
+                $this
+                    ->calculadorTotaisNota
+                    ->paraCentavos(
+                        $totaisItem['subtotal']
+                    )
+            ) {
                 throw ValidationException::withMessages([
                     "itens.{$index}.desconto" => 'O desconto do item não pode ser maior que o valor do item.',
                 ]);
             }
-
-            $subtotalGeral +=
-                $subtotalItem;
-
-            $descontoGeral +=
-                $desconto;
         }
 
-        return [
-            $subtotalGeral,
-            $descontoGeral,
-        ];
+        $itensNormalizados = array_map(
+            static fn (array $item): array => [
+                'quantidade' =>
+                    (int) $item['quantidade'],
+
+                'valor_unitario' =>
+                    (float) $item['valor_unitario'],
+
+                'desconto' =>
+                    (float) ($item['desconto'] ?? 0),
+            ],
+            $itens
+        );
+
+        return $this
+            ->calculadorTotaisNota
+            ->calcularItens(
+                $itensNormalizados
+            );
     }
 
     private function validarOrdemServico(
@@ -351,13 +380,14 @@ class CriarNota
                 ?? 0
             );
 
-        $valorTotal = max(
-            0,
-            (
-                $quantidade
-                * $valorUnitario
-            ) - $desconto
-        );
+        $totaisItem =
+            $this
+                ->calculadorTotaisNota
+                ->calcularItem(
+                    $quantidade,
+                    $valorUnitario,
+                    $desconto
+                );
 
         $dadosItemNota = [
             'nota_id' => $nota->id,
@@ -374,7 +404,8 @@ class CriarNota
 
             'desconto' => $desconto,
 
-            'valor_total' => $valorTotal,
+            'valor_total' =>
+                $totaisItem['total'],
 
             'garantia_dias' => null,
 

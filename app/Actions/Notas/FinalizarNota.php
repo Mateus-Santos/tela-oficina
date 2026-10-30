@@ -11,6 +11,7 @@ use App\Models\Etapa;
 use App\Models\Nota;
 use App\Models\OrdemServico;
 use App\Models\Produto;
+use App\Services\Nota\CalculadorTotaisNota;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -22,7 +23,8 @@ class FinalizarNota
         private RegistrarSaida $registrarSaida,
         private CriarContaReceber $criarContaReceber,
         private FinalizarOrdemServico $finalizarOrdemServico,
-        private AlterarEtapaNota $alterarEtapaNota
+        private AlterarEtapaNota $alterarEtapaNota,
+        private CalculadorTotaisNota $calculadorTotaisNota
     ) {}
 
     public function execute(
@@ -59,6 +61,10 @@ class FinalizarNota
                     'Não é possível finalizar uma nota sem itens.'
                 );
             }
+
+            $this->validarConsistenciaFinanceira(
+                $nota
+            );
 
             $valorNotaCentavos = $this->paraCentavos(
                 $nota->total
@@ -443,6 +449,78 @@ class FinalizarNota
                 'contaReceber.parcelas',
             ]);
         });
+    }
+
+    private function validarConsistenciaFinanceira(
+        Nota $nota
+    ): void {
+        $calculador = $this->calculadorTotaisNota;
+
+        foreach ($nota->itens as $item) {
+            $valores = $calculador->calcularItem(
+                $item->quantidade,
+                $item->valor_unitario,
+                $item->desconto ?? 0
+            );
+
+            if (
+                $calculador->paraCentavos(
+                    $item->desconto ?? 0
+                )
+                >
+                $calculador->paraCentavos(
+                    $valores['subtotal']
+                )
+            ) {
+                throw ValidationException::withMessages([
+                    'finalizacao' =>
+                        "O item #{$item->id} possui desconto maior que seu subtotal.",
+                ]);
+            }
+
+            if (
+                $item->valor_total === null
+                ||
+                $calculador->paraCentavos(
+                    $item->valor_total
+                )
+                !==
+                $calculador->paraCentavos(
+                    $valores['total']
+                )
+            ) {
+                throw ValidationException::withMessages([
+                    'finalizacao' =>
+                        "O item #{$item->id} possui valor total divergente. Corrija a Nota antes de finalizar.",
+                ]);
+            }
+        }
+
+        $totais = $calculador->calcularItens(
+            $nota->itens
+        );
+
+        foreach (
+            ['subtotal', 'desconto', 'total']
+            as $campo
+        ) {
+            if (
+                $nota->{$campo} === null
+                ||
+                $calculador->paraCentavos(
+                    $nota->{$campo}
+                )
+                !==
+                $calculador->paraCentavos(
+                    $totais[$campo]
+                )
+            ) {
+                throw ValidationException::withMessages([
+                    'finalizacao' =>
+                        "A Nota #{$nota->id} possui divergência no campo {$campo}. Revise e salve novamente antes de finalizar.",
+                ]);
+            }
+        }
     }
 
     private function validarContaReceberExistente(

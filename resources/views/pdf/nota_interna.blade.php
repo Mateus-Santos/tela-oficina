@@ -611,89 +611,50 @@
 ============================================================= --}}
 
 @php
+    $itens = $nota->itens ?? collect();
 
-    $itens =
-        $nota->itens
-        ?? collect();
+    $calculadorTotaisNota = app(
+        \App\Services\Nota\CalculadorTotaisNota::class
+    );
 
-    $produtos =
-        $itens->filter(
-            function ($item) {
-                return
-                    $item->itemable_type
-                    === \App\Models\Produto::class;
-            }
-        );
+    $produtos = $itens->filter(
+        function ($item) {
+            return $item->itemable_type
+                === \App\Models\Produto::class;
+        }
+    );
 
-    $servicos =
-        $itens->filter(
-            function ($item) {
-                return
-                    $item->itemable_type
-                    === \App\Models\OrdemServico::class;
-            }
-        );
+    $servicos = $itens->filter(
+        function ($item) {
+            return $item->itemable_type
+                === \App\Models\OrdemServico::class;
+        }
+    );
 
-    $brutoProdutos =
-        $produtos->sum(
-            function ($item) {
-                return
-                    (float) ($item->quantidade ?? 0)
-                    *
-                    (float) ($item->valor_unitario ?? 0);
-            }
-        );
+    $totaisProdutos = $calculadorTotaisNota
+        ->calcularItens($produtos);
 
-    $descontoProdutos =
-        $produtos->sum(
-            function ($item) {
-                return
-                    (float) ($item->desconto ?? 0);
-            }
-        );
+    $totaisServicos = $calculadorTotaisNota
+        ->calcularItens($servicos);
 
-    $subtotalProdutos =
-        $brutoProdutos
-        - $descontoProdutos;
+    $totaisGerais = $calculadorTotaisNota
+        ->calcularItens($itens);
 
-    $brutoServicos =
-        $servicos->sum(
-            function ($item) {
-                return
-                    (float) ($item->quantidade ?? 0)
-                    *
-                    (float) ($item->valor_unitario ?? 0);
-            }
-        );
+    $brutoProdutos = $totaisProdutos['subtotal'];
+    $descontoProdutos = $totaisProdutos['desconto'];
+    $subtotalProdutos = $totaisProdutos['total'];
 
-    $descontoServicos =
-        $servicos->sum(
-            function ($item) {
-                return
-                    (float) ($item->desconto ?? 0);
-            }
-        );
+    $brutoServicos = $totaisServicos['subtotal'];
+    $descontoServicos = $totaisServicos['desconto'];
+    $subtotalServicos = $totaisServicos['total'];
 
-    $subtotalServicos =
-        $brutoServicos
-        - $descontoServicos;
+    $brutoGeral = $totaisGerais['subtotal'];
+    $totalDescontosItens = $totaisGerais['desconto'];
 
-    $brutoGeral =
-        $brutoProdutos
-        + $brutoServicos;
-
-    $totalDescontosItens =
-        $descontoProdutos
-        + $descontoServicos;
-
-    $totalFinal =
-        $nota->total !== null
-            ? (float) $nota->total
-            : (
-                $brutoGeral
-                - $totalDescontosItens
-            );
-
+    // Preserva o valor registrado na Nota.
+    $totalFinal = $nota->total !== null
+        ? (float) $nota->total
+        : $totaisGerais['total'];
 @endphp
 
 
@@ -766,9 +727,12 @@
                     $desconto =
                         (float) ($item->desconto ?? 0);
 
-                    $itemTotal =
-                        ($quantidade * $valorUnitario)
-                        - $desconto;
+                    $itemTotal = $calculadorTotaisNota
+                        ->calcularItem(
+                            $quantidade,
+                            $valorUnitario,
+                            $desconto
+                        )['total'];
 
                     $valorExibicao =
                         $item->valor_total !== null
@@ -1050,9 +1014,12 @@
                     $desconto =
                         (float) ($item->desconto ?? 0);
 
-                    $itemTotal =
-                        ($quantidade * $valorUnitario)
-                        - $desconto;
+                    $itemTotal = $calculadorTotaisNota
+                        ->calcularItem(
+                            $quantidade,
+                            $valorUnitario,
+                            $desconto
+                        )['total'];
 
                     $valorExibicao =
                         $item->valor_total !== null
