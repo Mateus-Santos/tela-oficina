@@ -86,7 +86,7 @@ jobs:
                   echo ".git/" > .rsync-exclude
                   echo "node_modules/" >> .rsync-exclude
                   echo "storage/" >> .rsync-exclude
-                  echo "public/storage/" >> .rsync-exclude
+                  echo "/public/storage" >> .rsync-exclude
                   echo ".env" >> .rsync-exclude
                   echo "vendor/" >> .rsync-exclude
 
@@ -258,9 +258,13 @@ jobs:
                       --user sail \
                       laravel.sosmecanica \
                       sh -c '
-                          if [ -e public/storage ] || [ -L public/storage ]; then
-                              echo "Removendo public/storage existente..."
-                              rm -rf public/storage
+                          if [ -L public/storage ]; then
+                              echo "Removendo somente o link simbolico public/storage..."
+                              rm -- public/storage
+                          elif [ -e public/storage ]; then
+                              echo "ERRO: public/storage existe, mas nao e um link simbolico."
+                              echo "Exclusao bloqueada para proteger os arquivos."
+                              exit 1
                           else
                               echo "Nenhum storage link existente encontrado."
                           fi
