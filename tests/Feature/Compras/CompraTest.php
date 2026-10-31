@@ -403,6 +403,30 @@ class CompraTest extends TestCase
         $this->assertSame(10.0, (float) $produto->quantidade);
     }
 
+    public function test_estorno_da_compra_com_quantidade_um_virgula_zero_zero_um(): void
+    {
+        [, $produto, $compra, $item] = $this->prepararCompraAprovada(0, 1.001, 1.001);
+
+        app(RegistrarEntradaCompra::class)->execute($compra);
+
+        $this->assertSame('1.001', $produto->fresh()->quantidade);
+        $this->assertDatabaseHas('movimentacao_estoques', [
+            'tipo' => 'entrada',
+            'origem_id' => $item->id,
+            'quantidade' => '1.001',
+        ]);
+
+        app(EstornarCompra::class)->execute($compra);
+
+        $this->assertSame('0.000', $produto->fresh()->quantidade);
+        $this->assertSame(Compra::STATUS_CANCELADA, $compra->fresh()->status);
+        $this->assertDatabaseHas('movimentacao_estoques', [
+            'tipo' => 'saida',
+            'origem_id' => $item->id,
+            'quantidade' => '1.001',
+        ]);
+    }
+
     public function test_nao_permite_estorno_duas_vezes(): void
     {
         [, $produto, $compra] = $this->prepararCompraAprovada(10, 1, 1);

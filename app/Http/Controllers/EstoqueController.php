@@ -23,11 +23,7 @@ class EstoqueController extends Controller
                 (string) $request->input('nome')
             );
 
-            $query->where(
-                'nome',
-                'like',
-                "%{$nome}%"
-            );
+            $query->buscaGeral($nome);
         }
 
         if ($request->filled('codigo')) {
@@ -205,7 +201,7 @@ class EstoqueController extends Controller
     ) {
         $request->validate(
             [
-                'quantidade' => 'required|numeric|min:0.001',
+                'quantidade' => 'required|numeric|min:0.001|max:999999999.999|decimal:0,3',
                 'observacoes' => 'nullable|string|max:1000',
             ],
             [
@@ -222,7 +218,7 @@ class EstoqueController extends Controller
         try {
             $registrarSaida->execute(
                 produto: $produto,
-                quantidade: (float) $request->quantidade,
+                quantidade: (string) $request->quantidade,
                 observacoes: $request->observacoes
             );
         } catch (InvalidArgumentException $e) {
@@ -256,7 +252,7 @@ class EstoqueController extends Controller
     ) {
         $request->validate(
             [
-                'novo_saldo' => 'required|numeric|min:0',
+                'novo_saldo' => 'required|numeric|min:0|max:999999999.999|decimal:0,3',
                 'observacoes' => 'required|string|max:1000',
             ],
             [
@@ -275,7 +271,7 @@ class EstoqueController extends Controller
         try {
             $registrarAjuste->execute(
                 produto: $produto,
-                novoSaldo: (float) $request->novo_saldo,
+                novoSaldo: (string) $request->novo_saldo,
                 observacoes: $request->observacoes
             );
         } catch (InvalidArgumentException $e) {

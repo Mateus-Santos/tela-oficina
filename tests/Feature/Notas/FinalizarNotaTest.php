@@ -296,7 +296,7 @@ class FinalizarNotaTest extends TestCase
         $produto->refresh();
 
         $this->assertSame(
-            8,
+            '8.000',
             $produto->quantidade
         );
 
@@ -544,7 +544,7 @@ class FinalizarNotaTest extends TestCase
             $produto->refresh();
 
             $this->assertSame(
-                1,
+                '1.000',
                 $produto->quantidade
             );
 
@@ -596,14 +596,14 @@ class FinalizarNotaTest extends TestCase
             $produto1->refresh();
 
             $this->assertSame(
-                10,
+                '10.000',
                 $produto1->quantidade
             );
 
             $produto2->refresh();
 
             $this->assertSame(
-                1,
+                '1.000',
                 $produto2->quantidade
             );
 
@@ -855,7 +855,7 @@ class FinalizarNotaTest extends TestCase
         );
 
         $this->assertSame(
-            10,
+            '10.000',
             $produto->fresh()->quantidade
         );
 
@@ -916,7 +916,7 @@ class FinalizarNotaTest extends TestCase
         );
 
         $this->assertSame(
-            10,
+            '10.000',
             $produto->fresh()->quantidade
         );
 
@@ -1253,7 +1253,7 @@ class FinalizarNotaTest extends TestCase
         );
 
         $this->assertSame(
-            9,
+            '9.000',
             $produto->quantidade
         );
 
@@ -1337,14 +1337,14 @@ class FinalizarNotaTest extends TestCase
             $produto1->refresh();
 
             $this->assertSame(
-                10,
+                '10.000',
                 $produto1->quantidade
             );
 
             $produto2->refresh();
 
             $this->assertSame(
-                10,
+                '10.000',
                 $produto2->quantidade
             );
 
@@ -1395,7 +1395,7 @@ class FinalizarNotaTest extends TestCase
         );
 
         $this->assertSame(
-            9,
+            '9.000',
             $produto->quantidade
         );
 
@@ -1444,7 +1444,7 @@ class FinalizarNotaTest extends TestCase
         );
 
         $this->assertSame(
-            8,
+            '8.000',
             $produto->quantidade
         );
 
@@ -1457,7 +1457,7 @@ class FinalizarNotaTest extends TestCase
         $produto->refresh();
 
         $this->assertSame(
-            10,
+            '10.000',
             $produto->quantidade
         );
 
@@ -1528,7 +1528,7 @@ class FinalizarNotaTest extends TestCase
         );
 
         $this->assertSame(
-            10,
+            '10.000',
             $produto->quantidade
         );
 
@@ -1665,7 +1665,7 @@ class FinalizarNotaTest extends TestCase
             );
 
             $this->assertSame(
-                9,
+                '9.000',
                 $produto->quantidade
             );
 
@@ -1727,7 +1727,7 @@ class FinalizarNotaTest extends TestCase
         $produto->refresh();
 
         $this->assertSame(
-            9,
+            '9.000',
             $produto->quantidade
         );
 
@@ -1747,7 +1747,7 @@ class FinalizarNotaTest extends TestCase
         );
 
         $this->assertSame(
-            10,
+            '10.000',
             $produto->quantidade
         );
 

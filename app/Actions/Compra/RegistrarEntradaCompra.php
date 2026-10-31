@@ -5,6 +5,7 @@ namespace App\Actions\Compra;
 use App\Actions\Estoque\RegistrarEntrada;
 use App\Models\Compra;
 use App\Models\MovimentacaoEstoque;
+use App\Support\Estoque\Quantidade;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -54,7 +55,7 @@ class RegistrarEntradaCompra
                     );
                 }
 
-                $quantidade = (float) $item->quantidade_conferida;
+                $quantidade = Quantidade::milessimos((string) $item->quantidade_conferida);
 
                 if ($quantidade <= 0) {
                     throw new InvalidArgumentException(
@@ -72,7 +73,7 @@ class RegistrarEntradaCompra
             foreach ($compra->itens as $item) {
                 $this->registrarEntrada->execute(
                     $item->produto,
-                    (float) $item->quantidade_conferida,
+                    (string) $item->quantidade_conferida,
                     (float) $item->valor_unitario,
                     $item,
                     "Entrada referente à compra #{$compra->id}."

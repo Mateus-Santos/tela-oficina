@@ -60,6 +60,7 @@
                     id="estoque_minimo"
                     name="estoque_minimo"
                     min="0"
+                step="0.001"
                     value="{{ old(
                         'estoque_minimo',
                         isset($produto)

@@ -77,6 +77,7 @@
                 id="quantidade"
                 name="quantidade"
                 min="0"
+                step="0.001"
                 value="{{ old(
                     'quantidade',
                     $produto->quantidade ?? 0

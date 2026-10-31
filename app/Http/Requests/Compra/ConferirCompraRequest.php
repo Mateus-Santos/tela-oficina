@@ -23,6 +23,8 @@ class ConferirCompraRequest extends FormRequest
                 'required',
                 'numeric',
                 'gt:0',
+                'decimal:0,3',
+                'max:999999999.999',
             ],
         ];
     }

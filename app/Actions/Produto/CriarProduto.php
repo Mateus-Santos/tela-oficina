@@ -2,7 +2,9 @@
 
 namespace App\Actions\Produto;
 
+use App\Actions\Estoque\RegistrarEntrada;
 use App\Models\Marca;
+use App\Support\Estoque\Quantidade;
 use App\Models\Produto;
 use App\Services\ImagemService;
 use App\Services\Produto\PersistirAplicacoesProduto;
@@ -15,7 +17,8 @@ class CriarProduto
     public function __construct(
         private readonly ImagemService $imagemService,
         private readonly PersistirAplicacoesProduto
-            $persistirAplicacoesProduto
+            $persistirAplicacoesProduto,
+        private readonly RegistrarEntrada $registrarEntrada
     ) {}
 
     public function execute(array $dados): Produto
@@ -50,6 +53,8 @@ class CriarProduto
                                 $dados['marca_id']
                             );
 
+                    $estoqueInicial = Quantidade::milessimos($dados['quantidade'] ?? 0);
+
                     $produto =
                         Produto::create([
                             'codigo' =>
@@ -64,8 +69,7 @@ class CriarProduto
 
                             'preco_uni' => $dados['preco_uni'],
 
-                            'quantidade' => $dados['quantidade']
-                                ?? 0,
+                            'quantidade' => '0.000',
 
                             'estoque_minimo' => $dados['estoque_minimo']
                                 ?? 0,
@@ -107,6 +111,14 @@ class CriarProduto
                             'peso_bruto' => $dados['peso_bruto']
                                 ?? null,
                         ]);
+
+                    if ($estoqueInicial > 0) {
+                        $this->registrarEntrada->execute(
+                            $produto,
+                            Quantidade::formatar($estoqueInicial),
+                            observacoes: 'Estoque inicial informado no cadastro do produto.'
+                        );
+                    }
 
                     foreach (
                         $imagens as $ordem => $caminho

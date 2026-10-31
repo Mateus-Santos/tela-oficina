@@ -101,13 +101,17 @@ class StoreProdutoRequest extends FormRequest
 
             'quantidade' => [
                 'required',
-                'integer',
+                'numeric',
+                'decimal:0,3',
+                'max:999999999.999',
                 'min:0',
             ],
 
             'estoque_minimo' => [
                 'nullable',
-                'integer',
+                'numeric',
+                'decimal:0,3',
+                'max:999999999.999',
                 'min:0',
             ],
 
@@ -305,10 +309,10 @@ class StoreProdutoRequest extends FormRequest
             'preco_uni.min' => 'O preço unitário não pode ser negativo.',
 
             'quantidade.required' => 'A quantidade do produto é obrigatória.',
-            'quantidade.integer' => 'A quantidade deve ser um número inteiro.',
+            'quantidade.decimal' => 'A quantidade deve ter no máximo três casas decimais.',
             'quantidade.min' => 'A quantidade não pode ser negativa.',
 
-            'estoque_minimo.integer' => 'O estoque mínimo deve ser um número inteiro.',
+            'estoque_minimo.decimal' => 'O estoque mínimo deve ter no máximo três casas decimais.',
             'estoque_minimo.min' => 'O estoque mínimo não pode ser negativo.',
 
             'status.required' => 'Informe o status do produto.',

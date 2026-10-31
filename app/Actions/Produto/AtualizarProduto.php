@@ -2,7 +2,9 @@
 
 namespace App\Actions\Produto;
 
+use App\Actions\Estoque\RegistrarAjuste;
 use App\Models\Marca;
+use App\Support\Estoque\Quantidade;
 use App\Models\Produto;
 use App\Services\ImagemService;
 use App\Services\Produto\PersistirAplicacoesProduto;
@@ -15,7 +17,8 @@ class AtualizarProduto
     public function __construct(
         private readonly ImagemService $imagemService,
         private readonly PersistirAplicacoesProduto
-            $persistirAplicacoesProduto
+            $persistirAplicacoesProduto,
+        private readonly RegistrarAjuste $registrarAjuste
     ) {}
 
     public function execute(
@@ -53,6 +56,13 @@ class AtualizarProduto
                                 $dados['marca_id']
                             );
 
+                    $produto = Produto::query()
+                        ->lockForUpdate()
+                        ->findOrFail($produto->id);
+
+                    $novoSaldo = Quantidade::milessimos($dados['quantidade']);
+                    $saldoAtual = Quantidade::milessimos((string) $produto->quantidade);
+
                     $produto->update([
                         'codigo' =>
                             $dados['codigo']
@@ -65,8 +75,6 @@ class AtualizarProduto
                         'descricao' => $dados['descricao'],
 
                         'preco_uni' => $dados['preco_uni'],
-
-                        'quantidade' => $dados['quantidade'],
 
                         'estoque_minimo' => $dados['estoque_minimo']
                             ?? 0,
@@ -110,6 +118,14 @@ class AtualizarProduto
                         'peso_bruto' => $dados['peso_bruto']
                             ?? null,
                     ]);
+
+                    if ($novoSaldo !== $saldoAtual) {
+                        $this->registrarAjuste->execute(
+                            $produto,
+                            Quantidade::formatar($novoSaldo),
+                            observacoes: 'Ajuste de estoque realizado na edição cadastral do produto.'
+                        );
+                    }
 
                     $existentes =
                         $produto

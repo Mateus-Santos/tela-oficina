@@ -37,11 +37,29 @@ class Produto extends Model
 
     protected $casts = [
         'status' => 'boolean',
+        'quantidade' => 'decimal:3',
+        'estoque_minimo' => 'decimal:3',
         'origem_mercadoria' => 'integer',
         'fator_conversao' => 'decimal:6',
         'peso_liquido' => 'decimal:3',
         'peso_bruto' => 'decimal:3',
     ];
+
+    /** Busca por nome, descrição, código interno, referência ou código de barras. */
+    public function scopeBuscaGeral($query, string $termo)
+    {
+        $termo = trim($termo);
+
+        if ($termo === '') {
+            return $query;
+        }
+
+        return $query->where(function ($busca) use ($termo) {
+            foreach (['nome', 'descricao', 'codigo', 'codigo_fabricante', 'codigo_barras'] as $campo) {
+                $busca->orWhere($campo, 'like', "%{$termo}%");
+            }
+        });
+    }
 
     public function scopeFiltro($query, array $filtros)
     {
@@ -53,7 +71,7 @@ class Produto extends Model
             )
             ->when(
                 $filtros['nome'] ?? null,
-                fn ($q, $v) => $q->where('nome', 'like', "%{$v}%")
+                fn ($q, $v) => $q->buscaGeral((string) $v)
             )
             ->when(
                 $filtros['codigo_barras'] ?? null,

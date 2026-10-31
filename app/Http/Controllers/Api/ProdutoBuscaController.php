@@ -58,36 +58,7 @@ class ProdutoBuscaController extends Controller
                 'status',
                 true
             )
-            ->where(
-                function ($query) use ($busca) {
-                    $query
-                        ->where(
-                            'nome',
-                            'like',
-                            "%{$busca}%"
-                        )
-                        ->orWhere(
-                            'descricao',
-                            'like',
-                            "%{$busca}%"
-                        )
-                        ->orWhere(
-                            'codigo',
-                            'like',
-                            "%{$busca}%"
-                        )
-                                ->orWhere(
-                            'codigo_fabricante',
-                            'like',
-                            "%{$busca}%"
-                        )
-                        ->orWhere(
-                            'codigo_barras',
-                            'like',
-                            "%{$busca}%"
-                        );
-                }
-            )
+            ->buscaGeral($busca)
             ->orderBy('nome')
             ->limit(15)
             ->get();

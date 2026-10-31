@@ -109,7 +109,7 @@
                 <div class="col-12 col-md-5">
 
                     <label for="nome" class="form-label">
-                        Produto
+                        Produto, código ou referência
                     </label>
 
                     <input
@@ -117,7 +117,7 @@
                         name="nome"
                         id="nome"
                         class="filtros-container__input"
-                        placeholder="Nome do produto"
+                        placeholder="Nome, código interno, código de barras ou referência"
                         value="{{ request('nome') }}"
                         autocomplete="off"
                     >

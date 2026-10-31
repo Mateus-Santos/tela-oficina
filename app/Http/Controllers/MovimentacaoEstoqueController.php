@@ -36,31 +36,7 @@ class MovimentacaoEstoqueController extends Controller
             $query->whereHas(
                 'produto',
                 function ($produtoQuery) use ($produto) {
-                    $produtoQuery->where(
-                        function ($busca) use ($produto) {
-                            $busca
-                                ->where(
-                                    'nome',
-                                    'like',
-                                    "%{$produto}%"
-                                )
-                                ->orWhere(
-                                    'codigo',
-                                    'like',
-                                    "%{$produto}%"
-                                )
-                                ->orWhere(
-                                    'codigo_fabricante',
-                                    'like',
-                                    "%{$produto}%"
-                                )
-                                ->orWhere(
-                                    'codigo_barras',
-                                    'like',
-                                    "%{$produto}%"
-                                );
-                        }
-                    );
+                    $produtoQuery->buscaGeral($produto);
                 }
             );
         }

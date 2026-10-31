@@ -3,6 +3,7 @@
 namespace App\Actions\Compra;
 
 use App\Models\Compra;
+use App\Support\Estoque\Quantidade;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -39,14 +40,14 @@ class ConferirCompra
 
                 $quantidadeConferida = $itensRecebidos[$item->id]['quantidade_conferida'] ?? null;
 
-                if ($quantidadeConferida === null || (float) $quantidadeConferida <= 0) {
+                if ($quantidadeConferida === null || Quantidade::milessimos($quantidadeConferida) <= 0) {
                     throw new InvalidArgumentException(
                         "A quantidade recebida do item '{$item->descricao}' deve ser maior que zero."
                     );
                 }
 
                 $item->update([
-                    'quantidade_conferida' => (float) $quantidadeConferida,
+                    'quantidade_conferida' => Quantidade::formatar(Quantidade::milessimos($quantidadeConferida)),
                 ]);
             }
 

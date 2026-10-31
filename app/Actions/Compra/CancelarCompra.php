@@ -45,6 +45,21 @@ class CancelarCompra
                 );
             }
 
+            // Um estorno de estoque não deve deixar uma conta a pagar ativa
+            // vinculada a uma compra cancelada. O financeiro é tratado à parte.
+            $temFinanceiroAtivo = $compra->contaPagar()
+                ->where('status', '!=', 'cancelada')
+                ->exists()
+                || $compra->contasPagar()
+                    ->where('contas_pagar.status', '!=', 'cancelada')
+                    ->exists();
+
+            if ($temFinanceiroAtivo) {
+                throw new InvalidArgumentException(
+                    'A compra possui conta a pagar ativa vinculada. Regularize ou cancele o vínculo financeiro antes de cancelar/estornar a compra.'
+                );
+            }
+
             $compra->update([
                 'status' => Compra::STATUS_CANCELADA,
             ]);

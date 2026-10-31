@@ -35,6 +35,21 @@ class EstornarCompra
                 throw new InvalidArgumentException('A compra não possui itens para estorno.');
             }
 
+            // Um estorno de estoque não deve deixar uma conta a pagar ativa
+            // vinculada a uma compra cancelada. O financeiro é tratado à parte.
+            $temFinanceiroAtivo = $compra->contaPagar()
+                ->where('status', '!=', 'cancelada')
+                ->exists()
+                || $compra->contasPagar()
+                    ->where('contas_pagar.status', '!=', 'cancelada')
+                    ->exists();
+
+            if ($temFinanceiroAtivo) {
+                throw new InvalidArgumentException(
+                    'A compra possui conta a pagar ativa vinculada. Regularize ou cancele o vínculo financeiro antes de cancelar/estornar a compra.'
+                );
+            }
+
             $entradasEncontradas = 0;
 
             foreach ($compra->itens as $item) {
@@ -45,7 +60,9 @@ class EstornarCompra
                     ->first();
 
                 if (!$entrada) {
-                    continue;
+                    throw new InvalidArgumentException(
+                        "O item '{$item->descricao}' não possui entrada de estoque para estornar. Verifique a integridade da compra."
+                    );
                 }
 
                 $entradasEncontradas++;
@@ -71,7 +88,7 @@ class EstornarCompra
 
                 $this->registrarSaida->execute(
                     produto: $item->produto,
-                    quantidade: (float) $entrada->quantidade,
+                    quantidade: (string) $entrada->quantidade,
                     valorUnitario: $entrada->valor_unitario !== null
                         ? (float) $entrada->valor_unitario
                         : null,
