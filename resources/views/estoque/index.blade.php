@@ -92,6 +92,7 @@
         action="{{ route('estoque.index') }}"
         id="filtros-estoque"
         :collapsible="true"
+        :separate-forms="true"
         :expanded="request()->hasAny([
             'codigo',
             'codigo_fabricante',
@@ -117,7 +118,7 @@
                         name="nome"
                         id="nome"
                         class="filtros-container__input"
-                        placeholder="Nome, código interno, código de barras ou referência"
+                        placeholder="Nome, marca, código ou referência"
                         value="{{ request('nome') }}"
                         autocomplete="off"
                     >
@@ -356,6 +357,25 @@
 
                 </div>
 
+                <div class="col-12 col-md-4">
+                    <label for="situacao-avancada" class="form-label">Situação do estoque</label>
+                    <select name="situacao" id="situacao-avancada" class="filtros-container__input">
+                        <option value="">Todas</option>
+                        <option value="normal" @selected(request('situacao') === 'normal')>Normal</option>
+                        <option value="baixo" @selected(request('situacao') === 'baixo')>Baixo</option>
+                        <option value="zerado" @selected(request('situacao') === 'zerado')>Sem estoque</option>
+                    </select>
+                </div>
+
+                <div class="col-12 d-flex gap-2 flex-wrap">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search"></i> Aplicar filtros avançados
+                    </button>
+                    <a href="{{ route('estoque.index') }}" class="btn btn-secondary">
+                        <i class="bi bi-x-lg"></i> Limpar tudo
+                    </a>
+                </div>
+
             </div>
 
         </x-slot:advanced>
@@ -367,6 +387,7 @@
         @php
             $temFiltros = request()->hasAny([
                 'nome',
+                'codigo',
                 'codigo_fabricante',
                 'codigo_barras',
                 'situacao',

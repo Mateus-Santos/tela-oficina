@@ -63,7 +63,8 @@ class EstoqueController extends Controller
 
             $query->where(
                 'codigo_barras',
-                $codigoBarras
+                'like',
+                "%{$codigoBarras}%"
             );
         }
 

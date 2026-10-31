@@ -3,9 +3,35 @@
     'id' => 'filtros',
     'collapsible' => false,
     'expanded' => false,
+    'separateForms' => false,
 ])
 
 <div class="filtros-container">
+    @if ($collapsible && $separateForms)
+        <form method="GET" action="{{ $action }}" class="filtros-container__form">
+            <div class="filtros-container__primary">
+                {{ $primary ?? '' }}
+            </div>
+        </form>
+
+        <div class="filtros-container__toggle">
+            <button type="button" class="btn btn-outline-dark"
+                data-bs-toggle="collapse"
+                data-bs-target="#{{ $id }}-avancados"
+                aria-expanded="{{ $expanded ? 'true' : 'false' }}"
+                aria-controls="{{ $id }}-avancados">
+                <i class="bi bi-funnel"></i> Filtros avançados
+                <i class="bi bi-chevron-down ms-1"></i>
+            </button>
+        </div>
+
+        <div id="{{ $id }}-avancados"
+            class="collapse {{ $expanded ? 'show' : '' }} filtros-container__advanced">
+            <form method="GET" action="{{ $action }}" class="filtros-container__form">
+                {{ $advanced ?? '' }}
+            </form>
+        </div>
+    @else
     <form method="GET" action="{{ $action }}" class="filtros-container__form">
 
         @if ($collapsible)
@@ -45,4 +71,5 @@
         @endif
 
     </form>
+    @endif
 </div>

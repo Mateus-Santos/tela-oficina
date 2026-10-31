@@ -45,20 +45,38 @@ class Produto extends Model
         'peso_bruto' => 'decimal:3',
     ];
 
-    /** Busca por nome, descrição, código interno, referência ou código de barras. */
+    /**
+     * Busca geral por palavras, inclusive pela marca do produto.
+     * Cada palavra deve ocorrer em algum campo; palavras podem estar em campos diferentes.
+     */
     public function scopeBuscaGeral($query, string $termo)
     {
-        $termo = trim($termo);
+        $palavras = preg_split('/\s+/u', trim($termo), -1, PREG_SPLIT_NO_EMPTY) ?: [];
 
-        if ($termo === '') {
-            return $query;
+        foreach ($palavras as $palavra) {
+            $normalizado = preg_replace('/[-.\/\s]+/u', '', $palavra);
+
+            $query->where(function ($busca) use ($palavra, $normalizado) {
+                foreach (['nome', 'descricao', 'codigo', 'codigo_fabricante', 'codigo_barras'] as $campo) {
+                    $busca->orWhere($campo, 'like', "%{$palavra}%");
+                }
+
+                $busca->orWhereHas('marcaRelacionada', function ($marca) use ($palavra) {
+                    $marca->where('nome', 'like', "%{$palavra}%");
+                });
+
+                if ($normalizado !== '' && $normalizado !== $palavra) {
+                    foreach (['codigo', 'codigo_fabricante', 'codigo_barras'] as $campo) {
+                        $busca->orWhereRaw(
+                            "REPLACE(REPLACE(REPLACE(REPLACE({$campo}, '-', ''), ' ', ''), '.', ''), '/', '') LIKE ?",
+                            ["%{$normalizado}%"]
+                        );
+                    }
+                }
+            });
         }
 
-        return $query->where(function ($busca) use ($termo) {
-            foreach (['nome', 'descricao', 'codigo', 'codigo_fabricante', 'codigo_barras'] as $campo) {
-                $busca->orWhere($campo, 'like', "%{$termo}%");
-            }
-        });
+        return $query;
     }
 
     public function scopeFiltro($query, array $filtros)
