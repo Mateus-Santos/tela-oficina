@@ -4,6 +4,7 @@ namespace App\Actions\Compra;
 
 use App\Models\Compra;
 use Illuminate\Support\Facades\DB;
+use App\Support\Estoque\Quantidade;
 
 class AtualizarCompra
 {
@@ -22,11 +23,13 @@ class AtualizarCompra
             $valorProdutos = 0;
 
             foreach ($dados['itens'] as $item) {
-                $quantidade = (float) $item['quantidade'];
+                $quantidade = Quantidade::formatar(
+                    Quantidade::milessimos((string) $item['quantidade'])
+                );
                 $valorUnitario = (float) $item['valor_unitario'];
                 $descontoItem = (float) ($item['desconto'] ?? 0);
 
-                $valorTotalItem = ($quantidade * $valorUnitario)
+                $valorTotalItem = ((float) $quantidade * $valorUnitario)
                     - $descontoItem;
 
                 if ($valorTotalItem < 0) {
@@ -73,11 +76,13 @@ class AtualizarCompra
             $compra->itens()->delete();
 
             foreach ($dados['itens'] as $item) {
-                $quantidade = (float) $item['quantidade'];
+                $quantidade = Quantidade::formatar(
+                    Quantidade::milessimos((string) $item['quantidade'])
+                );
                 $valorUnitario = (float) $item['valor_unitario'];
                 $descontoItem = (float) ($item['desconto'] ?? 0);
 
-                $valorTotalItem = ($quantidade * $valorUnitario)
+                $valorTotalItem = ((float) $quantidade * $valorUnitario)
                     - $descontoItem;
 
                 $compra->itens()->create([

@@ -6,6 +6,7 @@ use App\Actions\Anexo\CriarAnexo;
 use App\Models\Compra;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use App\Support\Estoque\Quantidade;
 
 class CriarCompra
 {
@@ -23,10 +24,12 @@ class CriarCompra
             $valorProdutos = 0;
 
             foreach ($dados['itens'] as $item) {
-                $quantidade = (float) $item['quantidade'];
+                $quantidade = Quantidade::formatar(
+                    Quantidade::milessimos((string) $item['quantidade'])
+                );
                 $valorUnitario = (float) $item['valor_unitario'];
                 $descontoItem = (float) ($item['desconto'] ?? 0);
-                $valorTotalItem = ($quantidade * $valorUnitario) - $descontoItem;
+                $valorTotalItem = ((float) $quantidade * $valorUnitario) - $descontoItem;
 
                 if ($valorTotalItem < 0) {
                     throw new \InvalidArgumentException(
@@ -65,10 +68,12 @@ class CriarCompra
             ]);
 
             foreach ($dados['itens'] as $item) {
-                $quantidade = (float) $item['quantidade'];
+                $quantidade = Quantidade::formatar(
+                    Quantidade::milessimos((string) $item['quantidade'])
+                );
                 $valorUnitario = (float) $item['valor_unitario'];
                 $descontoItem = (float) ($item['desconto'] ?? 0);
-                $valorTotalItem = ($quantidade * $valorUnitario) - $descontoItem;
+                $valorTotalItem = ((float) $quantidade * $valorUnitario) - $descontoItem;
 
                 $compra->itens()->create([
                     'produto_id' => $item['produto_id'],

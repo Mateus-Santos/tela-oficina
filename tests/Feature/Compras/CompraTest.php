@@ -4,6 +4,7 @@ namespace Tests\Feature\Compras;
 
 use Mockery;
 use App\Actions\Compra\AprovarCompra;
+use App\Actions\Compra\AtualizarCompra;
 use App\Actions\Compra\CancelarCompra;
 use App\Actions\Compra\ConferirCompra;
 use App\Actions\Compra\CriarCompra;
@@ -171,6 +172,42 @@ class CompraTest extends TestCase
             'produto_id' => $produto->id,
             'quantidade' => 2,
         ]);
+    }
+
+    public function test_criar_e_atualizar_compra_preservam_quantidades_fracionadas(): void
+    {
+        $fornecedor = $this->criarFornecedor();
+        $produto = $this->criarProduto();
+
+        $dados = [
+            'fornecedor_id' => $fornecedor->id,
+            'numero_nf' => 'FRAC-' . uniqid(),
+            'serie_nf' => '1',
+            'chave_nf' => null,
+            'data_emissao' => now()->toDateString(),
+            'data_entrada' => now()->toDateString(),
+            'desconto' => 0,
+            'frete' => 0,
+            'outras_despesas' => 0,
+            'observacoes' => null,
+            'itens' => [[
+                'produto_id' => $produto->id,
+                'descricao' => $produto->nome,
+                'quantidade' => '1.001',
+                'valor_unitario' => 100,
+                'desconto' => 0,
+            ]],
+        ];
+
+        $compra = app(CriarCompra::class)->execute($dados);
+        $this->assertSame('1.001', $compra->itens()->firstOrFail()->quantidade);
+        $this->assertSame('100.10', $compra->fresh()->valor_total);
+
+        $dados['itens'][0]['quantidade'] = '2.125';
+        $compra = app(AtualizarCompra::class)->execute($compra, $dados);
+
+        $this->assertSame('2.125', $compra->itens()->firstOrFail()->quantidade);
+        $this->assertSame('212.50', $compra->fresh()->valor_total);
     }
 
     public function test_criacao_da_compra_nao_define_quantidade_conferida(): void
