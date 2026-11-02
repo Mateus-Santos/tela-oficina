@@ -81,6 +81,7 @@ jobs:
           docker build -f docker/production/Dockerfile.app \
             -t "sosmecanica-app:$TAG" .
           docker build -f docker/production/Dockerfile.web \
+            --build-arg "APP_IMAGE=sosmecanica-app:$TAG" \
             -t "sosmecanica-web:$TAG" .
           docker image inspect "sosmecanica-app:$TAG" "sosmecanica-web:$TAG" >/dev/null
 
