@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AnexoController;
 use App\Http\Controllers\Api\ClienteContaReceberBuscaController;
+use App\Http\Controllers\Api\CatalogoBuscaController;
 use App\Http\Controllers\Api\NotaContaReceberBuscaController;
 use App\Http\Controllers\Api\NotaItemBuscaController;
 use App\Http\Controllers\Api\NotaOrdemServicoRapidaController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\Api\ProdutoBuscaController;
 use App\Http\Controllers\Api\VeiculosClientesController as ApiVeiculosClientesController;
 use App\Http\Controllers\CategoriaFinanceiraController;
 use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\CatalogoProdutoComplementoController;
 use App\Http\Controllers\ColaboradorController;
 use App\Http\Controllers\CompraController;
 use App\Http\Controllers\ContaPagarController;
@@ -165,6 +167,9 @@ Route::middleware([
             NotaItemBuscaController::class
         )->name('api.notas-itens.buscar');
 
+        Route::get('/api/produtos/catalogo/buscar', CatalogoBuscaController::class)
+            ->name('api.produtos.catalogo.buscar');
+
         Route::get(
             '/api/produtos/buscar',
             ProdutoBuscaController::class
@@ -285,6 +290,25 @@ Route::middleware([
         )->name(
             'produtos.imagens.destroy'
         );
+
+        // Deve vir antes de /produtos/{produto} para evitar colisao de rotas.
+        Route::get(
+            '/produtos/catalogo/{catalogo}',
+            [ProdutoController::class, 'showCatalogo']
+        )->name('produtos.catalogo.show');
+
+        Route::get('/produtos/catalogo/{catalogo}/similares',
+            [CatalogoProdutoComplementoController::class, 'similares'])
+            ->name('produtos.catalogo.similares');
+        Route::get('/produtos/catalogo/{catalogo}/editar',
+            [CatalogoProdutoComplementoController::class, 'edit'])
+            ->name('produtos.catalogo.edit');
+        Route::put('/produtos/catalogo/{catalogo}',
+            [CatalogoProdutoComplementoController::class, 'update'])
+            ->name('produtos.catalogo.update');
+        Route::post('/produtos/catalogo/{catalogo}/habilitar',
+            [CatalogoProdutoComplementoController::class, 'habilitar'])
+            ->name('produtos.catalogo.habilitar');
 
         Route::resource(
             'produtos',

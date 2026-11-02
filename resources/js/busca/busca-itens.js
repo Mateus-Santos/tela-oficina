@@ -360,6 +360,17 @@ export default class BuscaItens {
     }
 
     selecionar(item) {
+        if (item && item.tipo_resultado === 'referencia_catalogo') {
+            this.limparResultados();
+            this.definirStatus(
+                'Referência ainda não cadastrada no estoque. Abra os detalhes e habilite antes de utilizar.'
+            );
+            if (item.url) {
+                window.open(item.url, '_blank', 'noopener,noreferrer');
+            }
+            return;
+        }
+
         this.aoSelecionar(item);
 
         this.limparResultados();

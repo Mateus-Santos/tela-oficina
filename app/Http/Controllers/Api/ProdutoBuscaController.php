@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Produto;
+use App\Services\Produto\BuscarReferenciasCatalogo;
 use App\Services\Produto\ResolverDadosCatalogoProduto;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,7 +13,8 @@ class ProdutoBuscaController extends Controller
 {
     public function __invoke(
         Request $request,
-        ResolverDadosCatalogoProduto $resolverCatalogo
+        ResolverDadosCatalogoProduto $resolverCatalogo,
+        BuscarReferenciasCatalogo $buscaCatalogo
     ): JsonResponse {
         $dados = $request->validate([
             'q' => [
@@ -60,7 +62,7 @@ class ProdutoBuscaController extends Controller
             )
             ->buscaGeral($busca)
             ->orderBy('nome')
-            ->limit(15)
+            ->limit(8)
             ->get();
 
         return response()->json([
@@ -94,9 +96,7 @@ class ProdutoBuscaController extends Controller
                                 $produto->descricao,
 
                             'preco' =>
-                                (float) $catalogo[
-                                    'preco_venda'
-                                ],
+                                (float) $produto->preco_uni,
 
                             'preco_jaime' =>
                                 (float) $produto
@@ -145,7 +145,10 @@ class ProdutoBuscaController extends Controller
                         ];
                     }
                 )
-                ->values(),
+                ->values()
+                ->concat($buscaCatalogo->buscar($busca, 8))
+                ->values()
+                ->all(),
         ]);
     }
 }

@@ -408,6 +408,13 @@ export default function inicializarItensCompra() {
 
                 container.appendChild(nome);
 
+                if (produto.tipo_resultado === 'referencia_catalogo') {
+                    const aviso = document.createElement('small');
+                    aviso.className = 'text-warning fw-semibold';
+                    aviso.textContent = 'Referência disponível para cadastro — abrir detalhes para habilitar';
+                    container.appendChild(aviso);
+                }
+
                 if (produto.marca) {
                     const marca =
                         document.createElement('small');
@@ -470,15 +477,8 @@ export default function inicializarItensCompra() {
                 const catalogo =
                     produto.catalogo || null;
 
-                const precoVenda =
-                    catalogo
-                    && catalogo.preco_observado !== null
-                        ? Number(
-                            catalogo.preco_observado
-                        )
-                        : Number(
-                            produto.preco || 0
-                        );
+                // A compra exibe o preco operacional; valor Sky e apenas referencia.
+                const precoVenda = Number(produto.preco || 0);
 
                 const preco =
                     document.createElement(

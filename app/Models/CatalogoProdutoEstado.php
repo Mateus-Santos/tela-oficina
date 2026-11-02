@@ -14,6 +14,7 @@ class CatalogoProdutoEstado extends Model
     protected $casts = [
         'custo_observado' => 'decimal:4',
         'preco_venda_observado' => 'decimal:4',
+        'preco_venda_sugerido' => 'decimal:4',
         'custo_base_seguro' => 'decimal:4',
         'promocao_detectada' => 'boolean',
         'primeira_coleta_em' => 'datetime',

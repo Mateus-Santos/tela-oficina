@@ -121,7 +121,7 @@ class StoreProdutoRequest extends FormRequest
             ],
 
             'codigo' => [
-                'required',
+                'nullable',
                 'string',
                 'max:50',
                 Rule::unique(
@@ -318,7 +318,6 @@ class StoreProdutoRequest extends FormRequest
             'status.required' => 'Informe o status do produto.',
             'status.boolean' => 'O status informado é inválido.',
 
-            'codigo.required' => 'O código do produto é obrigatório.',
             'codigo.string' => 'O código do produto é inválido.',
             'codigo.max' => 'O código do produto não pode ultrapassar 50 caracteres.',
             'codigo.unique' => 'Já existe outro produto com este código.',

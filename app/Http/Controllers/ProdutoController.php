@@ -6,10 +6,13 @@ use App\Actions\Produto\AtualizarProduto;
 use App\Actions\Produto\CriarProduto;
 use App\Http\Requests\Produto\StoreProdutoRequest;
 use App\Http\Requests\Produto\UpdateProdutoRequest;
+use App\Models\CatalogoProduto;
 use App\Models\Montadora;
 use App\Models\Produto;
 use App\Models\ProdutoImagem;
 use App\Services\Produto\ResolverDadosCatalogoProduto;
+use App\Services\Produto\ListarProdutosUnificados;
+use App\Support\Catalogo\PrecoVendaForge;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,106 +20,32 @@ use Illuminate\Support\Facades\Storage;
 
 class ProdutoController extends Controller
 {
-    public function index(
-        Request $request,
-        ResolverDadosCatalogoProduto $resolverCatalogo
-    ) {
-        $codigosFabricanteDisponiveis =
-            Produto::query()
-                ->select('codigo_fabricante')
-                ->distinct()
-                ->orderBy('codigo_fabricante')
-                ->pluck('codigo_fabricante');
+    public function index(Request $request, ListarProdutosUnificados $listagem)
+    {
+        $produtos = $listagem->paginar($request);
 
-        $catalogoComImagem = function ($query) {
-            $query->where(function ($query) {
-                $query
-                    ->where(function ($query) {
-                        $query
-                            ->whereNotNull('imagem_thumb_url')
-                            ->where('imagem_thumb_url', '<>', '');
-                    })
-                    ->orWhere(function ($query) {
-                        $query
-                            ->whereNotNull('imagem_url')
-                            ->where('imagem_url', '<>', '');
-                    })
-                    ->orWhereHas(
-                        'imagens',
-                        function ($query) {
-                            $query->where(function ($query) {
-                                $query
-                                    ->whereNotNull('url_thumb')
-                                    ->orWhereNotNull('url_original');
-                            });
-                        }
-                    );
-            });
-        };
+        return view('produto.listarproduto_unificado', compact('produtos'));
+    }
 
-        $query = Produto::query()
-            ->with([
-                'veiculos',
-                'marcaRelacionada',
-                'imagens',
-                'catalogos.fonte',
-                'catalogos.estado',
-                'catalogos.imagens',
-                'catalogos.aplicacoes',
-                'catalogos.atributos',
-            ])
-            ->filtro(
-                $request->except('imagem')
-            );
-
-        if ($request->input('imagem') === 'com_imagem') {
-            $query->where(function ($query) use (
-                $catalogoComImagem
-            ) {
-                $query
-                    ->whereHas('imagens')
-                    ->orWhereHas(
-                        'catalogos',
-                        $catalogoComImagem
-                    );
-            });
+    /** Produto ainda nao cadastrado na oficina: somente leitura, sem estoque presumido. */
+    public function showCatalogo(CatalogoProduto $catalogo)
+    {
+        if ($catalogo->produto_id !== null) {
+            return redirect()->route('produtos.show', $catalogo->produto_id);
         }
 
-        if ($request->input('imagem') === 'sem_imagem') {
-            $query
-                ->whereDoesntHave('imagens')
-                ->whereDoesntHave(
-                    'catalogos',
-                    $catalogoComImagem
-                );
-        }
-
-        $produtos = $query
-            ->orderBy('nome')
-            ->paginate(20)
+        $catalogo->load(['estado', 'imagens', 'atributos', 'edicao']);
+        $aplicacoesTecnicas = $catalogo->aplicacoes()
+            ->where('ativa', true)
+            ->orderBy('id')
+            ->paginate(40, ['*'], 'aplicacoes')
             ->withQueryString();
+        $dadosExibicao = app(\App\Services\Produto\ExibirCatalogoProduto::class)->dados($catalogo);
+        $precoSugerido = $dadosExibicao['sugerido'];
 
-        $dadosCatalogoProdutos = [];
-
-        foreach (
-            $produtos->getCollection()
-            as $produto
-        ) {
-            $dadosCatalogoProdutos[
-                $produto->id
-            ] = $resolverCatalogo->resolver(
-                $produto
-            );
-        }
-
-        return view(
-            'produto.listarproduto',
-            compact(
-                'produtos',
-                'codigosFabricanteDisponiveis',
-                'dadosCatalogoProdutos'
-            )
-        );
+        return view('produto.showcatalogo', compact(
+            'catalogo', 'aplicacoesTecnicas', 'precoSugerido', 'dadosExibicao'
+        ));
     }
 
     public function create()
@@ -144,7 +73,6 @@ class ProdutoController extends Controller
             'catalogos.fonte',
             'catalogos.estado',
             'catalogos.imagens',
-            'catalogos.aplicacoes',
             'catalogos.atributos',
         ]);
 
@@ -163,21 +91,21 @@ class ProdutoController extends Controller
                 )
                 : null;
 
-        return view(
-            'produto.showproduto',
-            compact(
-                'produto',
-                'dadosCatalogo',
-                'catalogoPrincipal'
-            )
-        );
+        $aplicacoesTecnicas = $catalogoPrincipal
+            ? $catalogoPrincipal->aplicacoes()->where('ativa', true)
+                ->orderBy('id')->paginate(40, ['*'], 'aplicacoes')->withQueryString()
+            : null;
+
+        return view('produto.showproduto', compact(
+            'produto', 'dadosCatalogo', 'catalogoPrincipal', 'aplicacoesTecnicas'
+        ));
     }
 
     public function store(
         StoreProdutoRequest $request,
         CriarProduto $criarProduto
     ) {
-        $criarProduto->execute(
+        $produto = $criarProduto->execute(
             $request->validated()
         );
 
@@ -185,7 +113,7 @@ class ProdutoController extends Controller
             ->route('produtos.index')
             ->with(
                 'success',
-                'Produto cadastrado com sucesso!'
+                'Produto cadastrado com sucesso! Código interno: '.$produto->codigo
             );
     }
 

@@ -3,6 +3,7 @@
 namespace App\Services\Produto;
 
 use App\Models\Produto;
+use App\Support\Catalogo\PrecoVendaForge;
 
 class ResolverDadosCatalogoProduto
 {
@@ -50,9 +51,17 @@ class ResolverDadosCatalogoProduto
 
         $precoObservado =
             $estado?->preco_venda_observado !== null
-                ? (float) $estado
-                    ->preco_venda_observado
+                ? (float) $estado->preco_venda_observado
                 : null;
+
+        // A sugestao preserva aumentos entre importacoes. Em um produto
+        // operacional vinculado, nao apresentar valor abaixo do preco local.
+        $precoSugerido = PrecoVendaForge::arredondar(
+            $estado?->preco_venda_sugerido ?? $estado?->preco_venda_observado
+        );
+        // Preco exibido nas notas deve ser o mesmo do produto operacional.
+        // Sugestao externa e apenas informativa; nunca altera preco manual.
+        $precoVenda = (float) $produto->preco_uni;
 
         $fonte =
             $catalogo->fonte?->nome
@@ -77,13 +86,11 @@ class ResolverDadosCatalogoProduto
                 $precoObservado,
 
             'preco_venda' =>
-                $precoObservado
-                ?? (float) $produto->preco_uni,
+                $precoVenda,
 
-            'origem_preco' =>
-                $precoObservado !== null
-                    ? $fonte
-                    : 'Cadastro Jaime',
+            'preco_sugerido' => $precoSugerido,
+
+            'origem_preco' => 'Cadastro Jaime',
 
             'estoque_observado' =>
                 $estado?->estoque_observado !== null
@@ -105,12 +112,8 @@ class ResolverDadosCatalogoProduto
                 ?? $catalogo->ultima_coleta_em,
 
             'total_aplicacoes' =>
-                $catalogo
-                    ->aplicacoes
-                    ->where(
-                        'ativa',
-                        true
-                    )
+                $catalogo->aplicacoes()
+                    ->where('ativa', true)
                     ->count(),
 
             'total_atributos' =>
@@ -135,6 +138,7 @@ class ResolverDadosCatalogoProduto
             'codigo_externo' => null,
             'imagem_url' => null,
             'preco_observado' => null,
+            'preco_sugerido' => null,
 
             'preco_venda' =>
                 (float) $produto->preco_uni,

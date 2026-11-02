@@ -6,7 +6,6 @@ use App\Models\CatalogoDepartamento;
 use App\Models\CatalogoFonte;
 use App\Models\CatalogoMontadora;
 use App\Models\CatalogoProduto;
-use App\Models\CatalogoProdutoAplicacao;
 use App\Models\CatalogoProdutoAtributo;
 use App\Models\CatalogoProdutoEstado;
 use App\Models\CatalogoProdutoImagem;
@@ -14,6 +13,7 @@ use App\Models\CatalogoTipoProduto;
 use App\Models\CatalogoVeiculo;
 use App\Models\Montadora;
 use App\Models\Veiculo;
+use App\Support\Catalogo\PrecoVendaForge;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -25,12 +25,27 @@ class SkyCsvImporter
         private readonly VincularProdutoCatalogo $vinculador
     ) {}
 
-    public function importar(string $diretorio): array
+    public function importar(string $diretorio, bool $somenteCatalogo = false): array
     {
         $diretorio = rtrim($diretorio, DIRECTORY_SEPARATOR);
 
         if (!is_dir($diretorio)) {
             throw new RuntimeException("Diretório de exportação não encontrado: {$diretorio}");
+        }
+
+        // Na carga integral, não permitir ausência silenciosa de conjuntos técnicos.
+        if ($somenteCatalogo) {
+            foreach ([
+                'montadoras.csv', 'veiculos.csv', 'produtos.csv',
+                'produto_estado_sky.csv', 'produto_precos_historico.csv',
+                'produto_departamentos.csv', 'produto_tipos.csv',
+                'produto_aplicacoes.csv', 'produto_atributos.csv',
+                'produto_imagens.csv', 'produto_similares.csv',
+            ] as $nome) {
+                if (!is_readable($diretorio.'/'.$nome)) {
+                    throw new RuntimeException("CSV obrigatório ausente ou ilegível: {$nome}");
+                }
+            }
         }
 
         $fonte = CatalogoFonte::query()->updateOrCreate(
@@ -61,7 +76,7 @@ class SkyCsvImporter
             'similares' => 0,
         ];
 
-        DB::transaction(function () use ($diretorio, $fonte, &$resumo) {
+        DB::transaction(function () use ($diretorio, $fonte, $somenteCatalogo, &$resumo) {
             [
                 $mapMontadoras,
                 $mapMontadorasOperacionais,
@@ -69,7 +84,8 @@ class SkyCsvImporter
                 $resumo['montadoras_operacionais_criadas'],
             ] = $this->importarMontadoras(
                 $diretorio.'/montadoras.csv',
-                $fonte
+                $fonte,
+                $somenteCatalogo
             );
 
             [
@@ -81,7 +97,8 @@ class SkyCsvImporter
                 $diretorio.'/veiculos.csv',
                 $fonte,
                 $mapMontadoras,
-                $mapMontadorasOperacionais
+                $mapMontadorasOperacionais,
+                $somenteCatalogo
             );
 
             [$mapProdutos, $resumo['produtos']] = $this->importarProdutos(
@@ -89,14 +106,16 @@ class SkyCsvImporter
                 $fonte
             );
 
-            foreach ($mapProdutos as $catalogoProdutoId) {
-                $catalogoProduto = CatalogoProduto::query()->find($catalogoProdutoId);
+            // Na importação isolada não criar, alterar ou sugerir vínculos
+            // com os produtos operacionais da oficina.
+            if (!$somenteCatalogo) {
+                foreach ($mapProdutos as $catalogoProdutoId) {
+                    $catalogoProduto = CatalogoProduto::query()->find($catalogoProdutoId);
 
-                if (!$catalogoProduto) {
-                    continue;
+                    if ($catalogoProduto) {
+                        $this->vinculador->tentar($catalogoProduto);
+                    }
                 }
-
-                $this->vinculador->tentar($catalogoProduto);
             }
 
             $resumo['vinculos_automaticos'] = CatalogoProduto::query()
@@ -161,7 +180,11 @@ class SkyCsvImporter
         return $resumo;
     }
 
-    private function importarMontadoras(string $arquivo, CatalogoFonte $fonte): array
+    private function importarMontadoras(
+        string $arquivo,
+        CatalogoFonte $fonte,
+        bool $somenteCatalogo = false
+    ): array
     {
         $mapCatalogo = [];
         $mapOperacional = [];
@@ -184,19 +207,32 @@ class SkyCsvImporter
 
             $montadora = null;
 
-            if ($catalogoExistente?->montadora_id) {
-                $montadora = Montadora::query()->find($catalogoExistente->montadora_id);
+            if (!$somenteCatalogo) {
+                if ($catalogoExistente?->montadora_id) {
+                    $montadora = Montadora::query()->find($catalogoExistente->montadora_id);
+                }
+
+                if (!$montadora) {
+                    $montadora = Montadora::query()
+                        ->whereRaw('LOWER(TRIM(nome)) = ?', [mb_strtolower(trim($nome))])
+                        ->first();
+                }
+
+                if (!$montadora) {
+                    $montadora = Montadora::query()->create(['nome' => $nome]);
+                    $criadas++;
+                }
             }
 
-            if (!$montadora) {
-                $montadora = Montadora::query()
-                    ->whereRaw('LOWER(TRIM(nome)) = ?', [mb_strtolower(trim($nome))])
-                    ->first();
-            }
+            $valores = [
+                'nome' => $nome,
+                'ativo_fonte' => $this->booleano($linha['ativo_sky'] ?? null, true),
+                'primeira_coleta_em' => $this->data($linha['primeira_coleta_em'] ?? null),
+                'ultima_coleta_em' => $this->data($linha['ultima_coleta_em'] ?? null),
+            ];
 
-            if (!$montadora) {
-                $montadora = Montadora::query()->create(['nome' => $nome]);
-                $criadas++;
+            if (!$somenteCatalogo) {
+                $valores['montadora_id'] = $montadora->id;
             }
 
             $registro = CatalogoMontadora::query()->updateOrCreate(
@@ -204,17 +240,13 @@ class SkyCsvImporter
                     'catalogo_fonte_id' => $fonte->id,
                     'chave_externa' => $chave,
                 ],
-                [
-                    'montadora_id' => $montadora->id,
-                    'nome' => $nome,
-                    'ativo_fonte' => $this->booleano($linha['ativo_sky'] ?? null, true),
-                    'primeira_coleta_em' => $this->data($linha['primeira_coleta_em'] ?? null),
-                    'ultima_coleta_em' => $this->data($linha['ultima_coleta_em'] ?? null),
-                ]
+                $valores
             );
 
             $mapCatalogo[$idOrigem] = $registro->id;
-            $mapOperacional[$idOrigem] = $montadora->id;
+            if (!$somenteCatalogo) {
+                $mapOperacional[$idOrigem] = $montadora->id;
+            }
             $total++;
         }
 
@@ -225,7 +257,8 @@ class SkyCsvImporter
         string $arquivo,
         CatalogoFonte $fonte,
         array $mapMontadoras,
-        array $mapMontadorasOperacionais
+        array $mapMontadorasOperacionais,
+        bool $somenteCatalogo = false
     ): array {
         $map = [];
         $total = 0;
@@ -247,7 +280,7 @@ class SkyCsvImporter
                 continue;
             }
 
-            if (!$catalogoMontadoraId || !$montadoraId || $nome === '') {
+            if (!$catalogoMontadoraId || (!$somenteCatalogo && !$montadoraId) || $nome === '') {
                 continue;
             }
 
@@ -259,23 +292,36 @@ class SkyCsvImporter
 
             $veiculo = null;
 
-            if ($catalogoExistente?->veiculo_id) {
-                $veiculo = Veiculo::query()->find($catalogoExistente->veiculo_id);
+            if (!$somenteCatalogo) {
+                if ($catalogoExistente?->veiculo_id) {
+                    $veiculo = Veiculo::query()->find($catalogoExistente->veiculo_id);
+                }
+
+                if (!$veiculo) {
+                    $veiculo = Veiculo::query()
+                        ->where('montadora_id', $montadoraId)
+                        ->whereRaw('LOWER(TRIM(nome)) = ?', [mb_strtolower(trim($nome))])
+                        ->first();
+                }
+
+                if (!$veiculo) {
+                    $veiculo = Veiculo::query()->create([
+                        'nome' => $nome,
+                        'montadora_id' => $montadoraId,
+                    ]);
+                    $criadas++;
+                }
             }
 
-            if (!$veiculo) {
-                $veiculo = Veiculo::query()
-                    ->where('montadora_id', $montadoraId)
-                    ->whereRaw('LOWER(TRIM(nome)) = ?', [mb_strtolower(trim($nome))])
-                    ->first();
-            }
+            $valores = [
+                'nome' => $nome,
+                'ativo_fonte' => $this->booleano($linha['ativo_sky'] ?? null, true),
+                'primeira_coleta_em' => $this->data($linha['primeira_coleta_em'] ?? null),
+                'ultima_coleta_em' => $this->data($linha['ultima_coleta_em'] ?? null),
+            ];
 
-            if (!$veiculo) {
-                $veiculo = Veiculo::query()->create([
-                    'nome' => $nome,
-                    'montadora_id' => $montadoraId,
-                ]);
-                $criadas++;
+            if (!$somenteCatalogo) {
+                $valores['veiculo_id'] = $veiculo->id;
             }
 
             $registro = CatalogoVeiculo::query()->updateOrCreate(
@@ -284,13 +330,7 @@ class SkyCsvImporter
                     'catalogo_montadora_id' => $catalogoMontadoraId,
                     'chave_externa' => $chave,
                 ],
-                [
-                    'veiculo_id' => $veiculo->id,
-                    'nome' => $nome,
-                    'ativo_fonte' => $this->booleano($linha['ativo_sky'] ?? null, true),
-                    'primeira_coleta_em' => $this->data($linha['primeira_coleta_em'] ?? null),
-                    'ultima_coleta_em' => $this->data($linha['ultima_coleta_em'] ?? null),
-                ]
+                $valores
             );
 
             $map[$idOrigem] = $registro->id;
@@ -312,12 +352,11 @@ class SkyCsvImporter
                 continue;
             }
 
-            $registro = CatalogoProduto::query()->updateOrCreate(
-                [
-                    'catalogo_fonte_id' => $fonte->id,
-                    'chave_externa' => $skyId,
-                ],
-                [
+            $identidade = [
+                'catalogo_fonte_id' => $fonte->id,
+                'chave_externa' => $skyId,
+            ];
+            $recebidos = [
                     'codigo_fabricante' => $this->nulo($linha['codigo_fabricante'] ?? null),
                     'codigo_auxiliar' => $this->nulo($linha['codigo_auxiliar'] ?? null),
                     'descricao' => $this->nulo($linha['descricao'] ?? null),
@@ -334,8 +373,16 @@ class SkyCsvImporter
                     'aplicacao_status' => $this->nulo($linha['aplicacao_status'] ?? null),
                     'primeira_coleta_em' => $this->data($linha['primeira_coleta_em'] ?? null),
                     'ultima_coleta_em' => $this->data($linha['ultima_coleta_em'] ?? null),
-                ]
-            );
+                ];
+
+            $registro = CatalogoProduto::query()->firstOrNew($identidade);
+            foreach ($recebidos as $coluna => $novoValor) {
+                $valorAtual = $registro->getAttribute($coluna);
+                if (($valorAtual === null || $valorAtual === '') && $novoValor !== null && $novoValor !== '') {
+                    $registro->setAttribute($coluna, $novoValor);
+                }
+            }
+            $registro->save();
 
             $map[$skyId] = $registro->id;
             $total++;
@@ -355,22 +402,41 @@ class SkyCsvImporter
                 continue;
             }
 
-            CatalogoProdutoEstado::query()->updateOrCreate(
-                ['catalogo_produto_id' => $catalogoProdutoId],
-                [
-                    'custo_observado' => $this->decimal($linha['custo_sky_observado'] ?? null),
-                    'preco_venda_observado' => $this->decimal($linha['preco_venda_sky_observado'] ?? null),
-                    'custo_base_seguro' => $this->decimal($linha['custo_base_seguro'] ?? null),
-                    'promocao_detectada' => $this->booleano($linha['promocao_detectada'] ?? null),
-                    'estoque_observado' => $this->inteiro($linha['estoque_observado'] ?? null),
-                    'quantidade_promocional_disponivel' => $this->inteiro($linha['quantidade_promocional_disponivel'] ?? null),
-                    'promocao_inicio' => $this->nulo($linha['promocao_inicio'] ?? null),
-                    'promocao_fim' => $this->nulo($linha['promocao_fim'] ?? null),
-                    'promocao_texto' => $this->nulo($linha['promocao_texto'] ?? null),
-                    'primeira_coleta_em' => $this->data($linha['primeira_coleta_em'] ?? null),
-                    'ultima_coleta_em' => $this->data($linha['ultima_coleta_em'] ?? null),
-                ]
+            $estado = CatalogoProdutoEstado::query()->firstOrNew([
+                'catalogo_produto_id' => $catalogoProdutoId,
+            ]);
+
+            // A importacao preserva os valores brutos da Sky para auditoria.
+            // A sugestao de venda so aumenta e nunca e zerada por CSV incompleto.
+            $precoAnterior = PrecoVendaForge::arredondar(
+                $estado->preco_venda_sugerido ?? $estado->preco_venda_observado
             );
+            $precoBruto = $this->decimal($linha['preco_venda_sky_observado'] ?? null);
+            $novoPreco = PrecoVendaForge::arredondar($precoBruto);
+            $precoSugerido = PrecoVendaForge::maior($precoAnterior, $novoPreco);
+
+            $estado->fill([
+                'custo_observado' => $this->decimal($linha['custo_sky_observado'] ?? null),
+                'custo_base_seguro' => $this->decimal($linha['custo_base_seguro'] ?? null),
+                'promocao_detectada' => $this->booleano($linha['promocao_detectada'] ?? null),
+                'estoque_observado' => $this->inteiro($linha['estoque_observado'] ?? null),
+                'quantidade_promocional_disponivel' => $this->inteiro($linha['quantidade_promocional_disponivel'] ?? null),
+                'promocao_inicio' => $this->nulo($linha['promocao_inicio'] ?? null),
+                'promocao_fim' => $this->nulo($linha['promocao_fim'] ?? null),
+                'promocao_texto' => $this->nulo($linha['promocao_texto'] ?? null),
+                'primeira_coleta_em' => $this->data($linha['primeira_coleta_em'] ?? null),
+                'ultima_coleta_em' => $this->data($linha['ultima_coleta_em'] ?? null),
+            ]);
+
+            // Zero, ausente ou invalido: nao altera nem bruto nem sugestao.
+            if ($novoPreco !== null && (float) $novoPreco > 0) {
+                $estado->preco_venda_observado = $precoBruto;
+            }
+            if ($precoSugerido !== null && (float) $precoSugerido > 0) {
+                $estado->preco_venda_sugerido = $precoSugerido;
+            }
+
+            $estado->save();
 
             $total++;
         }
@@ -520,12 +586,31 @@ class SkyCsvImporter
         array $mapVeiculos
     ): int {
         $total = 0;
+        $lote = [];
+        $agora = now();
+        // Um registro ja coletado nunca perde dados por causa de CSV posterior.
+        // A chave da aplicacao ja inclui todos os campos tecnicos; nova
+        // combinacao gera novo registro, em vez de sobrescrever o existente.
+        $camposAtualizados = ['updated_at'];
+
+        $gravarLote = function () use (&$lote, $camposAtualizados): void {
+            if (!$lote) {
+                return;
+            }
+
+            DB::table('catalogo_produto_aplicacoes')->upsert(
+                $lote,
+                ['catalogo_produto_id', 'chave_aplicacao'],
+                $camposAtualizados
+            );
+            $lote = [];
+        };
 
         foreach ($this->linhas($arquivo) as $linha) {
             $catalogoProdutoId = $mapProdutos[$this->texto($linha['produto_sky_id'] ?? null)] ?? null;
 
             if (!$catalogoProdutoId) {
-                continue;
+                throw new RuntimeException('Aplicação sem produto importado: '.($linha['produto_sky_id'] ?? ''));
             }
 
             $camposChave = [
@@ -543,32 +628,34 @@ class SkyCsvImporter
 
             $chave = hash('sha256', json_encode($camposChave, JSON_UNESCAPED_UNICODE));
 
-            CatalogoProdutoAplicacao::query()->updateOrCreate(
-                [
-                    'catalogo_produto_id' => $catalogoProdutoId,
-                    'chave_aplicacao' => $chave,
-                ],
-                [
-                    'catalogo_montadora_id' => $mapMontadoras[(string) ($linha['montadora_id'] ?? '')] ?? null,
-                    'catalogo_veiculo_id' => $mapVeiculos[(string) ($linha['veiculo_id'] ?? '')] ?? null,
-                    'montadora_raw' => $this->nulo($linha['montadora'] ?? null),
-                    'veiculo_raw' => $this->nulo($linha['veiculo'] ?? null),
-                    'mes_ano' => $this->nulo($linha['mes_ano'] ?? null),
-                    'modelo' => $this->nulo($linha['modelo'] ?? null),
-                    'motor' => $this->nulo($linha['motor'] ?? null),
-                    'comp' => $this->nulo($linha['comp'] ?? null),
-                    'valvulas' => $this->nulo($linha['valvulas'] ?? null),
-                    'cilindros' => $this->nulo($linha['cilindros'] ?? null),
-                    'combustivel' => $this->nulo($linha['combustivel'] ?? null),
-                    'complemento' => $this->nulo($linha['complemento'] ?? null),
-                    'ativa' => true,
-                    'primeira_coleta_em' => $this->data($linha['primeira_coleta_em'] ?? null),
-                    'ultima_confirmacao_em' => $this->data($linha['ultima_confirmacao_sky'] ?? null),
-                ]
-            );
+            $lote[] = [
+                'catalogo_produto_id' => $catalogoProdutoId,
+                'chave_aplicacao' => $chave,
+                'catalogo_montadora_id' => $mapMontadoras[(string) ($linha['montadora_id'] ?? '')] ?? null,
+                'catalogo_veiculo_id' => $mapVeiculos[(string) ($linha['veiculo_id'] ?? '')] ?? null,
+                'montadora_raw' => $this->nulo($linha['montadora'] ?? null),
+                'veiculo_raw' => $this->nulo($linha['veiculo'] ?? null),
+                'mes_ano' => $this->nulo($linha['mes_ano'] ?? null),
+                'modelo' => $this->nulo($linha['modelo'] ?? null),
+                'motor' => $this->nulo($linha['motor'] ?? null),
+                'comp' => $this->nulo($linha['comp'] ?? null),
+                'valvulas' => $this->nulo($linha['valvulas'] ?? null),
+                'cilindros' => $this->nulo($linha['cilindros'] ?? null),
+                'combustivel' => $this->nulo($linha['combustivel'] ?? null),
+                'complemento' => $this->nulo($linha['complemento'] ?? null),
+                'ativa' => true,
+                'primeira_coleta_em' => $this->data($linha['primeira_coleta_em'] ?? null),
+                'ultima_confirmacao_em' => $this->data($linha['ultima_confirmacao_sky'] ?? null),
+                'created_at' => $agora,
+                'updated_at' => $agora,
+            ];
 
+            if (count($lote) >= 40) {
+                $gravarLote();
+            }
             $total++;
         }
+        $gravarLote();
 
         return $total;
     }
@@ -585,18 +672,21 @@ class SkyCsvImporter
                 continue;
             }
 
-            CatalogoProdutoAtributo::query()->updateOrCreate(
-                [
-                    'catalogo_produto_id' => $catalogoProdutoId,
-                    'chave' => $chave,
-                ],
-                [
-                    'chave_raw' => $this->nulo($linha['chave_raw'] ?? null),
-                    'valor' => $this->nulo($linha['valor'] ?? null),
-                    'primeira_coleta_em' => $this->data($linha['primeira_coleta_em'] ?? null),
-                    'ultima_confirmacao_em' => $this->data($linha['ultima_confirmacao_em'] ?? null),
-                ]
-            );
+            $atributo = CatalogoProdutoAtributo::query()->firstOrNew([
+                'catalogo_produto_id' => $catalogoProdutoId,
+                'chave' => $chave,
+            ]);
+            foreach ([
+                'chave_raw' => $this->nulo($linha['chave_raw'] ?? null),
+                'valor' => $this->nulo($linha['valor'] ?? null),
+                'primeira_coleta_em' => $this->data($linha['primeira_coleta_em'] ?? null),
+                'ultima_confirmacao_em' => $this->data($linha['ultima_confirmacao_em'] ?? null),
+            ] as $campo => $valor) {
+                if (($atributo->getAttribute($campo) === null || $atributo->getAttribute($campo) === '') && $valor !== null && $valor !== '') {
+                    $atributo->setAttribute($campo, $valor);
+                }
+            }
+            $atributo->save();
 
             $total++;
         }
@@ -625,12 +715,11 @@ class SkyCsvImporter
 
             $chave = hash('sha256', $identificador);
 
-            CatalogoProdutoImagem::query()->updateOrCreate(
-                [
-                    'catalogo_produto_id' => $catalogoProdutoId,
-                    'chave_imagem' => $chave,
-                ],
-                [
+            $imagemIdentidade = [
+                'catalogo_produto_id' => $catalogoProdutoId,
+                'chave_imagem' => $chave,
+            ];
+            $imagemCampos = [
                     'url_original' => $this->nulo($linha['url_original'] ?? null),
                     'url_thumb' => $this->nulo($linha['url_thumb'] ?? null),
                     'arquivo_origem' => $this->nulo($linha['arquivo_local'] ?? null),
@@ -641,8 +730,14 @@ class SkyCsvImporter
                     'status' => $this->nulo($linha['status'] ?? null),
                     'primeira_coleta_em' => $this->data($linha['primeira_coleta_em'] ?? null),
                     'ultima_confirmacao_em' => $this->data($linha['ultima_confirmacao_em'] ?? null),
-                ]
-            );
+                ];
+            $imagem = CatalogoProdutoImagem::query()->firstOrNew($imagemIdentidade);
+            foreach ($imagemCampos as $campo => $novoValor) {
+                if (($imagem->getAttribute($campo) === null || $imagem->getAttribute($campo) === '') && $novoValor !== null && $novoValor !== '') {
+                    $imagem->setAttribute($campo, $novoValor);
+                }
+            }
+            $imagem->save();
 
             $total++;
         }
@@ -698,7 +793,11 @@ class SkyCsvImporter
         $cabecalho = null;
 
         foreach ($file as $colunas) {
-            if (!is_array($colunas) || $colunas === [null]) {
+            if (
+                !is_array($colunas) ||
+                $colunas === [null] ||
+                (count($colunas) === 1 && trim((string) ($colunas[0] ?? '')) === '')
+            ) {
                 continue;
             }
 
@@ -710,7 +809,9 @@ class SkyCsvImporter
             }
 
             if (count($colunas) !== count($cabecalho)) {
-                continue;
+                throw new RuntimeException(
+                    "CSV malformado: {$arquivo}, linha ".($file->key() + 1)
+                );
             }
 
             yield array_combine($cabecalho, $colunas);

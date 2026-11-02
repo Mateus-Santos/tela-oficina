@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\NotasItem;
 use App\Models\OrdemServico;
 use App\Models\Produto;
+use App\Services\Produto\BuscarReferenciasCatalogo;
 use App\Services\Produto\ResolverDadosCatalogoProduto;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,7 +16,8 @@ class NotaItemBuscaController extends Controller
 {
     public function __invoke(
         Request $request,
-        ResolverDadosCatalogoProduto $resolverCatalogo
+        ResolverDadosCatalogoProduto $resolverCatalogo,
+        BuscarReferenciasCatalogo $buscaCatalogo
     ): JsonResponse {
 
         $dados = $request->validate([
@@ -66,7 +68,8 @@ class NotaItemBuscaController extends Controller
         if ($dados['tipo'] === 'produto') {
             return $this->buscarProdutos(
                 $busca,
-                $resolverCatalogo
+                $resolverCatalogo,
+                $buscaCatalogo
             );
         }
 
@@ -82,7 +85,8 @@ class NotaItemBuscaController extends Controller
      */
     private function buscarProdutos(
         string $busca,
-        ResolverDadosCatalogoProduto $resolverCatalogo
+        ResolverDadosCatalogoProduto $resolverCatalogo,
+        BuscarReferenciasCatalogo $buscaCatalogo
     ): JsonResponse {
         if ($busca === '') {
             return response()->json([
@@ -147,7 +151,7 @@ class NotaItemBuscaController extends Controller
                 }
             )
             ->orderBy('nome')
-            ->limit(15)
+            ->limit(8)
             ->get();
 
         return response()->json([
@@ -175,10 +179,7 @@ class NotaItemBuscaController extends Controller
 
                             'descricao' => $produto->descricao,
 
-                            'preco' =>
-                                (float) $catalogo[
-                                    'preco_venda'
-                                ],
+                            'preco' => (float) $produto->preco_uni,
 
                             'preco_jaime' =>
                                 (float) $produto
@@ -222,7 +223,9 @@ class NotaItemBuscaController extends Controller
                         ];
                     }
                 )
-                ->values(),
+                ->concat($buscaCatalogo->buscar($busca, 8))
+                ->values()
+                ->all(),
         ]);
     }
 

@@ -19,6 +19,17 @@ class CatalogoProduto extends Model
         'ultima_coleta_em' => 'datetime',
     ];
 
+    /** Personalizacoes humanas nunca sao alteradas pelo importador. */
+    public function edicao(): HasOne
+    {
+        return $this->hasOne(CatalogoProdutoEdicao::class, 'catalogo_produto_id');
+    }
+
+    public function similares(): HasMany
+    {
+        return $this->hasMany(CatalogoProdutoSimilar::class, 'catalogo_produto_id');
+    }
+
     public function fonte(): BelongsTo
     {
         return $this->belongsTo(CatalogoFonte::class, 'catalogo_fonte_id');

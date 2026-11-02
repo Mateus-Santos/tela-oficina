@@ -327,18 +327,32 @@
                 class="form-label"
                 for="codigo"
             >
-                Código do Produto:*
+                Código interno do produto
             </label>
 
-            <input
-                type="text"
-                class="form-control @error('codigo') is-invalid @enderror @if($codigoDuplicado) is-invalid @endif"
-                id="codigo"
-                name="codigo"
-                wire:model.live.debounce.500ms="codigo"
-                maxlength="50"
-                required
-            >
+            @if($produto)
+                <input
+                    type="text"
+                    class="form-control @error('codigo') is-invalid @enderror @if($codigoDuplicado) is-invalid @endif"
+                    id="codigo"
+                    name="codigo"
+                    wire:model.live.debounce.500ms="codigo"
+                    maxlength="50"
+                    required
+                >
+            @else
+                <input
+                    type="text"
+                    class="form-control"
+                    id="codigo"
+                    value="Gerado automaticamente ao cadastrar"
+                    aria-describedby="codigo-ajuda"
+                    disabled
+                >
+                <div id="codigo-ajuda" class="form-text">
+                    O código interno será informado após salvar o produto.
+                </div>
+            @endif
 
             @if($codigoDuplicado)
 
