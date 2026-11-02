@@ -1,11 +1,11 @@
-name: SOS Mecanica - Deploy Docker Producao
+name: SOS Mecanica - Docker otimizado
 
-# Deploy exclusivamente manual, usando o commit atual da master.
+# O unico gatilho e manual. Nunca publica durante git push.
 on:
   workflow_dispatch:
     inputs:
       modo:
-        description: 'Validar compila as imagens; Publicar tambem atualiza a VPS'
+        description: 'validar = construir e guardar imagens no GHCR; publicar = usar essas imagens, sem rebuild'
         required: true
         type: choice
         default: validar
@@ -13,29 +13,35 @@ on:
           - validar
           - publicar
       confirmacao:
-        description: 'Para publicar, digite PUBLICAR apos homologacao e conferencia de backup'
+        description: 'Exclusivo de publicar: digite PUBLICAR apos homologacao e backup'
         required: false
         type: string
 
 permissions:
   contents: read
+  packages: write
 
+# Nao cancela uma publicacao em curso. Uma execucao de cada vez neste repositorio.
 concurrency:
-  group: sosmecanica-production
+  group: sosmecanica-docker-production
   cancel-in-progress: false
 
 jobs:
-  deploy-production:
-    if: github.ref == 'refs/heads/master'
+  release:
+    # Permite validar na feature branch; publicar em outra branch falha explicitamente no pre-check.
+    if: inputs.modo == 'validar' || inputs.modo == 'publicar'
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 45
 
+    # Validacao nao depende de aprovacao/segredos do ambiente production.
     environment:
-      name: production
+      name: ${{ inputs.modo == 'publicar' && 'production' || 'docker-validation' }}
       url: https://jaimeautomotivo.com.br
 
     env:
       TAG: ${{ github.sha }}
+      APP_REPO: ghcr.io/mateus-santos/sosmecanica-app
+      WEB_REPO: ghcr.io/mateus-santos/sosmecanica-web
       REMOTE_USER: ${{ vars.REMOTE_USER }}
       REMOTE_HOST: ${{ vars.REMOTE_HOST }}
       REMOTE_PORT: ${{ vars.REMOTE_PORT }}
@@ -43,64 +49,118 @@ jobs:
       DEPLOY_DIR: /home/mateus/deploy/sosmecanica
 
     steps:
-      - name: Validar autorizacao e destino
+      - name: Conferir modo, branch e confirmacao
         env:
           MODO: ${{ inputs.modo }}
           CONFIRMACAO: ${{ inputs.confirmacao }}
         run: |
           set -euo pipefail
-          if [ "$MODO" = 'publicar' ]; then
-            test "$CONFIRMACAO" = 'PUBLICAR' || { echo 'Confirmacao incorreta'; exit 1; }
+          [[ "$TAG" =~ ^[0-9a-f]{40}$ ]]
+          if [[ "$MODO" == publicar ]]; then
+            [[ "$GITHUB_REF" == refs/heads/master ]]
+            [[ "$CONFIRMACAO" == PUBLICAR ]]
+            [[ "$PROJECT_DIR" == /var/www/sos-mecanica || "$PROJECT_DIR" == /var/www/sos-mecanica/ ]]
+            [[ -n "$REMOTE_USER" && -n "$REMOTE_HOST" && -n "$REMOTE_PORT" ]]
+            [[ "$REMOTE_PORT" =~ ^[0-9]+$ ]]
           fi
-          test -n "$REMOTE_USER"
-          test -n "$REMOTE_HOST"
-          test -n "$REMOTE_PORT"
-          test "${PROJECT_DIR%/}" = '/var/www/sos-mecanica'
-          echo 'Confirmacao e destino aprovados.'
+          echo "Modo: $MODO | Commit: $TAG"
 
-      - name: Checkout do commit aprovado
-        uses: actions/checkout@v4
+      - name: Checkout do commit
+        uses: actions/checkout@v5
         with:
           persist-credentials: false
 
-      - name: Configurar Node.js
-        uses: actions/setup-node@v4
+      - name: Verificar script de release
+        run: |
+          set -euo pipefail
+          bash -n scripts/production/deploy_release.sh
+          test -f compose.prod.yml
+          test -f docker/production/Dockerfile.app
+          test -f docker/production/Dockerfile.web
+
+      - name: Autenticar no GitHub Container Registry
+        uses: docker/login-action@v4
         with:
-          node-version: '24'
-          cache: npm
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Gerar assets frontend
+      - name: Configurar Docker Buildx
+        if: inputs.modo == 'validar'
+        uses: docker/setup-buildx-action@v4
+        with:
+          # Limita concorrencia de compilacao no runner, sem consumir CPU da VPS.
+          buildkitd-config-inline: |
+            [worker.oci]
+              max-parallelism = 2
+
+      - name: Verificar se este commit ja foi construido
+        if: inputs.modo == 'validar'
+        id: existing
         run: |
           set -euo pipefail
-          npm ci
-          npm run build
+          if docker buildx imagetools inspect "$APP_REPO:$TAG" >/dev/null 2>&1 \
+             && docker buildx imagetools inspect "$WEB_REPO:$TAG" >/dev/null 2>&1; then
+            echo 'Imagens existentes no GHCR: nao recompilar.'
+            echo 'ready=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'Pelo menos uma imagem ainda precisa ser construida.'
+            echo 'ready=false' >> "$GITHUB_OUTPUT"
+          fi
 
-      - name: Build das imagens versionadas
+      # Compila PHP + Composer + frontend exatamente uma vez, dentro do Dockerfile.
+      # Cache max preserva a compilacao cara das extensoes PHP entre workflows.
+      - name: Construir e armazenar Laravel
+        if: inputs.modo == 'validar' && steps.existing.outputs.ready != 'true'
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: docker/production/Dockerfile.app
+          platforms: linux/amd64
+          push: true
+          tags: ${{ env.APP_REPO }}:${{ env.TAG }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/Mateus-Santos/tela-oficina
+            org.opencontainers.image.revision=${{ github.sha }}
+          build-args: |
+            PHP_BUILD_JOBS=1
+          cache-from: type=gha,scope=sosmecanica-app
+          cache-to: type=gha,scope=sosmecanica-app,mode=max,ignore-error=true
+
+      - name: Construir e armazenar Nginx
+        if: inputs.modo == 'validar' && steps.existing.outputs.ready != 'true'
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: docker/production/Dockerfile.web
+          platforms: linux/amd64
+          push: true
+          tags: ${{ env.WEB_REPO }}:${{ env.TAG }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/Mateus-Santos/tela-oficina
+            org.opencontainers.image.revision=${{ github.sha }}
+          build-args: |
+            APP_IMAGE=${{ env.APP_REPO }}:${{ env.TAG }}
+          cache-from: type=gha,scope=sosmecanica-web
+          cache-to: type=gha,scope=sosmecanica-web,mode=min,ignore-error=true
+
+      - name: Conferir imagens construidas
+        if: inputs.modo == 'validar'
         run: |
           set -euo pipefail
-          docker build -f docker/production/Dockerfile.app \
-            -t "sosmecanica-app:$TAG" .
-          docker build -f docker/production/Dockerfile.web \
-            --build-arg "APP_IMAGE=sosmecanica-app:$TAG" \
-            -t "sosmecanica-web:$TAG" .
-          docker image inspect "sosmecanica-app:$TAG" "sosmecanica-web:$TAG" >/dev/null
+          docker buildx imagetools inspect "$APP_REPO:$TAG" >/dev/null
+          docker buildx imagetools inspect "$WEB_REPO:$TAG" >/dev/null
+          echo "VALIDADO: $TAG"
+          echo 'As imagens foram armazenadas no GHCR; nao houve acesso a VPS.'
 
-      - name: Preparar pacote imutavel
-        run: |
-          set -euo pipefail
-          mkdir -p "$RUNNER_TEMP/release"
-          docker image save "sosmecanica-app:$TAG" "sosmecanica-web:$TAG" \
-            | gzip -1 > "$RUNNER_TEMP/release/images.tar.gz"
-          cp compose.prod.yml "$RUNNER_TEMP/release/compose.prod.yml"
-          (cd "$RUNNER_TEMP/release" && sha256sum images.tar.gz > images.sha256)
-
-      - name: Configurar autenticacao SSH
+      # Publicar NAO executa npm ci, composer install, docker build ou docker save.
+      - name: Configurar chave SSH
         if: inputs.modo == 'publicar'
         uses: webfactory/ssh-agent@v0.10.0
         with:
           ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
 
-      - name: Configurar host SSH conhecido
+      - name: Configurar host conhecido
         if: inputs.modo == 'publicar'
         env:
           HOST_KEY: ${{ secrets.SERVER_SSH_HOST_KEY }}
@@ -111,7 +171,15 @@ jobs:
           printf '%s\n' "$HOST_KEY" > "$HOME/.ssh/known_hosts"
           chmod 600 "$HOME/.ssh/known_hosts"
 
-      - name: Transferir release para VPS sem alterar aplicacao
+      - name: Conferir versao aprovada no GHCR
+        if: inputs.modo == 'publicar'
+        run: |
+          set -euo pipefail
+          docker manifest inspect "$APP_REPO:$TAG" >/dev/null
+          docker manifest inspect "$WEB_REPO:$TAG" >/dev/null
+          echo "Imagens aprovadas localizadas: $TAG"
+
+      - name: Enviar somente configuracao e script
         if: inputs.modo == 'publicar'
         run: |
           set -euo pipefail
@@ -120,94 +188,17 @@ jobs:
             "mkdir -p '$DEPLOY_DIR/releases/$TAG'"
           scp -P "$REMOTE_PORT" -o StrictHostKeyChecking=yes \
             -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
-            "$RUNNER_TEMP/release/images.tar.gz" \
-            "$RUNNER_TEMP/release/images.sha256" \
-            "$RUNNER_TEMP/release/compose.prod.yml" \
+            compose.prod.yml scripts/production/deploy_release.sh \
             "$REMOTE_USER@$REMOTE_HOST:$DEPLOY_DIR/releases/$TAG/"
 
-      - name: Publicar somente app e web com rollback
+      - name: Publicar imagens existentes na VPS com rollback
         if: inputs.modo == 'publicar'
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          ssh -p "$REMOTE_PORT" -o StrictHostKeyChecking=yes \
-            -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+          SSH_OPTS=(-p "$REMOTE_PORT" -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts")
+          # Token temporario vai APENAS por SSH/stdin, nunca no comando ou em arquivos do projeto.
+          printf '%s\n' "$GHCR_TOKEN" | ssh "${SSH_OPTS[@]}" \
             "$REMOTE_USER@$REMOTE_HOST" \
-            "TAG='$TAG' PROJECT_DIR='$PROJECT_DIR' DEPLOY_DIR='$DEPLOY_DIR' bash -se" <<'REMOTE'
-          set -Eeuo pipefail
-
-          RELEASE="$DEPLOY_DIR/releases/$TAG"
-          NOVO="$RELEASE/compose.prod.yml"
-          ROLLBACK="$RELEASE/rollback.compose.yml"
-
-          echo '========== PRE-CHECK =========='
-          test "${PROJECT_DIR%/}" = '/var/www/sos-mecanica'
-          test -f "$PROJECT_DIR/.env"
-          test -d "$PROJECT_DIR/storage"
-          test -f "$NOVO"
-          docker network inspect sos-mecanica_sail >/dev/null
-          test "$(docker inspect -f '{{.State.Health.Status}}' sos-mecanica-mysql-1)" = healthy
-          test "$(docker inspect -f '{{.State.Health.Status}}' sosmecanica-prod-web-1)" = healthy
-          test "$(docker inspect -f '{{.State.Status}}' sosmecanica-prod-app-1)" = running
-
-          APP_ATUAL="$(docker inspect -f '{{.Config.Image}}' sosmecanica-prod-app-1)"
-          WEB_ATUAL="$(docker inspect -f '{{.Config.Image}}' sosmecanica-prod-web-1)"
-          case "$APP_ATUAL" in sosmecanica-app:*) ;; *) echo 'Imagem APP inesperada'; exit 1 ;; esac
-          TAG_ANTIGA="${APP_ATUAL#sosmecanica-app:}"
-          test "$WEB_ATUAL" = "sosmecanica-web:$TAG_ANTIGA"
-
-          COMPOSE_ANTIGO="$(docker inspect -f '{{ index .Config.Labels "com.docker.compose.project.config_files" }}' sosmecanica-prod-web-1)"
-          case "$COMPOSE_ANTIGO" in /*) ;; *) echo 'Compose anterior desconhecido'; exit 1 ;; esac
-          case "$COMPOSE_ANTIGO" in *,*) echo 'Mais de um Compose anterior; revisar manualmente'; exit 1 ;; esac
-          test -f "$COMPOSE_ANTIGO"
-          cp -p "$COMPOSE_ANTIGO" "$ROLLBACK"
-
-          echo '========== INTEGRIDADE E CARREGAMENTO =========='
-          (cd "$RELEASE" && sha256sum -c images.sha256)
-          docker load -i "$RELEASE/images.tar.gz"
-          docker image inspect "sosmecanica-app:$TAG" "sosmecanica-web:$TAG" >/dev/null
-          SOS_IMAGE_TAG="$TAG" docker compose \
-            --project-directory "$PROJECT_DIR" -f "$NOVO" config --quiet
-
-          INICIOU=0
-          recuperar() {
-            CODIGO=$?
-            trap - ERR
-            if [ "$INICIOU" -eq 1 ]; then
-              echo 'DEPLOY FALHOU: tentando restaurar versao anterior...'
-              if SOS_IMAGE_TAG="$TAG_ANTIGA" docker compose \
-                  --project-directory "$PROJECT_DIR" -f "$ROLLBACK" \
-                  up -d --wait --wait-timeout 120 \
-                  --no-deps --no-build --pull never --force-recreate app web \
-                && curl -fsS --max-time 20 \
-                  --resolve jaimeautomotivo.com.br:443:127.0.0.1 \
-                  https://jaimeautomotivo.com.br/up -o /dev/null; then
-                echo 'ROLLBACK OK: versao anterior restaurada.'
-              else
-                echo 'ALERTA CRITICO: rollback nao confirmado. Intervencao manual necessaria.' >&2
-              fi
-            fi
-            exit "$CODIGO"
-          }
-          trap recuperar ERR
-
-          echo '========== ATUALIZANDO APP E WEB =========='
-          INICIOU=1
-          SOS_IMAGE_TAG="$TAG" docker compose \
-            --project-directory "$PROJECT_DIR" -f "$NOVO" \
-            up -d --wait --wait-timeout 120 \
-            --no-deps --no-build --pull never --force-recreate app web
-
-          echo '========== SMOKE TEST HTTPS =========='
-          curl -fsS --max-time 20 \
-            --resolve jaimeautomotivo.com.br:443:127.0.0.1 \
-            https://jaimeautomotivo.com.br/up -o /dev/null
-          curl -fsS --max-time 20 \
-            --resolve jaimeautomotivo.com.br:443:127.0.0.1 \
-            https://jaimeautomotivo.com.br/login -o /dev/null
-
-          trap - ERR
-          echo "DEPLOY APROVADO: $TAG"
-          echo "VERSAO ANTERIOR: $TAG_ANTIGA"
-          docker ps --filter name=sosmecanica-prod- \
-            --format 'table {{.Names}}\t{{.Status}}'
-          REMOTE
+            "bash '$DEPLOY_DIR/releases/$TAG/deploy_release.sh' '$TAG' '$GITHUB_ACTOR'"
