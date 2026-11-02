@@ -2088,6 +2088,13 @@ import BuscaItens from '../busca/busca-itens.js';
                                 </div>
                             `;
 
+                            if (item.tipo_resultado === 'referencia_catalogo') {
+                                const aviso = document.createElement('div');
+                                aviso.className = 'small text-warning fw-semibold mt-2';
+                                aviso.textContent = 'Referência disponível para cadastro — abra os detalhes para habilitar';
+                                container.appendChild(aviso);
+                            }
+
                             return container;
                         }
 

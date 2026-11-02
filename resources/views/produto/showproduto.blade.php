@@ -459,7 +459,10 @@
                         Preço de venda
                     </small>
 
-                    <div class="fs-4 fw-bold mt-1">
+                    <div class="fs-4 fw-bold mt-1"
+                         @if(($dadosCatalogo['preco_sugerido'] ?? null) !== null)
+                           title="Preço de referência: R$ {{ number_format((float) $dadosCatalogo['preco_sugerido'], 2, ',', '.') }}"
+                         @endif>
                         R$ {{ number_format(
                             $precoVenda,
                             2,
@@ -468,9 +471,7 @@
                         ) }}
                     </div>
 
-                    <small class="text-body-secondary">
-                        {{ $origemPreco }}
-                    </small>
+
 
                 </div>
             </div>
@@ -818,7 +819,7 @@
         <div class="card-header">
             <strong>
                 <i class="bi bi-car-front"></i>
-                Aplicações cadastradas no Jaime
+                Aplicações veiculares
             </strong>
         </div>
 
@@ -881,6 +882,48 @@
 
     </div>
 
+    @if($catalogoPrincipal)
+        <div class="mb-3">
+            <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#modalCatalogoSimilares"
+                data-url-similares="{{ route('produtos.catalogo.similares', $catalogoPrincipal) }}">Ver produtos similares</button>
+        </div>
+    @endif
+
+    {{-- Aplicacoes tecnicas: apenas leitura; nao altera as aplicacoes manuais. --}}
+    @if($aplicacoesTecnicas && $aplicacoesTecnicas->total() > 0)
+        <div class="card mb-4">
+            <div class="card-header">
+                <strong><i class="bi bi-car-front"></i> Compatibilidades detalhadas</strong>
+                <span class="text-body-secondary ms-2">({{ $aplicacoesTecnicas->total() }})</span>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle">
+                        <thead><tr>
+                            <th>Montadora</th><th>Veículo</th><th>Mês/ano</th>
+                            <th>Modelo</th><th>Motor</th><th>Combustível</th><th>Complemento</th>
+                        </tr></thead>
+                        <tbody>
+                            @foreach($aplicacoesTecnicas as $aplicacao)
+                                <tr>
+                                    <td>{{ $aplicacao->montadora_raw ?: '—' }}</td>
+                                    <td>{{ $aplicacao->veiculo_raw ?: '—' }}</td>
+                                    <td>{{ $aplicacao->mes_ano ?: '—' }}</td>
+                                    <td>{{ $aplicacao->modelo ?: '—' }}</td>
+                                    <td>{{ collect([$aplicacao->motor, $aplicacao->comp, $aplicacao->valvulas ? $aplicacao->valvulas.'V' : null, $aplicacao->cilindros ? $aplicacao->cilindros.' cil.' : null])->filter()->implode(' · ') ?: '—' }}</td>
+                                    <td>{{ $aplicacao->combustivel ?: '—' }}</td>
+                                    <td>{{ $aplicacao->complemento ?: '—' }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                {{ $aplicacoesTecnicas->links() }}
+            </div>
+        </div>
+    @endif
+
 </section>
 
+@include('produto.partials.similares-modal')
 @endsection
