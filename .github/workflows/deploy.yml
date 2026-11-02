@@ -1,4 +1,4 @@
-name: SOS Mecanica - Docker otimizado
+name: SOS Mecanica - Docker otimizado v3
 
 # O unico gatilho e manual. Nunca publica durante git push.
 on:
@@ -76,6 +76,7 @@ jobs:
           bash -n scripts/production/deploy_release.sh
           test -f compose.prod.yml
           test -f docker/production/Dockerfile.app
+          test -f docker/production/Dockerfile.php-base
           test -f docker/production/Dockerfile.web
 
       - name: Autenticar no GitHub Container Registry
@@ -108,8 +109,48 @@ jobs:
             echo 'ready=false' >> "$GITHUB_OUTPUT"
           fi
 
-      # Compila PHP + Composer + frontend exatamente uma vez, dentro do Dockerfile.
-      # Cache max preserva a compilacao cara das extensoes PHP entre workflows.
+      # Imagem-base PHP compilada somente quando o Dockerfile.php-base muda.
+      # O SHA do arquivo gera uma tag imutavel e compartilhavel entre releases.
+      - name: Identificar imagem-base PHP
+        if: inputs.modo == 'validar' && steps.existing.outputs.ready != 'true'
+        id: base
+        run: |
+          set -euo pipefail
+          HASH="$(sha256sum docker/production/Dockerfile.php-base | cut -c1-20)"
+          echo "image=ghcr.io/mateus-santos/sosmecanica-php-base:php85-$HASH" >> "$GITHUB_OUTPUT"
+
+      - name: Conferir existencia da base PHP
+        if: inputs.modo == 'validar' && steps.existing.outputs.ready != 'true'
+        id: base_exists
+        env:
+          PHP_BASE_IMAGE: ${{ steps.base.outputs.image }}
+        run: |
+          set -euo pipefail
+          if docker buildx imagetools inspect "$PHP_BASE_IMAGE" >/dev/null 2>&1; then
+            echo 'exists=true' >> "$GITHUB_OUTPUT"
+            echo 'Base PHP existente: nao recompilar extensoes.'
+          else
+            echo 'exists=false' >> "$GITHUB_OUTPUT"
+            echo 'Primeira compilacao desta versao PHP-base.'
+          fi
+
+      - name: Construir base PHP somente se necessario
+        if: inputs.modo == 'validar' && steps.existing.outputs.ready != 'true' && steps.base_exists.outputs.exists != 'true'
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: docker/production/Dockerfile.php-base
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.base.outputs.image }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/Mateus-Santos/tela-oficina
+            org.opencontainers.image.description=Base PHP 8.5 e extensoes SOS Mecanica
+          build-args: |
+            PHP_BUILD_JOBS=1
+
+      # Somente Composer + Vite + codigo mudam a cada nova release.
+      # Sem exportar cache intermediario gigante para o GitHub Actions.
       - name: Construir e armazenar Laravel
         if: inputs.modo == 'validar' && steps.existing.outputs.ready != 'true'
         uses: docker/build-push-action@v7
@@ -123,9 +164,7 @@ jobs:
             org.opencontainers.image.source=https://github.com/Mateus-Santos/tela-oficina
             org.opencontainers.image.revision=${{ github.sha }}
           build-args: |
-            PHP_BUILD_JOBS=1
-          cache-from: type=gha,scope=sosmecanica-app
-          cache-to: type=gha,scope=sosmecanica-app,mode=max,ignore-error=true
+            PHP_BASE_IMAGE=${{ steps.base.outputs.image }}
 
       - name: Construir e armazenar Nginx
         if: inputs.modo == 'validar' && steps.existing.outputs.ready != 'true'
@@ -141,8 +180,6 @@ jobs:
             org.opencontainers.image.revision=${{ github.sha }}
           build-args: |
             APP_IMAGE=${{ env.APP_REPO }}:${{ env.TAG }}
-          cache-from: type=gha,scope=sosmecanica-web
-          cache-to: type=gha,scope=sosmecanica-web,mode=min,ignore-error=true
 
       - name: Conferir imagens construidas
         if: inputs.modo == 'validar'

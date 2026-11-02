@@ -1,5 +1,6 @@
-# SOS Mecânica — imagem de aplicação, sem Sail, segredos ou código montado do host.
-# Build: docker build -f docker/production/Dockerfile.app -t sosmecanica-app:<commit> .
+# Laravel production: PHP base precompilado, frontend e Composer em estagios.
+# A build exige PHP_BASE_IMAGE (definido pelo workflow ou build_images.sh).
+ARG PHP_BASE_IMAGE
 FROM node:24-bookworm-slim AS frontend
 WORKDIR /build
 COPY package.json package-lock.json ./
@@ -7,19 +8,7 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM php:8.5-fpm-bookworm AS php-base
-# Limita compilacao para evitar varios processos pesados de CC/LD simultaneos.
-ARG PHP_BUILD_JOBS=1
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        libfreetype6-dev libjpeg62-turbo-dev libpng-dev libicu-dev \
-        libzip-dev libonig-dev libxml2-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j"${PHP_BUILD_JOBS}" \
-        bcmath exif gd intl pcntl pdo_mysql soap zip \
-    && rm -rf /var/lib/apt/lists/*
-# Manter bibliotecas de desenvolvimento neste primeiro build reduz risco de remover
-# bibliotecas compartilhadas necessárias; pode ser otimizado depois da homologação.
-
+FROM ${PHP_BASE_IMAGE} AS php-base
 FROM php-base AS composer-deps
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
 WORKDIR /var/www/html

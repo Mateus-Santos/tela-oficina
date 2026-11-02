@@ -1,0 +1,11 @@
+# Base PHP separada: recompilar extensoes apenas quando este arquivo mudar.
+# Imagem publicada no GHCR com tag baseada no sha256 deste arquivo.
+FROM php:8.5-fpm-bookworm
+ARG PHP_BUILD_JOBS=1
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        libfreetype6-dev libjpeg62-turbo-dev libpng-dev libicu-dev \
+        libzip-dev libonig-dev libxml2-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j"${PHP_BUILD_JOBS}" \
+        bcmath exif gd intl pcntl pdo_mysql soap zip \
+    && rm -rf /var/lib/apt/lists/*
