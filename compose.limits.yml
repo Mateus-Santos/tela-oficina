@@ -1,0 +1,11 @@
+# Ativar SOMENTE depois de medir picos na homologação.
+# Aproximação de 1,5 GiB para a camada app+web; não inclui MySQL.
+services:
+  app:
+    mem_limit: 1350m
+    cpus: 1.0
+    pids_limit: 256
+  web:
+    mem_limit: 128m
+    cpus: 0.25
+    pids_limit: 64

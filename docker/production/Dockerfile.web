@@ -1,0 +1,15 @@
+# Build APÓS imagem da aplicação, usando a mesma versão de assets.
+ARG APP_IMAGE=sosmecanica-app:dev
+FROM ${APP_IMAGE} AS app-assets
+FROM nginx:1.28-alpine
+RUN addgroup -g 1000 -S sos && adduser -u 1000 -S -G sos -H sos
+COPY docker/production/nginx.conf /etc/nginx/nginx.conf
+COPY --from=app-assets /var/www/html/public/ /var/www/html/public/
+# Não transportar o symlink público do PHP; uploads terão mount somente leitura.
+RUN rm -f /var/www/html/public/storage && mkdir -p /var/www/html/public/storage \
+    && mkdir -p /tmp/nginx/client /tmp/nginx/proxy /tmp/nginx/fastcgi \
+        /tmp/nginx/uwsgi /tmp/nginx/scgi \
+    && chown -R 1000:1000 /tmp/nginx
+USER 1000:1000
+EXPOSE 8080
+ENTRYPOINT ["nginx", "-g", "daemon off;"]
