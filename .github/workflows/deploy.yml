@@ -1,403 +1,212 @@
-name: sosmecanica deployment
+name: SOS Mecanica - Deploy Docker Producao
 
-# Release gate: deploy de producao apenas por acionamento manual na master.
-# A integracao com development nao dispara publicacao.
+# Deploy exclusivamente manual, usando o commit atual da master.
 on:
-    workflow_dispatch:
+  workflow_dispatch:
+    inputs:
+      modo:
+        description: 'Validar compila as imagens; Publicar tambem atualiza a VPS'
+        required: true
+        type: choice
+        default: validar
+        options:
+          - validar
+          - publicar
+      confirmacao:
+        description: 'Para publicar, digite PUBLICAR apos homologacao e conferencia de backup'
+        required: false
+        type: string
 
 permissions:
-    contents: read
+  contents: read
+
+concurrency:
+  group: sosmecanica-production
+  cancel-in-progress: false
 
 jobs:
-    deploy-production:
-        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'
-
-        runs-on: ubuntu-latest
-
-        concurrency:
-            group: sosmecanica-production
-            cancel-in-progress: false
-
-        environment:
-            name: production
-            url: ${{ vars.URL }}
-
-        steps:
-
-            # ========================================
-            # CHECKOUT
-            # ========================================
-
-            - name: Repo Checkout
-              uses: actions/checkout@v5
-
-
-            # ========================================
-            # SSH AGENT
-            # ========================================
-
-            - name: Start SSH Agent
-              uses: webfactory/ssh-agent@v0.10.0
-              with:
-                  ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
-
-
-            # ========================================
-            # SSH KNOWN HOSTS
-            # ========================================
-
-            - name: Configure known_hosts
-              run: |
-                  mkdir -p ~/.ssh
-                  chmod 700 ~/.ssh
-
-                  echo "${{ secrets.SERVER_SSH_HOST_KEY }}" > ~/.ssh/known_hosts
-
-                  chmod 600 ~/.ssh/known_hosts
-
-
-            # ========================================
-            # NODE.JS
-            # ========================================
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v5
-              with:
-                  node-version: 24
-                  cache: npm
-
-
-            # ========================================
-            # FRONTEND
-            # ========================================
-
-            - name: Install Frontend Dependencies & Build
-              run: |
-                  npm ci
-                  npm run build
-
-
-            # ========================================
-            # RSYNC EXCLUDE
-            # ========================================
-
-            - name: Create Exclude File
-              run: |
-                  echo ".git/" > .rsync-exclude
-                  echo "node_modules/" >> .rsync-exclude
-                  echo "storage/" >> .rsync-exclude
-                  echo "/public/storage" >> .rsync-exclude
-                  echo ".env" >> .rsync-exclude
-                  echo "vendor/" >> .rsync-exclude
-
-                  git ls-files --ignored --exclude-standard -o >> .rsync-exclude
-
-                  sed -i '/public\/build/d' .rsync-exclude
-
-
-            # ========================================
-            # DEPLOY FILES
-            # ========================================
-
-            - name: Deploy files
-              run: |
-                  rsync -avz \
-                    --delete \
-                    --exclude-from='.rsync-exclude' \
-                    --update \
-                    -e "ssh -p ${{ vars.REMOTE_PORT }} -o UserKnownHostsFile=~/.ssh/known_hosts -o StrictHostKeyChecking=yes" \
-                    ./ \
-                    ${{ vars.REMOTE_USER }}@${{ vars.REMOTE_HOST }}:${{ vars.TARGET }}/
-
-
-            # ========================================
-            # DEPLOY APPLICATION
-            # ========================================
-
-            - name: Deploy application
-              run: |
-                  ssh \
-                    -p ${{ vars.REMOTE_PORT }} \
-                    -o UserKnownHostsFile=~/.ssh/known_hosts \
-                    -o StrictHostKeyChecking=yes \
-                    ${{ vars.REMOTE_USER }}@${{ vars.REMOTE_HOST }} \
-                    'bash -se' << 'EOF'
-
-                  set -e
-
-                  cd ${{ vars.TARGET }}
-
-
-                  # ========================================
-                  # DOCKER
-                  # ========================================
-
-                  echo "========================================"
-                  echo "STARTING DOCKER CONTAINERS"
-                  echo "========================================"
-
-                  docker compose up -d --build --force-recreate
-
-
-                  echo "========================================"
-                  echo "DOCKER CONTAINERS"
-                  echo "========================================"
-
-                  docker compose ps
-
-
-                  # ========================================
-                  # WAIT FOR MYSQL
-                  # ========================================
-
-                  echo "========================================"
-                  echo "WAITING FOR MYSQL"
-                  echo "========================================"
-
-                  MYSQL_READY=0
-
-                  for i in $(seq 1 30); do
-
-                      MYSQL_STATUS=$(docker compose ps --format '{{.Name}} {{.Health}}' mysql 2>/dev/null || true)
-
-                      echo "Tentativa $i/30: $MYSQL_STATUS"
-
-                      if docker compose exec \
-                          -T \
-                          --interactive=false \
-                          mysql \
-                          sh -lc 'mysqladmin ping -p"$MYSQL_ROOT_PASSWORD" --silent' \
-                          2>/dev/null </dev/null; then
-
-                          MYSQL_READY=1
-
-                          echo "MySQL está pronto."
-
-                          break
-                      fi
-
-                      sleep 2
-                  done
-
-
-                  if [ "$MYSQL_READY" -ne 1 ]; then
-
-                      echo "ERROR: MySQL não ficou disponível dentro do tempo esperado."
-
-                      docker compose ps
-
-                      docker compose logs --tail=100 mysql
-
-                      exit 1
-                  fi
-
-
-                  # ========================================
-                  # COMPOSER
-                  # ========================================
-
-                  echo "========================================"
-                  echo "INSTALLING COMPOSER DEPENDENCIES"
-                  echo "========================================"
-
-                  docker compose exec \
-                      -T \
-                      --interactive=false \
-                      --user sail \
-                      laravel.sosmecanica \
-                      composer install \
-                      --no-interaction \
-                      --no-dev \
-                      --prefer-dist \
-                      --optimize-autoloader </dev/null
-
-
-                  # ========================================
-                  # DATABASE MIGRATIONS
-                  # ========================================
-
-                  echo "========================================"
-                  echo "RUNNING DATABASE MIGRATIONS"
-                  echo "========================================"
-
-                  docker compose exec \
-                      -T \
-                      --interactive=false \
-                      --user sail \
-                      laravel.sosmecanica \
-                      php artisan migrate --force </dev/null
-
-
-                  # ========================================
-                  # CLEAR LARAVEL CACHE
-                  # ========================================
-
-                  echo "========================================"
-                  echo "CLEARING LARAVEL CACHE"
-                  echo "========================================"
-
-                  docker compose exec \
-                      -T \
-                      --interactive=false \
-                      --user sail \
-                      laravel.sosmecanica \
-                      php artisan optimize:clear </dev/null
-
-
-                  # ========================================
-                  # REMOVE OLD STORAGE LINK
-                  # ========================================
-
-                  echo "========================================"
-                  echo "REMOVING OLD STORAGE LINK"
-                  echo "========================================"
-
-                  docker compose exec \
-                      -T \
-                      --interactive=false \
-                      --user sail \
-                      laravel.sosmecanica \
-                      sh -c '
-                          if [ -L public/storage ]; then
-                              echo "Removendo somente o link simbolico public/storage..."
-                              rm -- public/storage
-                          elif [ -e public/storage ]; then
-                              echo "ERRO: public/storage existe, mas nao e um link simbolico."
-                              echo "Exclusao bloqueada para proteger os arquivos."
-                              exit 1
-                          else
-                              echo "Nenhum storage link existente encontrado."
-                          fi
-                      ' </dev/null
-
-
-                  # ========================================
-                  # CREATE STORAGE LINK
-                  # ========================================
-
-                  echo "========================================"
-                  echo "CREATING STORAGE LINK"
-                  echo "========================================"
-
-                  docker compose exec \
-                      -T \
-                      --interactive=false \
-                      --user sail \
-                      laravel.sosmecanica \
-                      php artisan storage:link </dev/null
-
-
-                  # ========================================
-                  # VALIDATE STORAGE LINK
-                  # ========================================
-
-                  echo "========================================"
-                  echo "VALIDATING STORAGE LINK"
-                  echo "========================================"
-
-                  docker compose exec \
-                      -T \
-                      --interactive=false \
-                      --user sail \
-                      laravel.sosmecanica \
-                      sh -c '
-                          echo "Conteúdo de public:"
-                          ls -la public
-
-                          echo ""
-                          echo "Storage link:"
-                          ls -la public/storage
-
-                          echo ""
-                          echo "Destino do link:"
-                          readlink public/storage
-
-                          echo ""
-                          echo "Verificando se public/storage é um link simbólico..."
-
-                          if [ ! -L public/storage ]; then
-                              echo "ERROR: public/storage não é um link simbólico."
-                              exit 1
-                          fi
-
-                          echo ""
-                          echo "Verificando se o destino do link existe..."
-
-                          if [ ! -d public/storage ]; then
-                              echo "ERROR: o destino de public/storage não existe."
-                              exit 1
-                          fi
-
-                          echo ""
-                          echo "Verificando storage/app/public..."
-
-                          if [ ! -d storage/app/public ]; then
-                              echo "ERROR: storage/app/public não existe."
-                              exit 1
-                          fi
-
-                          echo ""
-                          echo "Storage link validado com sucesso."
-                      ' </dev/null
-
-
-                  # ========================================
-                  # CHECK STORAGE DIRECTORY
-                  # ========================================
-
-                  echo "========================================"
-                  echo "CHECKING STORAGE DIRECTORY"
-                  echo "========================================"
-
-                  docker compose exec \
-                      -T \
-                      --interactive=false \
-                      --user sail \
-                      laravel.sosmecanica \
-                      sh -c '
-                          echo "Diretório storage/app/public:"
-                          ls -la storage/app/public
-
-                          echo ""
-
-                          echo "Quantidade de arquivos:"
-                          find storage/app/public -type f | wc -l
-                      ' </dev/null
-
-
-                  # ========================================
-                  # OPTIMIZE LARAVEL
-                  # ========================================
-
-                  echo "========================================"
-                  echo "OPTIMIZING LARAVEL"
-                  echo "========================================"
-
-                  docker compose exec \
-                      -T \
-                      --interactive=false \
-                      --user sail \
-                      laravel.sosmecanica \
-                      php artisan optimize </dev/null
-
-
-                  # ========================================
-                  # FINAL STATUS
-                  # ========================================
-
-                  echo "========================================"
-                  echo "FINAL CONTAINER STATUS"
-                  echo "========================================"
-
-                  docker compose ps
-
-
-                  # ========================================
-                  # SUCCESS
-                  # ========================================
-
-                  echo "========================================"
-                  echo "DEPLOYMENT COMPLETED SUCCESSFULLY"
-                  echo "========================================"
-
-                  EOF
+  deploy-production:
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    environment:
+      name: production
+      url: https://jaimeautomotivo.com.br
+
+    env:
+      TAG: ${{ github.sha }}
+      REMOTE_USER: ${{ vars.REMOTE_USER }}
+      REMOTE_HOST: ${{ vars.REMOTE_HOST }}
+      REMOTE_PORT: ${{ vars.REMOTE_PORT }}
+      PROJECT_DIR: ${{ vars.TARGET }}
+      DEPLOY_DIR: /home/mateus/deploy/sosmecanica
+
+    steps:
+      - name: Validar autorizacao e destino
+        env:
+          MODO: ${{ inputs.modo }}
+          CONFIRMACAO: ${{ inputs.confirmacao }}
+        run: |
+          set -euo pipefail
+          if [ "$MODO" = 'publicar' ]; then
+            test "$CONFIRMACAO" = 'PUBLICAR' || { echo 'Confirmacao incorreta'; exit 1; }
+          fi
+          test -n "$REMOTE_USER"
+          test -n "$REMOTE_HOST"
+          test -n "$REMOTE_PORT"
+          test "$PROJECT_DIR" = '/var/www/sos-mecanica'
+          echo 'Confirmacao e destino aprovados.'
+
+      - name: Checkout do commit aprovado
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Gerar assets frontend
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run build
+
+      - name: Build das imagens versionadas
+        run: |
+          set -euo pipefail
+          docker build -f docker/production/Dockerfile.app \
+            -t "sosmecanica-app:$TAG" .
+          docker build -f docker/production/Dockerfile.web \
+            -t "sosmecanica-web:$TAG" .
+          docker image inspect "sosmecanica-app:$TAG" "sosmecanica-web:$TAG" >/dev/null
+
+      - name: Preparar pacote imutavel
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/release"
+          docker image save "sosmecanica-app:$TAG" "sosmecanica-web:$TAG" \
+            | gzip -1 > "$RUNNER_TEMP/release/images.tar.gz"
+          cp compose.prod.yml "$RUNNER_TEMP/release/compose.prod.yml"
+          (cd "$RUNNER_TEMP/release" && sha256sum images.tar.gz > images.sha256)
+
+      - name: Configurar autenticacao SSH
+        if: inputs.modo == 'publicar'
+        uses: webfactory/ssh-agent@v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
+
+      - name: Configurar host SSH conhecido
+        if: inputs.modo == 'publicar'
+        env:
+          HOST_KEY: ${{ secrets.SERVER_SSH_HOST_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$HOST_KEY"
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$HOST_KEY" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/known_hosts"
+
+      - name: Transferir release para VPS sem alterar aplicacao
+        if: inputs.modo == 'publicar'
+        run: |
+          set -euo pipefail
+          SSH_OPTS=(-p "$REMOTE_PORT" -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts")
+          ssh "${SSH_OPTS[@]}" "$REMOTE_USER@$REMOTE_HOST" \
+            "mkdir -p '$DEPLOY_DIR/releases/$TAG'"
+          scp -P "$REMOTE_PORT" -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            "$RUNNER_TEMP/release/images.tar.gz" \
+            "$RUNNER_TEMP/release/images.sha256" \
+            "$RUNNER_TEMP/release/compose.prod.yml" \
+            "$REMOTE_USER@$REMOTE_HOST:$DEPLOY_DIR/releases/$TAG/"
+
+      - name: Publicar somente app e web com rollback
+        if: inputs.modo == 'publicar'
+        run: |
+          set -euo pipefail
+          ssh -p "$REMOTE_PORT" -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            "$REMOTE_USER@$REMOTE_HOST" \
+            "TAG='$TAG' PROJECT_DIR='$PROJECT_DIR' DEPLOY_DIR='$DEPLOY_DIR' bash -se" <<'REMOTE'
+          set -Eeuo pipefail
+
+          RELEASE="$DEPLOY_DIR/releases/$TAG"
+          NOVO="$RELEASE/compose.prod.yml"
+          ROLLBACK="$RELEASE/rollback.compose.yml"
+
+          echo '========== PRE-CHECK =========='
+          test "$PROJECT_DIR" = '/var/www/sos-mecanica'
+          test -f "$PROJECT_DIR/.env"
+          test -d "$PROJECT_DIR/storage"
+          test -f "$NOVO"
+          docker network inspect sos-mecanica_sail >/dev/null
+          test "$(docker inspect -f '{{.State.Health.Status}}' sos-mecanica-mysql-1)" = healthy
+          test "$(docker inspect -f '{{.State.Health.Status}}' sosmecanica-prod-web-1)" = healthy
+          test "$(docker inspect -f '{{.State.Status}}' sosmecanica-prod-app-1)" = running
+
+          APP_ATUAL="$(docker inspect -f '{{.Config.Image}}' sosmecanica-prod-app-1)"
+          WEB_ATUAL="$(docker inspect -f '{{.Config.Image}}' sosmecanica-prod-web-1)"
+          case "$APP_ATUAL" in sosmecanica-app:*) ;; *) echo 'Imagem APP inesperada'; exit 1 ;; esac
+          TAG_ANTIGA="${APP_ATUAL#sosmecanica-app:}"
+          test "$WEB_ATUAL" = "sosmecanica-web:$TAG_ANTIGA"
+
+          COMPOSE_ANTIGO="$(docker inspect -f '{{ index .Config.Labels "com.docker.compose.project.config_files" }}' sosmecanica-prod-web-1)"
+          case "$COMPOSE_ANTIGO" in /*) ;; *) echo 'Compose anterior desconhecido'; exit 1 ;; esac
+          case "$COMPOSE_ANTIGO" in *,*) echo 'Mais de um Compose anterior; revisar manualmente'; exit 1 ;; esac
+          test -f "$COMPOSE_ANTIGO"
+          cp -p "$COMPOSE_ANTIGO" "$ROLLBACK"
+
+          echo '========== INTEGRIDADE E CARREGAMENTO =========='
+          (cd "$RELEASE" && sha256sum -c images.sha256)
+          docker load -i "$RELEASE/images.tar.gz"
+          docker image inspect "sosmecanica-app:$TAG" "sosmecanica-web:$TAG" >/dev/null
+          SOS_IMAGE_TAG="$TAG" docker compose \
+            --project-directory "$PROJECT_DIR" -f "$NOVO" config --quiet
+
+          INICIOU=0
+          recuperar() {
+            CODIGO=$?
+            trap - ERR
+            if [ "$INICIOU" -eq 1 ]; then
+              echo 'DEPLOY FALHOU: tentando restaurar versao anterior...'
+              if SOS_IMAGE_TAG="$TAG_ANTIGA" docker compose \
+                  --project-directory "$PROJECT_DIR" -f "$ROLLBACK" \
+                  up -d --wait --wait-timeout 120 \
+                  --no-deps --no-build --pull never --force-recreate app web \
+                && curl -fsS --max-time 20 \
+                  --resolve jaimeautomotivo.com.br:443:127.0.0.1 \
+                  https://jaimeautomotivo.com.br/up -o /dev/null; then
+                echo 'ROLLBACK OK: versao anterior restaurada.'
+              else
+                echo 'ALERTA CRITICO: rollback nao confirmado. Intervencao manual necessaria.' >&2
+              fi
+            fi
+            exit "$CODIGO"
+          }
+          trap recuperar ERR
+
+          echo '========== ATUALIZANDO APP E WEB =========='
+          INICIOU=1
+          SOS_IMAGE_TAG="$TAG" docker compose \
+            --project-directory "$PROJECT_DIR" -f "$NOVO" \
+            up -d --wait --wait-timeout 120 \
+            --no-deps --no-build --pull never --force-recreate app web
+
+          echo '========== SMOKE TEST HTTPS =========='
+          curl -fsS --max-time 20 \
+            --resolve jaimeautomotivo.com.br:443:127.0.0.1 \
+            https://jaimeautomotivo.com.br/up -o /dev/null
+          curl -fsS --max-time 20 \
+            --resolve jaimeautomotivo.com.br:443:127.0.0.1 \
+            https://jaimeautomotivo.com.br/login -o /dev/null
+
+          trap - ERR
+          echo "DEPLOY APROVADO: $TAG"
+          echo "VERSAO ANTERIOR: $TAG_ANTIGA"
+          docker ps --filter name=sosmecanica-prod- \
+            --format 'table {{.Names}}\t{{.Status}}'
+          REMOTE
