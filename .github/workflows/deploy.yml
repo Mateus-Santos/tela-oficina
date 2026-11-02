@@ -55,7 +55,7 @@ jobs:
           test -n "$REMOTE_USER"
           test -n "$REMOTE_HOST"
           test -n "$REMOTE_PORT"
-          test "$PROJECT_DIR" = '/var/www/sos-mecanica'
+          test "${PROJECT_DIR%/}" = '/var/www/sos-mecanica'
           echo 'Confirmacao e destino aprovados.'
 
       - name: Checkout do commit aprovado
@@ -139,7 +139,7 @@ jobs:
           ROLLBACK="$RELEASE/rollback.compose.yml"
 
           echo '========== PRE-CHECK =========='
-          test "$PROJECT_DIR" = '/var/www/sos-mecanica'
+          test "${PROJECT_DIR%/}" = '/var/www/sos-mecanica'
           test -f "$PROJECT_DIR/.env"
           test -d "$PROJECT_DIR/storage"
           test -f "$NOVO"
