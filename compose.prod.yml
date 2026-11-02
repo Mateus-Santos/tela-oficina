@@ -22,6 +22,12 @@ services:
   web:
     image: sosmecanica-web:${SOS_IMAGE_TAG:?Defina SOS_IMAGE_TAG para o commit homologado}
     restart: unless-stopped
+    entrypoint:
+      - /bin/sh
+      - -ec
+      - |
+        mkdir -p /tmp/nginx/client /tmp/nginx/proxy /tmp/nginx/fastcgi /tmp/nginx/uwsgi /tmp/nginx/scgi
+        exec nginx -g 'daemon off;'
     ports:
       - "127.0.0.1:18081:8080"
     volumes:
