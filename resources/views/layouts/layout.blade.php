@@ -291,6 +291,13 @@
                                 </li>
 
                                 <li>
+                                    <a href="{{ route('socios-financeiro.index') }}" class="dropdown-item">
+                                        <i class="bi bi-people-fill me-2"></i>
+                                        Financeiro dos Sócios
+                                    </a>
+                                </li>
+
+                                <li>
                                     <a
                                         href="#"
                                         class="dropdown-item"

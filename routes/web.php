@@ -20,6 +20,8 @@ use App\Http\Controllers\EnderecoController;
 use App\Http\Controllers\EstoqueController;
 use App\Http\Controllers\EtapaController;
 use App\Http\Controllers\FormaPagamentoController;
+use App\Http\Controllers\FinanceiroSociosController;
+use App\Http\Controllers\FinanceiroSociosReceberController;
 use App\Http\Controllers\FornecedorController;
 use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\MontadoraController;
@@ -593,6 +595,24 @@ Route::middleware([
         )->name(
             'anexos.destroy'
         );
+
+        // Financeiro pessoal dos socios (somente administradores)
+        Route::get('financeiro/socios', [FinanceiroSociosController::class, 'index'])->name('socios-financeiro.index');
+        Route::post('financeiro/socios', [FinanceiroSociosController::class, 'storeSocio'])->name('socios-financeiro.store');
+        Route::get('financeiro/socios/{socio}', [FinanceiroSociosController::class, 'show'])->name('socios-financeiro.show');
+        Route::post('financeiro/socios/{socio}/contas', [FinanceiroSociosController::class, 'storeConta'])->name('socios-financeiro.contas.store');
+        Route::get('financeiro/socios/{socio}/contas/{conta}', [FinanceiroSociosController::class, 'showConta'])->name('socios-financeiro.contas.show');
+        Route::post('financeiro/socios/{socio}/contas/{conta}/pagamentos', [FinanceiroSociosController::class, 'storePagamento'])->name('socios-financeiro.pagamentos.store');
+        Route::post('financeiro/socios/{socio}/contas/{conta}/pagamentos/{pagamento}/estornar', [FinanceiroSociosController::class, 'estornarPagamento'])->name('socios-financeiro.pagamentos.estornar');
+        Route::post('financeiro/socios/{socio}/retiradas', [FinanceiroSociosController::class, 'storeRetirada'])->name('socios-financeiro.retiradas.store');
+        Route::post('financeiro/socios/{socio}/retiradas/{retirada}/estornar', [FinanceiroSociosController::class, 'estornarRetirada'])->name('socios-financeiro.retiradas.estornar');
+
+        // Contas a receber pessoais dos sócios: rotas protegidas pelo grupo admin.
+        Route::get('financeiro/socios/{socio}/receber', [FinanceiroSociosReceberController::class, 'index'])->name('socios-financeiro.receber.index');
+        Route::post('financeiro/socios/{socio}/receber', [FinanceiroSociosReceberController::class, 'store'])->name('socios-financeiro.receber.store');
+        Route::get('financeiro/socios/{socio}/receber/{recebivel}', [FinanceiroSociosReceberController::class, 'show'])->name('socios-financeiro.receber.show');
+        Route::post('financeiro/socios/{socio}/receber/{recebivel}/recebimentos', [FinanceiroSociosReceberController::class, 'registrar'])->name('socios-financeiro.receber.recebimentos.store');
+        Route::post('financeiro/socios/{socio}/receber/{recebivel}/recebimentos/{recebimento}/estornar', [FinanceiroSociosReceberController::class, 'estornar'])->name('socios-financeiro.receber.recebimentos.estornar');
 
         // Contas a Pagar
 
