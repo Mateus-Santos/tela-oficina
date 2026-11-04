@@ -36,6 +36,7 @@ printf '%s\n' '========== 1. VERIFICACOES SEM ALTERACOES =========='
 test -f "$PROJECT_DIR/.env"
 test -d "$PROJECT_DIR/storage"
 test -f "$NOVO"
+test -f "$RELEASE/database_release.sh"
 docker network inspect sos-mecanica_sail >/dev/null
 test "$(docker inspect -f '{{.State.Health.Status}}' sos-mecanica-mysql-1)" = healthy
 test "$(docker inspect -f '{{.State.Health.Status}}' sosmecanica-prod-web-1)" = healthy
@@ -56,7 +57,10 @@ cp -p "$COMPOSE_ANTIGO" "$ROLLBACK"
 SOS_IMAGE_TAG="$TAG" docker compose --project-directory "$PROJECT_DIR" \
   -f "$NOVO" config --quiet
 
-echo '========== 2. BAIXANDO SOMENTE CAMADAS NOVAS =========='
+echo '========== 2. BACKUP VALIDADO ANTES DO CORTE =========='
+bash "$RELEASE/database_release.sh" backup "$TAG"
+
+echo '========== 3. BAIXANDO SOMENTE CAMADAS NOVAS =========='
 # O registro pode ser privado. Credencial e mantida apenas ate o final do script.
 docker --config "$DOCKER_CFG" pull "$APP_REPO:$TAG"
 docker --config "$DOCKER_CFG" pull "$WEB_REPO:$TAG"
@@ -71,6 +75,7 @@ recuperar() {
   trap - ERR
   if [[ "$INICIOU" == 1 ]]; then
     echo 'Falha durante o corte: tentando restaurar imagens anteriores...' >&2
+    echo 'ATENCAO: rollback da imagem NAO reverte migrations no MySQL.' >&2
     if SOS_IMAGE_TAG="$TAG_ANTIGA" docker compose --project-directory "$PROJECT_DIR" \
         -f "$ROLLBACK" up -d --wait --wait-timeout 120 \
         --no-deps --no-build --pull never --force-recreate app web \
@@ -86,13 +91,16 @@ recuperar() {
 }
 trap recuperar ERR
 
-echo '========== 3. ATUALIZANDO APENAS APP E WEB =========='
+echo '========== 4. ATUALIZANDO APENAS APP E WEB =========='
 INICIOU=1
 SOS_IMAGE_TAG="$TAG" docker compose --project-directory "$PROJECT_DIR" \
   -f "$NOVO" up -d --wait --wait-timeout 120 \
   --no-deps --no-build --pull never --force-recreate app web
 
-echo '========== 4. TESTES HTTPS =========='
+echo '========== 5. APLICAR MIGRATIONS PENDENTES =========='
+bash "$RELEASE/database_release.sh" migrate "$TAG"
+
+echo '========== 6. TESTES HTTPS =========='
 curl -fsS --max-time 20 \
   --resolve jaimeautomotivo.com.br:443:127.0.0.1 \
   https://jaimeautomotivo.com.br/up -o /dev/null
