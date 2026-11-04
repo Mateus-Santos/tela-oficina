@@ -1,4 +1,5 @@
 name: SOS Mecanica - Docker otimizado v3
+run-name: 'SOS Mecanica / ${{ inputs.modo }} / ${{ github.ref_name }}'
 
 # O unico gatilho e manual. Nunca publica durante git push.
 on:
@@ -74,6 +75,9 @@ jobs:
         run: |
           set -euo pipefail
           bash -n scripts/production/deploy_release.sh
+          bash -n scripts/production/database_release.sh
+          bash -n scripts/deploy.sh
+          test -f tests/deploy/test_deploy.sh
           test -f compose.prod.yml
           test -f docker/production/Dockerfile.app
           test -f docker/production/Dockerfile.php-base
@@ -85,6 +89,10 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Testar deploy sem acesso a producao
+        if: inputs.modo == 'validar'
+        run: bash tests/deploy/test_deploy.sh
 
       - name: Configurar Docker Buildx
         if: inputs.modo == 'validar'
@@ -226,6 +234,7 @@ jobs:
           scp -P "$REMOTE_PORT" -o StrictHostKeyChecking=yes \
             -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
             compose.prod.yml scripts/production/deploy_release.sh \
+            scripts/production/database_release.sh \
             "$REMOTE_USER@$REMOTE_HOST:$DEPLOY_DIR/releases/$TAG/"
 
       - name: Publicar imagens existentes na VPS com rollback
