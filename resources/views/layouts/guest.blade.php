@@ -13,6 +13,8 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        {{-- Bootstrap Icons e CSS adicional so na pagina de login. --}}
+        @stack('p04-login-css')
 
         <!-- Styles -->
         @livewireStyles

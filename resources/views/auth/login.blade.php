@@ -1,3 +1,8 @@
+@push('p04-login-css')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    @vite('resources/css/login.css')
+@endpush
+
 <x-guest-layout>
     <x-authentication-card>
         <x-slot name="logo">
