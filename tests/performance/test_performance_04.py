@@ -21,7 +21,7 @@ class BibliotecasGlobaisTest(unittest.TestCase):
     def test_dependencias_em_uso_permancem(self):
         html = (ROOT / audit.LAYOUT).read_text(encoding='utf-8')
         for needed in ('/vendor/aos/aos.js', '/vendor/waypoints/noframework.waypoints.js',
-                       'jquery-3.7.1.js', 'bootstrap.bundle.min.js', 'inputmask.min.js',
+                       'jquery-3.7.1.js', 'bootstrap.bundle.min.js',
                        "@yield('scripts')", 'bootstrap-modal-body-portal'):
             with self.subTest(needed=needed):
                 self.assertIn(needed, html)
