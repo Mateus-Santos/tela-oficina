@@ -1,0 +1,78 @@
+name: SOS Mecanica - P03 Dependencias
+
+on:
+  pull_request:
+    branches: [development, master]
+    paths:
+      - 'composer.json'
+      - 'composer.lock'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'scripts/performance/auditar_dependencias.py'
+      - 'tests/performance/**'
+      - '.github/workflows/ci-dependencies.yml'
+  push:
+    branches: [development, master]
+    paths:
+      - 'composer.json'
+      - 'composer.lock'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'scripts/performance/auditar_dependencias.py'
+      - 'tests/performance/**'
+      - '.github/workflows/ci-dependencies.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          tools: composer:v2
+          coverage: none
+      - name: Verificar lockfile PHP e estrutura do auditor
+        run: |
+          composer validate --no-check-publish
+          python3 -m unittest discover -s tests/performance -p 'test_*.py' -v
+      - name: Consultar advisories de Composer e NPM
+        id: audit
+        shell: bash
+        run: |
+          set +e
+          python3 scripts/performance/auditar_dependencias.py --live \
+            --saida "$RUNNER_TEMP/P03_AUDITORIA_DEPENDENCIAS.md"
+          resultado=$?
+          echo "resultado=$resultado" >> "$GITHUB_OUTPUT"
+          exit 0
+      - name: Validar build de frontend com lockfile
+        run: |
+          npm ci
+          npm run build
+      - name: Anexar relatorio da auditoria (inclusive em caso de achados)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p03-auditoria-dependencias
+          path: ${{ runner.temp }}/P03_AUDITORIA_DEPENDENCIAS.md
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Aprovar somente se auditorias estiverem limpas
+        if: always()
+        env:
+          AUDIT_RESULTADO: ${{ steps.audit.outputs.resultado }}
+        run: |
+          if [[ "$AUDIT_RESULTADO" != 0 ]]; then
+            echo 'Auditoria identificou vulnerabilidades ou falha de rede. Consulte o artefato P03.' >&2
+            exit 1
+          fi
