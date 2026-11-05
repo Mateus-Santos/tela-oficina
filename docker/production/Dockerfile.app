@@ -28,6 +28,7 @@ RUN mkdir -p storage/app/public storage/framework/cache/data storage/framework/s
     storage/framework/views storage/logs bootstrap/cache \
     && chown -R 1000:1000 storage bootstrap/cache \
     && ln -sfn /var/www/html/storage/app/public /var/www/html/public/storage \
+    && php scripts/production/verificar_imagens.php \
     && php artisan package:discover --ansi \
     && chown -R 1000:1000 bootstrap/cache
 USER 1000:1000
