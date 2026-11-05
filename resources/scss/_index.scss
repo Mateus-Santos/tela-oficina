@@ -5,9 +5,6 @@ section {
 	overflow: hidden;
 }
 
-.section-bg {
-	background-color: $background-color_1;
-}
 
 .section-title {
 	text-align: center;
@@ -52,174 +49,13 @@ section {
 
 // Sessão sobre:
 
-.about {
-	background-color: $background-color_2;
-	color: $color_5;
-
-	.content {
-
-		h3 {
-			font-weight: 600;
-			font-size: 26px;
-		}
-
-		img {
-			width: 25px;
-			height: 25px;
-			padding: 0 5px 0 0;
-		}
-
-		ul {
-			list-style: none;
-			padding: 0;
-
-			li {
-				padding-left: 20px;
-				position: relative;
-				margin-top: 10px;
-			}
-
-			i {
-				position: absolute;
-				left: 0;
-				top: 2px;
-				font-size: 20px;
-				color: $color_4;
-				line-height: 1;
-			}
-		}
-
-		.btn-learn-more {
-			font-family: $font-family_3;
-			font-weight: 500;
-			font-size: 14px;
-			letter-spacing: 1px;
-			display: inline-block;
-			padding: 12px 32px;
-			border-radius: 4px;
-			transition: 0.3s;
-			line-height: 1;
-			color: $color_1;
-			-webkit-animation-delay: 0.8s;
-			animation-delay: 0.8s;
-			margin-top: 6px;
-			border: 2px solid $color_5;
-			background: $color_4;
-
-			&:hover {
-				background: $color_5;
-				border: 2px solid $color_1;
-				color: $color_3;
-				text-decoration: none;
-			}
-		}
-	}
-}
 
 //Sessão equipe:
 
-.team {
-	.member {
-		position: relative;
-		box-shadow: 0px 2px 15px $color_2;
-		padding: 30px;
-		border-radius: 5px;
-		background: $color_5;
-		transition: 0.5s;
-
-		.pic {
-			overflow: hidden;
-			width: 180px;
-			border-radius: 50%;
-
-		}
-
-		&:hover {
-			transform: translateY(-10px);
-		}
-
-		.member-info {
-			padding-left: 30px;
-		}
-
-		span {
-			display: block;
-			font-size: 15px;
-			padding-bottom: 10px;
-			position: relative;
-			font-weight: 500;
-
-			&::after {
-				content: '';
-				position: absolute;
-				display: block;
-				width: 50px;
-				height: 1px;
-				background: $color_2;
-				bottom: 0;
-				left: 0;
-			}
-		}
-
-		p {
-			margin: 10px 0 0 0;
-			font-size: 14px;
-		}
-
-		.social {
-			margin-top: 12px;
-			display: flex;
-			align-items: center;
-			justify-content: flex-start;
-
-			a {
-				transition: ease-in-out 0.3s;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				border-radius: 50px;
-				width: 32px;
-				height: 32px;
-				background: $color_5;
-
-				i {
-					color: $color_1;
-					font-size: 16px;
-					margin: 0 2px;
-				}
-
-				&:hover {
-					background: $color_2;
-
-					i {
-						color: $color_5;
-					}
-				}
-
-				+ {
-					a {
-						margin-left: 8px;
-					}
-				}
-			}
-		}
-	}
-
-	h4 {
-		color: $color_1;
-	}
-
-	color: $color_5;
-}
 
 // Membros
 
-.member {
-	font-weight: 700;
-	margin-bottom: 5px;
-	font-size: 20px;
-	color: $color_1;
-}
+
 
 #footer {
 	font-size: 14px;
@@ -258,101 +94,6 @@ section {
 		}
 	}
 
-	.footer-top {
-		padding: 60px 0 30px 0;
-		background: $background-color_1;
-
-		.footer-contact {
-			margin-bottom: 30px;
-
-			h3 {
-				font-size: 28px;
-				margin: 0 0 10px 0;
-				padding: 2px 0 2px 0;
-				line-height: 1;
-				text-transform: uppercase;
-				font-weight: 600;
-				color: $color_4;
-			}
-
-			p {
-				font-size: 14px;
-				line-height: 24px;
-				margin-bottom: 0;
-				font-family: $font-family_2;
-				color: $color_4;
-			}
-		}
-
-		h4 {
-			font-size: 16px;
-			font-weight: bold;
-			color: $color_4;
-			position: relative;
-			padding-bottom: 12px;
-		}
-
-		.footer-links {
-			margin-bottom: 30px;
-
-			ul {
-				list-style: none;
-				padding: 0;
-				margin: 0;
-
-				i {
-					padding-right: 2px;
-					font-size: 18px;
-					line-height: 1;
-				}
-
-				li {
-					padding: 10px 0;
-					display: flex;
-					align-items: center;
-
-					&:first-child {
-						padding-top: 0;
-					}
-				}
-
-				a {
-					color: $color_2;
-					transition: 0.3s;
-					display: inline-block;
-					line-height: 1;
-
-					&:hover {
-						text-decoration: none;
-						color: $color_6;
-					}
-				}
-			}
-		}
-
-		.social-links {
-			a {
-				font-size: 18px;
-				display: inline-block;
-				background: $color_4;
-				color: $color_5;
-				line-height: 1;
-				padding: 8px 0;
-				margin-right: 4px;
-				border-radius: 50%;
-				text-align: center;
-				width: 36px;
-				height: 36px;
-				transition: 0.3s;
-
-				&:hover {
-					background: $color_2;
-					color: $color_5;
-					text-decoration: none;
-				}
-			}
-		}
-	}
 
 	.footer-bottom {
 		padding-top: 30px;
@@ -423,73 +164,10 @@ section {
 	}
 }
 
-.redes {
-	color: $color_2;
-}
 
-#hero {
-	width: 100%;
-	height: 80vh;
-	background: $background-color_1;
-
-	.container {
-		padding-top: 72px;
-	}
-
-	h1 {
-		margin: 0 0 10px 0;
-		font-size: 48px;
-		font-weight: 700;
-		line-height: 56px;
-		color: $color_4;
-	}
-
-	h2 {
-		color: $color_5;
-		margin-bottom: 50px;
-		font-size: 24px;
-	}
-
-	.btn-get-started {
-		font-family: $font-family_2;
-		font-weight: 500;
-		font-size: 16px;
-		letter-spacing: 1px;
-		display: inline-block;
-		padding: 10px 28px 11px 28px;
-		border-radius: 50px;
-		transition: 0.5s;
-		margin: 10px 0 0 0;
-		color: $color_1;
-		background: $color_4;
-
-		&:hover {
-			background: $color_2;
-		}
-	}
-
-	.animated {
-		animation: up-down 2s ease-in-out infinite alternate-reverse both;
-	}
-}
 
 // Sessão erro404 e error-403:
 
-.erro403,
-.erro404 {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	background: $background-color_2;
-	height: 100vh;
-	width: 100vw;
-	flex-direction: column;
-	text-align: center;
-
-	p {
-		color: $color_5;
-	}
-}
 
 // Sessão Perfil de Usuário:
 .profile {
@@ -612,15 +290,3 @@ section {
 }
 
 // Sessão Termos de Uso:
-.termos-uso {
-	margin: 10%;
-	border-radius: 10px;
-	background-color: #e4e4e4;
-	padding: 3% 2% 3% 2%;
-	text-align: center;
-
-	h1, h2 {
-		color: $color_1;
-		margin: 3% 0 3% 0;
-	}
-}
