@@ -37,6 +37,9 @@
         'resources/js/cadError.js'
     ])
 
+    {{-- CSS exclusivo da pagina, apos os estilos compartilhados --}}
+    @stack('p04-css-pagina')
+
     <title>Oficina SOS Mecânica {{ env('APP_VERSION') }}</title>
 
     <!-- Inputmask -->
