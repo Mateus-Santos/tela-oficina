@@ -68,6 +68,12 @@ docker --config "$DOCKER_CFG" pull "$WEB_REPO:$TAG"
 docker tag "$APP_REPO:$TAG" "sosmecanica-app:$TAG"
 docker tag "$WEB_REPO:$TAG" "sosmecanica-web:$TAG"
 docker image inspect "sosmecanica-app:$TAG" "sosmecanica-web:$TAG" >/dev/null
+# Gate antes do corte: nao iniciar release que nao converta JPEG/PNG/WebP.
+docker run --rm --network none --read-only --cap-drop ALL \
+  --security-opt no-new-privileges \
+  --tmpfs /tmp:rw,nosuid,nodev,size=16m \
+  --entrypoint php "sosmecanica-app:$TAG" \
+  /var/www/html/scripts/production/verificar_imagens.php
 
 INICIOU=0
 recuperar() {

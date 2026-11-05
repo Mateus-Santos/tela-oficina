@@ -198,6 +198,14 @@ jobs:
           echo "VALIDADO: $TAG"
           echo 'As imagens foram armazenadas no GHCR; nao houve acesso a VPS.'
 
+      # Roda tambem em publicar: um artefato sem codecs nunca chega a VPS.
+      - name: Validar conversao de imagem no container publicado
+        run: |
+          set -euo pipefail
+          docker pull "$APP_REPO:$TAG"
+          docker run --rm --entrypoint php "$APP_REPO:$TAG" \
+            /var/www/html/scripts/production/verificar_imagens.php
+
       # Publicar NAO executa npm ci, composer install, docker build ou docker save.
       - name: Configurar chave SSH
         if: inputs.modo == 'publicar'

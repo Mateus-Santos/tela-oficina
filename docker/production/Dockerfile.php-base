@@ -2,10 +2,14 @@
 # Imagem publicada no GHCR com tag baseada no sha256 deste arquivo.
 FROM php:8.5-fpm-bookworm
 ARG PHP_BUILD_JOBS=1
+# Imagick 3.8.1 contem correcao de compilacao para PHP 8.5.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         libfreetype6-dev libjpeg62-turbo-dev libpng-dev libicu-dev \
-        libzip-dev libonig-dev libxml2-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+        libzip-dev libonig-dev libxml2-dev libwebp-dev libmagickwand-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install -j"${PHP_BUILD_JOBS}" \
         bcmath exif gd intl pcntl pdo_mysql soap zip \
+    && pecl install imagick-3.8.1 \
+    && docker-php-ext-enable imagick \
+    && php -r 'if (!extension_loaded("imagick") || !extension_loaded("gd") || !function_exists("imagewebp") || !in_array("WEBP", Imagick::queryFormats("WEBP"), true)) {fwrite(STDERR, "FALHA: extensoes de imagem incompletas\n"); exit(1);}' \
     && rm -rf /var/lib/apt/lists/*
