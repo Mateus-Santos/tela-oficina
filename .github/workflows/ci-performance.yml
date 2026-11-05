@@ -1,0 +1,34 @@
+name: SOS Mecanica - Performance fase 1
+
+on:
+  pull_request:
+    branches: [development, master]
+    paths:
+      - 'docker/production/nginx.conf'
+      - 'resources/views/layouts/layout.blade.php'
+      - 'scripts/performance/**'
+      - 'tests/performance/**'
+      - '.github/workflows/ci-performance.yml'
+  push:
+    branches: [development, master]
+    paths:
+      - 'docker/production/nginx.conf'
+      - 'resources/views/layouts/layout.blade.php'
+      - 'scripts/performance/**'
+      - 'tests/performance/**'
+      - '.github/workflows/ci-performance.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  testes-performance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - name: Testar invariantes de layout e cache
+        run: python3 -m unittest discover -s tests/performance -p 'test_*.py' -v
+      - name: Validar sintaxe dos scripts de medicao
+        run: bash -n scripts/performance/medir_vps.sh

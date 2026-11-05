@@ -606,7 +606,6 @@
 <script src="{{ asset('/vendor/isotope-layout/isotope.pkgd.min.js') }}"></script>
 <script src="{{ asset('/vendor/php-email-form/validate.js') }}"></script>
 <script src="{{ asset('/vendor/swiper/swiper-bundle.min.js') }}"></script>
-<script src="{{ asset('/vendor/waypoints/noframework.waypoints.js') }}"></script>
 
 <!-- jQuery -->
 
