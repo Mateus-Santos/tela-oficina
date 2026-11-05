@@ -1,8 +1,10 @@
-name: SOS Mecanica - Docker otimizado v3
-run-name: 'SOS Mecanica / ${{ inputs.modo }} / ${{ github.ref_name }}'
+name: SOS Mecanica - Validacao e Deploy V4
+run-name: 'SOS Mecanica / ${{ inputs.modo || ''CI'' }} / ${{ github.ref_name }}'
 
-# O unico gatilho e manual. Nunca publica durante git push.
+# PR valida codigo; publicar continua EXCLUSIVAMENTE manual.
 on:
+  pull_request:
+    branches: [development, master]
   workflow_dispatch:
     inputs:
       modo:
@@ -22,15 +24,87 @@ permissions:
   contents: read
   packages: write
 
-# Nao cancela uma publicacao em curso. Uma execucao de cada vez neste repositorio.
-concurrency:
-  group: sosmecanica-docker-production
-  cancel-in-progress: false
-
+# Concorrencia aplica-se apenas ao deploy, sem travar checagens de PR.
 jobs:
+  qualidade:
+    name: Verificacoes de PR - sem deploy
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Scripts e testes de deploy (Docker simulado)
+        run: |
+          bash -n scripts/deploy.sh scripts/production/deploy_release.sh scripts/production/database_release.sh
+          bash tests/deploy/test_deploy.sh
+      - name: Testes de performance, layout e assets
+        run: |
+          python3 -m unittest discover -s tests/performance -p 'test_*.py' -v
+          bash -n scripts/performance/medir_vps.sh scripts/performance/benchmark_http.sh
+      - name: Verificar configuracao PHP-FPM em Docker isolado
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          TEMP="$(mktemp -d)"
+          trap 'rm -rf -- "$TEMP"' EXIT
+          sed -e 's/^user = sos$/user = www-data/' -e 's/^group = sos$/group = www-data/' \
+            docker/production/www.conf > "$TEMP/www.conf"
+          docker run --rm \
+            -v "$TEMP/www.conf:/usr/local/etc/php-fpm.d/www.conf:ro" \
+            php:8.5-fpm-alpine php-fpm -tt
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Preparar PHP/Composer
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          tools: composer:v2
+          coverage: none
+      - name: Conferir Composer e build frontend
+        run: |
+          composer validate --no-check-publish
+          npm ci
+          npm run build
+      - name: Auditar dependencias Composer e NPM
+        id: audit
+        shell: bash
+        run: |
+          set +e
+          python3 scripts/performance/auditar_dependencias.py --live \
+            --saida "$RUNNER_TEMP/P03_AUDITORIA_DEPENDENCIAS.md"
+          resultado=$?
+          echo "resultado=$resultado" >> "$GITHUB_OUTPUT"
+          exit 0
+      - name: Anexar auditoria de seguranca
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p03-auditoria-dependencias
+          path: ${{ runner.temp }}/P03_AUDITORIA_DEPENDENCIAS.md
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Bloquear PR com vulnerabilidades ou falha da auditoria
+        if: always()
+        env:
+          AUDIT_RESULTADO: ${{ steps.audit.outputs.resultado }}
+        run: |
+          [[ "$AUDIT_RESULTADO" == 0 ]] || {
+            echo 'Auditoria de dependencias reprovou. Veja o artefato P03.' >&2
+            exit 1
+          }
+
   release:
+    concurrency:
+      group: sosmecanica-docker-production
+      cancel-in-progress: false
     # Permite validar na feature branch; publicar em outra branch falha explicitamente no pre-check.
-    if: inputs.modo == 'validar' || inputs.modo == 'publicar'
+    if: github.event_name == 'workflow_dispatch' && (inputs.modo == 'validar' || inputs.modo == 'publicar')
     runs-on: ubuntu-latest
     timeout-minutes: 45
 

@@ -43,7 +43,7 @@ Observações verificadas: Waypoints referenciado duas vezes em `layouts/layout.
 2. Menos linhas **não** é métrica de desempenho. Remover duplicação e lógica redundante; conservar legibilidade.
 3. Não fazer upgrade em massa sem solver, lock, audit e testes; nenhum `npm audit fix --force` automático.
 4. Nenhum `migrate:fresh`, `db:wipe`, remoção de volume ou alteração da VPS pelo instalador da sprint.
-5. Um módulo = branch própria, teste e PR; mudanças de SQL/contrato isoladas das de CSS/JS.
+5. Uma branch por iniciativa/sprint, nao por microtarefa; PRs revisados e testados. Bug independente de producao pode usar hotfix pequeno a partir de master, seguido de sincronizacao com desenvolvimento. Nao misturar SQL/contratos com ajustes apenas de CSS/JS sem validacao especifica.
 6. Gate da performance: latência, consultas, CPU, memória RSS, bytes de resposta e taxa de erros **antes e depois**, por tela e em condições comparáveis.
 7. Deploy Docker V4 já está configurado; apenas usar após revisão e integração na `master`.
 

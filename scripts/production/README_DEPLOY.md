@@ -24,7 +24,7 @@ O backup fica em `~/backups/jaime-predeploy-<SHA>-<data>.sql.gz` na VPS. Nenhum 
 - Ao falhar, o deploy tenta restaurar as imagens anteriores, mas **nao reverte alteracoes no banco**. O backup e uma recuperacao potencial, nunca um rollback automatico.
 - `gzip -t` comprova integridade de compressao, nao equivale a um teste real de restauracao. Mantenha testes periodicos de restore e copia externa dos backups.
 - `~/backups` deve ter espaco disponivel. Nao remover backups antigos automaticamente sem politica de retencao.
-- O workflow `deploy.yml` continua com gatilho **somente manual**; push/merge nunca publica sozinho. A suite `ci-deploy.yml` e automatica em Pull Requests.
+- Existe **um unico workflow**: `.github/workflows/deploy.yml`. Em PRs para `development` ou `master`, o job `qualidade` executa testes de deploy, performance e auditoria de dependencias **sem publicar**. Somente a execucao manual (`workflow_dispatch`) oferece `validar` e `publicar`. Push/merge nunca faz deploy automaticamente.
 
 ## Testes sem producao
 
