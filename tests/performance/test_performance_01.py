@@ -26,6 +26,6 @@ class PrimeiraEtapaPerformance(unittest.TestCase):
     def test_scripts_inofensivos(self):
         self.assertTrue((ROOT/'scripts/performance/auditar.py').is_file())
         self.assertTrue((ROOT/'scripts/performance/medir_vps.sh').is_file())
-        self.assertTrue((ROOT/'.github/workflows/ci-performance.yml').is_file())
+        self.assertTrue((ROOT/'.github/workflows/deploy.yml').is_file())
 
 if __name__ == '__main__': unittest.main()

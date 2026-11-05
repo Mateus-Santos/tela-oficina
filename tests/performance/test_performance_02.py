@@ -48,8 +48,8 @@ class PerformanceWorkersTest(unittest.TestCase):
         self.assertNotIn('curl -X POST', s)
 
     def test_ci_testes_e_sintaxe_real(self):
-        workflow = (ROOT/'.github/workflows/ci-performance.yml').read_text(encoding='utf-8')
-        self.assertIn("'docker/production/www.conf'", workflow)
+        workflow = (ROOT/'.github/workflows/deploy.yml').read_text(encoding='utf-8')
+        self.assertIn('docker/production/www.conf', workflow)
         self.assertIn('unittest discover', workflow)
         self.assertIn('php:8.5-fpm-alpine', workflow)
         self.assertIn('php-fpm -tt', workflow)
