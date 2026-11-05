@@ -10,6 +10,8 @@ export default defineConfig({
             input: [
                 'resources/css/app.css',
                 'resources/scss/_app.scss',
+                'resources/scss/chat_entry.scss',
+                'resources/scss/produto_lista_entry.scss',
                 'resources/scss/forms_wizard_entry.scss',
                 'resources/js/app.js',
                 'resources/js/cadColaborador.js',

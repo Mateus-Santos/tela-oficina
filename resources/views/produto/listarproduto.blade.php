@@ -1,5 +1,9 @@
 @extends('layouts.layout')
 
+@push('p04-css-pagina')
+    @vite('resources/scss/produto_lista_entry.scss')
+@endpush
+
 @section('content')
 
 <div class="container cadastro">
