@@ -54,6 +54,12 @@ class ParcelaContaReceber extends Model
             return (float) $this->recebimentosAtivos->sum('valor');
         }
 
+        // withSum('recebimentosAtivos as valor_recebido', 'valor') ja trouxe a soma.
+        // Consultar novamente aqui criaria uma query para cada parcela.
+        if (array_key_exists('valor_recebido', $this->attributes)) {
+            return (float) ($this->attributes['valor_recebido'] ?? 0);
+        }
+
         return (float) $this->recebimentosAtivos()->sum('valor');
     }
 

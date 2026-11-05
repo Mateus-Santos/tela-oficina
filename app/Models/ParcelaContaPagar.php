@@ -54,6 +54,12 @@ class ParcelaContaPagar extends Model
             return (float) $this->pagamentosAtivos->sum('valor');
         }
 
+        // withSum('pagamentosAtivos as valor_pago', 'valor') ja trouxe a soma.
+        // Consultar novamente aqui criaria uma query para cada parcela.
+        if (array_key_exists('valor_pago', $this->attributes)) {
+            return (float) ($this->attributes['valor_pago'] ?? 0);
+        }
+
         return (float) $this->pagamentosAtivos()->sum('valor');
     }
 
