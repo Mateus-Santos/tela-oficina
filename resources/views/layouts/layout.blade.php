@@ -37,10 +37,13 @@
         'resources/js/cadError.js'
     ])
 
+    {{-- CSS exclusivo da pagina, apos os estilos compartilhados --}}
+    @stack('p04-css-pagina')
+
     <title>Oficina SOS Mecânica {{ env('APP_VERSION') }}</title>
 
     <!-- Inputmask -->
-    <script src="https://cdn.jsdelivr.net/npm/inputmask@5.0.6/dist/inputmask.min.js"></script>
+    @stack('p04-inputmask')
 </head>
 
 <body>
@@ -602,11 +605,6 @@
 <!-- ======= Vendor JS Files ======= -->
 
 <script src="{{ asset('/vendor/aos/aos.js') }}"></script>
-<script src="{{ asset('/vendor/glightbox/js/glightbox.min.js') }}"></script>
-<script src="{{ asset('/vendor/isotope-layout/isotope.pkgd.min.js') }}"></script>
-<script src="{{ asset('/vendor/php-email-form/validate.js') }}"></script>
-<script src="{{ asset('/vendor/swiper/swiper-bundle.min.js') }}"></script>
-<script src="{{ asset('/vendor/waypoints/noframework.waypoints.js') }}"></script>
 
 <!-- jQuery -->
 

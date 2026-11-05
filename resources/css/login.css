@@ -1,0 +1,7 @@
+/* Estilos exclusivos dos icones de provedores de login. */
+.icons_login a .bi-google,
+.icons_login a .bi-facebook,
+.icons_login a .bi-apple {
+    font-size: 2.2rem;
+    padding: 0px 1px 0rem 1px;
+}

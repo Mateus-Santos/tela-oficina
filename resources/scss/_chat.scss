@@ -84,3 +84,9 @@
     background-color: $color_2;
 }
 
+@media screen and (max-width: 300px) {
+    .box-questions{
+        margin-top: 7rem;
+        height: 22rem;
+    }
+}

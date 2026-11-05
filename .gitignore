@@ -20,3 +20,6 @@ yarn-error.log
 /database/BASE DE DADOS
 *.map
 dist
+# Cache Python
+__pycache__/
+*.py[cod]

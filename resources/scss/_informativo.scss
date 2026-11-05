@@ -1,0 +1,30 @@
+@use './_colors.scss' as *;
+
+.erro403,
+.erro404 {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background: $background-color_2;
+	height: 100vh;
+	width: 100vw;
+	flex-direction: column;
+	text-align: center;
+
+	p {
+		color: $color_5;
+	}
+}
+
+.termos-uso {
+	margin: 10%;
+	border-radius: 10px;
+	background-color: #e4e4e4;
+	padding: 3% 2% 3% 2%;
+	text-align: center;
+
+	h1, h2 {
+		color: $color_1;
+		margin: 3% 0 3% 0;
+	}
+}

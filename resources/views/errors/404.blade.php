@@ -1,5 +1,9 @@
 @extends('layouts.layout')
 
+@push('p04-css-pagina')
+    @vite('resources/scss/informativo_entry.scss')
+@endpush
+
 @section('content')
 
 <main id="main">

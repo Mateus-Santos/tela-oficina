@@ -1,5 +1,9 @@
 @extends('layouts.layout')
 
+@push('p04-css-pagina')
+    @vite('resources/scss/chat_entry.scss')
+@endpush
+
 @section('content')
 
 
