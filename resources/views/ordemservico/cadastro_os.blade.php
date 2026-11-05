@@ -2,6 +2,10 @@
 
 @vite(['resources/js/validateForm.js'])
 
+@push('p04-inputmask')
+<script src="https://cdn.jsdelivr.net/npm/inputmask@5.0.6/dist/inputmask.min.js"></script>
+@endpush
+
 @section('content')
 
 <div class="container cadastro">
