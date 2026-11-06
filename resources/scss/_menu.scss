@@ -82,3 +82,17 @@ $espacamento: 1rem;
     color: #212529 !important;
 }
 }
+
+// Melhor usabilidade no menu responsivo, sem alterar os outros componentes.
+#header {
+  .dropdown-menu { min-width: 280px; max-height: min(70vh, 520px); overflow-y: auto; }
+  .dropdown-item { white-space: nowrap; line-height: 1.3; }
+  .dropdown-item.active { background: #344452; color: #fff; }
+  @media (max-width: 991px) {
+    .navbar-collapse { max-height: calc(100vh - 100px); overflow-y: auto; }
+    .dropdown-menu { min-width: 0; max-height: none; }
+    .dropdown-item { white-space: normal; }
+  }
+}
+.sos-credit-trigger { cursor: pointer; opacity: .75; }
+.sos-credit-trigger:hover { opacity: 1; }

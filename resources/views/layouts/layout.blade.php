@@ -48,521 +48,84 @@
 
 <body>
 
-<!-- ======= Header ======= -->
-<nav id="header" class="navbar navbar-expand-lg fixed-top">
+<!-- Navegacao publica e interna: um unico componente, sem links ficticios. -->
+<nav id="header" class="navbar navbar-expand-lg fixed-top" aria-label="Menu principal">
     <div class="container-fluid">
-
-        <!-- Logo -->
-        <h1 class="mb-0">
-            <a href="/">
-                <img src="/img/New Logo.png" alt="SOS Mecânica">
-            </a>
-        </h1>
-
-        <!-- Mobile Toggle -->
-        <button
-            class="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarNavDropdown"
-            aria-controls="navbarNavDropdown"
-            aria-expanded="false"
-            aria-label="Abrir menu"
-        >
+        <a class="navbar-brand mb-0" href="{{ url('/') }}" aria-label="SOS Mecânica - início">
+            <img src="{{ asset('img/New Logo.png') }}" alt="SOS Mecânica" width="160" height="48">
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Abrir menu">
             <span class="navbar-toggler-icon"></span>
         </button>
-
         <div class="collapse navbar-collapse" id="navbarNavDropdown">
             <ul class="navbar-nav ms-auto align-items-lg-center">
-
-                {{-- ========================================================= --}}
-                {{-- USUÁRIO NÃO AUTENTICADO --}}
-                {{-- ========================================================= --}}
-
                 @guest
-                    <li class="nav-item">
-                        <a class="nav-link active" href="/">
-                            <i class="bi bi-house-door-fill"></i>
-                            Home
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="#about">
-                            <i class="bi bi-info-circle-fill"></i>
-                            Sobre
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="#team">
-                            <i class="bi bi-people-fill"></i>
-                            Equipe
-                        </a>
-                    </li>
-
-                    <li class="nav-item ms-lg-2">
-                        <a class="btn btn-success" href="/login">
-                            <i class="bi bi-box-arrow-in-right"></i>
-                            Entrar
-                        </a>
-                    </li>
-
-                    <li class="nav-item ms-lg-2">
-                        <a class="btn btn-warning" href="/register">
-                            <i class="bi bi-person-plus-fill"></i>
-                            Cadastre-se
-                        </a>
-                    </li>
+                    @foreach([['Home', ''], ['Serviços', '#servicos'], ['Sobre', '#sobre'], ['Localização', '#localizacao'], ['Contato', '#contato']] as $link)
+                        <li class="nav-item"><a class="nav-link" href="{{ url('/') }}{{ $link[1] }}">{{ $link[0] }}</a></li>
+                    @endforeach
+                    <li class="nav-item ms-lg-2"><a class="btn btn-success" href="{{ url('/login') }}"><i class="bi bi-box-arrow-in-right"></i> Entrar</a></li>
+                    <li class="nav-item ms-lg-2"><a class="btn btn-warning" href="{{ url('/register') }}">Cadastre-se</a></li>
                 @endguest
-
-                {{-- ========================================================= --}}
-                {{-- USUÁRIO AUTENTICADO --}}
-                {{-- ========================================================= --}}
-
                 @auth
-
-                    {{-- ===================================================== --}}
-                    {{-- ADMINISTRADOR --}}
-                    {{-- ===================================================== --}}
-
-                    @if(auth()->user()->isAdmin())
-
-                        {{-- ================================================= --}}
-                        {{-- ATENDIMENTO --}}
-                        {{-- ================================================= --}}
-
+                    @php
+                        $gruposMenu = [];
+                        if (auth()->user()->isAdmin()) {
+                            $gruposMenu = [
+                                ['Atendimento', 'bi-tools', [
+                                    ['Clientes', 'clientes.index', 'bi-people'],
+                                    ['Veículos dos Clientes', 'veiculosclientes.index', 'bi-car-front'],
+                                    ['Ordens de Serviço', 'ordemservicos.index', 'bi-wrench'],
+                                    ['Notas', 'notasitem.index', 'bi-receipt'],
+                                ]],
+                                ['Operações', 'bi-boxes', [
+                                    ['Compras', 'compras.index', 'bi-cart-check'],
+                                    ['Produtos', 'produtos.index', 'bi-box-seam'],
+                                    ['Estoque', 'estoque.index', 'bi-boxes'],
+                                    ['Movimentações de Estoque', 'estoque.movimentacoes.index', 'bi-arrow-left-right'],
+                                ]],
+                                ['Financeiro', 'bi-cash-stack', [
+                                    ['Contas a Receber', 'contas-receber.index', 'bi-arrow-down-circle'],
+                                    ['Contas a Pagar', 'contas-pagar.index', 'bi-arrow-up-circle'],
+                                    ['Financeiro dos Sócios', 'socios-financeiro.index', 'bi-people'],
+                                ]],
+                                ['Cadastros', 'bi-gear', [
+                                    ['Fornecedores', 'fornecedores.index', 'bi-building'],
+                                    ['Marcas', 'marcas.index', 'bi-tags'],
+                                    ['Veículos', 'veiculos.index', 'bi-car-front'],
+                                    ['Montadoras', 'montadoras.index', 'bi-buildings'],
+                                    ['Setores de Serviço', 'setor-servicos.index', 'bi-diagram-3'],
+                                    ['Etapas do Atendimento', 'etapas.index', 'bi-signpost-split'],
+                                    ['Formas de Pagamento', 'formas-pagamento.index', 'bi-credit-card'],
+                                    ['Categorias Financeiras', 'categorias-financeiras.index', 'bi-tags'],
+                                    ['Usuários', 'users.index', 'bi-people'],
+                                    ['Colaboradores', 'colaboradores.index', 'bi-person-badge'],
+                                ]],
+                            ];
+                        } elseif (auth()->user()->isCliente()) {
+                            $gruposMenu = [['Atendimento', 'bi-tools', [
+                                ['Veículos', 'veiculosclientes.index', 'bi-car-front'],
+                            ]]];
+                        }
+                    @endphp
+                    @foreach($gruposMenu as $grupo)
                         <li class="nav-item dropdown">
-                            <a
-                                class="nav-link dropdown-toggle"
-                                href="#"
-                                role="button"
-                                data-bs-toggle="dropdown"
-                                aria-expanded="false"
-                            >
-                                <i class="bi bi-tools"></i>
-                                Atendimento
-                            </a>
-
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a
-                                        href="{{ route('clientes.index') }}"
-                                        class="dropdown-item"
-                                    >
-                                        <i class="bi bi-people-fill me-2"></i>
-                                        Clientes
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a
-                                        href="{{ route('veiculosclientes.index') }}"
-                                        class="dropdown-item"
-                                    >
-                                        <i class="bi bi-car-front-fill me-2"></i>
-                                        Veículos dos Clientes
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a
-                                        href="{{ route('ordemservicos.index') }}"
-                                        class="dropdown-item"
-                                    >
-                                        <i class="bi bi-wrench-adjustable-circle-fill me-2"></i>
-                                        Ordens de Serviço
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a
-                                        href="{{ route('notasitem.index') }}"
-                                        class="dropdown-item"
-                                    >
-                                        <i class="bi bi-receipt me-2"></i>
-                                        Notas
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a
-                                        href="#"
-                                        class="dropdown-item"
-                                    >
-                                        <i class="bi bi-clock-history me-2"></i>
-                                        Histórico
-                                    </a>
-                                </li>
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi {{ $grupo[1] }}"></i> {{ $grupo[0] }}</a>
+                            <ul class="dropdown-menu {{ $loop->last ? 'dropdown-menu-end' : '' }}">
+                                @foreach($grupo[2] as $item)
+                                    <li><a href="{{ route($item[1]) }}" class="dropdown-item {{ request()->routeIs($item[1]) ? 'active' : '' }}"><i class="bi {{ $item[2] }} me-2"></i>{{ $item[0] }}</a></li>
+                                @endforeach
                             </ul>
                         </li>
-
-                        {{-- ================================================= --}}
-                        {{-- OPERAÇÕES --}}
-                        {{-- ================================================= --}}
-
-                        <li class="nav-item dropdown">
-                            <a
-                                class="nav-link dropdown-toggle"
-                                href="#"
-                                role="button"
-                                data-bs-toggle="dropdown"
-                                aria-expanded="false"
-                            >
-                                <i class="bi bi-boxes"></i>
-                                Operações
-                            </a>
-
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a
-                                        href="{{ route('compras.index') }}"
-                                        class="dropdown-item"
-                                    >
-                                        <i class="bi bi-cart-check me-2"></i>
-                                        Compras
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a
-                                        href="{{ route('produtos.index') }}"
-                                        class="dropdown-item"
-                                    >
-                                        <i class="bi bi-box-seam me-2"></i>
-                                        Produtos
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a
-                                        href="{{ route('estoque.index') }}"
-                                        class="dropdown-item"
-                                    >
-                                        <i class="bi bi-boxes me-2"></i>
-                                        Estoque
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a
-                                        href="{{ route('estoque.movimentacoes.index') }}"
-                                        class="dropdown-item"
-                                    >
-                                        <i class="bi bi-arrow-left-right me-2"></i>
-                                        Movimentações de Estoque
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        {{-- ================================================= --}}
-                        {{-- FINANCEIRO --}}
-                        {{-- ================================================= --}}
-
-                        <li class="nav-item dropdown">
-                            <a
-                                class="nav-link dropdown-toggle"
-                                href="#"
-                                role="button"
-                                data-bs-toggle="dropdown"
-                                aria-expanded="false"
-                            >
-                                <i class="bi bi-cash-stack"></i>
-                                Financeiro
-                            </a>
-
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a
-                                        href="{{ route('contas-receber.index') }}"
-                                        class="dropdown-item"
-                                    >
-                                        <i class="bi bi-arrow-down-circle me-2"></i>
-                                        Contas a Receber
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a
-                                        href="{{ route('contas-pagar.index') }}"
-                                        class="dropdown-item"
-                                    >
-                                        <i class="bi bi-arrow-up-circle me-2"></i>
-                                        Contas a Pagar
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a href="{{ route('socios-financeiro.index') }}" class="dropdown-item">
-                                        <i class="bi bi-people-fill me-2"></i>
-                                        Financeiro dos Sócios
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a
-                                        href="#"
-                                        class="dropdown-item"
-                                    >
-                                        <i class="bi bi-graph-up-arrow me-2"></i>
-                                        Fluxo de Caixa
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a
-                                        href="#"
-                                        class="dropdown-item"
-                                    >
-                                        <i class="bi bi-bar-chart-line me-2"></i>
-                                        Relatórios
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        {{-- ================================================= --}}
-                        {{-- CADASTROS --}}
-                        {{-- ================================================= --}}
-
-                        <li class="nav-item dropdown">
-                            <a
-                                class="nav-link dropdown-toggle"
-                                href="#"
-                                role="button"
-                                data-bs-toggle="dropdown"
-                                aria-expanded="false"
-                            >
-                                <i class="bi bi-gear-fill"></i>
-                                Cadastros
-                            </a>
-
-                            <ul class="dropdown-menu dropdown-menu-end">
-
-                                {{-- FORNECEDORES --}}
-
-                                <li>
-                                    <a
-                                        href="{{ route('fornecedores.index') }}"
-                                        class="dropdown-item"
-                                    >
-                                        <i class="bi bi-building me-2"></i>
-                                        Fornecedores
-                                    </a>
-                                </li>
-
-                                {{-- MARCAS --}}
-
-                                <li>
-                                    <a
-                                        href="{{ route('marcas.index') }}"
-                                        class="dropdown-item"
-                                    >
-                                        <i class="bi bi-tags me-2"></i>
-                                        Marcas
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-
-                                {{-- VEÍCULOS --}}
-
-                                <li>
-                                    <a
-                                        href="{{ route('veiculos.index') }}"
-                                        class="dropdown-item"
-                                    >
-                                        <i class="bi bi-car-front me-2"></i>
-                                        Veículos
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a
-                                        href="{{ route('montadoras.index') }}"
-                                        class="dropdown-item"
-                                    >
-                                        <i class="bi bi-buildings me-2"></i>
-                                        Montadoras
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-
-                                {{-- SERVIÇOS --}}
-
-                                <li>
-                                    <a
-                                        href="{{ route('setor-servicos.index') }}"
-                                        class="dropdown-item"
-                                    >
-                                        <i class="bi bi-diagram-3-fill me-2"></i>
-                                        Setores de Serviço
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a
-                                        href="{{ route('etapas.index') }}"
-                                        class="dropdown-item"
-                                    >
-                                        <i class="bi bi-signpost-split-fill me-2"></i>
-                                        Etapas do Atendimento
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-
-                                {{-- FINANCEIRO --}}
-
-                                <li>
-                                    <a
-                                        href="{{ route('formas-pagamento.index') }}"
-                                        class="dropdown-item"
-                                    >
-                                        <i class="bi bi-credit-card-fill me-2"></i>
-                                        Formas de Pagamento
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a
-                                        href="{{ route('categorias-financeiras.index') }}"
-                                        class="dropdown-item"
-                                    >
-                                        <i class="bi bi-tags-fill me-2"></i>
-                                        Categorias Financeiras
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-
-                                {{-- ADMINISTRAÇÃO --}}
-
-                                <li>
-                                    <a
-                                        href="{{ route('users.index') }}"
-                                        class="dropdown-item"
-                                    >
-                                        <i class="bi bi-people-fill me-2"></i>
-                                        Usuários
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a
-                                        href="{{ route('colaboradores.index') }}"
-                                        class="dropdown-item"
-                                    >
-                                        <i class="bi bi-person-badge-fill me-2"></i>
-                                        Colaboradores
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                    @endif
-
-                    {{-- ===================================================== --}}
-                    {{-- CLIENTE --}}
-                    {{-- ===================================================== --}}
-
-                    @if(auth()->user()->isCliente())
-
-                        {{-- ATENDIMENTO --}}
-
-                        <li class="nav-item dropdown">
-                            <a
-                                class="nav-link dropdown-toggle"
-                                href="#"
-                                role="button"
-                                data-bs-toggle="dropdown"
-                                aria-expanded="false"
-                            >
-                                <i class="bi bi-tools"></i>
-                                Atendimento
-                            </a>
-
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a
-                                        href="{{ route('veiculosclientes.index') }}"
-                                        class="dropdown-item"
-                                    >
-                                        <i class="bi bi-car-front-fill me-2"></i>
-                                        Veículos
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a
-                                        href="#"
-                                        class="dropdown-item"
-                                    >
-                                        <i class="bi bi-clock-history me-2"></i>
-                                        Históricos
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                    @endif
-
-                    {{-- ===================================================== --}}
-                    {{-- USUÁRIO --}}
-                    {{-- ===================================================== --}}
-
+                    @endforeach
                     <li class="nav-item dropdown ms-lg-2">
-                        <a
-                            class="nav-link dropdown-toggle"
-                            href="#"
-                            role="button"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false"
-                        >
-                            <i class="bi bi-person-circle"></i>
-                            {{ auth()->user()->name }}
-                        </a>
-
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-person-circle"></i> {{ auth()->user()->name }}</a>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li>
-                                <a
-                                    href="/perfil"
-                                    class="dropdown-item"
-                                >
-                                    <i class="bi bi-person-circle me-2"></i>
-                                    Meu Perfil
-                                </a>
-                            </li>
-
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-
-                            <li>
-                                <form action="/logout" method="POST">
-                                    @csrf
-
-                                    <button type="submit" class="dropdown-item btn-sair">
-                                        <i class="bi bi-box-arrow-right me-2"></i>
-                                        Sair
-                                    </button>
-                                </form>
-                            </li>
+                            <li><a class="dropdown-item" href="{{ url('/perfil') }}"><i class="bi bi-person-circle me-2"></i>Meu Perfil</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><form action="{{ url('/logout') }}" method="POST">@csrf<button class="dropdown-item btn-sair" type="submit"><i class="bi bi-box-arrow-right me-2"></i>Sair</button></form></li>
                         </ul>
                     </li>
-
                 @endauth
-
             </ul>
         </div>
     </div>
@@ -572,18 +135,22 @@
 
 @yield('content')
 
-<!-- ======= Footer ======= -->
-
-<footer id="footer">
-    <div class="container footer-bottom clearfix">
-        <div class="copyright">
-            &copy; Copyright 2026
-
-            <strong>
-                <span>Oficina SOS Mecânica</span>
-            </strong>.
-
-            All Rights Reserved
+<footer id="footer" class="py-4" aria-label="Rodapé da SOS Mecânica">
+    <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+            <strong class="text-warning">Oficina SOS Mecânica</strong>
+            <div class="small text-white-50">&copy; {{ date('Y') }} · Feira de Santana - BA</div>
+        </div>
+        <div class="d-flex flex-wrap align-items-center gap-3 small">
+            <a href="https://wa.me/{{ preg_replace('/\D+/', '', config('oficina.whatsapp')) }}" target="_blank" rel="noopener noreferrer"><i class="bi bi-whatsapp"></i> WhatsApp</a>
+            <a href="{{ url('/#localizacao') }}"><i class="bi bi-geo-alt"></i> Endereço</a>
+            @if(config('oficina.email'))
+                <a href="mailto:{{ config('oficina.email') }}"><i class="bi bi-envelope"></i> E-mail</a>
+            @endif
+            <details class="small text-white-50">
+                <summary class="sos-credit-trigger">Créditos</summary>
+                <span>Desenvolvido por Mateus Santos.</span>
+            </details>
         </div>
     </div>
 </footer>
