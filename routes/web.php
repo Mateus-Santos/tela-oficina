@@ -65,7 +65,7 @@ Route::middleware([
     Route::resource(
         'veiculosclientes',
         VeiculosClientesController::class
-    );
+    )->except(['show']);
 
     Route::get(
         '/veiculos/montadora/{id}',

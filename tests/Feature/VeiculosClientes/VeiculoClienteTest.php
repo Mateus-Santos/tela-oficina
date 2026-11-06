@@ -415,4 +415,92 @@ class VeiculoClienteTest extends TestCase
             ]
         );
     }
+
+    private function usuarioDoCliente(Cliente $cliente): User
+    {
+        return User::factory()->create([
+            'pessoa_id' => $cliente->pessoa_id,
+            'perfil' => User::PERFIL_CLIENTE,
+            'status' => true,
+        ]);
+    }
+
+    private function veiculoDoCliente(
+        Cliente $cliente,
+        string $placa
+    ): VeiculosCliente {
+        $veiculo = VeiculosCliente::create(
+            $this->dadosVeiculo([
+                'placa' => $placa,
+                'cliente_id' => $cliente->id,
+            ])
+        );
+
+        $veiculo->clientes()->sync([$cliente->id]);
+
+        return $veiculo;
+    }
+
+    public function test_cliente_so_visualiza_seus_veiculos(): void
+    {
+        $cliente = $this->criarCliente('Cliente Autenticado');
+        $outro = $this->criarCliente('Outro Cliente');
+
+        $usuario = $this->usuarioDoCliente($cliente);
+
+        $this->veiculoDoCliente($cliente, 'ABC1D23');
+        $this->veiculoDoCliente($outro, 'DEF4G56');
+
+        $this->actingAs($usuario)
+            ->get(route('veiculosclientes.index'))
+            ->assertOk()
+            ->assertSee('ABC1D23')
+            ->assertDontSee('DEF4G56');
+    }
+
+    public function test_cliente_nao_modifica_veiculo_de_terceiro(): void
+    {
+        $cliente = $this->criarCliente('Cliente Autenticado');
+        $outro = $this->criarCliente('Outro Cliente');
+
+        $usuario = $this->usuarioDoCliente($cliente);
+        $veiculo = $this->veiculoDoCliente($outro, 'DEF4G56');
+
+        $this->actingAs($usuario)
+            ->get(route('veiculosclientes.edit', $veiculo->id))
+            ->assertForbidden();
+
+        $this->patch(
+            route('veiculosclientes.update', $veiculo->id),
+            $this->dadosVeiculo(['placa' => 'ABC1D23'])
+        )->assertForbidden();
+
+        $this->delete(
+            route('veiculosclientes.destroy', $veiculo->id)
+        )->assertNotFound();
+
+        $this->assertDatabaseHas('veiculos_clientes', [
+            'id' => $veiculo->id,
+            'placa' => 'DEF4G56',
+        ]);
+    }
+
+    public function test_cliente_nao_acessa_areas_administrativas(): void
+    {
+        $cliente = $this->criarCliente('Cliente Comum');
+        $usuario = $this->usuarioDoCliente($cliente);
+
+        $this->actingAs($usuario);
+
+        foreach ([
+            'clientes.index',
+            'produtos.index',
+            'contas-pagar.index',
+            'contas-receber.index',
+            'ordemservicos.index',
+        ] as $rota) {
+            $this->get(route($rota))->assertForbidden();
+        }
+    }
+
 }
