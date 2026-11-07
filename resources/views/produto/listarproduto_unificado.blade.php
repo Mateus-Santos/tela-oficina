@@ -362,8 +362,35 @@
                             </div>
                         </section>
                         <section class="produto-origem-card">
-                            <div class="produto-origem-titulo"><span><i class="bi bi-boxes"></i> DISPONIBILIDADE</span></div>
-                            <strong>{{ $item->operacional ? $item->quantidade : 'Sob consulta' }}</strong>
+                            <div class="produto-origem-titulo">
+                                <span><i class="bi bi-boxes"></i> DISPONIBILIDADE</span>
+                            </div>
+
+                            <div class="mb-2">
+                                <span class="produto-campo-label">ESTOQUE OFICINA</span>
+                                <strong class="d-block">
+                                    {{ $item->operacional ? $item->quantidade : 'Sem cadastro físico' }}
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span class="produto-campo-label">
+                                    ESTOQUE FORNECEDOR
+                                    @if($item->fonte_estoque)
+                                        · {{ $item->fonte_estoque }}
+                                    @endif
+                                </span>
+                                <strong class="d-block">
+                                    {{ $item->estoque_fornecedor !== null
+                                        ? $item->estoque_fornecedor
+                                        : 'Não informado' }}
+                                </strong>
+                                @if($item->estoque_fornecedor !== null)
+                                    <small class="text-body-secondary">
+                                        Última coleta; confirmar disponibilidade.
+                                    </small>
+                                @endif
+                            </div>
                         </section>
                     </div>
                     @if($item->descricao)

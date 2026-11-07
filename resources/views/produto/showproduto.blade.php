@@ -895,13 +895,19 @@
             <div class="card-header">
                 <strong><i class="bi bi-car-front"></i> Compatibilidades detalhadas</strong>
                 <span class="text-body-secondary ms-2">({{ $aplicacoesTecnicas->total() }})</span>
+                @if($aplicacoesPendentes > 0)
+                    <span class="badge text-bg-warning ms-2">
+                        {{ $aplicacoesPendentes }} pendente(s) de identificação
+                    </span>
+                @endif
             </div>
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-striped table-hover align-middle">
                         <thead><tr>
                             <th>Montadora</th><th>Veículo</th><th>Mês/ano</th>
-                            <th>Modelo</th><th>Motor</th><th>Combustível</th><th>Complemento</th>
+                            <th>Modelo</th><th>Motor</th><th>Combustível</th>
+                            <th>Complemento</th><th>Identificação</th>
                         </tr></thead>
                         <tbody>
                             @foreach($aplicacoesTecnicas as $aplicacao)
@@ -913,6 +919,17 @@
                                     <td>{{ collect([$aplicacao->motor, $aplicacao->comp, $aplicacao->valvulas ? $aplicacao->valvulas.'V' : null, $aplicacao->cilindros ? $aplicacao->cilindros.' cil.' : null])->filter()->implode(' · ') ?: '—' }}</td>
                                     <td>{{ $aplicacao->combustivel ?: '—' }}</td>
                                     <td>{{ $aplicacao->complemento ?: '—' }}</td>
+                                    <td>
+                                        @if(
+                                            $aplicacao->produtoAplicacao?->veiculo_id
+                                            && $aplicacao->produtoAplicacao?->status_resolucao === 'resolvida'
+                                            && (int) $aplicacao->produtoAplicacao?->produto_id === (int) $produto->id
+                                        )
+                                            <span class="badge text-bg-success">Veículo identificado</span>
+                                        @else
+                                            <span class="badge text-bg-warning">Revisão necessária</span>
+                                        @endif
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>

@@ -97,6 +97,60 @@ class ListagemUnificadaProdutosTest extends TestCase
             ->assertRedirect(route('produtos.show', $produto));
     }
 
+
+    public function test_listagem_separa_estoque_sky_do_estoque_da_oficina(): void
+    {
+        $produto = $this->produtoOperacional();
+
+        $ref = $this->catalogo(
+            'SKY-ESTOQUE-VINCULADO',
+            'CATALOGO ESTOQUE VINCULADO',
+            $produto->id
+        );
+
+        $solto = $this->catalogo(
+            'SKY-ESTOQUE-SOLTO',
+            'CATALOGO ESTOQUE SOLTO'
+        );
+
+        CatalogoProdutoEstado::create([
+            'catalogo_produto_id' => $ref->id,
+            'estoque_observado' => 25,
+            'preco_venda_sugerido' => '90.00',
+        ]);
+
+        CatalogoProdutoEstado::create([
+            'catalogo_produto_id' => $solto->id,
+            'estoque_observado' => 7,
+        ]);
+
+        $resultado = app(
+            \App\Services\Produto\ListarProdutosUnificados::class
+        )->paginar(\Illuminate\Http\Request::create('/produtos'));
+
+        $operacional = $resultado->getCollection()
+            ->firstWhere('operacional', true);
+
+        $externo = $resultado->getCollection()
+            ->firstWhere('operacional', false);
+
+        $this->assertSame(25, (int) $operacional->estoque_fornecedor);
+        $this->assertSame('4.000', $operacional->quantidade);
+        $this->assertSame(34.9, (float) $operacional->preco);
+        $this->assertSame(7, (int) $externo->estoque_fornecedor);
+        $this->assertNull($externo->quantidade);
+
+        $this->get(route('produtos.index'))
+            ->assertOk()
+            ->assertSee('ESTOQUE OFICINA')
+            ->assertSee('ESTOQUE FORNECEDOR')
+            ->assertSee('confirmar disponibilidade');
+
+        $this->assertSame('4.000', $produto->fresh()->quantidade);
+        $this->assertSame('34.90', $produto->fresh()->preco_uni);
+        $this->assertSame(1, Produto::count());
+    }
+
     private function produtoOperacional(): Produto
     {
         $marca = Marca::query()->create(['nome' => 'MARCA OFICINA', 'ativo' => true]);

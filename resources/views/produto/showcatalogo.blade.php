@@ -30,7 +30,16 @@
                     <div class="fs-4 fw-bold" @if($precoSugerido !== null) title="Preço de referência: R$ {{ number_format((float) $precoSugerido, 2, ',', '.') }}" @endif>
                         Preço de venda: {{ $dadosExibicao['preco'] !== null ? 'R$ '.number_format((float) $dadosExibicao['preco'], 2, ',', '.') : 'Sob consulta' }}
                     </div>
-                    <p class="text-body-secondary small mt-2 mb-0">Disponibilidade física na oficina: sob consulta.</p>
+                    <p class="text-body-secondary small mt-2 mb-0">
+                        Disponibilidade física na oficina: sem cadastro operacional.
+                    </p>
+                    @if($catalogo->estado?->estoque_observado !== null)
+                        <p class="small mt-2 mb-0">
+                            Estoque observado no fornecedor:
+                            <strong>{{ $catalogo->estado->estoque_observado }}</strong>.
+                            Disponibilidade sujeita a confirmação.
+                        </p>
+                    @endif
                     <div class="d-flex gap-2 flex-wrap mt-3">
                         <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#modalCatalogoSimilares"
                             data-url-similares="{{ route('produtos.catalogo.similares', $catalogo) }}">Similares</button>

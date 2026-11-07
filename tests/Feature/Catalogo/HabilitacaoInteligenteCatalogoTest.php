@@ -118,6 +118,14 @@ class HabilitacaoInteligenteCatalogoTest extends TestCase
             'ativa' => true,
         ]);
 
+        $pendente = CatalogoProdutoAplicacao::create([
+            'catalogo_produto_id' => $ref->id,
+            'chave_aplicacao' => hash('sha256', 'sky-pendente'),
+            'montadora_raw' => 'FIAT',
+            'veiculo_raw' => 'MODELO NÃO IDENTIFICADO',
+            'ativa' => true,
+        ]);
+
         $this->post(route('produtos.catalogo.habilitar', $ref))
             ->assertRedirect(route('produtos.show', $produto));
 
@@ -128,6 +136,18 @@ class HabilitacaoInteligenteCatalogoTest extends TestCase
         $this->assertSame($produto->id, $ref->fresh()->produto_id);
         $this->assertSame('automatico', $ref->fresh()->vinculo_status);
         $this->assertSame(1, Produto::count());
+
+        $this->assertDatabaseHas('produto_aplicacoes', [
+            'catalogo_produto_aplicacao_id' => $pendente->id,
+            'status_resolucao' => 'revisao',
+            'veiculo_id' => null,
+        ]);
+
+        $this->get(route('produtos.show', $produto))
+            ->assertOk()
+            ->assertSee('1 pendente(s) de identificação')
+            ->assertSee('Veículo identificado')
+            ->assertSee('Revisão necessária');
 
         $this->assertDatabaseHas('produto_aplicacoes', [
             'produto_id' => $produto->id,
