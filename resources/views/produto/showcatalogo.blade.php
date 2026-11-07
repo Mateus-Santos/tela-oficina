@@ -37,7 +37,7 @@
                         @if(auth()->user()?->isAdmin())
                             <a class="btn btn-primary" href="{{ route('produtos.catalogo.edit', $catalogo) }}">Editar informações</a>
                             <form method="POST" action="{{ route('produtos.catalogo.habilitar', $catalogo) }}"
-                                  onsubmit="return confirm('Criar cadastro operacional com estoque ZERO? Confira a referência e a marca antes de continuar.');">
+                                  onsubmit="return confirm('Habilitar este produto para venda? O sistema aproveitará o cadastro existente quando houver correspondência segura, sem alterar preço ou estoque local.');">
                                 @csrf <button type="submit" class="btn btn-outline-primary">Habilitar para compras e notas</button>
                             </form>
                         @endif

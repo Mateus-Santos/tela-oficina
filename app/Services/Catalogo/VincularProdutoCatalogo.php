@@ -357,11 +357,57 @@ class VincularProdutoCatalogo
             $eanFonte !== null
             && $eanProduto !== null
             && $eanFonte !== $eanProduto
+            && ! $this->ean13SkySemDigitoVerificador(
+                $eanFonte,
+                $eanProduto
+            )
         ) {
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * Aceita EAN-13 sem o último dígito somente quando a Sky
+     * trouxe 12 dígitos que NÃO representam um UPC-A válido.
+     *
+     * A chamada ocorre após encontrar o candidato por
+     * marca e referência e verificar suas contradições.
+     */
+    private function ean13SkySemDigitoVerificador(
+        string $sky,
+        string $local
+    ): bool {
+        return strlen($sky) === 12
+            && strlen($local) === 13
+            && ctype_digit($sky)
+            && ctype_digit($local)
+            && str_starts_with($local, $sky)
+            && ! $this->gtinValido($sky)
+            && $this->gtinValido($local);
+    }
+
+    private function gtinValido(string $codigo): bool
+    {
+        if (
+            ! ctype_digit($codigo)
+            || ! in_array(strlen($codigo), [12, 13], true)
+        ) {
+            return false;
+        }
+
+        $soma = 0;
+        $peso = 3;
+
+        for ($i = strlen($codigo) - 2; $i >= 0; $i--) {
+            $soma += ((int) $codigo[$i]) * $peso;
+            $peso = $peso === 3 ? 1 : 3;
+        }
+
+        $verificador = (10 - ($soma % 10)) % 10;
+
+        return $verificador === (int) $codigo[strlen($codigo) - 1];
     }
 
     private function decisao(
