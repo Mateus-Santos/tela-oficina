@@ -74,7 +74,7 @@
         <div class="card-body">
             @if($aplicacoesTecnicas->isEmpty())
                 <p class="text-body-secondary mb-2">
-                    Nenhuma aplicação veicular informada pela Sky.
+                    Nenhuma aplicação veicular informada pelo Fornecedor S.
                 </p>
                 <p class="text-body-secondary mb-0">
                     A ausência de aplicações não significa compatibilidade

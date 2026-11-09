@@ -25,7 +25,7 @@ class EdicaoSeguraCatalogoTest extends TestCase
     private function referencia(string $chave = 'SKY-TESTE'): CatalogoProduto
     {
         $fonte = CatalogoFonte::query()->create([
-            'codigo' => 'sky', 'nome' => 'Sky', 'tipo' => 'fornecedor', 'ativo' => true,
+            'codigo' => 'sky', 'nome' => 'Fornecedor S', 'tipo' => 'fornecedor', 'ativo' => true,
         ]);
         $ref = CatalogoProduto::query()->create([
             'catalogo_fonte_id' => $fonte->id,
@@ -91,7 +91,7 @@ class EdicaoSeguraCatalogoTest extends TestCase
 
         $this->get(route('produtos.show', $produto))
             ->assertOk()
-            ->assertSee('Nenhuma aplicação veicular informada pela Sky');
+            ->assertSee('Nenhuma aplicação veicular informada pelo Fornecedor S');
 
         $this->get(route('produtos.edit', $produto))
             ->assertOk()
@@ -170,7 +170,7 @@ class EdicaoSeguraCatalogoTest extends TestCase
 
         $produto = Produto::create([
             'nome' => 'PRODUTO MANUAL TESTE',
-            'descricao' => 'Cadastro independente da Sky',
+            'descricao' => 'Cadastro independente do Fornecedor S',
             'marca_id' => $marca->id,
             'codigo_fabricante' => 'REF-MANUAL-SEM-VEICULO',
             'preco_uni' => '25.00',

@@ -586,7 +586,7 @@ class FormProduto extends Component
          * e ainda não tenha sido convertido.
          *
          * Se já existir QUALQUER produto_aplicacao
-         * (inclusive Sky), não transformamos a pivot em
+         * (inclusive Fornecedor S), não transformamos a pivot em
          * conhecimento manual.
          */
         if (

@@ -357,7 +357,7 @@ class VincularProdutoCatalogo
             $eanFonte !== null
             && $eanProduto !== null
             && $eanFonte !== $eanProduto
-            && ! $this->ean13SkySemDigitoVerificador(
+            && ! $this->ean13FonteSemDigitoVerificador(
                 $eanFonte,
                 $eanProduto
             )
@@ -369,22 +369,22 @@ class VincularProdutoCatalogo
     }
 
     /**
-     * Aceita EAN-13 sem o último dígito somente quando a Sky
+     * Aceita EAN-13 sem o último dígito somente quando o Fornecedor S
      * trouxe 12 dígitos que NÃO representam um UPC-A válido.
      *
      * A chamada ocorre após encontrar o candidato por
      * marca e referência e verificar suas contradições.
      */
-    private function ean13SkySemDigitoVerificador(
-        string $sky,
+    private function ean13FonteSemDigitoVerificador(
+        string $codigoFonte,
         string $local
     ): bool {
-        return strlen($sky) === 12
+        return strlen($codigoFonte) === 12
             && strlen($local) === 13
-            && ctype_digit($sky)
+            && ctype_digit($codigoFonte)
             && ctype_digit($local)
-            && str_starts_with($local, $sky)
-            && ! $this->gtinValido($sky)
+            && str_starts_with($local, $codigoFonte)
+            && ! $this->gtinValido($codigoFonte)
             && $this->gtinValido($local);
     }
 

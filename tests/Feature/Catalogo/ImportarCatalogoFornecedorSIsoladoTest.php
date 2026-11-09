@@ -11,13 +11,13 @@ use App\Models\CatalogoVeiculo;
 use App\Models\Montadora;
 use App\Models\Produto;
 use App\Models\Veiculo;
-use App\Services\Catalogo\SkyCsvImporter;
+use App\Services\Catalogo\FornecedorSCsvImporter;
 use App\Services\Produto\ResolverDadosCatalogoProduto;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Tests\TestCase;
 
-class ImportarCatalogoSkyIsoladoTest extends TestCase
+class ImportarCatalogoFornecedorSIsoladoTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -62,13 +62,13 @@ class ImportarCatalogoSkyIsoladoTest extends TestCase
 
     public function test_isolado_importa_reimporta_sem_alterar_operacionais(): void
     {
-        $primeiro = app(SkyCsvImporter::class)->importar($this->diretorio, true);
+        $primeiro = app(FornecedorSCsvImporter::class)->importar($this->diretorio, true);
         $this->assertSame(1, $primeiro['produtos']);
         $this->assertSame(2, $primeiro['aplicacoes']);
         $this->assertSame(0, $primeiro['montadoras_operacionais_criadas']);
         $this->assertSame(0, $primeiro['veiculos_operacionais_criados']);
 
-        $segundo = app(SkyCsvImporter::class)->importar($this->diretorio, true);
+        $segundo = app(FornecedorSCsvImporter::class)->importar($this->diretorio, true);
         $this->assertSame(2, $segundo['aplicacoes']);
         $this->assertSame(1, CatalogoFonte::count());
         $this->assertSame(1, CatalogoMontadora::count());
@@ -86,7 +86,7 @@ class ImportarCatalogoSkyIsoladoTest extends TestCase
 
     public function test_comando_aceita_modo_isolado(): void
     {
-        $this->artisan('catalogo:importar-sky', [
+        $this->artisan('catalogo:importar-fornecedor-s', [
             'diretorio' => $this->diretorio,
             '--somente-catalogo' => true,
         ])->assertExitCode(0);
@@ -110,9 +110,9 @@ class ImportarCatalogoSkyIsoladoTest extends TestCase
             'montadora', 'veiculo', 'modelo', 'motor',
         ], $linhas);
 
-        app(SkyCsvImporter::class)->importar($this->diretorio, true);
+        app(FornecedorSCsvImporter::class)->importar($this->diretorio, true);
         $this->assertSame(45, CatalogoProdutoAplicacao::count());
-        app(SkyCsvImporter::class)->importar($this->diretorio, true);
+        app(FornecedorSCsvImporter::class)->importar($this->diretorio, true);
         $this->assertSame(45, CatalogoProdutoAplicacao::count());
     }
 
@@ -122,7 +122,7 @@ class ImportarCatalogoSkyIsoladoTest extends TestCase
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('CSV obrigatório ausente');
-        app(SkyCsvImporter::class)->importar($this->diretorio, true);
+        app(FornecedorSCsvImporter::class)->importar($this->diretorio, true);
     }
 
     public function test_isolado_recusa_aplicacao_orfa_e_desfaz_transacao(): void
@@ -134,7 +134,7 @@ class ImportarCatalogoSkyIsoladoTest extends TestCase
             ['PRODUTO-INEXISTENTE', '1', '2', 'MONTADORA TESTE', 'VEICULO TESTE', '2019', '1.6'],
         ]);
         try {
-            app(SkyCsvImporter::class)->importar($this->diretorio, true);
+            app(FornecedorSCsvImporter::class)->importar($this->diretorio, true);
             $this->fail('Deveria rejeitar aplicação órfã');
         } catch (\RuntimeException $e) {
             $this->assertStringContainsString('Aplicação sem produto importado', $e->getMessage());
@@ -147,28 +147,28 @@ class ImportarCatalogoSkyIsoladoTest extends TestCase
     {
         $this->csv('produto_estado_sky.csv',
             ['produto_sky_id', 'preco_venda_sky_observado'], [['P-1', '12.46']]);
-        app(SkyCsvImporter::class)->importar($this->diretorio, true);
+        app(FornecedorSCsvImporter::class)->importar($this->diretorio, true);
         $estado = CatalogoProdutoEstado::firstOrFail();
         $this->assertSame('12.4600', $estado->preco_venda_observado);
         $this->assertSame('15.0000', $estado->preco_venda_sugerido);
 
         $this->csv('produto_estado_sky.csv',
             ['produto_sky_id', 'preco_venda_sky_observado'], [['P-1', '9.99']]);
-        app(SkyCsvImporter::class)->importar($this->diretorio, true);
+        app(FornecedorSCsvImporter::class)->importar($this->diretorio, true);
         $estado->refresh();
         $this->assertSame('9.9900', $estado->preco_venda_observado);
         $this->assertSame('15.0000', $estado->preco_venda_sugerido);
 
         $this->csv('produto_estado_sky.csv',
             ['produto_sky_id', 'preco_venda_sky_observado'], [['P-1', '21.34']]);
-        app(SkyCsvImporter::class)->importar($this->diretorio, true);
+        app(FornecedorSCsvImporter::class)->importar($this->diretorio, true);
         $estado->refresh();
         $this->assertSame('25.0000', $estado->preco_venda_sugerido);
 
         foreach (['', '0', 'invalido'] as $valor) {
             $this->csv('produto_estado_sky.csv',
                 ['produto_sky_id', 'preco_venda_sky_observado'], [['P-1', $valor]]);
-            app(SkyCsvImporter::class)->importar($this->diretorio, true);
+            app(FornecedorSCsvImporter::class)->importar($this->diretorio, true);
             $estado->refresh();
             $this->assertSame('21.3400', $estado->preco_venda_observado);
             $this->assertSame('25.0000', $estado->preco_venda_sugerido);

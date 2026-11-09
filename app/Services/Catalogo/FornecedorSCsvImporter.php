@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\DB;
 use RuntimeException;
 use SplFileObject;
 
-class SkyCsvImporter
+class FornecedorSCsvImporter
 {
     public function __construct(
         private readonly VincularProdutoCatalogo $vinculador
@@ -51,7 +51,7 @@ class SkyCsvImporter
         $fonte = CatalogoFonte::query()->updateOrCreate(
             ['codigo' => 'sky'],
             [
-                'nome' => 'Sky Peças',
+                'nome' => 'Fornecedor S',
                 'tipo' => 'fornecedor',
                 'ativo' => true,
             ]
@@ -406,7 +406,7 @@ class SkyCsvImporter
                 'catalogo_produto_id' => $catalogoProdutoId,
             ]);
 
-            // A importacao preserva os valores brutos da Sky para auditoria.
+            // A importacao preserva os valores brutos do Fornecedor S para auditoria.
             // A sugestao de venda so aumenta e nunca e zerada por CSV incompleto.
             $precoAnterior = PrecoVendaForge::arredondar(
                 $estado->preco_venda_sugerido ?? $estado->preco_venda_observado

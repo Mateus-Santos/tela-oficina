@@ -30,7 +30,7 @@
 | 35,180 | `resources/js/notaitem/descontos.js` |
 | 34,800 | `tests/Feature/Financeiro/ContasReceberTest.php` |
 | 34,092 | `resources/views/financeiro/contas_receber/show.blade.php` |
-| 32,267 | `app/Services/Catalogo/SkyCsvImporter.php` |
+| 32,267 | `app/Services/Catalogo/FornecedorSCsvImporter.php` |
 | 31,216 | `resources/views/pdf/nota_interna.blade.php` |
 | 29,078 | `resources/views/livewire/nota/seletor-cliente-veiculo.blade.php` |
 | 28,474 | `app/Livewire/Nota/SeletorClienteVeiculo.php` |
@@ -61,7 +61,7 @@
 - `app/Http/Controllers/ContaReceberController.php`
 - `app/Http/Controllers/FornecedorController.php`
 - `app/Http/Controllers/VeiculosClientesController.php`
-- `app/Services/Catalogo/SkyCsvImporter.php`
+- `app/Services/Catalogo/FornecedorSCsvImporter.php`
 - `app/Services/Produto/ListarProdutosUnificados.php`
 - `app/Services/Produto/ResolverAplicacoes.php`
 - `app/Services/Produto/SincronizarAplicacoesCatalogo.php`

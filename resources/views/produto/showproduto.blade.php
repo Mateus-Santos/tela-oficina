@@ -891,7 +891,7 @@
 
     @if($catalogoPrincipal && $aplicacoesTecnicas?->total() === 0)
         <div class="alert alert-warning mb-4">
-            <strong>Nenhuma aplicação veicular informada pela Sky.</strong>
+            <strong>Nenhuma aplicação veicular informada pelo Fornecedor S.</strong>
             Este produto pode ser cadastrado e editado, mas sua
             compatibilidade com veículos não foi confirmada pela fonte.
             Verifique a aplicação correta antes da utilização.

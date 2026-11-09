@@ -2,23 +2,23 @@
 
 namespace App\Console\Commands;
 
-use App\Services\Catalogo\SkyCsvImporter;
+use App\Services\Catalogo\FornecedorSCsvImporter;
 use Illuminate\Console\Command;
 use Throwable;
 
-class ImportarCatalogoSky extends Command
+class ImportarCatalogoFornecedorS extends Command
 {
-    protected $signature = 'catalogo:importar-sky
-        {diretorio : Diretório que contém os CSVs exportados pelo coletor Sky}
+    protected $signature = 'catalogo:importar-fornecedor-s
+        {diretorio : Diretório que contém os CSVs exportados pelo coletor do Fornecedor S}
         {--somente-catalogo : Importa apenas catálogo; não cria montadoras/veículos operacionais e não vincula produtos}';
 
-    protected $description = 'Importa a base exportada do coletor Sky para a camada de catálogo do Jaime';
+    protected $description = 'Importa a base exportada do coletor do Fornecedor S para a camada de catálogo do Jaime';
 
-    public function handle(SkyCsvImporter $importer): int
+    public function handle(FornecedorSCsvImporter $importer): int
     {
         $diretorio = (string) $this->argument('diretorio');
 
-        $this->info('Importando catálogo Sky...');
+        $this->info('Importando catálogo Fornecedor S...');
         $this->line("Origem: {$diretorio}");
 
         try {

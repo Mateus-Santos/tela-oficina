@@ -116,7 +116,7 @@ class CatalogoProdutoComplementoController extends Controller
                     );
 
                     $referencia = trim((string) (
-                        $dados['referencia'] ?: 'SKY-'.$catalogo->chave_externa
+                        $dados['referencia'] ?: 'FNS-'.$catalogo->chave_externa
                     ));
 
                     if (Produto::query()
@@ -166,7 +166,7 @@ class CatalogoProdutoComplementoController extends Controller
                 $produto->update(['status' => true]);
             }
 
-            // Sincroniza as aplicacoes tecnicas da Sky.
+            // Sincroniza as aplicacoes tecnicas do Fornecedor S.
             $catalogo->aplicacoes()
                 ->where('ativa', true)
                 ->with('catalogoVeiculo')
@@ -213,7 +213,7 @@ class CatalogoProdutoComplementoController extends Controller
 
     public function similares(CatalogoProduto $catalogo, ExibirCatalogoProduto $exibicao)
     {
-        // A Sky indica proximidade comercial; equivalencia tecnica NAO homologada.
+        // O Fornecedor S indica proximidade comercial; equivalencia tecnica NAO homologada.
         $relacoes = $catalogo->similares()->with(['similar.estado', 'similar.imagens', 'similar.edicao'])
             ->orderBy('id')->limit(31)->get();
         $similares = $relacoes->take(30)->map(function ($relacao) use ($exibicao) {
