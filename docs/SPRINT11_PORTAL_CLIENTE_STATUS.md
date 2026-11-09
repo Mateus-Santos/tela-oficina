@@ -16,7 +16,7 @@ confundir esta Sprint 11 com a integração do Fornecedor S.
 | Não mostrar produtos sem estoque | Implementação nova neste bloco; validar |
 | Notas vinculadas ao cliente | Implementação de consulta neste bloco; validar |
 | Notas vinculadas aos veículos | Filtro por veículo autorizado neste bloco; validar |
-| OS | Pendente |
+| OS | Implementação de consulta e acompanhamento neste bloco; validar |
 | Veículos | Parcial; revisão de autorização pendente |
 | Endereços | Pendente |
 
@@ -34,6 +34,19 @@ confundir esta Sprint 11 com a integração do Fornecedor S.
 - Busca: nome ou marca, até 80 caracteres
 - Paginação: 12 registros, ordem estável
 - Não habilita vendas, compras, reservas ou alterações de estoque
+
+## Consulta de Ordens de Serviço
+
+- Rotas: GET /minha-area/ordens-servico e detalhe por ID.
+- Acesso exclusivo do perfil cliente.
+- Titularidade determinada por ordem_servicos.cliente_id.
+- Veículo mostrado apenas quando vinculado ao cliente atual.
+- Filtros de veículo e situação.
+- Histórico de OS abertas, finalizadas e canceladas.
+- Campos públicos: situação, etapa, setor, veículo, datas e valor.
+- Descrição interna e demais dados administrativos não expostos.
+- Somente leitura, sem alteração de estoque, financeiro ou etapas.
+- Homologação visual e regressão ainda necessárias.
 
 ## Próximas etapas
 

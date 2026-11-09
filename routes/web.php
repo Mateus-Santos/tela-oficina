@@ -32,6 +32,7 @@ use App\Http\Controllers\OrdemServicoController;
 use App\Http\Controllers\ProdutoController;
 use App\Http\Controllers\PortalCliente\ProdutosDisponiveisController;
 use App\Http\Controllers\PortalCliente\NotasClienteController;
+use App\Http\Controllers\PortalCliente\OrdensServicoClienteController;
 use App\Http\Controllers\RecebimentoController;
 use App\Http\Controllers\SetorServicoController;
 use App\Http\Controllers\UserController;
@@ -69,6 +70,16 @@ Route::middleware([
             '/minha-area/notas/{nota}',
             [NotasClienteController::class, 'show']
         )->whereNumber('nota')->name('cliente.notas.show');
+
+        Route::get(
+            '/minha-area/ordens-servico',
+            [OrdensServicoClienteController::class, 'index']
+        )->name('cliente.os.index');
+
+        Route::get(
+            '/minha-area/ordens-servico/{ordemServico}',
+            [OrdensServicoClienteController::class, 'show']
+        )->whereNumber('ordemServico')->name('cliente.os.show');
     });
 
     Route::get(
