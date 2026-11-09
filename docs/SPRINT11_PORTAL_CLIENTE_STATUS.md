@@ -17,7 +17,7 @@ confundir esta Sprint 11 com a integração do Fornecedor S.
 | Notas vinculadas ao cliente | Implementação de consulta neste bloco; validar |
 | Notas vinculadas aos veículos | Filtro por veículo autorizado neste bloco; validar |
 | OS | Implementação de consulta e acompanhamento neste bloco; validar |
-| Veículos | Parcial; revisão de autorização pendente |
+| Veículos | Listagem segura, detalhes, edição exclusiva e bloqueio de exclusão neste bloco; validar |
 | Endereços | Pendente |
 
 ## Contrato do catálogo do cliente
@@ -50,11 +50,11 @@ confundir esta Sprint 11 com a integração do Fornecedor S.
 
 ## Próximas etapas
 
-1. Validar os novos testes no banco isolado.
-2. Executar regressão de rotas, permissões, catálogo e estoque.
-3. Homologar visualmente no navegador.
-4. Registrar commit controlado.
-5. Avançar para notas do próprio cliente, com testes de isolamento
-   entre clientes e associação aos veículos.
+1. Executar os testes de veículos no banco isolado.
+2. Executar a regressão das funcionalidades do portal.
+3. Homologar visualmente produtos, notas, OS e veículos.
+4. Consolidar o commit da atualização de veículos.
+5. Implementar a consulta segura de endereços.
+6. Executar auditoria final de permissões e dados internos.
 
 Produção, migrations e Forge DB Oficina fora do escopo deste bloco.

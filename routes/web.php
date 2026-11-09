@@ -80,6 +80,16 @@ Route::middleware([
             '/minha-area/ordens-servico/{ordemServico}',
             [OrdensServicoClienteController::class, 'show']
         )->whereNumber('ordemServico')->name('cliente.os.show');
+
+        Route::get(
+            '/minha-area/veiculos',
+            [VeiculosClientesController::class, 'index']
+        )->name('cliente.veiculos.index');
+
+        Route::get(
+            '/minha-area/veiculos/{veiculo}',
+            [VeiculosClientesController::class, 'showCliente']
+        )->whereNumber('veiculo')->name('cliente.veiculos.show');
     });
 
     Route::get(

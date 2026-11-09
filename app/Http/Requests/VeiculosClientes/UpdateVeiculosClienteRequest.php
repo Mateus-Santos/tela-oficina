@@ -12,11 +12,35 @@ class UpdateVeiculosClienteRequest extends FormRequest
     {
         $usuario = $this->user();
 
-        return $usuario
-            && (
-                $usuario->isAdmin()
-                || $usuario->isCliente()
-            );
+        if ($usuario?->isAdmin()) {
+            return true;
+        }
+
+        if (! $usuario?->isCliente()) {
+            return false;
+        }
+
+        $clienteId = $usuario->cliente?->id;
+
+        if (! $clienteId) {
+            return false;
+        }
+
+        $parametro = $this->route('veiculoscliente');
+
+        $id = $parametro instanceof VeiculosCliente
+            ? $parametro->id
+            : $parametro;
+
+        return VeiculosCliente::query()
+            ->whereKey($id)
+            ->whereHas(
+                'clientes',
+                fn ($clientes) =>
+                    $clientes->where('clientes.id', $clienteId)
+            )
+            ->has('clientes', '=', 1)
+            ->exists();
     }
 
     public function rules(): array

@@ -55,6 +55,15 @@ class AtualizarVeiculoCliente
                         );
                     }
 
+                    if (
+                        $veiculoCliente->clientes()->count() !== 1
+                    ) {
+                        abort(
+                            403,
+                            'Veículo compartilhado exige atendimento da oficina.'
+                        );
+                    }
+
                     /*
                      * Cliente não pode alterar os
                      * responsáveis pelo veículo.

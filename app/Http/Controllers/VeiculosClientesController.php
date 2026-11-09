@@ -8,6 +8,7 @@ use App\Http\Requests\VeiculosClientes\StoreVeiculosClienteRequest;
 use App\Http\Requests\VeiculosClientes\UpdateVeiculosClienteRequest;
 use App\Models\Montadora;
 use App\Models\VeiculosCliente;
+use App\Services\PortalCliente\ConsultarVeiculosCliente;
 use Illuminate\Http\Request;
 
 class VeiculosClientesController extends Controller
@@ -35,6 +36,36 @@ class VeiculosClientesController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
+
+        if ($user->isCliente()) {
+            $placa = strtoupper(
+                preg_replace(
+                    '/[^A-Z0-9]/i',
+                    '',
+                    (string) $request->query('placa', '')
+                )
+            );
+
+            $placa = substr($placa, 0, 7);
+
+            $query = app(ConsultarVeiculosCliente::class)
+                ->consulta($user);
+
+            if ($placa !== '') {
+                $query->where('placa', 'like', '%'.$placa.'%');
+            }
+
+            $veiculosclientes = $query
+                ->orderBy('placa')
+                ->orderBy('id')
+                ->paginate(12)
+                ->withQueryString();
+
+            return view(
+                'portal-cliente.veiculos.index',
+                compact('veiculosclientes', 'placa')
+            );
+        }
 
         $query = VeiculosCliente::query()
             ->with([
@@ -184,6 +215,27 @@ class VeiculosClientesController extends Controller
         );
     }
 
+    public function showCliente(
+        Request $request,
+        int $veiculo,
+        ConsultarVeiculosCliente $consulta
+    ) {
+        abort_unless(
+            $request->user()?->isCliente() === true,
+            403
+        );
+
+        $veiculoCliente = $consulta
+            ->consulta($request->user())
+            ->whereKey($veiculo)
+            ->firstOrFail();
+
+        return view(
+            'portal-cliente.veiculos.show',
+            compact('veiculoCliente')
+        );
+    }
+
     public function create()
     {
         return view(
@@ -212,51 +264,45 @@ class VeiculosClientesController extends Controller
 
     public function edit(string $id)
     {
-        $userLogado = auth()->user();
+        $usuario = auth()->user();
 
-        $veiculoscliente = VeiculosCliente::with([
-            'clientes.pessoa',
-            'veiculo.montadora',
-        ])->findOrFail($id);
+        $veiculoscliente = VeiculosCliente::query()
+            ->findOrFail($id);
 
-        if ($userLogado->isCliente()) {
-            $clienteIdLogado = $userLogado
-                ->cliente
-                ?->id;
+        if ($usuario->isCliente()) {
+            $clienteId = $usuario->cliente?->id;
 
-            if (! $clienteIdLogado) {
-                abort(
-                    403,
-                    'Ação não autorizada.'
-                );
-            }
+            abort_unless($clienteId, 403, 'Ação não autorizada.');
 
-            $possuiAcesso = $veiculoscliente
+            $pertence = $veiculoscliente
                 ->clientes()
-                ->where(
-                    'clientes.id',
-                    $clienteIdLogado
-                )
+                ->where('clientes.id', $clienteId)
                 ->exists();
 
-            if (! $possuiAcesso) {
-                abort(
-                    403,
-                    'Ação não autorizada.'
-                );
-            }
-        } elseif (! $userLogado->isAdmin()) {
-            abort(
+            abort_unless($pertence, 403, 'Ação não autorizada.');
+
+            // Compartilhados só podem ser modificados pela oficina.
+            abort_if(
+                $veiculoscliente->clientes()->count() !== 1,
+                403,
+                'Alterações em veículo compartilhado devem ser feitas pela oficina.'
+            );
+        } else {
+            abort_unless(
+                $usuario->isAdmin(),
                 403,
                 'Acesso não autorizado.'
             );
         }
 
+        $veiculoscliente->load([
+            'clientes.pessoa',
+            'veiculo.montadora',
+        ]);
+
         return view(
             'veiculosclientes.editarveiculosclientes',
-            compact(
-                'veiculoscliente'
-            )
+            compact('veiculoscliente')
         );
     }
 
@@ -313,6 +359,16 @@ class VeiculosClientesController extends Controller
             abort(
                 403,
                 'Acesso não autorizado.'
+            );
+        }
+
+        if ($user->isCliente()) {
+            // Mantém 404 para veículo de terceiro.
+            $query->firstOrFail();
+
+            abort(
+                403,
+                'Solicite a exclusão do veículo à oficina.'
             );
         }
 

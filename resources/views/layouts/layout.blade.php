@@ -106,7 +106,7 @@
                                 ['Produtos disponíveis', 'cliente.produtos.index', 'bi-box-seam'],
                                 ['Minhas notas', 'cliente.notas.index', 'bi-receipt'],
                                 ['Minhas OS', 'cliente.os.index', 'bi-wrench'],
-                                ['Veículos', 'veiculosclientes.index', 'bi-car-front'],
+                                ['Meus veículos', 'cliente.veiculos.index', 'bi-car-front'],
                             ]]];
                         }
                     @endphp
