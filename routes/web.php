@@ -30,6 +30,7 @@ use App\Http\Controllers\NotaController;
 use App\Http\Controllers\NotasItemController;
 use App\Http\Controllers\OrdemServicoController;
 use App\Http\Controllers\ProdutoController;
+use App\Http\Controllers\PortalCliente\ProdutosDisponiveisController;
 use App\Http\Controllers\RecebimentoController;
 use App\Http\Controllers\SetorServicoController;
 use App\Http\Controllers\UserController;
@@ -49,6 +50,13 @@ Route::middleware([
     'auth',
     'check.blocked',
 ])->group(function () {
+    // Catálogo público do cliente autenticado.
+    // Autorização específica no FormRequest.
+    Route::get(
+        '/minha-area/produtos',
+        ProdutosDisponiveisController::class
+    )->name('cliente.produtos.index');
+
     Route::get(
         '/perfil',
         [UserController::class, 'perfil']
