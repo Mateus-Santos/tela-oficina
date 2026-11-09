@@ -64,7 +64,9 @@
                         <li class="nav-item"><a class="nav-link" href="{{ url('/') }}{{ $link[1] }}">{{ $link[0] }}</a></li>
                     @endforeach
                     <li class="nav-item ms-lg-2"><a class="btn btn-success" href="{{ url('/login') }}"><i class="bi bi-box-arrow-in-right"></i> Entrar</a></li>
-                    <li class="nav-item ms-lg-2"><a class="btn btn-warning" href="{{ url('/register') }}">Cadastre-se</a></li>
+                    @if (Route::has('register'))
+                        <li class="nav-item ms-lg-2"><a class="btn btn-warning" href="{{ route('register') }}">Cadastre-se</a></li>
+                    @endif
                 @endguest
                 @auth
                     @php

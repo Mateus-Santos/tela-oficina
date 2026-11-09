@@ -20,6 +20,13 @@ class RegistrationTest extends TestCase
         $response = $this->get('/register');
 
         $response->assertStatus(200);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee(
+                'href="'.route('register').'"',
+                false
+            );
     }
 
     public function test_registration_screen_cannot_be_rendered_if_support_is_disabled(): void
@@ -31,6 +38,13 @@ class RegistrationTest extends TestCase
         $response = $this->get('/register');
 
         $response->assertStatus(404);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertDontSee(
+                'href="'.url('/register').'"',
+                false
+            );
     }
 
     public function test_new_users_can_register(): void
