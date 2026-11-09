@@ -144,6 +144,10 @@ return [
     */
 
     'features' => [
+        // Cadastro público somente quando habilitado explicitamente.
+        ...(env('SOSMECANICA_PUBLIC_REGISTRATION', false)
+            ? [Features::registration()]
+            : []),
         Features::resetPasswords(),
         // Features::emailVerification(),
         Features::updateProfileInformation(),
