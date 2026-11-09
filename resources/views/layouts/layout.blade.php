@@ -107,6 +107,7 @@
                                 ['Minhas notas', 'cliente.notas.index', 'bi-receipt'],
                                 ['Minhas OS', 'cliente.os.index', 'bi-wrench'],
                                 ['Meus veículos', 'cliente.veiculos.index', 'bi-car-front'],
+                                ['Meus endereços', 'cliente.enderecos.index', 'bi-geo-alt'],
                             ]]];
                         }
                     @endphp

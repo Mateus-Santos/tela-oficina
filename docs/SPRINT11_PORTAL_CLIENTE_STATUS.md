@@ -18,7 +18,7 @@ confundir esta Sprint 11 com a integração do Fornecedor S.
 | Notas vinculadas aos veículos | Filtro por veículo autorizado neste bloco; validar |
 | OS | Implementação de consulta e acompanhamento neste bloco; validar |
 | Veículos | Listagem segura, detalhes, edição exclusiva e bloqueio de exclusão neste bloco; validar |
-| Endereços | Pendente |
+| Endereços | Consulta, cadastro e edição exclusiva implementados neste bloco; validar |
 
 ## Contrato do catálogo do cliente
 
@@ -48,13 +48,30 @@ confundir esta Sprint 11 com a integração do Fornecedor S.
 - Somente leitura, sem alteração de estoque, financeiro ou etapas.
 - Homologação visual e regressão ainda necessárias.
 
+## Endereços do cliente
+
+- Titularidade: endereço.pessoa_id = usuário.pessoa_id.
+- Listagem paginada e formulário próprio de cadastro/edição.
+- O cliente não escolhe nem altera o proprietário do endereço.
+- Campos validados conforme os limites reais da tabela.
+- Consulta e edição de terceiros retornam 404.
+- Rotas administrativas mantidas.
+- Exclusão pelo cliente não habilitada.
+
+## Dívida técnica registrada
+
+- Revisar listagem administrativa legada de endereços:
+  utiliza id_endereco, enquanto o banco usa id.
+- Revisar formulário e validação administrativa legados.
+- Não modificar essas rotinas neste bloco.
+
 ## Próximas etapas
 
-1. Executar os testes de veículos no banco isolado.
-2. Executar a regressão das funcionalidades do portal.
-3. Homologar visualmente produtos, notas, OS e veículos.
-4. Consolidar o commit da atualização de veículos.
-5. Implementar a consulta segura de endereços.
-6. Executar auditoria final de permissões e dados internos.
+1. Validar os testes de endereços no banco isolado.
+2. Executar regressão do portal e módulos existentes.
+3. Consolidar o commit de endereços.
+4. Homologar visualmente todas as áreas do cliente.
+5. Auditar permissões e exposição de informações internas.
+6. Registrar pendências antes de encerrar a Sprint 11.
 
 Produção, migrations e Forge DB Oficina fora do escopo deste bloco.

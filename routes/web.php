@@ -33,6 +33,7 @@ use App\Http\Controllers\ProdutoController;
 use App\Http\Controllers\PortalCliente\ProdutosDisponiveisController;
 use App\Http\Controllers\PortalCliente\NotasClienteController;
 use App\Http\Controllers\PortalCliente\OrdensServicoClienteController;
+use App\Http\Controllers\PortalCliente\EnderecosClienteController;
 use App\Http\Controllers\RecebimentoController;
 use App\Http\Controllers\SetorServicoController;
 use App\Http\Controllers\UserController;
@@ -90,6 +91,31 @@ Route::middleware([
             '/minha-area/veiculos/{veiculo}',
             [VeiculosClientesController::class, 'showCliente']
         )->whereNumber('veiculo')->name('cliente.veiculos.show');
+
+        Route::get(
+            '/minha-area/enderecos',
+            [EnderecosClienteController::class, 'index']
+        )->name('cliente.enderecos.index');
+
+        Route::get(
+            '/minha-area/enderecos/novo',
+            [EnderecosClienteController::class, 'create']
+        )->name('cliente.enderecos.create');
+
+        Route::post(
+            '/minha-area/enderecos',
+            [EnderecosClienteController::class, 'store']
+        )->name('cliente.enderecos.store');
+
+        Route::get(
+            '/minha-area/enderecos/{endereco}/editar',
+            [EnderecosClienteController::class, 'edit']
+        )->whereNumber('endereco')->name('cliente.enderecos.edit');
+
+        Route::put(
+            '/minha-area/enderecos/{endereco}',
+            [EnderecosClienteController::class, 'update']
+        )->whereNumber('endereco')->name('cliente.enderecos.update');
     });
 
     Route::get(
