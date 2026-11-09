@@ -104,6 +104,7 @@
                         } elseif (auth()->user()->isCliente()) {
                             $gruposMenu = [['Atendimento', 'bi-tools', [
                                 ['Produtos disponíveis', 'cliente.produtos.index', 'bi-box-seam'],
+                                ['Minhas notas', 'cliente.notas.index', 'bi-receipt'],
                                 ['Veículos', 'veiculosclientes.index', 'bi-car-front'],
                             ]]];
                         }

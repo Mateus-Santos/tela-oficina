@@ -14,8 +14,8 @@ confundir esta Sprint 11 com a integração do Fornecedor S.
 | Listagem de produtos | Implementação nova neste bloco; validar |
 | Esconder informações internas | Proteção da listagem nova; outras telas pendentes |
 | Não mostrar produtos sem estoque | Implementação nova neste bloco; validar |
-| Notas vinculadas ao cliente | Pendente |
-| Notas vinculadas aos veículos | Pendente |
+| Notas vinculadas ao cliente | Implementação de consulta neste bloco; validar |
+| Notas vinculadas aos veículos | Filtro por veículo autorizado neste bloco; validar |
 | OS | Pendente |
 | Veículos | Parcial; revisão de autorização pendente |
 | Endereços | Pendente |

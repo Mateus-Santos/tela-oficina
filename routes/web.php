@@ -31,6 +31,7 @@ use App\Http\Controllers\NotasItemController;
 use App\Http\Controllers\OrdemServicoController;
 use App\Http\Controllers\ProdutoController;
 use App\Http\Controllers\PortalCliente\ProdutosDisponiveisController;
+use App\Http\Controllers\PortalCliente\NotasClienteController;
 use App\Http\Controllers\RecebimentoController;
 use App\Http\Controllers\SetorServicoController;
 use App\Http\Controllers\UserController;
@@ -56,6 +57,19 @@ Route::middleware([
         '/minha-area/produtos',
         ProdutosDisponiveisController::class
     )->name('cliente.produtos.index');
+
+    // Consulta de notas: acesso apenas ao perfil cliente.
+    Route::middleware('cliente')->group(function () {
+        Route::get(
+            '/minha-area/notas',
+            [NotasClienteController::class, 'index']
+        )->name('cliente.notas.index');
+
+        Route::get(
+            '/minha-area/notas/{nota}',
+            [NotasClienteController::class, 'show']
+        )->whereNumber('nota')->name('cliente.notas.show');
+    });
 
     Route::get(
         '/perfil',
