@@ -1,6 +1,11 @@
 {{-- =========================================================
      APLICAÇÕES + DESCRIÇÃO
      ========================================================= --}}
+@php
+    $vinculadoCatalogo = $produto
+        && $produto->catalogos()->exists();
+@endphp
+
 <div class="formulario-secao">
 
     <div class="formulario-secao__titulo">
@@ -12,7 +17,14 @@
 
         <i class="bi bi-info-circle-fill me-1 text-primary"></i>
 
-        Busque e selecione todos os veículos compatíveis com o produto.
+        @if($vinculadoCatalogo)
+            Aplicações manuais opcionais: este produto já está vinculado
+            a um catálogo. Não é necessário selecionar veículos para
+            salvar os demais dados. Confirme tecnicamente a compatibilidade
+            antes de utilizar a peça.
+        @else
+            Busque e selecione todos os veículos compatíveis com o produto.
+        @endif
 
     </div>
 
@@ -224,7 +236,7 @@
                 class="form-label"
                 for="busca_veiculo"
             >
-                Veículo(s):*
+                Veículo(s):{{ $vinculadoCatalogo ? '' : '*' }}
             </label>
 
             <div class="position-relative">

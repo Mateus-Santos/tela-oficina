@@ -312,14 +312,21 @@ class AtualizarProduto
                             ]);
                     }
 
-                    $this
-                        ->persistirAplicacoesProduto
-                        ->sincronizarManuais(
-                            $produto,
-                            $this->aplicacoesDosDados(
-                                $dados
-                            )
-                        );
+                    $recebeuDadosVeiculares =
+                        array_key_exists('veiculos', $dados)
+                        || array_key_exists('aplicacoes', $dados);
+
+                    if (
+                        $recebeuDadosVeiculares
+                        || ! $produto->catalogos()->exists()
+                    ) {
+                        $this
+                            ->persistirAplicacoesProduto
+                            ->sincronizarManuais(
+                                $produto,
+                                $this->aplicacoesDosDados($dados)
+                            );
+                    }
 
                     return $produto->fresh([
                         'marcaRelacionada',

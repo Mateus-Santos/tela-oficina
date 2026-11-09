@@ -76,6 +76,124 @@ class EdicaoSeguraCatalogoTest extends TestCase
         $this->assertSame(1, Produto::query()->count());
     }
 
+
+    public function test_produto_sky_sem_aplicacoes_pode_ser_editado_sem_veiculos(): void
+    {
+        $referencia = $this->referencia('SKY-SEM-APLICACOES');
+
+        $this->post(route('produtos.catalogo.habilitar', $referencia))
+            ->assertRedirect();
+
+        $produto = Produto::query()->sole();
+
+        $this->assertSame(0, $produto->aplicacoes()->count());
+        $this->assertSame(0, $produto->veiculos()->count());
+
+        $this->get(route('produtos.show', $produto))
+            ->assertOk()
+            ->assertSee('Nenhuma aplicação veicular informada pela Sky');
+
+        $this->get(route('produtos.edit', $produto))
+            ->assertOk()
+            ->assertSee('Aplicações manuais opcionais');
+
+        $dados = [
+            'codigo' => $produto->codigo,
+            'nome' => $produto->nome,
+            'marca_id' => $produto->marca_id,
+            'descricao' => $produto->descricao,
+            'preco_uni' => '20.00',
+            'quantidade' => '0.000',
+            'estoque_minimo' => '0.000',
+            'status' => '1',
+            'codigo_fabricante' => $produto->codigo_fabricante,
+            'codigo_barras' => $produto->codigo_barras,
+        ];
+
+        $this->put(route('produtos.update', $produto), $dados)
+            ->assertRedirect(route('produtos.index'));
+
+        $this->assertSame(1, Produto::count());
+        $this->assertSame('0.000', $produto->fresh()->quantidade);
+        $this->assertSame('20.00', $produto->fresh()->preco_uni);
+        $this->assertSame(0, $produto->aplicacoes()->count());
+
+        // Verifica que uma edição sem payload veicular também
+        // preserva registros manuais e vínculos legados existentes.
+        $montadora = \App\Models\Montadora::create([
+            'nome' => 'MONTADORA TESTE SEM APLICACOES SKY',
+        ]);
+
+        $manual = \App\Models\Veiculo::create([
+            'nome' => 'VEICULO MANUAL PRESERVADO',
+            'montadora_id' => $montadora->id,
+        ]);
+
+        $legado = \App\Models\Veiculo::create([
+            'nome' => 'VEICULO LEGADO PRESERVADO',
+            'montadora_id' => $montadora->id,
+        ]);
+
+        $produto->aplicacoes()->create([
+            'veiculo_id' => $manual->id,
+            'chave_aplicacao' => hash('sha256', 'manual-preservado'),
+            'origem' => 'manual',
+            'status_resolucao' => 'resolvida',
+        ]);
+
+        $produto->veiculos()->syncWithoutDetaching([
+            $manual->id,
+            $legado->id,
+        ]);
+
+        $this->put(route('produtos.update', $produto), $dados)
+            ->assertRedirect(route('produtos.index'));
+
+        $this->assertDatabaseHas('produto_aplicacoes', [
+            'produto_id' => $produto->id,
+            'veiculo_id' => $manual->id,
+            'origem' => 'manual',
+        ]);
+
+        $this->assertDatabaseHas('produtos_veiculos', [
+            'produto_id' => $produto->id,
+            'veiculo_id' => $legado->id,
+        ]);
+    }
+
+    public function test_produto_manual_continua_exigindo_veiculos_na_edicao(): void
+    {
+        $marca = Marca::create([
+            'nome' => 'MARCA TESTE MANUAL',
+            'ativo' => true,
+        ]);
+
+        $produto = Produto::create([
+            'nome' => 'PRODUTO MANUAL TESTE',
+            'descricao' => 'Cadastro independente da Sky',
+            'marca_id' => $marca->id,
+            'codigo_fabricante' => 'REF-MANUAL-SEM-VEICULO',
+            'preco_uni' => '25.00',
+            'quantidade' => '2.000',
+            'estoque_minimo' => '0.000',
+            'status' => true,
+        ]);
+
+        $this->put(route('produtos.update', $produto), [
+            'codigo' => $produto->codigo,
+            'nome' => $produto->nome,
+            'marca_id' => $marca->id,
+            'descricao' => $produto->descricao,
+            'preco_uni' => '25.00',
+            'quantidade' => '2.000',
+            'estoque_minimo' => '0.000',
+            'status' => '1',
+            'codigo_fabricante' => $produto->codigo_fabricante,
+        ])->assertSessionHasErrors('veiculos');
+
+        $this->assertSame('2.000', $produto->fresh()->quantidade);
+    }
+
     public function test_nunca_cria_produto_automaticamente_em_consulta(): void
     {
         $ref = $this->referencia();

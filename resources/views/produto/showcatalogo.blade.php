@@ -73,7 +73,13 @@
         <div class="card-header"><strong><i class="bi bi-car-front"></i> Aplicações veiculares ({{ $aplicacoesTecnicas->total() }})</strong></div>
         <div class="card-body">
             @if($aplicacoesTecnicas->isEmpty())
-                <p class="text-body-secondary mb-0">Nenhuma aplicação informada.</p>
+                <p class="text-body-secondary mb-2">
+                    Nenhuma aplicação veicular informada pela Sky.
+                </p>
+                <p class="text-body-secondary mb-0">
+                    A ausência de aplicações não significa compatibilidade
+                    universal. Verifique tecnicamente antes da utilização.
+                </p>
             @else
                 <div class="table-responsive"><table class="table table-striped table-hover align-middle">
                     <thead><tr><th>Montadora</th><th>Veículo</th><th>Mês/ano</th><th>Modelo</th><th>Motor</th><th>Combustível</th><th>Complemento</th></tr></thead>
