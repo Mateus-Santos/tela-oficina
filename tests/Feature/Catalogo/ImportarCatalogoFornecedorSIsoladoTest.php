@@ -71,6 +71,10 @@ class ImportarCatalogoFornecedorSIsoladoTest extends TestCase
         $segundo = app(FornecedorSCsvImporter::class)->importar($this->diretorio, true);
         $this->assertSame(2, $segundo['aplicacoes']);
         $this->assertSame(1, CatalogoFonte::count());
+        $this->assertSame(
+            'fornecedor_s',
+            CatalogoFonte::firstOrFail()->codigo
+        );
         $this->assertSame(1, CatalogoMontadora::count());
         $this->assertSame(1, CatalogoVeiculo::count());
         $this->assertSame(1, CatalogoProduto::count());
@@ -82,6 +86,65 @@ class ImportarCatalogoFornecedorSIsoladoTest extends TestCase
         $this->assertNull(CatalogoProduto::firstOrFail()->produto_id);
         $this->assertNull(CatalogoMontadora::firstOrFail()->montadora_id);
         $this->assertNull(CatalogoVeiculo::firstOrFail()->veiculo_id);
+    }
+
+
+    public function test_reimportacao_apos_migracao_preserva_ids(): void
+    {
+        $fonte = CatalogoFonte::create([
+            'codigo' => 'sky',
+            'nome' => 'Fonte anterior',
+            'tipo' => 'fornecedor',
+            'ativo' => true,
+        ]);
+
+        $catalogo = CatalogoProduto::create([
+            'catalogo_fonte_id' => $fonte->id,
+            'chave_externa' => 'P-1',
+            'codigo_fabricante' => 'REF-TESTE',
+            'descricao' => 'PECA TESTE',
+        ]);
+
+        $migracao = require database_path(
+            'migrations/2026_11_09_120000_renomear_fonte_fornecedor_s.php'
+        );
+
+        $migracao->up();
+
+        $importador = app(FornecedorSCsvImporter::class);
+
+        $importador->importar($this->diretorio, true);
+
+        $this->assertDatabaseHas('catalogo_fontes', [
+            'id' => $fonte->id,
+            'codigo' => 'fornecedor_s',
+        ]);
+
+        $this->assertDatabaseHas('catalogo_produtos', [
+            'id' => $catalogo->id,
+            'catalogo_fonte_id' => $fonte->id,
+            'chave_externa' => 'P-1',
+        ]);
+
+        $this->assertSame(1, CatalogoFonte::count());
+        $this->assertSame(1, CatalogoProduto::count());
+        $this->assertSame(2, CatalogoProdutoAplicacao::count());
+
+        $importador->importar($this->diretorio, true);
+
+        $this->assertSame(1, CatalogoFonte::count());
+        $this->assertSame(1, CatalogoProduto::count());
+        $this->assertSame(2, CatalogoProdutoAplicacao::count());
+
+        $this->assertSame(
+            $catalogo->id,
+            CatalogoProduto::where(
+                'chave_externa',
+                'P-1'
+            )->sole()->id
+        );
+
+        $this->assertSame(0, Produto::count());
     }
 
     public function test_comando_aceita_modo_isolado(): void

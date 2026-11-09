@@ -8,7 +8,7 @@ class MaterializarCatalogoProdutos extends Command
 {
     protected $signature =
         'catalogo:materializar-produtos
-        {--fonte=sky : Mantido apenas por compatibilidade}
+        {--fonte=fornecedor_s : Mantido apenas por compatibilidade}
         {--dry-run : Mantido apenas por compatibilidade}
         {--limite= : Mantido apenas por compatibilidade}';
 

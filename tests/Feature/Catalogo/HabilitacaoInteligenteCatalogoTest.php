@@ -29,7 +29,7 @@ class HabilitacaoInteligenteCatalogoTest extends TestCase
         ]));
 
         $fonte = CatalogoFonte::create([
-            'codigo' => 'sky',
+            'codigo' => 'fornecedor_s',
             'nome' => 'Sky',
             'tipo' => 'fornecedor',
             'ativo' => true,
@@ -153,7 +153,7 @@ class HabilitacaoInteligenteCatalogoTest extends TestCase
             'produto_id' => $produto->id,
             'catalogo_produto_aplicacao_id' => $aplicacao->id,
             'veiculo_id' => $sky->id,
-            'origem' => 'sky',
+            'origem' => 'fornecedor_s',
         ]);
 
         $this->assertEqualsCanonicalizing(
@@ -187,7 +187,7 @@ class HabilitacaoInteligenteCatalogoTest extends TestCase
         ]));
 
         $fonte = CatalogoFonte::create([
-            'codigo' => 'sky',
+            'codigo' => 'fornecedor_s',
             'nome' => 'Sky',
             'tipo' => 'fornecedor',
             'ativo' => true,

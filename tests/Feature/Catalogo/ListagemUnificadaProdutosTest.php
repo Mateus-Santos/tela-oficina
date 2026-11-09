@@ -171,7 +171,7 @@ class ListagemUnificadaProdutosTest extends TestCase
     private function catalogo(string $chave, string $descricao, ?int $produtoId = null): CatalogoProduto
     {
         $fonte = CatalogoFonte::query()->firstOrCreate(
-            ['codigo' => 'sky'],
+            ['codigo' => 'fornecedor_s'],
             ['nome' => 'Sky Pecas', 'tipo' => 'fornecedor', 'ativo' => true]
         );
 

@@ -25,7 +25,7 @@ class SincronizarAplicacoesCatalogoTest extends TestCase
     {
         $fonte =
             CatalogoFonte::query()->create([
-                'codigo' => 'sky',
+                'codigo' => 'fornecedor_s',
                 'nome' => 'Sky Teste',
                 'tipo' => 'fornecedor',
                 'ativo' => true,
@@ -325,7 +325,7 @@ class SincronizarAplicacoesCatalogoTest extends TestCase
 
         $diagnostico =
             $servico->diagnosticar(
-                'sky'
+                'fornecedor_s'
             );
 
         $this->assertSame(
@@ -372,7 +372,7 @@ class SincronizarAplicacoesCatalogoTest extends TestCase
 
         $resultado =
             $servico->sincronizar(
-                'sky',
+                'fornecedor_s',
                 1
             );
 
@@ -424,7 +424,7 @@ class SincronizarAplicacoesCatalogoTest extends TestCase
                     $veiculoCatalogo->id,
 
                 'origem' =>
-                    'sky',
+                    'fornecedor_s',
 
                 'status_resolucao' =>
                     ProdutoAplicacao::
@@ -451,7 +451,7 @@ class SincronizarAplicacoesCatalogoTest extends TestCase
                     null,
 
                 'origem' =>
-                    'sky',
+                    'fornecedor_s',
 
                 'status_resolucao' =>
                     ProdutoAplicacao::
@@ -533,7 +533,7 @@ class SincronizarAplicacoesCatalogoTest extends TestCase
         );
 
         $servico->sincronizar(
-            'sky',
+            'fornecedor_s',
             1
         );
 

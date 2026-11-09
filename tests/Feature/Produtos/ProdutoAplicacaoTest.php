@@ -70,7 +70,7 @@ class ProdutoAplicacaoTest extends TestCase
                         'sky-aplicacao'
                     ),
 
-                'origem' => 'sky',
+                'origem' => 'fornecedor_s',
 
                 'status_resolucao' =>
                     ProdutoAplicacao::
@@ -125,7 +125,7 @@ class ProdutoAplicacaoTest extends TestCase
                 'veiculo_id' =>
                     $veiculoSky->id,
 
-                'origem' => 'sky',
+                'origem' => 'fornecedor_s',
             ]
         );
 
@@ -179,7 +179,7 @@ class ProdutoAplicacaoTest extends TestCase
                 'veiculo_id' =>
                     $veiculoSky->id,
 
-                'origem' => 'sky',
+                'origem' => 'fornecedor_s',
             ]
         );
 

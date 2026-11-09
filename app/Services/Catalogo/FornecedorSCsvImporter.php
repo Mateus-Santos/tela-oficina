@@ -49,7 +49,7 @@ class FornecedorSCsvImporter
         }
 
         $fonte = CatalogoFonte::query()->updateOrCreate(
-            ['codigo' => 'sky'],
+            ['codigo' => 'fornecedor_s'],
             [
                 'nome' => 'Fornecedor S',
                 'tipo' => 'fornecedor',
@@ -346,15 +346,15 @@ class FornecedorSCsvImporter
         $total = 0;
 
         foreach ($this->linhas($arquivo, obrigatorio: true) as $linha) {
-            $skyId = $this->texto($linha['sky_id'] ?? null);
+            $idExterno = $this->texto($linha['sky_id'] ?? null);
 
-            if ($skyId === '') {
+            if ($idExterno === '') {
                 continue;
             }
 
             $identidade = [
                 'catalogo_fonte_id' => $fonte->id,
-                'chave_externa' => $skyId,
+                'chave_externa' => $idExterno,
             ];
             $recebidos = [
                     'codigo_fabricante' => $this->nulo($linha['codigo_fabricante'] ?? null),
@@ -384,7 +384,7 @@ class FornecedorSCsvImporter
             }
             $registro->save();
 
-            $map[$skyId] = $registro->id;
+            $map[$idExterno] = $registro->id;
             $total++;
         }
 

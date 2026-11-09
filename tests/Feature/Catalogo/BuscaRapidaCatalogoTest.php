@@ -24,7 +24,7 @@ class BuscaRapidaCatalogoTest extends TestCase
     private function referencia(string $chave, string $descricao): CatalogoProduto
     {
         $fonte = CatalogoFonte::query()->firstOrCreate(
-            ['codigo' => 'sky'],
+            ['codigo' => 'fornecedor_s'],
             ['nome' => 'Sky', 'tipo' => 'fornecedor', 'ativo' => true]
         );
         $referencia = CatalogoProduto::query()->create([

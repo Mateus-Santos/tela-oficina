@@ -25,7 +25,7 @@ class EdicaoSeguraCatalogoTest extends TestCase
     private function referencia(string $chave = 'SKY-TESTE'): CatalogoProduto
     {
         $fonte = CatalogoFonte::query()->create([
-            'codigo' => 'sky', 'nome' => 'Fornecedor S', 'tipo' => 'fornecedor', 'ativo' => true,
+            'codigo' => 'fornecedor_s', 'nome' => 'Fornecedor S', 'tipo' => 'fornecedor', 'ativo' => true,
         ]);
         $ref = CatalogoProduto::query()->create([
             'catalogo_fonte_id' => $fonte->id,
