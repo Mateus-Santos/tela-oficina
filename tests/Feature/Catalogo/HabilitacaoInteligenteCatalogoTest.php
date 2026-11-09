@@ -30,7 +30,7 @@ class HabilitacaoInteligenteCatalogoTest extends TestCase
 
         $fonte = CatalogoFonte::create([
             'codigo' => 'fornecedor_s',
-            'nome' => 'Sky',
+            'nome' => 'Fornecedor S',
             'tipo' => 'fornecedor',
             'ativo' => true,
         ]);
@@ -54,11 +54,11 @@ class HabilitacaoInteligenteCatalogoTest extends TestCase
 
         $ref = CatalogoProduto::create([
             'catalogo_fonte_id' => $fonte->id,
-            'chave_externa' => 'SKY-GATES-1',
+            'chave_externa' => 'FNS-GATES-1',
             'marca_raw' => 'GATES',
             'codigo_fabricante' => '6PK1200SF',
             'codigo_barras' => '789475816107',
-            'descricao' => 'CORREIA SKY',
+            'descricao' => 'CORREIA FORNECEDOR S',
         ]);
 
         CatalogoProdutoEstado::create([
@@ -73,8 +73,8 @@ class HabilitacaoInteligenteCatalogoTest extends TestCase
             'nome' => 'VEICULO MANUAL',
             'montadora_id' => $montadora->id,
         ]);
-        $sky = Veiculo::create([
-            'nome' => 'VEICULO SKY',
+        $veiculoFonte = Veiculo::create([
+            'nome' => 'VEICULO FORNECEDOR S',
             'montadora_id' => $montadora->id,
         ]);
 
@@ -102,25 +102,25 @@ class HabilitacaoInteligenteCatalogoTest extends TestCase
         $catVeiculo = CatalogoVeiculo::create([
             'catalogo_fonte_id' => $fonte->id,
             'catalogo_montadora_id' => $catMontadora->id,
-            'veiculo_id' => $sky->id,
-            'chave_externa' => 'SKY-VEICULO-1',
-            'nome' => 'VEICULO SKY',
+            'veiculo_id' => $veiculoFonte->id,
+            'chave_externa' => 'FNS-VEICULO-1',
+            'nome' => 'VEICULO FORNECEDOR S',
         ]);
 
         $aplicacao = CatalogoProdutoAplicacao::create([
             'catalogo_produto_id' => $ref->id,
             'catalogo_montadora_id' => $catMontadora->id,
             'catalogo_veiculo_id' => $catVeiculo->id,
-            'chave_aplicacao' => hash('sha256', 'sky-1'),
+            'chave_aplicacao' => hash('sha256', 'fornecedor-s-1'),
             'montadora_raw' => 'FIAT',
-            'veiculo_raw' => 'VEICULO SKY',
+            'veiculo_raw' => 'VEICULO FORNECEDOR S',
             'motor' => '1.6',
             'ativa' => true,
         ]);
 
         $pendente = CatalogoProdutoAplicacao::create([
             'catalogo_produto_id' => $ref->id,
-            'chave_aplicacao' => hash('sha256', 'sky-pendente'),
+            'chave_aplicacao' => hash('sha256', 'fornecedor-s-pendente'),
             'montadora_raw' => 'FIAT',
             'veiculo_raw' => 'MODELO NÃO IDENTIFICADO',
             'ativa' => true,
@@ -152,12 +152,12 @@ class HabilitacaoInteligenteCatalogoTest extends TestCase
         $this->assertDatabaseHas('produto_aplicacoes', [
             'produto_id' => $produto->id,
             'catalogo_produto_aplicacao_id' => $aplicacao->id,
-            'veiculo_id' => $sky->id,
+            'veiculo_id' => $veiculoFonte->id,
             'origem' => 'fornecedor_s',
         ]);
 
         $this->assertEqualsCanonicalizing(
-            [$manual->id, $sky->id, $legado->id],
+            [$manual->id, $veiculoFonte->id, $legado->id],
             $produto->veiculos()->pluck('veiculos.id')->all()
         );
 
@@ -188,7 +188,7 @@ class HabilitacaoInteligenteCatalogoTest extends TestCase
 
         $fonte = CatalogoFonte::create([
             'codigo' => 'fornecedor_s',
-            'nome' => 'Sky',
+            'nome' => 'Fornecedor S',
             'tipo' => 'fornecedor',
             'ativo' => true,
         ]);
@@ -208,7 +208,7 @@ class HabilitacaoInteligenteCatalogoTest extends TestCase
 
         $ref = CatalogoProduto::create([
             'catalogo_fonte_id' => $fonte->id,
-            'chave_externa' => 'SKY-CONFLITO',
+            'chave_externa' => 'FNS-CONFLITO',
             'marca_raw' => 'GATES',
             'codigo_fabricante' => '6PK1200SF',
             'codigo_barras' => '789475816107',

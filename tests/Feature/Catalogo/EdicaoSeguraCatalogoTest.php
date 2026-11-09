@@ -22,7 +22,7 @@ class EdicaoSeguraCatalogoTest extends TestCase
         $this->actingAs(User::factory()->create(['perfil' => User::PERFIL_ADMIN, 'status' => 1]));
     }
 
-    private function referencia(string $chave = 'SKY-TESTE'): CatalogoProduto
+    private function referencia(string $chave = 'FNS-TESTE'): CatalogoProduto
     {
         $fonte = CatalogoFonte::query()->create([
             'codigo' => 'fornecedor_s', 'nome' => 'Fornecedor S', 'tipo' => 'fornecedor', 'ativo' => true,
@@ -77,9 +77,9 @@ class EdicaoSeguraCatalogoTest extends TestCase
     }
 
 
-    public function test_produto_sky_sem_aplicacoes_pode_ser_editado_sem_veiculos(): void
+    public function test_produto_fornecedor_s_sem_aplicacoes_pode_ser_editado_sem_veiculos(): void
     {
-        $referencia = $this->referencia('SKY-SEM-APLICACOES');
+        $referencia = $this->referencia('FNS-SEM-APLICACOES');
 
         $this->post(route('produtos.catalogo.habilitar', $referencia))
             ->assertRedirect();
@@ -121,7 +121,7 @@ class EdicaoSeguraCatalogoTest extends TestCase
         // Verifica que uma edição sem payload veicular também
         // preserva registros manuais e vínculos legados existentes.
         $montadora = \App\Models\Montadora::create([
-            'nome' => 'MONTADORA TESTE SEM APLICACOES SKY',
+            'nome' => 'MONTADORA TESTE SEM APLICACOES FORNECEDOR S',
         ]);
 
         $manual = \App\Models\Veiculo::create([
@@ -227,7 +227,7 @@ class EdicaoSeguraCatalogoTest extends TestCase
         $ref = $this->referencia();
         $outra = CatalogoProduto::query()->create([
             'catalogo_fonte_id' => $ref->catalogo_fonte_id,
-            'chave_externa' => 'SKY-2', 'descricao' => 'PECA SIMILAR',
+            'chave_externa' => 'FNS-2', 'descricao' => 'PECA SIMILAR',
             'marca_raw' => 'MARCA B',
         ]);
         DB::table('catalogo_produto_similares')->insert([

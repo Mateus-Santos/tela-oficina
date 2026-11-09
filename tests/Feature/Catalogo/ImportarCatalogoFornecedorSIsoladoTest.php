@@ -26,7 +26,7 @@ class ImportarCatalogoFornecedorSIsoladoTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->diretorio = sys_get_temp_dir().'/sky-test-'.bin2hex(random_bytes(8));
+        $this->diretorio = sys_get_temp_dir().'/fornecedor-s-test-'.bin2hex(random_bytes(8));
         File::ensureDirectoryExists($this->diretorio);
         $this->csv('montadoras.csv', ['id', 'sky_id', 'nome'], [
             ['1', 'M-1', 'MONTADORA TESTE'],

@@ -26,7 +26,7 @@ class SincronizarAplicacoesCatalogoTest extends TestCase
         $fonte =
             CatalogoFonte::query()->create([
                 'codigo' => 'fornecedor_s',
-                'nome' => 'Sky Teste',
+                'nome' => 'Fornecedor S Teste',
                 'tipo' => 'fornecedor',
                 'ativo' => true,
             ]);

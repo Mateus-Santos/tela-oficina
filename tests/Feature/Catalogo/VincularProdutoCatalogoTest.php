@@ -319,7 +319,7 @@ class VincularProdutoCatalogoTest extends TestCase
         );
     }
 
-    public function test_sky_sem_digito_verificador_vincula_por_marca_e_referencia(): void
+    public function test_fornecedor_s_sem_digito_verificador_vincula_por_marca_e_referencia(): void
     {
         $produto = $this->criarProduto(
             'GATES', '6PK1200SF', '7894758161075'

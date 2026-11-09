@@ -25,7 +25,7 @@ class BuscaRapidaCatalogoTest extends TestCase
     {
         $fonte = CatalogoFonte::query()->firstOrCreate(
             ['codigo' => 'fornecedor_s'],
-            ['nome' => 'Sky', 'tipo' => 'fornecedor', 'ativo' => true]
+            ['nome' => 'Fornecedor S', 'tipo' => 'fornecedor', 'ativo' => true]
         );
         $referencia = CatalogoProduto::query()->create([
             'catalogo_fonte_id' => $fonte->id,

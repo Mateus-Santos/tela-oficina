@@ -29,14 +29,14 @@ class ListagemUnificadaProdutosTest extends TestCase
     public function test_lista_referencias_sem_duplicar_produtos_operacionais_vinculados(): void
     {
         $produto = $this->produtoOperacional();
-        $this->catalogo('SKY-VINCULADO', 'ITEM VINCULADO SKY', $produto->id);
-        $externo = $this->catalogo('SKY-SOLTO', 'ITEM EXCLUSIVO CATALOGO');
+        $this->catalogo('FNS-VINCULADO', 'ITEM VINCULADO FORNECEDOR S', $produto->id);
+        $externo = $this->catalogo('FNS-SOLTO', 'ITEM EXCLUSIVO CATALOGO');
 
         $this->get(route('produtos.index'))
             ->assertOk()
             ->assertSee('PRODUTO OPERACIONAL TESTE')
             ->assertSee('ITEM EXCLUSIVO CATALOGO')
-            ->assertDontSee('ITEM VINCULADO SKY');
+            ->assertDontSee('ITEM VINCULADO FORNECEDOR S');
 
         $this->assertSame(1, Produto::count());
         $this->assertSame(2, CatalogoProduto::count());
@@ -48,7 +48,7 @@ class ListagemUnificadaProdutosTest extends TestCase
     public function test_busca_de_catalogo_e_filtro_de_estoque_respeitam_fronteira(): void
     {
         $this->produtoOperacional();
-        $this->catalogo('SKY-123', 'SONDA LAMBDA TECNICA');
+        $this->catalogo('FNS-123', 'SONDA LAMBDA TECNICA');
 
         $this->get(route('produtos.index', ['nome' => 'SONDA LAMBDA']))
             ->assertOk()->assertSee('SONDA LAMBDA TECNICA')
@@ -61,7 +61,7 @@ class ListagemUnificadaProdutosTest extends TestCase
 
     public function test_detalhes_do_catalogo_mostram_preco_arredondado_sem_acao_de_estoque(): void
     {
-        $externo = $this->catalogo('SKY-SOLTO', 'FILTRO CABINE ESPECIAL');
+        $externo = $this->catalogo('FNS-SOLTO', 'FILTRO CABINE ESPECIAL');
         CatalogoProdutoEstado::query()->create([
             'catalogo_produto_id' => $externo->id,
             'preco_venda_observado' => '12.46',
@@ -91,25 +91,25 @@ class ListagemUnificadaProdutosTest extends TestCase
     public function test_referencia_vinculada_abre_produto_operacional(): void
     {
         $produto = $this->produtoOperacional();
-        $externo = $this->catalogo('SKY-VINCULADO', 'REFERENCIA VINCULADA', $produto->id);
+        $externo = $this->catalogo('FNS-VINCULADO', 'REFERENCIA VINCULADA', $produto->id);
 
         $this->get(route('produtos.catalogo.show', $externo))
             ->assertRedirect(route('produtos.show', $produto));
     }
 
 
-    public function test_listagem_separa_estoque_sky_do_estoque_da_oficina(): void
+    public function test_listagem_separa_estoque_fornecedor_s_do_estoque_da_oficina(): void
     {
         $produto = $this->produtoOperacional();
 
         $ref = $this->catalogo(
-            'SKY-ESTOQUE-VINCULADO',
+            'FNS-ESTOQUE-VINCULADO',
             'CATALOGO ESTOQUE VINCULADO',
             $produto->id
         );
 
         $solto = $this->catalogo(
-            'SKY-ESTOQUE-SOLTO',
+            'FNS-ESTOQUE-SOLTO',
             'CATALOGO ESTOQUE SOLTO'
         );
 
@@ -172,7 +172,7 @@ class ListagemUnificadaProdutosTest extends TestCase
     {
         $fonte = CatalogoFonte::query()->firstOrCreate(
             ['codigo' => 'fornecedor_s'],
-            ['nome' => 'Sky Pecas', 'tipo' => 'fornecedor', 'ativo' => true]
+            ['nome' => 'Fornecedor S', 'tipo' => 'fornecedor', 'ativo' => true]
         );
 
         return CatalogoProduto::query()->create([
