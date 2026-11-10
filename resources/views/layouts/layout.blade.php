@@ -84,6 +84,7 @@
                                     ['Produtos', 'produtos.index', 'bi-box-seam'],
                                     ['Estoque', 'estoque.index', 'bi-boxes'],
                                     ['Movimentações de Estoque', 'estoque.movimentacoes.index', 'bi-arrow-left-right'],
+                                    ['Integração Forge', 'admin.forge.index', 'bi-database-check'],
                                 ]],
                                 ['Financeiro', 'bi-cash-stack', [
                                     ['Contas a Receber', 'contas-receber.index', 'bi-arrow-down-circle'],

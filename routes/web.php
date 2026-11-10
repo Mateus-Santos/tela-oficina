@@ -155,6 +155,12 @@ Route::middleware([
     Route::middleware([
         'admin',
     ])->group(function () {
+        // Integração Forge: listagem administrativa somente leitura.
+        Route::get(
+            '/admin/integracoes/forge',
+            \App\Http\Controllers\Admin\PainelForgeController::class
+        )->name('admin.forge.index');
+
         // Estoque
 
         Route::get(
