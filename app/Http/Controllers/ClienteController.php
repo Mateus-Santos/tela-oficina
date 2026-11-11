@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Clientes\CriarClienteCompleto;
 use App\Http\Requests\Clientes\StoreClienteRequest;
 use App\Models\Cliente;
 use App\Models\Pessoa;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class ClienteController extends Controller
@@ -143,78 +142,12 @@ class ClienteController extends Controller
         );
     }
 
-    public function store(StoreClienteRequest $request)
+    public function store(StoreClienteRequest $request, CriarClienteCompleto $criarCliente)
     {
         if ($request->filled('nome')) {
-            $cpfLimpo = $request->input('cpf');
-            $rgLimpo = $request->input('rg');
-            $telefone1Limpo = $request->input('telefone_1');
-            $telefone2Limpo = $request->input('telefone_2');
-
-            $senhaGerada = null;
-
-            DB::transaction(
-                function () use (
-                    $request,
-                    $cpfLimpo,
-                    $rgLimpo,
-                    $telefone1Limpo,
-                    $telefone2Limpo,
-                    &$senhaGerada
-                ) {
-                    $pessoa =
-                        Pessoa::create([
-                            'nome' => $request->input(
-                                'nome'
-                            ),
-
-                            'cpf' => $cpfLimpo,
-
-                            'rg' => $rgLimpo,
-
-                            'data_nascimento' => $request->input(
-                                'data_nascimento'
-                            ),
-
-                            'telefone_1' => $telefone1Limpo,
-
-                            'telefone_2' => $telefone2Limpo,
-                        ]);
-
-                    Cliente::create([
-                        'pessoa_id' => $pessoa->id,
-
-                        'pontos' => $request->input(
-                            'pontos'
-                        ) ?? 0,
-                    ]);
-
-                    if (
-                        $request->boolean(
-                            'criar_usuario'
-                        )
-                        && $request->filled(
-                            'email'
-                        )
-                    ) {
-                        $senhaGerada =
-                            Str::random(8);
-
-                        User::create([
-                            'email' => $request->input(
-                                'email'
-                            ),
-
-                            'password' => Hash::make(
-                                $senhaGerada
-                            ),
-
-                            'pessoa_id' => $pessoa->id,
-
-                            'perfil' => User::PERFIL_CLIENTE,
-                        ]);
-                    }
-                }
+            $senhaGerada = $criarCliente->execute(
+                $request->validated(),
+                $request->boolean('criar_usuario')
             );
 
             if ($senhaGerada) {

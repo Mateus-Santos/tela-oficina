@@ -6,6 +6,7 @@ use App\Models\Cliente;
 use App\Models\Pessoa;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class ClienteTest extends TestCase
@@ -395,6 +396,47 @@ class ClienteTest extends TestCase
 
         $this->assertDatabaseMissing('pessoas', [
             'nome' => 'Cliente Entrada Invalida',
+        ]);
+    }
+
+
+    public function test_cadastro_com_usuario_preserva_senha_temporaria(): void
+    {
+        $resposta = $this->actingAs($this->admin)
+            ->post(route('clientes.store'), [
+                'nome' => 'Cliente com Senha',
+                'email' => 'senha-cliente@example.com',
+                'criar_usuario' => 1,
+            ]);
+
+        $resposta->assertRedirect(route('clientes.index'))
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas('senha_temporaria')
+            ->assertSessionHas('email_usuario', 'senha-cliente@example.com');
+
+        $senha = session('senha_temporaria');
+        $usuario = User::where('email', 'senha-cliente@example.com')->firstOrFail();
+
+        $this->assertIsString($senha);
+        $this->assertTrue(Hash::check($senha, $usuario->password));
+        $this->assertSame(User::PERFIL_CLIENTE, $usuario->perfil);
+    }
+
+    public function test_email_sem_criar_usuario_nao_gera_acesso(): void
+    {
+        $this->actingAs($this->admin)
+            ->post(route('clientes.store'), [
+                'nome' => 'Cliente Apenas Contato',
+                'email' => 'contato-cliente@example.com',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('pessoas', [
+            'nome' => 'Cliente Apenas Contato',
+        ]);
+
+        $this->assertDatabaseMissing('users', [
+            'email' => 'contato-cliente@example.com',
         ]);
     }
 }
