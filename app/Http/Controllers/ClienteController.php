@@ -4,12 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Actions\Clientes\CriarClienteCompleto;
 use App\Http\Requests\Clientes\StoreClienteRequest;
+use App\Http\Requests\Clientes\UpdateClienteRequest;
 use App\Models\Cliente;
 use App\Models\Pessoa;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 
 class ClienteController extends Controller
 {
@@ -246,7 +246,7 @@ class ClienteController extends Controller
     }
 
     public function update(
-        Request $request,
+        UpdateClienteRequest $request,
         string $id
     ) {
         $usuarioLogado =
@@ -283,132 +283,10 @@ class ClienteController extends Controller
                 $cliente->pessoa_id
             )->first();
 
-        $cpfLimpo =
-            $this->limparMascara(
-                $request->input('cpf')
-            );
-
-        $rgLimpo =
-            $this->limparMascara(
-                $request->input('rg')
-            );
-
-        $telefone1Limpo =
-            $this->limparMascara(
-                $request->input(
-                    'telefone_1'
-                )
-            );
-
-        $telefone2Limpo =
-            $this->limparMascara(
-                $request->input(
-                    'telefone_2'
-                )
-            );
-
-        $request->merge([
-            'cpf' => $cpfLimpo,
-
-            'rg' => $rgLimpo,
-
-            'telefone_1' => $telefone1Limpo,
-
-            'telefone_2' => $telefone2Limpo,
-        ]);
-
-        $regras = [
-            'nome' => [
-                'required',
-                'string',
-                'max:255',
-            ],
-
-            'cpf' => [
-                'nullable',
-                'string',
-                'size:11',
-
-                Rule::unique(
-                    'pessoas',
-                    'cpf'
-                )->ignore(
-                    $cliente->pessoa_id
-                ),
-            ],
-
-            'rg' => [
-                'nullable',
-                'string',
-                'max:14',
-            ],
-
-            'data_nascimento' => [
-                'nullable',
-                'date',
-            ],
-
-            'telefone_1' => [
-                'nullable',
-                'string',
-                'min:10',
-                'max:11',
-            ],
-
-            'telefone_2' => [
-                'nullable',
-                'string',
-                'min:10',
-                'max:11',
-            ],
-
-            'pontos' => [
-                'nullable',
-                'integer',
-                'min:0',
-            ],
-        ];
-
-        if ($usuario) {
-            $regras['email'] = [
-                'required',
-                'email',
-
-                Rule::unique(
-                    'users',
-                    'email'
-                )->ignore(
-                    $usuario->id
-                ),
-            ];
-        }
-
-        $request->validate(
-            $regras,
-            [
-                'nome.required' => 'O campo nome é obrigatório.',
-
-                'email.required' => 'O e-mail é obrigatório para usuários de acesso.',
-
-                'email.email' => 'Informe um endereço de e-mail válido.',
-
-                'email.unique' => 'Este e-mail já está em uso.',
-
-                'cpf.unique' => 'Este CPF já pertence a outra pessoa.',
-
-                'cpf.size' => 'O CPF deve possuir exatamente 11 dígitos.',
-
-                'rg.max' => 'O campo RG não pode ter mais que 14 dígitos.',
-
-                'telefone_1.min' => 'O Telefone Principal deve ter pelo menos 10 dígitos.',
-
-                'telefone_1.max' => 'O Telefone Principal não pode ter mais que 11 dígitos.',
-
-                'telefone_2.min' => 'O Telefone Secundário deve ter pelo menos 10 dígitos.',
-
-                'telefone_2.max' => 'O Telefone Secundário não pode ter mais que 11 dígitos.',
-            ]
-        );
+        $cpfLimpo = $request->input('cpf');
+        $rgLimpo = $request->input('rg');
+        $telefone1Limpo = $request->input('telefone_1');
+        $telefone2Limpo = $request->input('telefone_2');
 
         DB::transaction(
             function () use (

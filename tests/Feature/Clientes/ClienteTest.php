@@ -439,4 +439,65 @@ class ClienteTest extends TestCase
             'email' => 'contato-cliente@example.com',
         ]);
     }
+
+
+    public function test_admin_atualiza_cliente_com_documentos_mascarados(): void
+    {
+        $cliente = $this->criarCliente();
+
+        $this->actingAs($this->admin)
+            ->put(route('clientes.update', $cliente->id), [
+                'nome' => 'Cliente Normalizado',
+                'cpf' => '123.456.789-01',
+                'rg' => '12.345.678',
+                'telefone_1' => '(75) 99999-8888',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('pessoas', [
+            'id' => $cliente->pessoa_id,
+            'nome' => 'Cliente Normalizado',
+            'cpf' => '12345678901',
+            'rg' => '12345678',
+            'telefone_1' => '75999998888',
+        ]);
+    }
+
+    public function test_update_rejeita_documentos_em_arrays(): void
+    {
+        $cliente = $this->criarCliente();
+
+        $this->actingAs($this->admin)
+            ->put(route('clientes.update', $cliente->id), [
+                'nome' => 'Alteracao Invalida',
+                'cpf' => ['12345678901'],
+                'telefone_1' => ['75999998888'],
+            ])
+            ->assertSessionHasErrors(['cpf', 'telefone_1']);
+
+        $this->assertSame(
+            'Cliente Teste',
+            $cliente->pessoa->fresh()->nome
+        );
+    }
+
+    public function test_cliente_nao_altera_pontos_pela_rota_administrativa(): void
+    {
+        $cliente = $this->criarCliente([], ['pontos' => 10]);
+
+        $usuario = User::factory()->create([
+            'pessoa_id' => $cliente->pessoa_id,
+            'perfil' => User::PERFIL_CLIENTE,
+            'status' => true,
+        ]);
+
+        $this->actingAs($usuario)
+            ->put(route('clientes.update', $cliente->id), [
+                'nome' => 'Tentativa de Alteracao',
+                'pontos' => 999999,
+            ])
+            ->assertForbidden();
+
+        $this->assertEquals(10, $cliente->fresh()->pontos);
+    }
 }
