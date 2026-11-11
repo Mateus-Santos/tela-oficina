@@ -78,6 +78,7 @@
                                     ['Veículos dos Clientes', 'veiculosclientes.index', 'bi-car-front'],
                                     ['Ordens de Serviço', 'ordemservicos.index', 'bi-wrench'],
                                     ['Notas', 'notasitem.index', 'bi-receipt'],
+                                    ['Orçamentos de peças', 'marketing.leads.index', 'bi-chat-square-text'],
                                 ]],
                                 ['Operações', 'bi-boxes', [
                                     ['Compras', 'compras.index', 'bi-cart-check'],
@@ -103,14 +104,25 @@
                                     ['Colaboradores', 'colaboradores.index', 'bi-person-badge'],
                                 ]],
                             ];
+                            if (\Illuminate\Support\Facades\Schema::hasTable('marketing_cliente_acessos')) {
+                                $gruposMenu[0][2][] = ['Acessos do portal', 'marketing.clientes-acessos.index', 'bi-person-check'];
+                            }
                         } elseif (auth()->user()->isCliente()) {
-                            $gruposMenu = [['Atendimento', 'bi-tools', [
+                            $itensCliente = [
                                 ['Produtos disponíveis', 'cliente.produtos.index', 'bi-box-seam'],
                                 ['Minhas notas', 'cliente.notas.index', 'bi-receipt'],
                                 ['Minhas OS', 'cliente.os.index', 'bi-wrench'],
                                 ['Meus veículos', 'cliente.veiculos.index', 'bi-car-front'],
                                 ['Meus endereços', 'cliente.enderecos.index', 'bi-geo-alt'],
-                            ]]];
+                            ];
+                            $liberacaoMarketing = app(\App\Services\Marketing\LiberacaoPortalCliente::class);
+                            if ($liberacaoMarketing->permitido(auth()->user(), 'portal_inicio')) {
+                                array_unshift($itensCliente, ['Minha área', 'cliente.area.index', 'bi-grid']);
+                            }
+                            if ($liberacaoMarketing->permitido(auth()->user(), 'solicitacoes')) {
+                                $itensCliente[] = ['Minhas solicitações de orçamento', 'cliente.solicitacoes.index', 'bi-chat-square-text'];
+                            }
+                            $gruposMenu = [['Atendimento', 'bi-tools', $itensCliente]];
                         }
                     @endphp
                     @foreach($gruposMenu as $grupo)
