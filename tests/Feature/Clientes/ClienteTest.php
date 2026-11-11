@@ -2,8 +2,10 @@
 
 namespace Tests\Feature\Clientes;
 
+use App\Actions\OrdemServico\CriarOrdemServico;
 use App\Models\Cliente;
 use App\Models\Pessoa;
+use App\Models\SetorServico;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -681,6 +683,13 @@ class ClienteTest extends TestCase
             'id' => $notaId,
             'cliente_id' => $cliente->id,
         ]);
+
+        $this->actingAs($this->admin)
+            ->get(route('clientes.index'))
+            ->assertOk()
+            ->assertSee(
+                'Este cliente possui vínculos cadastrados e não pode ser excluído.'
+            );
     }
 
     public function test_admin_nao_exclui_cliente_com_conta_receber(): void
@@ -733,6 +742,205 @@ class ClienteTest extends TestCase
         $this->assertDatabaseHas('users', [
             'id' => $usuario->id,
             'pessoa_id' => $cliente->pessoa_id,
+        ]);
+    }
+
+
+    private function criarVeiculoParaProtecaoExclusao(
+        Cliente $cliente,
+        string $placa
+    ): int {
+        $agora = now();
+
+        $montadoraId = DB::table('montadoras')
+            ->insertGetId([
+                'nome' => 'Montadora Teste Exclusao',
+                'created_at' => $agora,
+                'updated_at' => $agora,
+            ]);
+
+        $veiculoId = DB::table('veiculos')
+            ->insertGetId([
+                'nome' => 'Modelo Teste Exclusao',
+                'montadora_id' => $montadoraId,
+                'created_at' => $agora,
+                'updated_at' => $agora,
+            ]);
+
+        $veiculoClienteId = DB::table('veiculos_clientes')
+            ->insertGetId([
+                'cliente_id' => $cliente->id,
+                'veiculo_id' => $veiculoId,
+                'placa' => $placa,
+                'ano' => 2024,
+                'cor' => 'Branco',
+                'created_at' => $agora,
+                'updated_at' => $agora,
+            ]);
+
+        DB::table('cliente_veiculo_cliente')->insert([
+            'cliente_id' => $cliente->id,
+            'veiculo_cliente_id' => $veiculoClienteId,
+            'created_at' => $agora,
+            'updated_at' => $agora,
+        ]);
+
+        return $veiculoClienteId;
+    }
+
+    public function test_admin_nao_exclui_cliente_com_veiculo(): void
+    {
+        $cliente = $this->criarCliente();
+
+        $veiculoId = $this->criarVeiculoParaProtecaoExclusao(
+            $cliente,
+            'EXC1A23'
+        );
+
+        $this->actingAs($this->admin)
+            ->delete(route('clientes.destroy', $cliente->id))
+            ->assertRedirect(route('clientes.index'))
+            ->assertSessionHas('error');
+
+        $this->assertDatabaseHas('clientes', [
+            'id' => $cliente->id,
+        ]);
+
+        $this->assertDatabaseHas('veiculos_clientes', [
+            'id' => $veiculoId,
+            'cliente_id' => $cliente->id,
+        ]);
+
+        $this->assertDatabaseHas('cliente_veiculo_cliente', [
+            'cliente_id' => $cliente->id,
+            'veiculo_cliente_id' => $veiculoId,
+        ]);
+    }
+
+    public function test_admin_nao_exclui_cliente_com_veiculo_compartilhado(): void
+    {
+        $proprietario = $this->criarCliente([
+            'nome' => 'Proprietario Teste',
+        ]);
+
+        $compartilhado = $this->criarCliente([
+            'nome' => 'Cliente Compartilhado',
+        ]);
+
+        $veiculoId = $this->criarVeiculoParaProtecaoExclusao(
+            $proprietario,
+            'EXC2B34'
+        );
+
+        DB::table('cliente_veiculo_cliente')->insert([
+            'cliente_id' => $compartilhado->id,
+            'veiculo_cliente_id' => $veiculoId,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->assertDatabaseMissing('veiculos_clientes', [
+            'cliente_id' => $compartilhado->id,
+        ]);
+
+        $this->actingAs($this->admin)
+            ->delete(route('clientes.destroy', $compartilhado->id))
+            ->assertRedirect(route('clientes.index'))
+            ->assertSessionHas('error');
+
+        $this->assertDatabaseHas('clientes', [
+            'id' => $compartilhado->id,
+        ]);
+
+        $this->assertDatabaseHas('cliente_veiculo_cliente', [
+            'cliente_id' => $compartilhado->id,
+            'veiculo_cliente_id' => $veiculoId,
+        ]);
+
+        $this->assertDatabaseHas('veiculos_clientes', [
+            'id' => $veiculoId,
+            'cliente_id' => $proprietario->id,
+        ]);
+    }
+
+    public function test_admin_nao_exclui_cliente_com_os_historica(): void
+    {
+        $clienteHistorico = $this->criarCliente([
+            'nome' => 'Cliente Historico',
+        ]);
+
+        $novoResponsavel = $this->criarCliente([
+            'nome' => 'Novo Responsavel',
+        ]);
+
+        $veiculoId = $this->criarVeiculoParaProtecaoExclusao(
+            $clienteHistorico,
+            'EXC3C45'
+        );
+
+        $setor = SetorServico::create([
+            'setor' => 'Mecânica',
+            'nivel' => 1,
+        ]);
+
+        $ordem = app(CriarOrdemServico::class)->execute([
+            'cliente_id' => $clienteHistorico->id,
+            'veiculo_cliente_id' => $veiculoId,
+            'setor_servico_id' => $setor->id,
+            'descricao' => 'Servico historico de teste',
+            'valor' => '150,00',
+        ]);
+
+        // Simula a troca posterior de responsavel pelo veiculo.
+        // A OS permanece associada ao cliente historico.
+        DB::table('cliente_veiculo_cliente')
+            ->where('cliente_id', $clienteHistorico->id)
+            ->where('veiculo_cliente_id', $veiculoId)
+            ->delete();
+
+        DB::table('veiculos_clientes')
+            ->where('id', $veiculoId)
+            ->update([
+                'cliente_id' => $novoResponsavel->id,
+            ]);
+
+        DB::table('cliente_veiculo_cliente')->insert([
+            'cliente_id' => $novoResponsavel->id,
+            'veiculo_cliente_id' => $veiculoId,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->assertDatabaseMissing('veiculos_clientes', [
+            'cliente_id' => $clienteHistorico->id,
+        ]);
+
+        $this->assertDatabaseMissing('cliente_veiculo_cliente', [
+            'cliente_id' => $clienteHistorico->id,
+        ]);
+
+        $this->assertDatabaseHas('ordem_servicos', [
+            'id' => $ordem->id,
+            'cliente_id' => $clienteHistorico->id,
+        ]);
+
+        $this->actingAs($this->admin)
+            ->delete(route('clientes.destroy', $clienteHistorico->id))
+            ->assertRedirect(route('clientes.index'))
+            ->assertSessionHas('error');
+
+        $this->assertDatabaseHas('clientes', [
+            'id' => $clienteHistorico->id,
+        ]);
+
+        $this->assertDatabaseHas('ordem_servicos', [
+            'id' => $ordem->id,
+            'cliente_id' => $clienteHistorico->id,
+        ]);
+
+        $this->assertDatabaseHas('veiculos_clientes', [
+            'id' => $veiculoId,
+            'cliente_id' => $novoResponsavel->id,
         ]);
     }
 }
