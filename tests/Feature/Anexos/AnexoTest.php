@@ -14,6 +14,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 use Tests\TestCase;
 
 class AnexoTest extends TestCase
@@ -507,5 +508,63 @@ class AnexoTest extends TestCase
                 'cancelada'
             )
         );
+    }
+
+
+    public function test_preview_com_nome_entre_aspas(): void
+    {
+        Storage::fake('private');
+
+        $caminho = 'anexos/documento-seguro.pdf';
+        Storage::disk('private')->put($caminho, '%PDF-1.4');
+
+        $anexo = Anexo::create([
+            'arquivo' => $caminho,
+            'nome_original' => 'comprovante "especial".pdf',
+            'mime_type' => 'application/pdf',
+            'tamanho' => 8,
+        ]);
+
+        $resposta = $this->actingAs($this->admin())
+            ->get(route('anexos.preview', $anexo));
+
+        $resposta->assertOk();
+
+        $this->assertSame(
+            HeaderUtils::makeDisposition(
+                HeaderUtils::DISPOSITION_INLINE,
+                'comprovante "especial".pdf'
+            ),
+            $resposta->headers->get('Content-Disposition')
+        );
+
+        $resposta->assertHeader(
+            'X-Content-Type-Options',
+            'nosniff'
+        );
+    }
+
+    public function test_cliente_nao_pode_baixar_anexo_privado(): void
+    {
+        Storage::fake('private');
+
+        $caminho = 'anexos/documento-protegido.pdf';
+        Storage::disk('private')->put($caminho, '%PDF-1.4');
+
+        $anexo = Anexo::create([
+            'arquivo' => $caminho,
+            'nome_original' => 'documento.pdf',
+            'mime_type' => 'application/pdf',
+            'tamanho' => 8,
+        ]);
+
+        $cliente = User::factory()->create([
+            'perfil' => User::PERFIL_CLIENTE,
+            'status' => true,
+        ]);
+
+        $this->actingAs($cliente)
+            ->get(route('anexos.download', $anexo))
+            ->assertForbidden();
     }
 }

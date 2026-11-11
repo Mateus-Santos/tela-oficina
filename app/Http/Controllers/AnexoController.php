@@ -190,10 +190,6 @@ class AnexoController extends Controller
                 [
                     'Content-Type' => $anexo->mime_type,
 
-                    'Content-Disposition' => 'inline; filename="'
-                        . $anexo->nome_original
-                        . '"',
-
                     'X-Content-Type-Options' => 'nosniff',
 
                     'Cache-Control' => 'private, no-store, no-cache, must-revalidate',
