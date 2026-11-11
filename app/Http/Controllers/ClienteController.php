@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Clientes\StoreClienteRequest;
 use App\Models\Cliente;
 use App\Models\Pessoa;
 use App\Models\User;
@@ -142,120 +143,13 @@ class ClienteController extends Controller
         );
     }
 
-    public function store(Request $request)
+    public function store(StoreClienteRequest $request)
     {
         if ($request->filled('nome')) {
-            $cpfLimpo =
-                $this->limparMascara(
-                    $request->input('cpf')
-                );
-
-            $rgLimpo =
-                $this->limparMascara(
-                    $request->input('rg')
-                );
-
-            $telefone1Limpo =
-                $this->limparMascara(
-                    $request->input(
-                        'telefone_1'
-                    )
-                );
-
-            $telefone2Limpo =
-                $this->limparMascara(
-                    $request->input(
-                        'telefone_2'
-                    )
-                );
-
-            $request->merge([
-                'cpf' => $cpfLimpo,
-
-                'rg' => $rgLimpo,
-
-                'telefone_1' => $telefone1Limpo,
-
-                'telefone_2' => $telefone2Limpo,
-            ]);
-
-            $request->validate(
-                [
-                    'nome' => [
-                        'required',
-                        'string',
-                        'max:255',
-                    ],
-
-                    'email' => [
-                        'nullable',
-                        'required_if:criar_usuario,1',
-                        'email',
-                        'unique:users,email',
-                    ],
-
-                    'cpf' => [
-                        'nullable',
-                        'string',
-                        'size:11',
-                        'unique:pessoas,cpf',
-                    ],
-
-                    'rg' => [
-                        'nullable',
-                        'string',
-                        'max:14',
-                    ],
-
-                    'data_nascimento' => [
-                        'nullable',
-                        'date',
-                    ],
-
-                    'telefone_1' => [
-                        'nullable',
-                        'string',
-                        'min:10',
-                        'max:11',
-                    ],
-
-                    'telefone_2' => [
-                        'nullable',
-                        'string',
-                        'min:10',
-                        'max:11',
-                    ],
-
-                    'pontos' => [
-                        'nullable',
-                        'integer',
-                        'min:0',
-                    ],
-                ],
-                [
-                    'nome.required' => 'O campo nome é obrigatório.',
-
-                    'email.required_if' => 'O e-mail é obrigatório para criar um usuário de acesso.',
-
-                    'email.email' => 'Informe um endereço de e-mail válido.',
-
-                    'email.unique' => 'Este e-mail já está em uso.',
-
-                    'cpf.unique' => 'Este CPF já está cadastrado.',
-
-                    'cpf.size' => 'O CPF deve possuir exatamente 11 dígitos.',
-
-                    'rg.max' => 'O campo RG não pode ter mais que 14 dígitos.',
-
-                    'telefone_1.min' => 'O Telefone Principal deve ter pelo menos 10 dígitos (DDD + número).',
-
-                    'telefone_1.max' => 'O Telefone Principal não pode ter mais que 11 dígitos.',
-
-                    'telefone_2.min' => 'O Telefone Secundário deve ter pelo menos 10 dígitos (DDD + número).',
-
-                    'telefone_2.max' => 'O Telefone Secundário não pode ter mais que 11 dígitos.',
-                ]
-            );
+            $cpfLimpo = $request->input('cpf');
+            $rgLimpo = $request->input('rg');
+            $telefone1Limpo = $request->input('telefone_1');
+            $telefone2Limpo = $request->input('telefone_2');
 
             $senhaGerada = null;
 
@@ -339,27 +233,6 @@ class ClienteController extends Controller
                     ]);
             }
         } else {
-            $request->validate(
-                [
-                    'pessoa_id' => [
-                        'required',
-                        'exists:pessoas,id',
-                        'unique:clientes,pessoa_id',
-                    ],
-
-                    'pontos' => [
-                        'nullable',
-                        'integer',
-                        'min:0',
-                    ],
-                ],
-                [
-                    'pessoa_id.required' => 'Selecione uma pessoa da lista ou preencha os dados de uma nova pessoa.',
-
-                    'pessoa_id.unique' => 'Esta pessoa já é um cliente cadastrado.',
-                ]
-            );
-
             Cliente::create([
                 'pessoa_id' => $request->input(
                     'pessoa_id'

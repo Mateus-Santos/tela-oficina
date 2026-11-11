@@ -354,4 +354,47 @@ class ClienteTest extends TestCase
             ]
         );
     }
+
+
+    public function test_cria_cliente_com_documentos_mascarados(): void
+    {
+        $this->actingAs($this->admin)
+            ->post(route('clientes.store'), [
+                'nome' => 'Cliente Normalizado',
+                'cpf' => '123.456.789-01',
+                'rg' => '12.345.678',
+                'telefone_1' => '(75) 99999-8888',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('pessoas', [
+            'nome' => 'Cliente Normalizado',
+            'cpf' => '12345678901',
+            'rg' => '12345678',
+            'telefone_1' => '75999998888',
+        ]);
+    }
+
+    public function test_rejeita_pessoa_inexistente_sem_nome(): void
+    {
+        $this->actingAs($this->admin)
+            ->post(route('clientes.store'), ['pessoa_id' => 999999999])
+            ->assertSessionHasErrors('pessoa_id');
+    }
+
+
+    public function test_rejeita_documentos_enviados_como_arrays(): void
+    {
+        $this->actingAs($this->admin)
+            ->post(route('clientes.store'), [
+                'nome' => 'Cliente Entrada Invalida',
+                'cpf' => ['12345678901'],
+                'telefone_1' => ['75999998888'],
+            ])
+            ->assertSessionHasErrors(['cpf', 'telefone_1']);
+
+        $this->assertDatabaseMissing('pessoas', [
+            'nome' => 'Cliente Entrada Invalida',
+        ]);
+    }
 }
