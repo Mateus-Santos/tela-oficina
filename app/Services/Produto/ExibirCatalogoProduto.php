@@ -24,6 +24,13 @@ final class ExibirCatalogoProduto
             'marca' => $edicao?->marca ?: $catalogo->marca_raw,
             'referencia' => $edicao?->codigo_fabricante ?: $catalogo->codigo_fabricante,
             'codigo_barras' => $edicao?->codigo_barras ?: $catalogo->codigo_barras,
+            'codigo_auxiliar' => $catalogo->codigo_auxiliar,
+            'ncm' => $catalogo->ncm,
+            'unidade' => $catalogo->unidade,
+            'quantidade_jogo' => $catalogo->quantidade_jogo,
+            'quantidade_caixa' => $catalogo->quantidade_caixa,
+            'origem_raw' => $catalogo->origem_raw,
+            'preco_manual' => $edicao?->preco_venda,
             'preco' => $preco,
             'sugerido' => $sugerido,
             'imagem' => $imagem?->url_thumb ?: $imagem?->url_original

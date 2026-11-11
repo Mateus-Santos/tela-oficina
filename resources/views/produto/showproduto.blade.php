@@ -713,6 +713,38 @@
 
     @endif
 
+    @if($catalogoPrincipal)
+        @php
+            $complementosForge = array_filter([
+                'NCM do fornecedor' => $catalogoPrincipal->ncm,
+                'Unidade do fornecedor' => $catalogoPrincipal->unidade,
+                'Quantidade por jogo' => $catalogoPrincipal->quantidade_jogo,
+                'Quantidade por caixa' => $catalogoPrincipal->quantidade_caixa,
+                'Codigo auxiliar' => $catalogoPrincipal->codigo_auxiliar,
+                'Origem informada' => $catalogoPrincipal->origem_raw,
+            ], fn ($valor) => $valor !== null && trim((string) $valor) !== '');
+        @endphp
+        @if($complementosForge !== [])
+            <div class="card mb-4">
+                <div class="card-header">
+                    <strong>Informacoes complementares do Forge</strong>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        @foreach($complementosForge as $rotulo => $valor)
+                            <dt class="col-sm-4">{{ $rotulo }}</dt>
+                            <dd class="col-sm-8">{{ $valor }}</dd>
+                        @endforeach
+                    </dl>
+                    <div class="small text-muted">
+                        Dados informativos da fonte externa; os dados
+                        fiscais e comerciais locais permanecem independentes.
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endif
+
     {{-- DADOS FISCAIS --}}
     <div class="card mb-4">
 
