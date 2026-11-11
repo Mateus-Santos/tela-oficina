@@ -569,4 +569,69 @@ class ClienteTest extends TestCase
 
         $this->assertTrue((bool) $usuario->status);
     }
+
+
+    public function test_falha_no_email_desfaz_pessoa_e_pontos(): void
+    {
+        $cliente = $this->criarCliente([], ['pontos' => 17]);
+
+        $usuario = User::factory()->create([
+            'pessoa_id' => $cliente->pessoa_id,
+            'email' => 'rollback-original@example.com',
+        ]);
+
+        $outraConta = User::factory()->create([
+            'email' => 'rollback-ocupado@example.com',
+        ]);
+
+        $nomeOriginal = $cliente->pessoa->nome;
+        $pontosOriginais = (int) $cliente->pontos;
+        $emailOriginal = $usuario->email;
+
+        $this->assertNotSame(
+            $emailOriginal,
+            $outraConta->email
+        );
+
+        try {
+            app(\App\Actions\Clientes\AtualizarCliente::class)->execute(
+                $cliente,
+                $usuario,
+                [
+                    'nome' => 'Nome Que Deve Ser Revertido',
+                    'cpf' => null,
+                    'rg' => null,
+                    'data_nascimento' => null,
+                    'telefone_1' => null,
+                    'telefone_2' => null,
+                    'pontos' => 999,
+                    'email' => $outraConta->email,
+                ]
+            );
+
+            $this->fail(
+                'Era esperada rejeicao do email duplicado.'
+            );
+        } catch (\Illuminate\Database\QueryException $e) {
+            $this->assertSame(
+                $nomeOriginal,
+                $cliente->pessoa->fresh()->nome
+            );
+
+            $this->assertSame(
+                $pontosOriginais,
+                (int) $cliente->fresh()->pontos
+            );
+
+            $this->assertSame(
+                $emailOriginal,
+                $usuario->fresh()->email
+            );
+
+            $this->assertSame(
+                $outraConta->email,
+                $outraConta->fresh()->email
+            );
+        }
+    }
 }
