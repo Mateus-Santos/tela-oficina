@@ -14,7 +14,7 @@
 
     <div class="alert alert-info" role="status">
         <strong>Consulta de pacotes — somente leitura.</strong>
-        Esta página não valida o conteúdo integral, não compara versões e não importa dados.
+        Esta página não executa validação dos CSVs por HTTP, não compara versões e não importa dados. As validações completas são realizadas fora da requisição, com resultados históricos apresentados abaixo.
         A atualização do catálogo permanece desabilitada até a implementação dos controles de segurança.
     </div>
 
@@ -34,7 +34,7 @@
             </div>
             <div class="table-responsive">
                 <table class="table table-striped align-middle mb-0">
-                    <thead><tr><th scope="col">Pacote</th><th scope="col">Situação do manifesto</th></tr></thead>
+                    <thead><tr><th scope="col">Pacote</th><th scope="col">Situação do manifesto</th><th scope="col">Última validação registrada</th></tr></thead>
                     <tbody>
                     @foreach ($consulta['pacotes'] as $pacote)
                         <tr>
@@ -44,6 +44,35 @@
                                     <span class="badge bg-secondary">Manifesto presente (não validado)</span>
                                 @else
                                     <span class="badge bg-warning text-dark">Manifesto ausente ou ilegível</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if ($pacote['relatorio'] !== null)
+                                    @php($relatorio = $pacote['relatorio'])
+                                    @if ($relatorio['status'] === 'aprovado')
+                                        <span class="badge bg-success">Validação anterior: aprovada</span>
+                                    @else
+                                        <span class="badge bg-danger">Validação anterior: reprovada</span>
+                                    @endif
+                                    <div class="small text-muted mt-1">Resultado histórico: {{ $relatorio['verificado_em'] }} (UTC)</div>
+                                    @if ($relatorio['manifesto_alterado'])
+                                        <div class="small text-danger fw-semibold">Manifesto ausente ou alterado desde a verificação.</div>
+                                    @endif
+                                    <div class="small text-muted">Este registro não substitui uma nova verificação antes da importação.</div>
+                                    @if ($relatorio['status'] === 'aprovado')
+                                        <details class="mt-2">
+                                            <summary class="small">Detalhes da análise anterior</summary>
+                                            <div class="small mt-1">Arquivos: {{ count($relatorio['arquivos']) }}</div>
+                                            <div class="small text-break">SHA-256 do manifesto: <code>{{ $relatorio['manifesto_sha256'] }}</code></div>
+                                            <ul class="small ps-3 mt-1 mb-0">
+                                                @foreach ($relatorio['arquivos'] as $nomeArquivo => $arquivo)
+                                                    <li><code>{{ $nomeArquivo }}</code> — {{ $arquivo['linhas'] ?? 0 }} linhas</li>
+                                                @endforeach
+                                            </ul>
+                                        </details>
+                                    @endif
+                                @else
+                                    <span class="text-muted">Sem validação registrada</span>
                                 @endif
                             </td>
                         </tr>
