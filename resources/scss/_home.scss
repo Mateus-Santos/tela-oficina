@@ -33,6 +33,15 @@
     color: #fff;
   }
   .sos-hero__grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(230px, .75fr); align-items: center; gap: 3rem; }
+  .sos-hero__grid--lead { grid-template-columns: minmax(0, 1fr) minmax(360px, 1fr); align-items: start; }
+  .sos-lead-form { background: #fff; color: var(--ink); border-radius: 1.15rem; padding: clamp(1.25rem, 3vw, 2rem); box-shadow: 0 18px 60px #0004; }
+  .sos-lead-form h2 { font-size: 1.5rem; font-weight: 800; }
+  .sos-hero .sos-lead-form p { color: var(--muted); font-size: .94rem; margin: .45rem 0 1rem; line-height: 1.5; }
+  .sos-lead-form .form-label { font-weight: 650; font-size: .88rem; }
+  .sos-lead-form .form-text { color: #5b6673; }
+  .sos-lead-form .sos-button { border: 0; width: 100%; }
+  .sos-lead-form .sos-lead-success { color: #14532d; background: #edfdf3; padding: 1rem; border-radius: .75rem; }
+  .sos-lead-form a:not(.sos-button) { color: #735900; }
   .sos-hero h1 { max-width: 680px; font-size: clamp(2.6rem, 5vw, 4.5rem); line-height: 1.08; font-weight: 850; }
   .sos-hero p { max-width: 570px; color: #d0d8df; font-size: 1.1rem; margin: 1.4rem 0 2rem; }
   .sos-hero__points { display: flex; flex-wrap: wrap; gap: 1.2rem; margin-top: 2.2rem; color: #d7e0e7; font-size: .88rem; }
@@ -73,7 +82,7 @@
   .sos-contact__link:hover { color: #fff; }
 
   @media (max-width: 992px) {
-    .sos-hero__grid { grid-template-columns: 1fr; }
+    .sos-hero__grid, .sos-hero__grid--lead { grid-template-columns: 1fr; }
     .sos-hero__visual { display: none; }
     .sos-hero { min-height: 0; padding: 145px 0 85px; }
     .sos-services { grid-template-columns: repeat(2, minmax(0, 1fr)); }

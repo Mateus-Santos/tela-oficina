@@ -13,6 +13,10 @@
         </p>
     </header>
 
+    @if(app(\App\Services\Marketing\LiberacaoPortalCliente::class)->permitido(auth()->user(), 'solicitacoes'))
+        <p><a class="btn btn-outline-primary" href="{{ route('cliente.solicitacoes.index') }}">Minhas solicitações de orçamento</a></p>
+    @endif
+
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
             <form method="GET" action="{{ route('cliente.notas.index') }}">
