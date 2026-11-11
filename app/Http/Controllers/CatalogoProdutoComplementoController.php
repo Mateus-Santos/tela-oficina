@@ -137,6 +137,14 @@ class CatalogoProdutoComplementoController extends Controller
                         ]);
                     }
 
+                    // Nunca transformar sugestao do Forge em preco da oficina.
+                    $precoManual = $catalogo->edicao?->preco_venda;
+                    if ($precoManual === null) {
+                        throw ValidationException::withMessages([
+                            'catalogo' => 'Defina o preco de venda da oficina em Editar informacoes antes de habilitar um produto novo.',
+                        ]);
+                    }
+
                     $produto = Produto::query()->create([
                         'codigo' => null,
                         'nome' => mb_substr((string) $dados['nome'], 0, 150),
@@ -144,9 +152,8 @@ class CatalogoProdutoComplementoController extends Controller
                         'marca_id' => $marca->id,
                         'codigo_fabricante' => $referencia,
                         'codigo_barras' => $ean !== '' ? $ean : null,
-                        'ncm' => $catalogo->ncm,
-                        'preco_uni' => $dados['preco'] !== null
-                            ? (float) $dados['preco'] : 0,
+                        'ncm' => null,
+                        'preco_uni' => $precoManual,
                         'quantidade' => '0.000',
                         'estoque_minimo' => '0.000',
                         'status' => true,
@@ -165,6 +172,9 @@ class CatalogoProdutoComplementoController extends Controller
             if (! $produto->status) {
                 $produto->update(['status' => true]);
             }
+
+            // Complementa somente campos vazios, sem sobrescrever a oficina.
+            $this->preencherDadosFiscaisVazios($produto, $catalogo);
 
             // Sincroniza as aplicacoes tecnicas do Fornecedor S.
             $catalogo->aplicacoes()
@@ -209,6 +219,37 @@ class CatalogoProdutoComplementoController extends Controller
                 'Produto habilitado e vinculado ao catalogo. '
                 .'Preco e estoque local preservados quando ja cadastrados.'
             );
+    }
+
+    /**
+     * Preserva os valores locais. Unidade tributavel nao pode ser inferida
+     * a partir da unidade comercial do fornecedor.
+     */
+    private function preencherDadosFiscaisVazios(
+        Produto $produto,
+        CatalogoProduto $catalogo
+    ): void {
+        $complementos = [];
+
+        $ncm = trim((string) $catalogo->ncm);
+        if (
+            trim((string) $produto->ncm) === '' &&
+            preg_match('/\\A[0-9]{8}\\z/D', $ncm)
+        ) {
+            $complementos['ncm'] = $ncm;
+        }
+
+        $unidade = mb_strtoupper(trim((string) $catalogo->unidade));
+        if (
+            trim((string) $produto->unidade_comercial) === '' &&
+            preg_match('/\\A[A-Z0-9]{1,6}\\z/D', $unidade)
+        ) {
+            $complementos['unidade_comercial'] = $unidade;
+        }
+
+        if ($complementos !== []) {
+            $produto->update($complementos);
+        }
     }
 
     public function similares(CatalogoProduto $catalogo, ExibirCatalogoProduto $exibicao)

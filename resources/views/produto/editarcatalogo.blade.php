@@ -21,7 +21,7 @@
                 <textarea id="descricao" name="descricao" rows="4" class="form-control" placeholder="{{ $catalogo->descricao }}">{{ old('descricao', $catalogo->edicao?->descricao) }}</textarea></div>
             <div class="col-md-6"><label class="form-label" for="preco_venda">Preço de venda definido pela oficina (R$)</label>
                 <input id="preco_venda" name="preco_venda" type="number" step="0.01" min="0" class="form-control" value="{{ old('preco_venda', $catalogo->edicao?->preco_venda) }}" placeholder="{{ $dados['sugerido'] }}">
-                <div class="form-text">Vazio: usa o preço sugerido calculado. Preenchido: a escolha manual prevalece.</div></div>
+                <div class="form-text">Vazio: mostra apenas a sugestão do fornecedor. Para habilitar um produto novo, defina o preço da oficina. Isso não altera o preço de produtos já cadastrados.</div></div>
             <div class="col-12"><button class="btn btn-primary" type="submit"><i class="bi bi-check-lg"></i> Salvar personalizações</button></div>
         </div>
     </form>

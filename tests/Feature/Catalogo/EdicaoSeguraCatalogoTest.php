@@ -64,6 +64,7 @@ class EdicaoSeguraCatalogoTest extends TestCase
     public function test_habilitar_cria_operacional_com_estoque_zero_e_codigo_automatico(): void
     {
         $ref = $this->referencia();
+        $ref->edicao()->create(['preco_venda' => '20.00']);
         $this->post(route('produtos.catalogo.habilitar', $ref))
             ->assertRedirect();
         $produto = Produto::query()->sole();
@@ -80,6 +81,7 @@ class EdicaoSeguraCatalogoTest extends TestCase
     public function test_produto_fornecedor_s_sem_aplicacoes_pode_ser_editado_sem_veiculos(): void
     {
         $referencia = $this->referencia('FNS-SEM-APLICACOES');
+        $referencia->edicao()->create(['preco_venda' => '20.00']);
 
         $this->post(route('produtos.catalogo.habilitar', $referencia))
             ->assertRedirect();
@@ -207,6 +209,7 @@ class EdicaoSeguraCatalogoTest extends TestCase
     public function test_sugestao_mais_alta_nao_substitui_preco_operacional_da_oficina(): void
     {
         $ref = $this->referencia();
+        $ref->edicao()->create(['preco_venda' => '20.00']);
         $this->post(route('produtos.catalogo.habilitar', $ref))->assertRedirect();
         $produto = Produto::query()->sole();
         $produto->update(['preco_uni' => '49.90']);

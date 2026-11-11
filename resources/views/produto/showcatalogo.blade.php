@@ -28,7 +28,10 @@
                     <p>Referência: <strong>{{ $dadosExibicao['referencia'] ?: 'Não informada' }}</strong></p>
                     <p>Código de barras: {{ $dadosExibicao['codigo_barras'] ?: 'Não informado' }}</p>
                     <div class="fs-4 fw-bold" @if($precoSugerido !== null) title="Preço de referência: R$ {{ number_format((float) $precoSugerido, 2, ',', '.') }}" @endif>
-                        Preço de venda: {{ $dadosExibicao['preco'] !== null ? 'R$ '.number_format((float) $dadosExibicao['preco'], 2, ',', '.') : 'Sob consulta' }}
+                        {{ $dadosExibicao['preco_manual'] !== null
+                            ? 'Preco definido pela oficina:'
+                            : 'Preco sugerido pelo fornecedor (nao cadastrado):' }}
+                        {{ $dadosExibicao['preco'] !== null ? 'R$ '.number_format((float) $dadosExibicao['preco'], 2, ',', '.') : 'Sob consulta' }}
                     </div>
                     <p class="text-body-secondary small mt-2 mb-0">
                         Disponibilidade física na oficina: sem cadastro operacional.
@@ -66,6 +69,33 @@
                     <dd class="col-sm-8">{{ $atributo->valor ?: '—' }}</dd>
                 @endforeach
             </dl></div>
+        </div>
+    @endif
+
+    @php
+        $complementosForge = array_filter([
+            'NCM informado' => $dadosExibicao['ncm'],
+            'Unidade do fornecedor' => $dadosExibicao['unidade'],
+            'Quantidade por jogo' => $dadosExibicao['quantidade_jogo'],
+            'Quantidade por caixa' => $dadosExibicao['quantidade_caixa'],
+            'Codigo auxiliar' => $dadosExibicao['codigo_auxiliar'],
+            'Origem informada' => $dadosExibicao['origem_raw'],
+        ], fn ($valor) => $valor !== null && trim((string) $valor) !== '');
+    @endphp
+    @if($complementosForge !== [])
+        <div class="card mb-4">
+            <div class="card-header"><strong>Informacoes complementares do Forge</strong></div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    @foreach($complementosForge as $rotulo => $valor)
+                        <dt class="col-sm-4">{{ $rotulo }}</dt>
+                        <dd class="col-sm-8">{{ $valor }}</dd>
+                    @endforeach
+                </dl>
+                <p class="small text-muted mb-0">
+                    Unidade do fornecedor nao determina automaticamente a unidade tributavel.
+                </p>
+            </div>
         </div>
     @endif
 

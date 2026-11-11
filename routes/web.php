@@ -24,6 +24,16 @@ use App\Http\Controllers\FinanceiroSociosController;
 use App\Http\Controllers\FinanceiroSociosReceberController;
 use App\Http\Controllers\FornecedorController;
 use App\Http\Controllers\MarcaController;
+use App\Http\Controllers\Marketing\OrcamentoPecasController;
+use App\Http\Controllers\Marketing\CadastroClienteMarketingController;
+use App\Http\Controllers\Marketing\BuscarProdutosOrcamentoController;
+use App\Http\Controllers\Marketing\MarketingLeadsController;
+use App\Http\Controllers\Marketing\AtualizarStatusLeadController;
+use App\Http\Controllers\Marketing\DetalharLeadOrcamentoController;
+use App\Http\Controllers\Marketing\ConverterLeadEmNotaController;
+use App\Http\Controllers\Marketing\VincularClienteLeadController;
+use App\Http\Controllers\Marketing\GerenciarAcessoClienteController;
+use App\Http\Middleware\CapturarAtribuicaoMarketing;
 use App\Http\Controllers\MontadoraController;
 use App\Http\Controllers\MovimentacaoEstoqueController;
 use App\Http\Controllers\NotaController;
@@ -32,6 +42,8 @@ use App\Http\Controllers\OrdemServicoController;
 use App\Http\Controllers\ProdutoController;
 use App\Http\Controllers\PortalCliente\ProdutosDisponiveisController;
 use App\Http\Controllers\PortalCliente\NotasClienteController;
+use App\Http\Controllers\PortalCliente\PainelClienteMarketingController;
+use App\Http\Controllers\PortalCliente\SolicitacoesMarketingClienteController;
 use App\Http\Controllers\PortalCliente\OrdensServicoClienteController;
 use App\Http\Controllers\PortalCliente\EnderecosClienteController;
 use App\Http\Controllers\RecebimentoController;
@@ -43,10 +55,60 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('index');
-});
+})->middleware(CapturarAtribuicaoMarketing::class);
 
 Route::get('/home', function () {
     return view('index');
+})->middleware(CapturarAtribuicaoMarketing::class);
+
+// Página comercial: reutiliza a home, o layout e os estilos existentes.
+Route::get('/pecas/orcamento', function () {
+    return view('index', ['paginaPecas' => true]);
+})->middleware(CapturarAtribuicaoMarketing::class)
+    ->name('marketing.pecas.orcamento');
+
+// Consulta pública limitada aos produtos operacionais disponíveis.
+Route::get('/pecas/orcamento/produtos', BuscarProdutosOrcamentoController::class)
+    ->middleware('throttle:30,1')
+    ->name('marketing.pecas.produtos');
+
+Route::post('/pecas/orcamento', [OrcamentoPecasController::class, 'store'])
+    ->middleware('throttle:8,1')
+    ->name('marketing.pecas.store');
+
+// Cadastro opt-in de cliente, protegido por verificacao de posse do e-mail.
+// O recurso fica desabilitado ate a oficina validar o envio de e-mails.
+Route::get('/minha-conta/cadastro', [CadastroClienteMarketingController::class, 'create'])
+    ->middleware('guest')->name('marketing.cadastro.create');
+Route::post('/minha-conta/cadastro', [CadastroClienteMarketingController::class, 'store'])
+    ->middleware(['guest', 'throttle:5,1'])->name('marketing.cadastro.store');
+Route::get('/minha-conta/cadastro/confirmar/{cadastro}/{token}', [CadastroClienteMarketingController::class, 'confirm'])
+    ->whereNumber('cadastro')->middleware(['signed', 'throttle:10,1'])
+    ->name('marketing.cadastro.confirmar');
+
+// Os dados pessoais dos interessados ficam disponíveis só para administradores.
+Route::middleware(['auth', 'check.blocked', 'admin'])->group(function () {
+    Route::get('/marketing/clientes/acessos', [GerenciarAcessoClienteController::class, 'index'])
+        ->name('marketing.clientes-acessos.index');
+    Route::patch('/marketing/clientes/{cliente}/acessos', [GerenciarAcessoClienteController::class, 'update'])
+        ->whereNumber('cliente')->middleware('throttle:10,1')
+        ->name('marketing.clientes-acessos.update');
+    Route::get('/marketing/leads', MarketingLeadsController::class)
+        ->name('marketing.leads.index');
+    Route::get('/marketing/leads/{lead}', DetalharLeadOrcamentoController::class)
+        ->whereNumber('lead')->name('marketing.leads.show');
+    Route::post('/marketing/leads/{lead}/vincular-cliente', [VincularClienteLeadController::class, 'vincular'])
+        ->whereNumber('lead')->middleware('throttle:10,1')
+        ->name('marketing.leads.vincular-cliente');
+    Route::delete('/marketing/leads/{lead}/desvincular-cliente', [VincularClienteLeadController::class, 'desvincular'])
+        ->whereNumber('lead')->middleware('throttle:10,1')
+        ->name('marketing.leads.desvincular-cliente');
+    Route::post('/marketing/leads/{lead}/converter-nota', ConverterLeadEmNotaController::class)
+        ->whereNumber('lead')->middleware('throttle:10,1')
+        ->name('marketing.leads.converter-nota');
+    Route::patch('/marketing/leads/{lead}/status', AtualizarStatusLeadController::class)
+        ->whereNumber('lead')
+        ->name('marketing.leads.status.update');
 });
 
 Route::middleware([
@@ -62,6 +124,21 @@ Route::middleware([
 
     // Consulta de notas: acesso apenas ao perfil cliente.
     Route::middleware('cliente')->group(function () {
+        // Inicio progressivo opcional; permissoes dos modulos existentes preservadas.
+        Route::get('/minha-area', PainelClienteMarketingController::class)
+            ->name('cliente.area.index');
+
+        // Solicitações vinculadas por cliente_id; nunca por telefone ou e-mail.
+        Route::get(
+            '/minha-area/solicitacoes',
+            [SolicitacoesMarketingClienteController::class, 'index']
+        )->name('cliente.solicitacoes.index');
+
+        Route::get(
+            '/minha-area/solicitacoes/{solicitacao}',
+            [SolicitacoesMarketingClienteController::class, 'show']
+        )->whereNumber('solicitacao')->name('cliente.solicitacoes.show');
+
         Route::get(
             '/minha-area/notas',
             [NotasClienteController::class, 'index']

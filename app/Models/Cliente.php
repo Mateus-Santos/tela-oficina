@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Cliente extends Model
 {
@@ -15,6 +16,11 @@ class Cliente extends Model
         'pontos',
         'pessoa_id',
     ];
+
+    public function marketingAcesso(): HasOne
+    {
+        return $this->hasOne(MarketingClienteAcesso::class, 'cliente_id');
+    }
 
     public function pessoa(): BelongsTo
     {
