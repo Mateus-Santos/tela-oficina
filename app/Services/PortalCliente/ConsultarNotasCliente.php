@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\VeiculosCliente;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use App\Services\Marketing\LiberacaoPortalCliente;
 
 class ConsultarNotasCliente
 {
@@ -29,6 +30,16 @@ class ConsultarNotasCliente
 
         if ($clienteId === null) {
             return $query->whereRaw('1 = 0');
+        }
+
+        // Notas originadas de Marketing ficam ocultas ate liberacao explicita.
+        // Nao modifica notas operacionais comuns nem o financeiro.
+        if (!app(LiberacaoPortalCliente::class)->permitido($usuario, 'solicitacoes')) {
+            $query->whereNotIn('notas.id', static function ($subquery): void {
+                $subquery->select('nota_id')
+                    ->from('marketing_leads')
+                    ->whereNotNull('nota_id');
+            });
         }
 
         $query
