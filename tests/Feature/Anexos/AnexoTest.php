@@ -567,4 +567,51 @@ class AnexoTest extends TestCase
             ->get(route('anexos.download', $anexo))
             ->assertForbidden();
     }
+
+
+    public function test_preview_xml_forca_download(): void
+    {
+        Storage::fake('private');
+
+        $caminho = 'anexos/documento.xml';
+        Storage::disk('private')->put($caminho, '<documento/>');
+
+        $anexo = Anexo::create([
+            'arquivo' => $caminho,
+            'nome_original' => 'documento.xml',
+            'mime_type' => 'application/xml',
+            'tamanho' => 12,
+        ]);
+
+        $this->actingAs($this->admin())
+            ->get(route('anexos.preview', $anexo))
+            ->assertOk()
+            ->assertDownload('documento.xml')
+            ->assertHeader('X-Content-Type-Options', 'nosniff');
+    }
+
+    public function test_preview_pdf_permanece_inline(): void
+    {
+        Storage::fake('private');
+
+        $caminho = 'anexos/documento.pdf';
+        Storage::disk('private')->put($caminho, '%PDF-1.4');
+
+        $anexo = Anexo::create([
+            'arquivo' => $caminho,
+            'nome_original' => 'documento.pdf',
+            'mime_type' => 'application/pdf',
+            'tamanho' => 8,
+        ]);
+
+        $resposta = $this->actingAs($this->admin())
+            ->get(route('anexos.preview', $anexo));
+
+        $resposta->assertOk();
+
+        $this->assertStringStartsWith(
+            'inline;',
+            $resposta->headers->get('Content-Disposition')
+        );
+    }
 }
