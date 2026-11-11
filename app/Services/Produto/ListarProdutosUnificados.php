@@ -104,10 +104,10 @@ class ListarProdutosUnificados
         $idsCatalogo = $linhas->where('tipo', 'catalogo')->pluck('registro_id');
 
         $produtos = Produto::query()
-            ->with(['marcaRelacionada', 'imagens', 'catalogos.estado', 'catalogos.imagens'])
+            ->with(['marcaRelacionada', 'imagens', 'catalogos.estado', 'catalogos.imagens', 'catalogos.fonte'])
             ->whereIn('id', $idsOperacionais)->get()->keyBy('id');
         $catalogos = CatalogoProduto::query()
-            ->with(['estado', 'imagens', 'edicao'])
+            ->with(['estado', 'imagens', 'edicao', 'fonte'])
             ->whereIn('id', $idsCatalogo)->get()->keyBy('id');
 
         $resultado->setCollection($linhas->map(function ($linha) use ($produtos, $catalogos) {
@@ -127,6 +127,13 @@ class ListarProdutosUnificados
                 }
                 $local = $produto->imagens->first()?->caminho;
 
+                $catalogoEstoque = $produto->catalogos
+                    ->sortByDesc(fn ($item) =>
+                        $item->ultima_coleta_em
+                        ?? $item->updated_at
+                        ?? $item->created_at
+                    )->first();
+
                 return (object) [
                     'nome' => $produto->nome,
                     'descricao' => $produto->descricao,
@@ -141,6 +148,8 @@ class ListarProdutosUnificados
                     'sugerido' => $sugerido,
                     'catalogo_id' => $produto->catalogos->first()?->id,
                     'quantidade' => $produto->quantidade,
+                    'estoque_fornecedor' => $catalogoEstoque?->estado?->estoque_observado,
+                    'fonte_estoque' => $catalogoEstoque?->fonte?->nome,
                     'url' => route('produtos.show', $produto),
                     'operacional' => true,
                 ];
@@ -165,6 +174,8 @@ class ListarProdutosUnificados
                 'preco' => $dados['preco'],
                 'sugerido' => $dados['sugerido'],
                 'quantidade' => null,
+                'estoque_fornecedor' => $catalogo->estado?->estoque_observado,
+                'fonte_estoque' => $catalogo->fonte?->nome,
                 'url' => route('produtos.catalogo.show', $catalogo),
                 'operacional' => false,
                 'catalogo_id' => $catalogo->id,

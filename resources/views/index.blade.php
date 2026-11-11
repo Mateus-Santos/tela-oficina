@@ -5,123 +5,157 @@
 @endpush
 
 @section('content')
-
-  <!-- ======= Hero Section ======= -->
-  <section id="hero" class="d-flex align-items-center">
-
-    <div class="container">
-        <div class="d-flex flex-column justify-content-center">
-          <h1>Bem-vindo(a) à Oficina SOS Mecânica.</h1>
-          <h2>O Seu Parceiro de Confiança para Soluções Automotivas!</h2>
-          <div class="d-flex justify-content-center justify-content-lg-start">
-            <a href=" https://wa.me/557581086649" class="btn-get-started scrollto">Entre em contato! <img src="svg/whatsapp.svg" alt="Logo" /></a> 
-          </div>
-        </div>
-    </div>
-    
-  </section>
-
-  <main id="main">
-
-    <!-- ======= About Us Section ======= -->
-    <section id="about" class="about">
-      <div class="container">
-
-        <div class="section-title">
-          <h2>Sobre</h2>
-        </div>
-        <div class="row content">
-          <div class="col-lg-6">      
-
-            <p>Na OFICINA SOS MECÂNICA, não apenas consertamos carros, mas também oferecemos uma experiência excepcional. Nossa equipe dedicada e apaixonada, com um histórico comprovado de sucesso, tornou-nos uma referência em excelência automotiva, conquistando a confiança dos clientes ao longo dos anos.</p>
-            <ul>
-                <li><img src="svg/check2-all.svg" alt="Logo" />Experiência Confiável.</li>
-                <li><img src="svg/check2-all.svg" alt="Logo" />Manutenção e revisão do automóvel.</li>
-                <li><img src="svg/check2-all.svg" alt="Logo" />Venda de peças de qualidade.</li>
-                <li><img src="svg/check2-all.svg" alt="Logo" />Garantia do serviço por 30 dias.</li>
-                <li><img src="svg/check2-all.svg" alt="Logo" />Satisfação do Cliente.</li>
-            </ul>
-          </div>
-          <div class="col-lg-6 pt-4 pt-lg-0">
-            <p>
-              Endereço: Rua Vasco da Gama, 160 - Cruzeiro, Feira de Santana - BA, 44022-012.
-              Clicando no botão Localização abrira um link direto para o Google Maps.
-            </p>
-            <a href="https://goo.gl/maps/AGLPatm3h8J4u2Pv9" target="_blank" class="btn-learn-more">Localização Google Maps</a>
-          </div>
-        </div>
-      </div>
-    </section><!-- End About Us Section -->
-
-    <!-- ======= Team Section ======= -->
-    <section id="team" class="team section-bg">
-      <div class="container" data-aos="fade-up">
-
-        <div class="section-title">
-          <h2>Team</h2>
-          <p>Na OFICINA SOS MECÂNICA, contamos com uma equipe altamente qualificada e dedicada, apaixonada por carros e comprometida com a satisfação do cliente. Juntos, enfrentamos desafios mecânicos com eficiência, proporcionando serviços de excelência e um toque pessoal diferenciado.</p>
-        </div>
-        <!--
-        <div class="row">
-        
-          <div class="col-lg-6">
-            <div class="member d-flex align-items-start" data-aos="zoom-in" data-aos-delay="100">
-              <div class="pic"><img src="img/team/team-1.jpeg" class="img-fluid" alt=""></div>
-              <div class="member-info">
-                <h4>Jaime Pinto de Jesus</h4>
-                <span>Dono e Mecânico Chefe</span>
-                <p>Jaime, com mais de 30 anos de experiência automotiva na OFICINA SOS MECÂNICA.</p>
-                <div class="social">
-                  <a href=""><img src="svg/facebook.svg" alt="Logo" /></a>
-                  <a href=""><img src="svg/instagram.svg" alt="Logo" /></i></a>
+@php
+    $oficina = config('oficina');
+    $whatsapp = preg_replace('/\D+/', '', $oficina['whatsapp']);
+    $telefone = preg_replace('/\D+/', '', $oficina['telefone']);
+    $telefoneExtra = preg_replace('/\D+/', '', $oficina['telefone_2'] ?? '');
+    $email = trim($oficina['email'] ?? '');
+    $mapaQuery = rawurlencode($oficina['endereco']);
+    $paginaPecas = $paginaPecas ?? false;
+    $whatsappPecas = 'https://wa.me/'.$whatsapp.'?text='.rawurlencode(
+        'Olá! Quero solicitar orçamento de uma peça automotiva.'
+    );
+    $servicos = [
+        ['icone' => 'bi-clipboard2-check', 'titulo' => 'Revisão preventiva', 'texto' => 'Verificações para identificar necessidades de manutenção.'],
+        ['icone' => 'bi-droplet-half', 'titulo' => 'Óleo e filtros', 'texto' => 'Troca de óleo, filtros e cuidados básicos do motor.'],
+        ['icone' => 'bi-disc', 'titulo' => 'Freios', 'texto' => 'Inspeção e manutenção dos componentes de frenagem.'],
+        ['icone' => 'bi-car-front', 'titulo' => 'Suspensão e direção', 'texto' => 'Avaliação de ruídos, folgas e componentes de rodagem.'],
+        ['icone' => 'bi-thermometer-half', 'titulo' => 'Arrefecimento', 'texto' => 'Verificação de fluido, mangueiras e sistema de refrigeração.'],
+        ['icone' => 'bi-box-seam', 'titulo' => 'Peças automotivas', 'texto' => 'Orientação na escolha de peças para o serviço.'],
+    ];
+@endphp
+<div class="sos-home">
+    <section id="hero" class="sos-hero">
+        <div class="container sos-hero__grid {{ $paginaPecas ? 'sos-hero__grid--lead' : '' }}">
+            <div>
+                <span class="sos-eyebrow"><i class="bi bi-geo-alt"></i> Oficina no Cruzeiro · Feira de Santana</span>
+                @if ($paginaPecas)
+                    <h1>Precisa de uma peça para seu carro?</h1>
+                    <p>Conte para a nossa equipe qual peça você procura e informe o veículo, se souber. Não precisa conhecer códigos técnicos.</p>
+                @else
+                    <h1>Cuidado de verdade para o seu carro.</h1>
+                    <p>Manutenção, revisão e reparos com atendimento próximo e explicações claras sobre o serviço.</p>
+                @endif
+                <div class="sos-actions">
+                    @if ($paginaPecas)
+                        <a class="sos-button sos-button--primary" href="#solicitar-orcamento"><i class="bi bi-pencil-square"></i> Preencher orçamento</a>
+                    @else
+                        <a class="sos-button sos-button--primary" href="https://wa.me/{{ $whatsapp }}" target="_blank" rel="noopener noreferrer"><i class="bi bi-whatsapp"></i> Falar com a oficina</a>
+                    @endif
+                    <a class="sos-button sos-button--outline" href="#localizacao"><i class="bi bi-pin-map"></i> Como chegar</a>
                 </div>
-              </div>
+                @if ($paginaPecas)
+                    <div class="sos-hero__points"><span><i class="bi bi-check-circle"></i> Atendimento humano</span><span><i class="bi bi-check-circle"></i> Sem cadastro</span><span><i class="bi bi-check-circle"></i> Compatibilidade a confirmar</span></div>
+                @else
+                    <div class="sos-hero__points"><span><i class="bi bi-check-circle"></i> Revisão</span><span><i class="bi bi-check-circle"></i> Manutenção</span><span><i class="bi bi-check-circle"></i> Peças</span></div>
+                @endif
             </div>
-          </div>
+            @if ($paginaPecas)
+                @include('marketing._form_pecas')
+            @else
+                <div class="sos-hero__visual" aria-hidden="true">
+                    <div class="sos-hero__ring"><i class="bi bi-gear-wide-connected"></i></div>
+                    <div class="sos-hero__tag"><i class="bi bi-tools"></i> SOS Mecânica</div>
+                </div>
+            @endif
         </div>
-        -->
-    </section><!-- End Team Section -->
+    </section>
 
-  </main><!-- End #main -->
-
-  <!-- ======= Footer ======= -->
-  <footer id="footer">
-
-    <div class="footer-top">
-      <div class="container">
-        <div class="row">
-
-          <div class="col-lg-3 col-md-6 footer-contact">
-            <h3>Desenvolvedor do site</h3>
-            <p>
-              Mateus Santos <br>
-              <br>
-              <strong>Telefone:</strong> +55 75 98702-8960<br>
-              <strong>Email:</strong> mateus11_santos@hotmail.com<br>
-            </p>
-          </div>
-
-          <div class="col-lg-3 col-md-6 footer-links">
-            <h4>Links</h4>
-            <ul>
-              <li><img src="svg/chevron-double-right.svg" alt="Logo" /><a href="#">  Home</a></li>
-              <li><img src="svg/chevron-double-right.svg" alt="Logo" /><a href="#about">  Sobre</a></li>
-              <li><img src="svg/chevron-double-right.svg" alt="Logo" /><a href="#team">  Equipe</a></li>
-            </ul>
-          </div>
-
-          <div class="col-lg-3 col-md-6 footer-links">
-            <h4>Redes sociais</h4>
-            <p class="redes"><img src="svg/chevron-double-right.svg" alt="Logo" /> Outras redes sociais do desenvolvedor.</p>
-            <div class="social-links mt-3">
-              <a href="https://www.facebook.com/mateus.santos.984786" class="facebook"><img src="svg/facebook.svg" alt="Logo" /></a>
-              <a href="https://www.instagram.com/teeusantos20/" class="instagram"><img src="svg/instagram.svg" alt="Logo" /></a>
-              <a href="https://www.linkedin.com/in/mateus-santos-095a53210/" class="linkedin"><img src="svg/linkedin.svg" alt="Logo" /></a>
+    <main id="main">
+        @if (! $paginaPecas)
+        <section id="servicos" class="sos-section">
+            <div class="container">
+                <span class="sos-kicker">O que fazemos</span>
+                <h2>Serviços para cuidar do seu veículo</h2>
+                <p class="sos-intro">Da revisão básica a reparos mecânicos, nossa equipe ajuda você a entender o que precisa ser feito.</p>
+                <div class="sos-services">
+                    @foreach($servicos as $servico)
+                        <article class="sos-service">
+                            <div class="sos-service__icon"><i class="bi {{ $servico['icone'] }}"></i></div>
+                            <h3>{{ $servico['titulo'] }}</h3>
+                            <p>{{ $servico['texto'] }}</p>
+                            @if ($servico['titulo'] === 'Peças automotivas')
+                                <a class="sos-text-link" href="{{ route('marketing.pecas.orcamento') }}">Solicitar orçamento <i class="bi bi-arrow-up-right"></i></a>
+                            @endif
+                        </article>
+                    @endforeach
+                </div>
             </div>
-          </div>
+        </section>
 
-        </div>
-      </div>
-    </div>
-  </footer><!-- End Footer -->
-  @endsection
+        <section id="sobre" class="sos-section sos-section--muted">
+            <div class="container sos-split">
+                <div>
+                    <span class="sos-kicker">Sobre a oficina</span>
+                    <h2>Sua rotina merece um carro bem cuidado.</h2>
+                    <p>Na SOS Mecânica, em Feira de Santana, trabalhamos com manutenção automotiva e atenção aos detalhes. Nosso objetivo é orientar o cliente sobre as necessidades do veículo antes da execução do serviço.</p>
+                    <a class="sos-text-link" href="https://wa.me/{{ $whatsapp }}" target="_blank" rel="noopener noreferrer">Converse com a equipe <i class="bi bi-arrow-up-right"></i></a>
+                </div>
+                <div class="sos-steps" aria-label="Etapas do atendimento">
+                    <div><b>01</b><span><strong>Conte o que aconteceu</strong><small>Explique os sintomas ou a manutenção desejada.</small></span></div>
+                    <div><b>02</b><span><strong>Avaliação do veículo</strong><small>Verificamos o serviço e orientamos sobre os próximos passos.</small></span></div>
+                    <div><b>03</b><span><strong>Serviço combinado</strong><small>Alinhamos a execução e as informações do atendimento.</small></span></div>
+                </div>
+            </div>
+        </section>
+
+        @else
+        <section id="como-funciona" class="sos-section sos-section--muted">
+            <div class="container sos-split">
+                <div>
+                    <span class="sos-kicker">Orçamento de peças</span>
+                    <h2>Como solicitar orçamento de peças</h2>
+                    <p class="sos-intro">Explique o que procura pelo WhatsApp. Se souber, informe a marca, o modelo, o ano e a motorização do veículo.</p>
+                    <p>A compatibilidade, o preço e a disponibilidade serão confirmados no atendimento.</p>
+                    <a class="sos-text-link" href="{{ $whatsappPecas }}" target="_blank" rel="noopener noreferrer">Conversar com a oficina <i class="bi bi-arrow-up-right"></i></a>
+                </div>
+                <div class="sos-steps" aria-label="Etapas do orçamento">
+                    <div><b>01</b><span><strong>Descreva a peça</strong><small>Use o nome que conhece ou explique para que ela serve.</small></span></div>
+                    <div><b>02</b><span><strong>Informe o veículo</strong><small>Marca, modelo, ano e motor ajudam na identificação.</small></span></div>
+                    <div><b>03</b><span><strong>Confirme com a equipe</strong><small>A oficina verifica os detalhes antes de combinar a venda.</small></span></div>
+                </div>
+            </div>
+        </section>
+        @endif
+
+        <section id="localizacao" class="sos-section">
+            <div class="container sos-split">
+                <div>
+                    <span class="sos-kicker">Onde estamos</span>
+                    <h2>Venha visitar a SOS Mecânica</h2>
+                    <p class="sos-address"><i class="bi bi-geo-alt-fill"></i> {{ $oficina['endereco'] }}</p>
+                    <p class="sos-intro">Confira a localização no mapa e abra a rota no seu aplicativo de navegação.</p>
+                    <a class="sos-button sos-button--dark" href="https://www.google.com/maps/search/?api=1&amp;query={{ $mapaQuery }}" target="_blank" rel="noopener noreferrer"><i class="bi bi-sign-turn-right"></i> Abrir rota no Google Maps</a>
+                </div>
+                <div class="sos-map">
+                    <iframe title="Mapa de localização da Oficina SOS Mecânica" src="https://www.google.com/maps?q={{ $mapaQuery }}&amp;output=embed" width="100%" height="310" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+                </div>
+            </div>
+        </section>
+
+        <section id="contato" class="sos-section sos-section--contact">
+            <div class="container sos-contact">
+                <div>
+                    <span class="sos-kicker">Fale conosco</span>
+                    @if ($paginaPecas)
+                        <h2>Vamos conversar sobre a peça?</h2>
+                        <p>Entre em contato e conte o que você precisa. O atendimento confirmará as condições do orçamento.</p>
+                    @else
+                        <h2>Precisa de uma avaliação?</h2>
+                        <p>Entre em contato para explicar o que o seu carro precisa.</p>
+                    @endif
+                    @if($email)
+                        <a class="sos-contact__link" href="mailto:{{ $email }}"><i class="bi bi-envelope"></i> {{ $email }}</a>
+                    @endif
+                    <a class="sos-contact__link" href="tel:+{{ $telefone }}"><i class="bi bi-telephone"></i> {{ $oficina['telefone_exibicao'] }}</a>
+                    @if($telefoneExtra)
+                        <a class="sos-contact__link" href="tel:+{{ $telefoneExtra }}"><i class="bi bi-telephone-plus"></i> {{ $oficina['telefone_2'] }}</a>
+                    @endif
+                </div>
+                <a class="sos-button sos-button--primary" href="{{ $paginaPecas ? $whatsappPecas : 'https://wa.me/'.$whatsapp }}" target="_blank" rel="noopener noreferrer"><i class="bi bi-whatsapp"></i> Chamar no WhatsApp</a>
+            </div>
+        </section>
+    </main>
+</div>
+@endsection

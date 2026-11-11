@@ -22,7 +22,6 @@ on:
 
 permissions:
   contents: read
-  packages: write
 
 # Concorrencia aplica-se apenas ao deploy, sem travar checagens de PR.
 jobs:
@@ -30,7 +29,37 @@ jobs:
     name: Verificacoes de PR - sem deploy
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: testing
+          MYSQL_USER: ci_testes
+          MYSQL_PASSWORD: senha_temporaria_ci
+          MYSQL_ROOT_PASSWORD: root_temporario_ci
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=15
+    env:
+      APP_ENV: testing
+      APP_DEBUG: 'false'
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: '3306'
+      DB_DATABASE: testing
+      DB_USERNAME: ci_testes
+      DB_PASSWORD: senha_temporaria_ci
+      DATABASE_URL: ''
+      CACHE_STORE: array
+      CACHE_DRIVER: array
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
+      MAIL_MAILER: array
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -71,6 +100,23 @@ jobs:
           composer validate --no-check-publish
           npm ci
           npm run build
+      - name: Instalar dependencias PHP para regressao
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Executar testes Laravel em MySQL isolado
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          test "$APP_ENV" = "testing"
+          test "$DB_DATABASE" = "testing"
+          test "$DB_HOST" = "127.0.0.1"
+          test "$DB_USERNAME" = "ci_testes"
+          export APP_KEY="$(php -r 'echo "base64:".base64_encode(random_bytes(32));')"
+          test ! -e .env
+          printf 'APP_ENV=testing\n' > .env
+          trap 'rm -f -- .env' EXIT
+          php artisan test --no-ansi --display-warnings --fail-on-warning
+
       - name: Auditar dependencias Composer e NPM
         id: audit
         shell: bash
@@ -100,6 +146,9 @@ jobs:
           }
 
   release:
+    permissions:
+      contents: read
+      packages: write
     concurrency:
       group: sosmecanica-docker-production
       cancel-in-progress: false

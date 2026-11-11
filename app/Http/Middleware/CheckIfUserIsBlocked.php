@@ -16,10 +16,34 @@ class CheckIfUserIsBlocked
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (auth()->check() && (auth()->user()->status == 0)) {
+        $usuario = $request->user();
+
+        if ($usuario && ! (bool) $usuario->status) {
+            // API com Sanctum nao depende de sessao web.
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'message' => 'Conta bloqueada.',
+                ], 403);
+            }
+
             Auth::logout();
-            return redirect()->route('login')->with('status', 'Sua conta está bloqueada. Entre em contato com Administrador para solucionar seu problema.');
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Conta bloqueada.',
+                ], 403);
+            }
+
+            return redirect()
+                ->route('login')
+                ->with(
+                    'status',
+                    'Sua conta está bloqueada. Entre em contato com Administrador para solucionar seu problema.'
+                );
         }
+
         return $next($request);
     }
 }

@@ -1,5 +1,6 @@
 """P04.4 - testes estaticos de regressao da separacao de CSS."""
 import importlib.util
+import re
 import unittest
 from pathlib import Path
 
@@ -19,8 +20,9 @@ class CssHomeInformativoTest(unittest.TestCase):
         home = (ROOT / audit.HOME).read_text(encoding='utf-8')
         for selector in audit.HOME_SELECTORS:
             with self.subTest(selector=selector):
-                self.assertNotIn('\n' + selector + ' {', index)
-                self.assertIn(selector + ' {', home)
+                padrao = r'(?m)^[ \t]*' + re.escape(selector) + r'\s*\{'
+                self.assertNotRegex(index, padrao)
+                self.assertRegex(home, padrao)
 
     def test_paginas_informativas(self):
         styles = (ROOT / audit.INFO).read_text(encoding='utf-8')
@@ -34,7 +36,7 @@ class CssHomeInformativoTest(unittest.TestCase):
 
     def test_responsividade_da_home_foi_transferida(self):
         css = (ROOT / audit.HOME).read_text(encoding='utf-8')
-        for screen in (991, 768, 575):
+        for screen in (992, 768):
             self.assertIn(f'@media (max-width: {screen}px)', css)
         self.assertIn('.box-questions', (ROOT / audit.CHAT).read_text(encoding='utf-8'))
 

@@ -14,7 +14,7 @@ class VincularProdutosCatalogo
     ) {}
 
     public function executar(
-        string $fonteCodigo = 'sky',
+        string $fonteCodigo = 'fornecedor_s',
         bool $dryRun = true,
         ?int $limite = null
     ): array {

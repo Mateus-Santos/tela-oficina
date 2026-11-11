@@ -81,6 +81,9 @@ class UpdateProdutoRequest extends FormRequest
             ? $produto->id
             : $produto;
 
+        $vinculadoCatalogo = $produto instanceof Produto
+            && $produto->catalogos()->exists();
+
         return [
             'nome' => [
                 'required',
@@ -234,7 +237,7 @@ class UpdateProdutoRequest extends FormRequest
             ],
 
             'veiculos' => [
-                'required',
+                $vinculadoCatalogo ? 'sometimes' : 'required',
                 'array',
             ],
 

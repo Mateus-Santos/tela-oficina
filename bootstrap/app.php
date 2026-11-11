@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AdminAccess;
+use App\Http\Middleware\ClienteAccess;
 use App\Http\Middleware\CheckIfUserIsBlocked;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -53,6 +54,9 @@ return Application::configure(
 
                 'admin' =>
                     AdminAccess::class,
+
+                'cliente' =>
+                    ClienteAccess::class,
             ]);
         }
     )

@@ -24,8 +24,8 @@ class BuscaRapidaCatalogoTest extends TestCase
     private function referencia(string $chave, string $descricao): CatalogoProduto
     {
         $fonte = CatalogoFonte::query()->firstOrCreate(
-            ['codigo' => 'sky'],
-            ['nome' => 'Sky', 'tipo' => 'fornecedor', 'ativo' => true]
+            ['codigo' => 'fornecedor_s'],
+            ['nome' => 'Fornecedor S', 'tipo' => 'fornecedor', 'ativo' => true]
         );
         $referencia = CatalogoProduto::query()->create([
             'catalogo_fonte_id' => $fonte->id,
@@ -64,6 +64,7 @@ class BuscaRapidaCatalogoTest extends TestCase
     public function test_habilitacao_explicita_retira_referencia_nao_operacional_da_busca(): void
     {
         $ref = $this->referencia('BUSCA2', 'CABO TESTE BUSCA');
+        $ref->edicao()->create(['preco_venda' => '25.00']);
         $this->post(route('produtos.catalogo.habilitar', $ref))->assertRedirect();
         $produto = Produto::query()->sole();
         $produto->update(['preco_uni' => '45.90']);

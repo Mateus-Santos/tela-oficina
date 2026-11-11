@@ -18,7 +18,7 @@ PAGES = {
     'resources/views/errors/403.blade.php': INFO_ENTRY,
     'resources/views/errors/404.blade.php': INFO_ENTRY,
 }
-HOME_SELECTORS = ('.section-bg', '.about', '.team', '.member', '.redes', '#hero')
+HOME_SELECTORS = ('.sos-home', '.sos-hero', '.sos-services', '.sos-map', '.sos-contact')
 INFO_SELECTORS = ('.erro403,\n.erro404', '.termos-uso')
 
 
@@ -34,11 +34,11 @@ def verificar(root=ROOT):
     layout = (root / 'resources/views/layouts/layout.blade.php').read_text(encoding='utf-8')
 
     for selector in HOME_SELECTORS:
-        p = re.compile(r'(?m)^' + re.escape(selector) + r'\s*\{')
+        p = re.compile(r'(?m)^[ \t]*' + re.escape(selector) + r'\s*\{')
         if p.search(index):
             erros.append(f'{selector}: ainda no CSS global.')
-        if len(p.findall(home)) != 1:
-            erros.append(f'{selector}: precisa estar no CSS da home exatamente uma vez.')
+        if not p.search(home):
+            erros.append(f'{selector}: seletor ausente no CSS da home.')
 
     for selector in INFO_SELECTORS:
         p = re.compile(r'(?m)^' + re.escape(selector) + r'\s*\{')
@@ -53,9 +53,9 @@ def verificar(root=ROOT):
         if token not in index:
             erros.append(f'CSS compartilhado ausente: {token}')
 
-    if '.footer-top {' in index or '#footer {' not in home or '.footer-top {' not in home:
-        erros.append('Rodape exclusivo da home nao foi isolado corretamente.')
-    for max_width in (991, 768, 575):
+    if '#footer {' in home or '.footer-top {' in home:
+        erros.append('Rodape compartilhado duplicado no CSS da home.')
+    for max_width in (992, 768):
         if f'@media (max-width: {max_width}px)' not in home:
             erros.append(f'Home sem regra responsiva: {max_width}px.')
     if re.search(r'(?m)^\s*#hero\s*\{', resp):

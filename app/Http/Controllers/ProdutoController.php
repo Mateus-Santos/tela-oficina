@@ -93,11 +93,23 @@ class ProdutoController extends Controller
 
         $aplicacoesTecnicas = $catalogoPrincipal
             ? $catalogoPrincipal->aplicacoes()->where('ativa', true)
+                ->with('produtoAplicacao')
                 ->orderBy('id')->paginate(40, ['*'], 'aplicacoes')->withQueryString()
             : null;
 
+        $aplicacoesPendentes = $catalogoPrincipal
+            ? $catalogoPrincipal->aplicacoes()
+                ->where('ativa', true)
+                ->whereDoesntHave('produtoAplicacao', function ($query) use ($produto) {
+                    $query->where('produto_id', $produto->id)
+                        ->where('status_resolucao', 'resolvida')
+                        ->whereNotNull('veiculo_id');
+                })->count()
+            : 0;
+
         return view('produto.showproduto', compact(
-            'produto', 'dadosCatalogo', 'catalogoPrincipal', 'aplicacoesTecnicas'
+            'produto', 'dadosCatalogo', 'catalogoPrincipal',
+            'aplicacoesTecnicas', 'aplicacoesPendentes'
         ));
     }
 

@@ -10,7 +10,7 @@ class SincronizarCatalogoAplicacoes extends Command
 {
     protected $signature =
         'catalogo:sincronizar-aplicacoes
-        {--fonte= : Código da fonte, por exemplo sky}
+        {--fonte= : Código da fonte, por exemplo fornecedor_s}
         {--chunk=500 : Quantidade por lote}
         {--dry-run : Apenas diagnostica sem gravar}';
 

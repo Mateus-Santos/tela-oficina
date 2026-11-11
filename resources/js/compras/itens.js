@@ -477,7 +477,7 @@ export default function inicializarItensCompra() {
                 const catalogo =
                     produto.catalogo || null;
 
-                // A compra exibe o preco operacional; valor Sky e apenas referencia.
+                // A compra exibe o preco operacional; valor do Fornecedor S e apenas referencia.
                 const precoVenda = Number(produto.preco || 0);
 
                 const preco =

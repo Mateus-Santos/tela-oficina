@@ -23,6 +23,7 @@ use App\Models\Nota;
 use App\Models\PagamentoContaPagar;
 use App\Models\ParcelaContaPagar;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use InvalidArgumentException;
 
@@ -262,94 +263,43 @@ class ContaPagarController extends Controller
             );
         }
 
-        $parcelasResumo = (clone $query)
-            ->get();
+        $saldoSql = 'GREATEST(0, ROUND('
+            . 'resumo_parcelas.valor - '
+            . 'COALESCE(resumo_parcelas.valor_pago, 0), 2))';
 
-        $total = (float) $parcelasResumo
-            ->sum(
-                fn ($parcela) =>
-                    (float) $parcela->valor
-            );
-
-        $totalPago = (float) $parcelasResumo
-            ->sum(
-                fn ($parcela) =>
-                    (float) (
-                        $parcela->valor_pago
-                        ?? 0
-                    )
-            );
-
-        $totalEmAberto = (float)
-            $parcelasResumo->sum(
-                fn ($parcela) => max(
-                    0,
-                    round(
-                        (float) $parcela->valor
-                        - (float) (
-                            $parcela->valor_pago
-                            ?? 0
-                        ),
-                        2
-                    )
-                )
-            );
-
-        $totalVencido = (float)
-            $parcelasResumo
-                ->filter(
-                    function ($parcela) {
-                        $conta =
-                            $parcela->contaPagar;
-
-                        $saldo = max(
-                            0,
-                            round(
-                                (float)
-                                    $parcela->valor
-                                - (float) (
-                                    $parcela
-                                        ->valor_pago
-                                    ?? 0
-                                ),
-                                2
-                            )
-                        );
-
-                        return
-                            $conta->status
-                                !== 'cancelada'
-                            && $saldo > 0
-                            && $parcela
-                                ->data_vencimento
-                                ->isBefore(
-                                    today()
-                                );
-                    }
-                )
-                ->sum(
-                    function ($parcela) {
-                        return max(
-                            0,
-                            round(
-                                (float)
-                                    $parcela->valor
-                                - (float) (
-                                    $parcela
-                                        ->valor_pago
-                                    ?? 0
-                                ),
-                                2
-                            )
-                        );
-                    }
-                );
+        // O SELECT original preserva todos os filtros;
+        // somente os agregados retornam do banco ao PHP.
+        $totais = DB::query()
+            ->fromSub((clone $query)->toBase(), 'resumo_parcelas')
+            ->join(
+                'contas_pagar as conta_resumo',
+                'conta_resumo.id',
+                '=',
+                'resumo_parcelas.conta_pagar_id'
+            )
+            ->selectRaw(
+                'COALESCE(SUM(resumo_parcelas.valor), 0) AS total'
+            )
+            ->selectRaw(
+                'COALESCE(SUM(COALESCE(resumo_parcelas.valor_pago, 0)), 0) AS total_pago'
+            )
+            ->selectRaw(
+                "COALESCE(SUM($saldoSql), 0) AS total_em_aberto"
+            )
+            ->selectRaw(
+                "COALESCE(SUM(CASE WHEN COALESCE(conta_resumo.status, '') <> 'cancelada' "
+                . "AND $saldoSql > 0 "
+                . "AND resumo_parcelas.data_vencimento < ? "
+                . "THEN $saldoSql ELSE 0 END), 0) AS total_vencido",
+                [today()->toDateString()]
+            )
+            ->first();
 
         $resumo = [
-            'total' => $total,
-            'total_pago' => $totalPago,
-            'total_em_aberto' => $totalEmAberto,
-            'total_vencido' => $totalVencido,
+            'total' => (float) $totais->total,
+            'total_pago' => (float) $totais->total_pago,
+            'total_em_aberto' => (float) $totais->total_em_aberto,
+            'total_vencido' => (float) $totais->total_vencido,
         ];
 
         $parcelasPagar = $query

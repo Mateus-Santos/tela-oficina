@@ -37,9 +37,9 @@ class ProdutoAplicacaoTest extends TestCase
                     $montadora->id,
             ]);
 
-        $veiculoSky =
+        $veiculoFornecedor =
             Veiculo::query()->create([
-                'nome' => 'VEICULO SKY',
+                'nome' => 'VEICULO FORNECEDOR S',
                 'montadora_id' =>
                     $montadora->id,
             ]);
@@ -62,15 +62,15 @@ class ProdutoAplicacaoTest extends TestCase
             ->aplicacoes()
             ->create([
                 'veiculo_id' =>
-                    $veiculoSky->id,
+                    $veiculoFornecedor->id,
 
                 'chave_aplicacao' =>
                     hash(
                         'sha256',
-                        'sky-aplicacao'
+                        'fornecedor-s-aplicacao'
                     ),
 
-                'origem' => 'sky',
+                'origem' => 'fornecedor_s',
 
                 'status_resolucao' =>
                     ProdutoAplicacao::
@@ -123,9 +123,9 @@ class ProdutoAplicacaoTest extends TestCase
                     $produto->id,
 
                 'veiculo_id' =>
-                    $veiculoSky->id,
+                    $veiculoFornecedor->id,
 
-                'origem' => 'sky',
+                'origem' => 'fornecedor_s',
             ]
         );
 
@@ -147,7 +147,7 @@ class ProdutoAplicacaoTest extends TestCase
                     $produto->id,
 
                 'veiculo_id' =>
-                    $veiculoSky->id,
+                    $veiculoFornecedor->id,
             ]
         );
 
@@ -177,9 +177,9 @@ class ProdutoAplicacaoTest extends TestCase
                     $produto->id,
 
                 'veiculo_id' =>
-                    $veiculoSky->id,
+                    $veiculoFornecedor->id,
 
-                'origem' => 'sky',
+                'origem' => 'fornecedor_s',
             ]
         );
 
@@ -201,7 +201,7 @@ class ProdutoAplicacaoTest extends TestCase
                     $produto->id,
 
                 'veiculo_id' =>
-                    $veiculoSky->id,
+                    $veiculoFornecedor->id,
             ]
         );
     }

@@ -10,7 +10,7 @@ class VincularCatalogoProdutos extends Command
 {
     protected $signature =
         'catalogo:vincular-produtos
-        {--fonte=sky : Código da fonte do catálogo}
+        {--fonte=fornecedor_s : Código da fonte do catálogo}
         {--dry-run : Avalia sem alterar dados}
         {--limite= : Limita a quantidade processada}';
 

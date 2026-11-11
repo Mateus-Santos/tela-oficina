@@ -24,7 +24,7 @@ class BuscaEstoquePaginaTest extends TestCase
             'status' => 1,
         ]));
 
-        $marca = Marca::query()->create(['nome' => 'SKY PEÇAS', 'ativo' => true]);
+        $marca = Marca::query()->create(['nome' => 'FORNECEDOR S', 'ativo' => true]);
         $outraMarca = Marca::query()->create(['nome' => 'MARCA DIFERENTE', 'ativo' => true]);
 
         $this->principal = Produto::query()->create([
@@ -64,7 +64,7 @@ class BuscaEstoquePaginaTest extends TestCase
 
     public function test_busca_rapida_encontra_marca_nome_e_codigos_na_rota_real(): void
     {
-        foreach (['SKY', 'PIVO', 'PVI2183', 'PVI-2183', '7891234567890', 'PRD-00000263', 'SKY PIVO'] as $termo) {
+        foreach (['FORNECEDOR S', 'PIVO', 'PVI2183', 'PVI-2183', '7891234567890', 'PRD-00000263', 'FORNECEDOR S PIVO'] as $termo) {
             $this->get(route('estoque.index', ['nome' => $termo]))
                 ->assertOk()
                 ->assertSee($this->principal->nome)
@@ -75,7 +75,7 @@ class BuscaEstoquePaginaTest extends TestCase
     public function test_filtros_avancados_encontram_marca_referencia_e_parte_do_codigo_de_barras(): void
     {
         foreach ([
-            ['marca' => 'SKY'],
+            ['marca' => 'FORNECEDOR S'],
             ['codigo_fabricante' => 'PVI'],
             ['codigo' => '00000263'],
             ['codigo_barras' => '345678'],

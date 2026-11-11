@@ -41,4 +41,39 @@ class AuthenticationTest extends TestCase
 
         $this->assertGuest();
     }
+
+    public function test_usuario_bloqueado_perde_sessao_web(): void
+    {
+        $usuario = User::factory()->create(['status' => false]);
+
+        $this->actingAs($usuario)
+            ->withSession(['marcador_sensivel' => 'valor'])
+            ->get(route('perfil'))
+            ->assertRedirect(route('login'))
+            ->assertSessionMissing('marcador_sensivel');
+
+        $this->assertGuest();
+    }
+
+    public function test_usuario_bloqueado_nao_acessa_api_com_token(): void
+    {
+        $usuario = User::factory()->create(['status' => false]);
+        $token = $usuario->createToken('teste-bloqueio')->plainTextToken;
+
+        $this->withToken($token)
+            ->getJson('/api/user')
+            ->assertForbidden()
+            ->assertDontSee($usuario->email);
+    }
+
+    public function test_token_de_usuario_ativo_continua_funcional(): void
+    {
+        $usuario = User::factory()->create(['status' => true]);
+        $token = $usuario->createToken('teste-ativo')->plainTextToken;
+
+        $this->withToken($token)
+            ->getJson('/api/user')
+            ->assertOk()
+            ->assertJsonPath('id', $usuario->id);
+    }
 }

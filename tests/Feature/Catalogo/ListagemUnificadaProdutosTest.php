@@ -29,14 +29,14 @@ class ListagemUnificadaProdutosTest extends TestCase
     public function test_lista_referencias_sem_duplicar_produtos_operacionais_vinculados(): void
     {
         $produto = $this->produtoOperacional();
-        $this->catalogo('SKY-VINCULADO', 'ITEM VINCULADO SKY', $produto->id);
-        $externo = $this->catalogo('SKY-SOLTO', 'ITEM EXCLUSIVO CATALOGO');
+        $this->catalogo('FNS-VINCULADO', 'ITEM VINCULADO FORNECEDOR S', $produto->id);
+        $externo = $this->catalogo('FNS-SOLTO', 'ITEM EXCLUSIVO CATALOGO');
 
         $this->get(route('produtos.index'))
             ->assertOk()
             ->assertSee('PRODUTO OPERACIONAL TESTE')
             ->assertSee('ITEM EXCLUSIVO CATALOGO')
-            ->assertDontSee('ITEM VINCULADO SKY');
+            ->assertDontSee('ITEM VINCULADO FORNECEDOR S');
 
         $this->assertSame(1, Produto::count());
         $this->assertSame(2, CatalogoProduto::count());
@@ -48,7 +48,7 @@ class ListagemUnificadaProdutosTest extends TestCase
     public function test_busca_de_catalogo_e_filtro_de_estoque_respeitam_fronteira(): void
     {
         $this->produtoOperacional();
-        $this->catalogo('SKY-123', 'SONDA LAMBDA TECNICA');
+        $this->catalogo('FNS-123', 'SONDA LAMBDA TECNICA');
 
         $this->get(route('produtos.index', ['nome' => 'SONDA LAMBDA']))
             ->assertOk()->assertSee('SONDA LAMBDA TECNICA')
@@ -61,7 +61,7 @@ class ListagemUnificadaProdutosTest extends TestCase
 
     public function test_detalhes_do_catalogo_mostram_preco_arredondado_sem_acao_de_estoque(): void
     {
-        $externo = $this->catalogo('SKY-SOLTO', 'FILTRO CABINE ESPECIAL');
+        $externo = $this->catalogo('FNS-SOLTO', 'FILTRO CABINE ESPECIAL');
         CatalogoProdutoEstado::query()->create([
             'catalogo_produto_id' => $externo->id,
             'preco_venda_observado' => '12.46',
@@ -91,10 +91,64 @@ class ListagemUnificadaProdutosTest extends TestCase
     public function test_referencia_vinculada_abre_produto_operacional(): void
     {
         $produto = $this->produtoOperacional();
-        $externo = $this->catalogo('SKY-VINCULADO', 'REFERENCIA VINCULADA', $produto->id);
+        $externo = $this->catalogo('FNS-VINCULADO', 'REFERENCIA VINCULADA', $produto->id);
 
         $this->get(route('produtos.catalogo.show', $externo))
             ->assertRedirect(route('produtos.show', $produto));
+    }
+
+
+    public function test_listagem_separa_estoque_fornecedor_s_do_estoque_da_oficina(): void
+    {
+        $produto = $this->produtoOperacional();
+
+        $ref = $this->catalogo(
+            'FNS-ESTOQUE-VINCULADO',
+            'CATALOGO ESTOQUE VINCULADO',
+            $produto->id
+        );
+
+        $solto = $this->catalogo(
+            'FNS-ESTOQUE-SOLTO',
+            'CATALOGO ESTOQUE SOLTO'
+        );
+
+        CatalogoProdutoEstado::create([
+            'catalogo_produto_id' => $ref->id,
+            'estoque_observado' => 25,
+            'preco_venda_sugerido' => '90.00',
+        ]);
+
+        CatalogoProdutoEstado::create([
+            'catalogo_produto_id' => $solto->id,
+            'estoque_observado' => 7,
+        ]);
+
+        $resultado = app(
+            \App\Services\Produto\ListarProdutosUnificados::class
+        )->paginar(\Illuminate\Http\Request::create('/produtos'));
+
+        $operacional = $resultado->getCollection()
+            ->firstWhere('operacional', true);
+
+        $externo = $resultado->getCollection()
+            ->firstWhere('operacional', false);
+
+        $this->assertSame(25, (int) $operacional->estoque_fornecedor);
+        $this->assertSame('4.000', $operacional->quantidade);
+        $this->assertSame(34.9, (float) $operacional->preco);
+        $this->assertSame(7, (int) $externo->estoque_fornecedor);
+        $this->assertNull($externo->quantidade);
+
+        $this->get(route('produtos.index'))
+            ->assertOk()
+            ->assertSee('ESTOQUE OFICINA')
+            ->assertSee('ESTOQUE FORNECEDOR')
+            ->assertSee('confirmar disponibilidade');
+
+        $this->assertSame('4.000', $produto->fresh()->quantidade);
+        $this->assertSame('34.90', $produto->fresh()->preco_uni);
+        $this->assertSame(1, Produto::count());
     }
 
     private function produtoOperacional(): Produto
@@ -117,8 +171,8 @@ class ListagemUnificadaProdutosTest extends TestCase
     private function catalogo(string $chave, string $descricao, ?int $produtoId = null): CatalogoProduto
     {
         $fonte = CatalogoFonte::query()->firstOrCreate(
-            ['codigo' => 'sky'],
-            ['nome' => 'Sky Pecas', 'tipo' => 'fornecedor', 'ativo' => true]
+            ['codigo' => 'fornecedor_s'],
+            ['nome' => 'Fornecedor S', 'tipo' => 'fornecedor', 'ativo' => true]
         );
 
         return CatalogoProduto::query()->create([

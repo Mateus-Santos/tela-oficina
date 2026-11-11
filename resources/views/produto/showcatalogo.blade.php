@@ -28,16 +28,28 @@
                     <p>Referência: <strong>{{ $dadosExibicao['referencia'] ?: 'Não informada' }}</strong></p>
                     <p>Código de barras: {{ $dadosExibicao['codigo_barras'] ?: 'Não informado' }}</p>
                     <div class="fs-4 fw-bold" @if($precoSugerido !== null) title="Preço de referência: R$ {{ number_format((float) $precoSugerido, 2, ',', '.') }}" @endif>
-                        Preço de venda: {{ $dadosExibicao['preco'] !== null ? 'R$ '.number_format((float) $dadosExibicao['preco'], 2, ',', '.') : 'Sob consulta' }}
+                        {{ $dadosExibicao['preco_manual'] !== null
+                            ? 'Preco definido pela oficina:'
+                            : 'Preco sugerido pelo fornecedor (nao cadastrado):' }}
+                        {{ $dadosExibicao['preco'] !== null ? 'R$ '.number_format((float) $dadosExibicao['preco'], 2, ',', '.') : 'Sob consulta' }}
                     </div>
-                    <p class="text-body-secondary small mt-2 mb-0">Disponibilidade física na oficina: sob consulta.</p>
+                    <p class="text-body-secondary small mt-2 mb-0">
+                        Disponibilidade física na oficina: sem cadastro operacional.
+                    </p>
+                    @if($catalogo->estado?->estoque_observado !== null)
+                        <p class="small mt-2 mb-0">
+                            Estoque observado no fornecedor:
+                            <strong>{{ $catalogo->estado->estoque_observado }}</strong>.
+                            Disponibilidade sujeita a confirmação.
+                        </p>
+                    @endif
                     <div class="d-flex gap-2 flex-wrap mt-3">
                         <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#modalCatalogoSimilares"
                             data-url-similares="{{ route('produtos.catalogo.similares', $catalogo) }}">Similares</button>
                         @if(auth()->user()?->isAdmin())
                             <a class="btn btn-primary" href="{{ route('produtos.catalogo.edit', $catalogo) }}">Editar informações</a>
                             <form method="POST" action="{{ route('produtos.catalogo.habilitar', $catalogo) }}"
-                                  onsubmit="return confirm('Criar cadastro operacional com estoque ZERO? Confira a referência e a marca antes de continuar.');">
+                                  onsubmit="return confirm('Habilitar este produto para venda? O sistema aproveitará o cadastro existente quando houver correspondência segura, sem alterar preço ou estoque local.');">
                                 @csrf <button type="submit" class="btn btn-outline-primary">Habilitar para compras e notas</button>
                             </form>
                         @endif
@@ -60,11 +72,44 @@
         </div>
     @endif
 
+    @php
+        $complementosForge = array_filter([
+            'NCM informado' => $dadosExibicao['ncm'],
+            'Unidade do fornecedor' => $dadosExibicao['unidade'],
+            'Quantidade por jogo' => $dadosExibicao['quantidade_jogo'],
+            'Quantidade por caixa' => $dadosExibicao['quantidade_caixa'],
+            'Codigo auxiliar' => $dadosExibicao['codigo_auxiliar'],
+            'Origem informada' => $dadosExibicao['origem_raw'],
+        ], fn ($valor) => $valor !== null && trim((string) $valor) !== '');
+    @endphp
+    @if($complementosForge !== [])
+        <div class="card mb-4">
+            <div class="card-header"><strong>Informacoes complementares do Forge</strong></div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    @foreach($complementosForge as $rotulo => $valor)
+                        <dt class="col-sm-4">{{ $rotulo }}</dt>
+                        <dd class="col-sm-8">{{ $valor }}</dd>
+                    @endforeach
+                </dl>
+                <p class="small text-muted mb-0">
+                    Unidade do fornecedor nao determina automaticamente a unidade tributavel.
+                </p>
+            </div>
+        </div>
+    @endif
+
     <div class="card mb-4">
         <div class="card-header"><strong><i class="bi bi-car-front"></i> Aplicações veiculares ({{ $aplicacoesTecnicas->total() }})</strong></div>
         <div class="card-body">
             @if($aplicacoesTecnicas->isEmpty())
-                <p class="text-body-secondary mb-0">Nenhuma aplicação informada.</p>
+                <p class="text-body-secondary mb-2">
+                    Nenhuma aplicação veicular informada pelo Fornecedor S.
+                </p>
+                <p class="text-body-secondary mb-0">
+                    A ausência de aplicações não significa compatibilidade
+                    universal. Verifique tecnicamente antes da utilização.
+                </p>
             @else
                 <div class="table-responsive"><table class="table table-striped table-hover align-middle">
                     <thead><tr><th>Montadora</th><th>Veículo</th><th>Mês/ano</th><th>Modelo</th><th>Motor</th><th>Combustível</th><th>Complemento</th></tr></thead>

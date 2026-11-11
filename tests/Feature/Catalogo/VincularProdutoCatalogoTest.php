@@ -319,6 +319,53 @@ class VincularProdutoCatalogoTest extends TestCase
         );
     }
 
+    public function test_fornecedor_s_sem_digito_verificador_vincula_por_marca_e_referencia(): void
+    {
+        $produto = $this->criarProduto(
+            'GATES', '6PK1200SF', '7894758161075'
+        );
+
+        $decisao = app(VincularProdutoCatalogo::class)->avaliar(
+            $this->catalogoEmMemoria(
+                '789475816107', 'GATES', '6PK1200SF'
+            )
+        );
+
+        $this->assertSame('automatico', $decisao['status']);
+        $this->assertSame($produto->id, $decisao['produto_id']);
+        $this->assertSame(95.0, $decisao['confianca']);
+    }
+
+    public function test_upc_valido_nao_e_considerado_ean13_truncado(): void
+    {
+        $this->criarProduto(
+            'MARCA UPC', 'REFERENCIA UPC', '0123456789050'
+        );
+
+        $decisao = app(VincularProdutoCatalogo::class)->avaliar(
+            $this->catalogoEmMemoria(
+                '012345678905', 'MARCA UPC', 'REFERENCIA UPC'
+            )
+        );
+
+        $this->assertSame('revisao', $decisao['status']);
+    }
+
+    public function test_ean13_local_com_verificador_invalido_exige_revisao(): void
+    {
+        $this->criarProduto(
+            'MARCA TESTE', 'REF TESTE', '7899152520441'
+        );
+
+        $decisao = app(VincularProdutoCatalogo::class)->avaliar(
+            $this->catalogoEmMemoria(
+                '789915252044', 'MARCA TESTE', 'REF TESTE'
+            )
+        );
+
+        $this->assertSame('revisao', $decisao['status']);
+    }
+
     private function criarProduto(
         string $marcaNome,
         string $codigoFabricante,

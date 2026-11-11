@@ -713,6 +713,38 @@
 
     @endif
 
+    @if($catalogoPrincipal)
+        @php
+            $complementosForge = array_filter([
+                'NCM do fornecedor' => $catalogoPrincipal->ncm,
+                'Unidade do fornecedor' => $catalogoPrincipal->unidade,
+                'Quantidade por jogo' => $catalogoPrincipal->quantidade_jogo,
+                'Quantidade por caixa' => $catalogoPrincipal->quantidade_caixa,
+                'Codigo auxiliar' => $catalogoPrincipal->codigo_auxiliar,
+                'Origem informada' => $catalogoPrincipal->origem_raw,
+            ], fn ($valor) => $valor !== null && trim((string) $valor) !== '');
+        @endphp
+        @if($complementosForge !== [])
+            <div class="card mb-4">
+                <div class="card-header">
+                    <strong>Informacoes complementares do Forge</strong>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        @foreach($complementosForge as $rotulo => $valor)
+                            <dt class="col-sm-4">{{ $rotulo }}</dt>
+                            <dd class="col-sm-8">{{ $valor }}</dd>
+                        @endforeach
+                    </dl>
+                    <div class="small text-muted">
+                        Dados informativos da fonte externa; os dados
+                        fiscais e comerciais locais permanecem independentes.
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endif
+
     {{-- DADOS FISCAIS --}}
     <div class="card mb-4">
 
@@ -889,19 +921,34 @@
         </div>
     @endif
 
+    @if($catalogoPrincipal && $aplicacoesTecnicas?->total() === 0)
+        <div class="alert alert-warning mb-4">
+            <strong>Nenhuma aplicação veicular informada pelo Fornecedor S.</strong>
+            Este produto pode ser cadastrado e editado, mas sua
+            compatibilidade com veículos não foi confirmada pela fonte.
+            Verifique a aplicação correta antes da utilização.
+        </div>
+    @endif
+
     {{-- Aplicacoes tecnicas: apenas leitura; nao altera as aplicacoes manuais. --}}
     @if($aplicacoesTecnicas && $aplicacoesTecnicas->total() > 0)
         <div class="card mb-4">
             <div class="card-header">
                 <strong><i class="bi bi-car-front"></i> Compatibilidades detalhadas</strong>
                 <span class="text-body-secondary ms-2">({{ $aplicacoesTecnicas->total() }})</span>
+                @if($aplicacoesPendentes > 0)
+                    <span class="badge text-bg-warning ms-2">
+                        {{ $aplicacoesPendentes }} pendente(s) de identificação
+                    </span>
+                @endif
             </div>
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-striped table-hover align-middle">
                         <thead><tr>
                             <th>Montadora</th><th>Veículo</th><th>Mês/ano</th>
-                            <th>Modelo</th><th>Motor</th><th>Combustível</th><th>Complemento</th>
+                            <th>Modelo</th><th>Motor</th><th>Combustível</th>
+                            <th>Complemento</th><th>Identificação</th>
                         </tr></thead>
                         <tbody>
                             @foreach($aplicacoesTecnicas as $aplicacao)
@@ -913,6 +960,17 @@
                                     <td>{{ collect([$aplicacao->motor, $aplicacao->comp, $aplicacao->valvulas ? $aplicacao->valvulas.'V' : null, $aplicacao->cilindros ? $aplicacao->cilindros.' cil.' : null])->filter()->implode(' · ') ?: '—' }}</td>
                                     <td>{{ $aplicacao->combustivel ?: '—' }}</td>
                                     <td>{{ $aplicacao->complemento ?: '—' }}</td>
+                                    <td>
+                                        @if(
+                                            $aplicacao->produtoAplicacao?->veiculo_id
+                                            && $aplicacao->produtoAplicacao?->status_resolucao === 'resolvida'
+                                            && (int) $aplicacao->produtoAplicacao?->produto_id === (int) $produto->id
+                                        )
+                                            <span class="badge text-bg-success">Veículo identificado</span>
+                                        @else
+                                            <span class="badge text-bg-warning">Revisão necessária</span>
+                                        @endif
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>

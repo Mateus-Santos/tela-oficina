@@ -6,6 +6,8 @@ use App\Models\CatalogoProduto;
 use App\Models\Marca;
 use App\Models\Produto;
 use App\Services\Produto\ExibirCatalogoProduto;
+use App\Services\Catalogo\VincularProdutoCatalogo;
+use App\Services\Produto\SincronizarAplicacaoCatalogo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -51,64 +53,208 @@ class CatalogoProdutoComplementoController extends Controller
             ->with('success', 'Personalizações salvas. Importações futuras não alteram estes campos.');
     }
 
-    /** Acao deliberada. Jamais executada no GET de uma pesquisa. Estoque sempre zero. */
-    public function habilitar(Request $request, CatalogoProduto $catalogo, ExibirCatalogoProduto $exibicao)
-    {
+    /**
+     * Aprovacao explicita do administrador.
+     * Nunca sobrescreve preco ou estoque de produto existente.
+     */
+    public function habilitar(
+        Request $request,
+        CatalogoProduto $catalogo,
+        ExibirCatalogoProduto $exibicao,
+        VincularProdutoCatalogo $vinculador,
+        SincronizarAplicacaoCatalogo $sincronizador
+    ) {
         $this->exigirAdmin($request);
-        $produto = DB::transaction(function () use ($catalogo, $exibicao) {
-            $catalogo = CatalogoProduto::query()->lockForUpdate()->findOrFail($catalogo->id);
-            if ($catalogo->produto_id) {
-                return Produto::query()->findOrFail($catalogo->produto_id);
-            }
-            $catalogo->load(['edicao', 'estado', 'imagens']);
-            $dados = $exibicao->dados($catalogo);
-            $marcaNome = trim((string) ($dados['marca'] ?: 'SEM MARCA'));
-            $marca = Marca::query()->whereRaw('LOWER(nome) = ?', [mb_strtolower($marcaNome)])->first();
-            $marca ??= Marca::query()->firstOrCreate(['nome' => $marcaNome], ['ativo' => true]);
 
-            $referencia = trim((string) ($dados['referencia'] ?: 'SKY-'.$catalogo->chave_externa));
-            if (Produto::query()->where('marca_id', $marca->id)
-                ->where('codigo_fabricante', $referencia)->exists()) {
-                throw ValidationException::withMessages([
-                    'catalogo' => 'Ja existe um produto operacional desta marca e referencia. Revise o vinculo antes de cadastrar.',
-                ]);
+        $produto = DB::transaction(function () use (
+            $catalogo,
+            $exibicao,
+            $vinculador,
+            $sincronizador
+        ) {
+            $catalogo = CatalogoProduto::query()
+                ->lockForUpdate()
+                ->findOrFail($catalogo->id);
+
+            if ($catalogo->produto_id) {
+                $produto = Produto::query()
+                    ->lockForUpdate()
+                    ->findOrFail($catalogo->produto_id);
+            } else {
+                $decisao = $vinculador->avaliar($catalogo);
+
+                if ($decisao['status'] === 'revisao') {
+                    throw ValidationException::withMessages([
+                        'catalogo' => $decisao['motivo']
+                            ?: 'Identidade ambigua. Revise antes de habilitar.',
+                    ]);
+                }
+
+                if ($decisao['status'] === 'automatico') {
+                    $produto = Produto::query()
+                        ->lockForUpdate()
+                        ->findOrFail($decisao['produto_id']);
+
+                    $catalogo->forceFill([
+                        'produto_id' => $produto->id,
+                        'vinculo_status' => 'automatico',
+                        'vinculo_confianca' => $decisao['confianca'],
+                        'vinculo_motivo' => $decisao['motivo'],
+                    ])->save();
+                } else {
+                    $catalogo->load(['edicao', 'estado', 'imagens']);
+                    $dados = $exibicao->dados($catalogo);
+
+                    $marcaNome = trim((string) ($dados['marca'] ?: 'SEM MARCA'));
+                    $marca = Marca::query()
+                        ->whereRaw('LOWER(nome) = ?', [mb_strtolower($marcaNome)])
+                        ->first();
+
+                    $marca ??= Marca::query()->firstOrCreate(
+                        ['nome' => $marcaNome],
+                        ['ativo' => true]
+                    );
+
+                    $referencia = trim((string) (
+                        $dados['referencia'] ?: 'FNS-'.$catalogo->chave_externa
+                    ));
+
+                    if (Produto::query()
+                        ->where('marca_id', $marca->id)
+                        ->where('codigo_fabricante', $referencia)
+                        ->exists()) {
+                        throw ValidationException::withMessages([
+                            'catalogo' => 'Produto existente: revise o vinculo antes de cadastrar.',
+                        ]);
+                    }
+
+                    $ean = trim((string) ($dados['codigo_barras'] ?? ''));
+
+                    if ($ean !== '' && Produto::query()
+                        ->where('codigo_barras', $ean)->exists()) {
+                        throw ValidationException::withMessages([
+                            'catalogo' => 'EAN ja cadastrado. Revise a identidade.',
+                        ]);
+                    }
+
+                    // Nunca transformar sugestao do Forge em preco da oficina.
+                    $precoManual = $catalogo->edicao?->preco_venda;
+                    if ($precoManual === null) {
+                        throw ValidationException::withMessages([
+                            'catalogo' => 'Defina o preco de venda da oficina em Editar informacoes antes de habilitar um produto novo.',
+                        ]);
+                    }
+
+                    $produto = Produto::query()->create([
+                        'codigo' => null,
+                        'nome' => mb_substr((string) $dados['nome'], 0, 150),
+                        'descricao' => $dados['descricao'] ?: $dados['nome'],
+                        'marca_id' => $marca->id,
+                        'codigo_fabricante' => $referencia,
+                        'codigo_barras' => $ean !== '' ? $ean : null,
+                        'ncm' => null,
+                        'preco_uni' => $precoManual,
+                        'quantidade' => '0.000',
+                        'estoque_minimo' => '0.000',
+                        'status' => true,
+                    ]);
+
+                    $catalogo->forceFill([
+                        'produto_id' => $produto->id,
+                        'vinculo_status' => 'manual',
+                        'vinculo_motivo' => 'Cadastro autorizado pelo administrador',
+                    ])->save();
+                }
             }
-            $ean = trim((string) ($dados['codigo_barras'] ?? ''));
-            if ($ean !== '' && Produto::query()->where('codigo_barras', $ean)->exists()) {
-                // Nunca inventar identidade usando EAN duplicado.
-                throw ValidationException::withMessages([
-                    'catalogo' => 'Codigo de barras ja cadastrado. Vincule manualmente ao produto correto.',
-                ]);
+
+            // O clique administrativo aprova a disponibilidade para venda.
+            // Nunca modifica o preco, o estoque fisico ou a marca existentes.
+            if (! $produto->status) {
+                $produto->update(['status' => true]);
             }
-            $preco = $dados['preco'];
-            $produto = Produto::query()->create([
-                'codigo' => null,
-                'nome' => mb_substr((string) $dados['nome'], 0, 150),
-                'descricao' => $dados['descricao'] ?: $dados['nome'],
-                'marca_id' => $marca->id,
-                'codigo_fabricante' => $referencia,
-                'codigo_barras' => $ean !== '' ? $ean : null,
-                'ncm' => $catalogo->ncm,
-                'preco_uni' => $preco !== null ? (float) $preco : 0,
-                'quantidade' => '0.000',
-                'estoque_minimo' => '0.000',
-                'status' => true,
-            ]);
-            $catalogo->forceFill([
-                'produto_id' => $produto->id,
-                'vinculo_status' => 'manual',
-                'vinculo_motivo' => 'Cadastro operacional autorizado pelo administrador',
-            ])->save();
+
+            // Complementa somente campos vazios, sem sobrescrever a oficina.
+            $this->preencherDadosFiscaisVazios($produto, $catalogo);
+
+            // Sincroniza as aplicacoes tecnicas do Fornecedor S.
+            $catalogo->aplicacoes()
+                ->where('ativa', true)
+                ->with('catalogoVeiculo')
+                ->chunkById(200, function ($aplicacoes) use (
+                    $sincronizador
+                ) {
+                    foreach ($aplicacoes as $aplicacao) {
+                        $sincronizador->sincronizar(
+                            $aplicacao,
+                            false
+                        );
+                    }
+                });
+
+            // Reune aplicacoes manuais e externas do produto.
+            $veiculosAplicacoes = $produto->aplicacoes()
+                ->reorder()
+                ->whereNotNull('veiculo_id')
+                ->distinct()
+                ->pluck('veiculo_id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+
+            // Apenas adiciona os veiculos conhecidos.
+            // Preserva inclusive vinculos legados existentes
+            // somente na tabela produtos_veiculos.
+            if ($veiculosAplicacoes !== []) {
+                $produto->veiculos()->syncWithoutDetaching(
+                    $veiculosAplicacoes
+                );
+            }
+
             return $produto;
         });
 
-        return redirect()->route('produtos.edit', $produto)
-            ->with('success', 'Produto habilitado com codigo interno. Estoque inicial zero. Confira os dados antes da compra ou venda.');
+        return redirect()
+            ->route('produtos.show', $produto)
+            ->with(
+                'success',
+                'Produto habilitado e vinculado ao catalogo. '
+                .'Preco e estoque local preservados quando ja cadastrados.'
+            );
+    }
+
+    /**
+     * Preserva os valores locais. Unidade tributavel nao pode ser inferida
+     * a partir da unidade comercial do fornecedor.
+     */
+    private function preencherDadosFiscaisVazios(
+        Produto $produto,
+        CatalogoProduto $catalogo
+    ): void {
+        $complementos = [];
+
+        $ncm = trim((string) $catalogo->ncm);
+        if (
+            trim((string) $produto->ncm) === '' &&
+            preg_match('/\\A[0-9]{8}\\z/D', $ncm)
+        ) {
+            $complementos['ncm'] = $ncm;
+        }
+
+        $unidade = mb_strtoupper(trim((string) $catalogo->unidade));
+        if (
+            trim((string) $produto->unidade_comercial) === '' &&
+            preg_match('/\\A[A-Z0-9]{1,6}\\z/D', $unidade)
+        ) {
+            $complementos['unidade_comercial'] = $unidade;
+        }
+
+        if ($complementos !== []) {
+            $produto->update($complementos);
+        }
     }
 
     public function similares(CatalogoProduto $catalogo, ExibirCatalogoProduto $exibicao)
     {
-        // A Sky indica proximidade comercial; equivalencia tecnica NAO homologada.
+        // O Fornecedor S indica proximidade comercial; equivalencia tecnica NAO homologada.
         $relacoes = $catalogo->similares()->with(['similar.estado', 'similar.imagens', 'similar.edicao'])
             ->orderBy('id')->limit(31)->get();
         $similares = $relacoes->take(30)->map(function ($relacao) use ($exibicao) {
