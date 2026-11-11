@@ -173,34 +173,25 @@ class AnexoController extends Controller
         );
     }
 
-    public function preview(
-        Anexo $anexo
-    ): StreamedResponse {
-        abort_unless(
-            Storage::disk('private')->exists(
-                $anexo->arquivo
-            ),
-            404
-        );
+    public function preview(Anexo $anexo): StreamedResponse
+    {
+        $disco = Storage::disk('private');
+        abort_unless($disco->exists($anexo->arquivo), 404);
 
-        return Storage::disk('private')
-            ->response(
-                $anexo->arquivo,
-                $anexo->nome_original,
-                [
-                    'Content-Type' => $anexo->mime_type,
+        $headers = [
+            'Content-Type' => $anexo->mime_type,
+            'X-Content-Type-Options' => 'nosniff',
+            'Cache-Control' => 'private, no-store, no-cache, must-revalidate',
+            'Pragma' => 'no-cache',
+        ];
 
-                    'Content-Disposition' => 'inline; filename="'
-                        . $anexo->nome_original
-                        . '"',
+        $inline = in_array(strtolower((string) $anexo->mime_type), [
+            'application/pdf', 'image/jpeg', 'image/png', 'image/webp',
+        ], true);
 
-                    'X-Content-Type-Options' => 'nosniff',
-
-                    'Cache-Control' => 'private, no-store, no-cache, must-revalidate',
-
-                    'Pragma' => 'no-cache',
-                ]
-            );
+        return $inline
+            ? $disco->response($anexo->arquivo, $anexo->nome_original, $headers)
+            : $disco->download($anexo->arquivo, $anexo->nome_original, $headers);
     }
 
     public function download(

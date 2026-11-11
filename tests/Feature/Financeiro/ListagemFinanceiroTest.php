@@ -597,4 +597,105 @@ class ListagemFinanceiroTest extends TestCase
             [$vencida->id]
         );
     }
+
+    public function test_resumo_contas_pagar_preserva_valores(): void
+    {
+        $conta = $this->criarContaPagar(
+            'parcialmente_paga', 300
+        );
+
+        $vencida = $this->criarParcelaPagar(
+            $conta, 1, 100, now()->subDays(5)->toDateString()
+        );
+
+        $futura = $this->criarParcelaPagar(
+            $conta, 2, 100, now()->addDays(5)->toDateString()
+        );
+
+        $this->criarParcelaPagar(
+            $conta, 3, 100, now()->subDay()->toDateString()
+        );
+
+        $this->pagarParcela($conta, $vencida, 40);
+        $this->pagarParcela($conta, $futura, 100);
+
+        $estornado = $this->pagarParcela(
+            $conta, $vencida, 10
+        );
+
+        $estornado->update(['estornado_em' => now()]);
+
+        $cancelada = $this->criarContaPagar(
+            'cancelada', 100
+        );
+
+        $this->criarParcelaPagar(
+            $cancelada, 1, 100,
+            now()->subDay()->toDateString()
+        );
+
+        $response = $this->actingAs($this->admin)
+            ->get(route('contas-pagar.index', [
+                'status' => 'todas',
+            ]));
+
+        $response->assertOk();
+
+        $resumo = $response->viewData('resumo');
+
+        $this->assertSame(400.0, $resumo['total']);
+        $this->assertSame(140.0, $resumo['total_pago']);
+        $this->assertSame(260.0, $resumo['total_em_aberto']);
+        $this->assertSame(160.0, $resumo['total_vencido']);
+    }
+
+    public function test_resumo_contas_receber_preserva_valores(): void
+    {
+        $conta = $this->criarContaReceber('parcial', 300);
+
+        $vencida = $this->criarParcelaReceber(
+            $conta, 1, 100, now()->subDays(5)->toDateString()
+        );
+
+        $futura = $this->criarParcelaReceber(
+            $conta, 2, 100, now()->addDays(5)->toDateString()
+        );
+
+        $this->criarParcelaReceber(
+            $conta, 3, 100, now()->subDay()->toDateString()
+        );
+
+        $this->receberParcela($conta, $vencida, 40);
+        $this->receberParcela($conta, $futura, 100);
+
+        $estornado = $this->receberParcela(
+            $conta, $vencida, 10
+        );
+
+        $estornado->update(['estornado_em' => now()]);
+
+        $cancelada = $this->criarContaReceber(
+            'cancelada', 100
+        );
+
+        $this->criarParcelaReceber(
+            $cancelada, 1, 100,
+            now()->subDay()->toDateString()
+        );
+
+        $response = $this->actingAs($this->admin)
+            ->get(route('contas-receber.index', [
+                'status' => 'todas',
+            ]));
+
+        $response->assertOk();
+
+        $resumo = $response->viewData('resumo');
+
+        $this->assertSame(400.0, $resumo['valor_total']);
+        $this->assertSame(2, $resumo['total']);
+        $this->assertSame(1, $resumo['em_aberto']);
+        $this->assertSame(160.0, $resumo['total_vencido']);
+        $this->assertSame(2, $resumo['vencidas']);
+    }
 }
