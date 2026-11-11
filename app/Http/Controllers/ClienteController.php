@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Clientes\AtualizarCliente;
 use App\Actions\Clientes\CriarClienteCompleto;
 use App\Http\Requests\Clientes\StoreClienteRequest;
 use App\Http\Requests\Clientes\UpdateClienteRequest;
@@ -9,7 +10,6 @@ use App\Models\Cliente;
 use App\Models\Pessoa;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class ClienteController extends Controller
 {
@@ -247,7 +247,8 @@ class ClienteController extends Controller
 
     public function update(
         UpdateClienteRequest $request,
-        string $id
+        string $id,
+        AtualizarCliente $atualizarCliente
     ) {
         $usuarioLogado =
             $request->user();
@@ -283,55 +284,10 @@ class ClienteController extends Controller
                 $cliente->pessoa_id
             )->first();
 
-        $cpfLimpo = $request->input('cpf');
-        $rgLimpo = $request->input('rg');
-        $telefone1Limpo = $request->input('telefone_1');
-        $telefone2Limpo = $request->input('telefone_2');
-
-        DB::transaction(
-            function () use (
-                $request,
-                $cliente,
-                $usuario,
-                $cpfLimpo,
-                $rgLimpo,
-                $telefone1Limpo,
-                $telefone2Limpo
-            ) {
-                $cliente
-                    ->pessoa
-                    ->update([
-                        'nome' => $request->input(
-                            'nome'
-                        ),
-
-                        'cpf' => $cpfLimpo,
-
-                        'rg' => $rgLimpo,
-
-                        'data_nascimento' => $request->input(
-                            'data_nascimento'
-                        ),
-
-                        'telefone_1' => $telefone1Limpo,
-
-                        'telefone_2' => $telefone2Limpo,
-                    ]);
-
-                $cliente->update([
-                    'pontos' => $request->input(
-                        'pontos'
-                    ) ?? 0,
-                ]);
-
-                if ($usuario) {
-                    $usuario->update([
-                        'email' => $request->input(
-                            'email'
-                        ),
-                    ]);
-                }
-            }
+        $atualizarCliente->execute(
+            $cliente,
+            $usuario,
+            $request->validated()
         );
 
         return redirect()

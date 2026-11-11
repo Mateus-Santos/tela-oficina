@@ -500,4 +500,73 @@ class ClienteTest extends TestCase
 
         $this->assertEquals(10, $cliente->fresh()->pontos);
     }
+
+
+    public function test_atualiza_pessoa_pontos_e_email_na_mesma_operacao(): void
+    {
+        $cliente = $this->criarCliente();
+
+        $usuario = User::factory()->create([
+            'pessoa_id' => $cliente->pessoa_id,
+            'email' => 'antes-action@example.com',
+        ]);
+
+        $this->actingAs($this->admin)
+            ->put(route('clientes.update', $cliente->id), [
+                'nome' => 'Cliente Atualizado pela Action',
+                'cpf' => '123.456.789-01',
+                'telefone_1' => '(75) 99999-8888',
+                'pontos' => 25,
+                'email' => 'depois-action@example.com',
+            ])
+            ->assertRedirect(route('clientes.index'))
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('pessoas', [
+            'id' => $cliente->pessoa_id,
+            'nome' => 'Cliente Atualizado pela Action',
+            'cpf' => '12345678901',
+            'telefone_1' => '75999998888',
+        ]);
+
+        $this->assertDatabaseHas('clientes', [
+            'id' => $cliente->id,
+            'pontos' => 25,
+        ]);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $usuario->id,
+            'email' => 'depois-action@example.com',
+        ]);
+    }
+
+    public function test_atualizacao_nao_modifica_perfil_ou_status_do_usuario(): void
+    {
+        $cliente = $this->criarCliente();
+
+        $usuario = User::factory()->create([
+            'pessoa_id' => $cliente->pessoa_id,
+            'perfil' => User::PERFIL_CLIENTE,
+            'status' => true,
+        ]);
+
+        $this->actingAs($this->admin)
+            ->put(route('clientes.update', $cliente->id), [
+                'nome' => 'Cliente com Permissoes Preservadas',
+                'email' => $usuario->email,
+                'perfil' => User::PERFIL_ADMIN,
+                'status' => false,
+                'pontos' => 0,
+            ])
+            ->assertSessionHasNoErrors();
+
+        $usuario->refresh();
+
+        $this->assertSame(
+            User::PERFIL_CLIENTE,
+            $usuario->perfil
+        );
+
+        $this->assertTrue((bool) $usuario->status);
+    }
 }
