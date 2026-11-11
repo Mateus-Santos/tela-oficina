@@ -219,88 +219,53 @@ class ContaReceberController extends Controller
             );
         }
 
-        $parcelasResumo = (clone $query)->get();
+        $saldoSql = 'GREATEST(0, ROUND('
+            . 'resumo_parcelas.valor - '
+            . 'COALESCE(resumo_parcelas.valor_recebido, 0), 2))';
 
-        $valorTotal = (float) $parcelasResumo->sum(
-            fn ($parcela) => (float) $parcela->valor
-        );
+        $hoje = today()->toDateString();
+        $naoCancelada = "COALESCE(conta_resumo.status, '') <> 'cancelada'";
 
-        $totalContas = $parcelasResumo
-            ->pluck('conta_receber_id')
-            ->unique()
-            ->count();
-
-        $contasEmAberto = $parcelasResumo
-            ->filter(
-                function ($parcela) {
-                    $conta = $parcela->contaReceber;
-
-                    $saldo = max(
-                        0,
-                        round(
-                            (float) $parcela->valor
-                            - (float) (
-                                $parcela->valor_recebido
-                                ?? 0
-                            ),
-                            2
-                        )
-                    );
-
-                    return $conta->status !== 'cancelada'
-                        && $saldo > 0;
-                }
+        $totais = DB::query()
+            ->fromSub((clone $query)->toBase(), 'resumo_parcelas')
+            ->join(
+                'contas_receber as conta_resumo',
+                'conta_resumo.id',
+                '=',
+                'resumo_parcelas.conta_receber_id'
             )
-            ->pluck('conta_receber_id')
-            ->unique()
-            ->count();
-
-        $parcelasVencidas = $parcelasResumo
-            ->filter(
-                function ($parcela) {
-                    $conta = $parcela->contaReceber;
-
-                    $saldo = max(
-                        0,
-                        round(
-                            (float) $parcela->valor
-                            - (float) (
-                                $parcela->valor_recebido
-                                ?? 0
-                            ),
-                            2
-                        )
-                    );
-
-                    return $conta->status !== 'cancelada'
-                        && $saldo > 0
-                        && $parcela
-                            ->data_vencimento
-                            ->isBefore(today());
-                }
-            );
-
-        $totalVencido = (float)
-            $parcelasVencidas->sum(
-                fn ($parcela) => max(
-                    0,
-                    round(
-                        (float) $parcela->valor
-                        - (float) (
-                            $parcela->valor_recebido
-                            ?? 0
-                        ),
-                        2
-                    )
-                )
-            );
+            ->selectRaw(
+                'COALESCE(SUM(resumo_parcelas.valor), 0) AS valor_total'
+            )
+            ->selectRaw(
+                'COUNT(DISTINCT resumo_parcelas.conta_receber_id) AS total'
+            )
+            ->selectRaw(
+                "COUNT(DISTINCT CASE WHEN $naoCancelada AND $saldoSql > 0 "
+                . 'THEN resumo_parcelas.conta_receber_id END) AS em_aberto'
+            )
+            ->selectRaw(
+                "COALESCE(SUM(CASE WHEN $naoCancelada "
+                . "AND $saldoSql > 0 "
+                . "AND resumo_parcelas.data_vencimento < ? "
+                . "THEN $saldoSql ELSE 0 END), 0) AS total_vencido",
+                [$hoje]
+            )
+            ->selectRaw(
+                "SUM(CASE WHEN $naoCancelada "
+                . "AND $saldoSql > 0 "
+                . "AND resumo_parcelas.data_vencimento < ? "
+                . 'THEN 1 ELSE 0 END) AS vencidas',
+                [$hoje]
+            )
+            ->first();
 
         $resumo = [
-            'valor_total' => $valorTotal,
-            'total' => $totalContas,
-            'em_aberto' => $contasEmAberto,
-            'total_vencido' => $totalVencido,
-            'vencidas' => $parcelasVencidas->count(),
+            'valor_total' => (float) $totais->valor_total,
+            'total' => (int) $totais->total,
+            'em_aberto' => (int) $totais->em_aberto,
+            'total_vencido' => (float) $totais->total_vencido,
+            'vencidas' => (int) $totais->vencidas,
         ];
 
         $parcelasReceber = $query
