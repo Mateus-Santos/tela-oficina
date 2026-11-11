@@ -330,6 +330,15 @@ class ClienteController extends Controller
                 }
             }
 
+            if (
+                DB::table('marketing_leads')
+                    ->where('cliente_id', $cliente->id)->exists()
+                || DB::table('marketing_cliente_acessos')
+                    ->where('cliente_id', $cliente->id)->exists()
+            ) {
+                return false;
+            }
+
             return (bool) $cliente->delete();
         });
 
