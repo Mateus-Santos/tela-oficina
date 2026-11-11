@@ -10,6 +10,7 @@ use App\Models\Cliente;
 use App\Models\Pessoa;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ClienteController extends Controller
 {
@@ -304,10 +305,42 @@ class ClienteController extends Controller
 
     public function destroy(string $id)
     {
-        $cliente =
-            Cliente::findOrFail($id);
+        $excluido = DB::transaction(function () use ($id): bool {
+            $cliente = Cliente::query()
+                ->lockForUpdate()
+                ->findOrFail($id);
 
-        $cliente->delete();
+            if (DB::table('users')
+                ->where('pessoa_id', $cliente->pessoa_id)
+                ->exists()) {
+                return false;
+            }
+
+            foreach ([
+                'veiculos_clientes',
+                'cliente_veiculo_cliente',
+                'ordem_servicos',
+                'notas',
+                'contas_receber',
+            ] as $tabela) {
+                if (DB::table($tabela)
+                    ->where('cliente_id', $cliente->id)
+                    ->exists()) {
+                    return false;
+                }
+            }
+
+            return (bool) $cliente->delete();
+        });
+
+        if (! $excluido) {
+            return redirect()
+                ->route('clientes.index')
+                ->with(
+                    'error',
+                    'Este cliente possui vínculos cadastrados e não pode ser excluído.'
+                );
+        }
 
         return redirect()
             ->route('clientes.index')

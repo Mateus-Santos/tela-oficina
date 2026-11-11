@@ -6,6 +6,7 @@ use App\Models\Cliente;
 use App\Models\Pessoa;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
@@ -633,5 +634,105 @@ class ClienteTest extends TestCase
                 $outraConta->fresh()->email
             );
         }
+    }
+
+
+    public function test_admin_exclui_cliente_sem_vinculos_e_preserva_pessoa(): void
+    {
+        $cliente = $this->criarCliente();
+        $pessoaId = $cliente->pessoa_id;
+
+        $this->actingAs($this->admin)
+            ->delete(route('clientes.destroy', $cliente->id))
+            ->assertRedirect(route('clientes.index'))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseMissing('clientes', [
+            'id' => $cliente->id,
+        ]);
+
+        $this->assertDatabaseHas('pessoas', [
+            'id' => $pessoaId,
+        ]);
+    }
+
+    public function test_admin_nao_exclui_cliente_com_nota(): void
+    {
+        $cliente = $this->criarCliente();
+
+        $notaId = DB::table('notas')->insertGetId([
+            'cliente_id' => $cliente->id,
+            'tipo' => 'servico',
+            'status' => 'Aberto',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($this->admin)
+            ->delete(route('clientes.destroy', $cliente->id))
+            ->assertRedirect(route('clientes.index'))
+            ->assertSessionHas('error');
+
+        $this->assertDatabaseHas('clientes', [
+            'id' => $cliente->id,
+        ]);
+
+        $this->assertDatabaseHas('notas', [
+            'id' => $notaId,
+            'cliente_id' => $cliente->id,
+        ]);
+    }
+
+    public function test_admin_nao_exclui_cliente_com_conta_receber(): void
+    {
+        $cliente = $this->criarCliente();
+
+        $contaId = DB::table('contas_receber')->insertGetId([
+            'cliente_id' => $cliente->id,
+            'descricao' => 'Conta de teste de exclusao',
+            'valor_original' => 100,
+            'data_vencimento' => now()->toDateString(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($this->admin)
+            ->delete(route('clientes.destroy', $cliente->id))
+            ->assertRedirect(route('clientes.index'))
+            ->assertSessionHas('error');
+
+        $this->assertDatabaseHas('clientes', [
+            'id' => $cliente->id,
+        ]);
+
+        $this->assertDatabaseHas('contas_receber', [
+            'id' => $contaId,
+            'cliente_id' => $cliente->id,
+        ]);
+    }
+
+    public function test_admin_nao_exclui_cliente_com_usuario(): void
+    {
+        $cliente = $this->criarCliente();
+
+        $usuario = User::factory()->create([
+            'pessoa_id' => $cliente->pessoa_id,
+            'perfil' => User::PERFIL_CLIENTE,
+            'status' => true,
+        ]);
+
+        $this->actingAs($this->admin)
+            ->delete(route('clientes.destroy', $cliente->id))
+            ->assertRedirect(route('clientes.index'))
+            ->assertSessionHas('error');
+
+        $this->assertDatabaseHas('clientes', [
+            'id' => $cliente->id,
+        ]);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $usuario->id,
+            'pessoa_id' => $cliente->pessoa_id,
+        ]);
     }
 }
