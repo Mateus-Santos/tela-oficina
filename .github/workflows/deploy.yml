@@ -112,7 +112,10 @@ jobs:
           test "$DB_HOST" = "127.0.0.1"
           test "$DB_USERNAME" = "ci_testes"
           export APP_KEY="$(php -r 'echo "base64:".base64_encode(random_bytes(32));')"
-          php artisan test --no-ansi
+          test ! -e .env
+          printf 'APP_ENV=testing\n' > .env
+          trap 'rm -f -- .env' EXIT
+          php artisan test --no-ansi --display-warnings --fail-on-warning
 
       - name: Auditar dependencias Composer e NPM
         id: audit
