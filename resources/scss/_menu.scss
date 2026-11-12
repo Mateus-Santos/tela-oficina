@@ -1,98 +1,248 @@
 @use './_colors.scss' as *;
 
-$espacamento: 1rem;
-.dropdown-hover-submenu {
-  position: relative;
-}
-
-.dropdown-hover-submenu .dropdown-menu {
-  top: 0;
-  left: 100%;
-  margin-top: -1px;
-  opacity: 0;
-  visibility: hidden;
-  display: block;
-  transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
-  transition-delay: 0.2s;
-}
-
-.dropdown-hover-submenu:hover > .dropdown-menu {
-  opacity: 1;
-  visibility: visible;
-  transition-delay: 0s;
-}
-
+// Navegacao principal da SOS Mecanica.
 #header {
-	img{
-		width: 10rem;
-		height: 3rem;
-	}
-	transition: all 1s;
-	z-index: 9997;
-	padding: 1rem;
-	background-color: $background-color_1;
-	.navbar-toggler{
-		background-color: $color_5;
-		margin: $espacamento;
-	}
-	h1{
-		font-size: 1.6rem;
-	}
-	ul{
-		margin: 0rem 1rem 0rem 1rem;
-		li{
-			margin: 0.5rem 0.5rem 0.5rem 0.5rem;
-			white-space: nowrap;
-		}
-		.btn-light, .btn-success, .btn-info, .btn-danger{
-			color: $color_5;
-		}
-		.btn-light, .btn-warning{
-			color: $color_1;
-		}
-		.btn:hover{
-			transition: 300ms;
-			color: $color_1;
-		}
-		.dropdown-menu{
-			background-color: $color_1;
-		}
-		.dropdown-item:hover{
-			background-color: $color_1;
-		}
+  --sos-menu-fundo: #151b20;
+  --sos-menu-superficie: #202930;
+  --sos-menu-borda: rgba(255, 255, 255, .12);
+  --sos-menu-texto: #f2f5f7;
+  --sos-menu-destaque: #f9fd00;
+  --sos-menu-verde: #43da43;
 
-		a {
-			font-family: $font-family_2;
-			color: $color_4;
-			transition: 300ms;
-		}a:hover{
-			transition: 300ms;
-			color: $color_2;
-		}
-	}
+  z-index: 1030;
+  min-height: 76px;
+  padding: .625rem clamp(.75rem, 2vw, 2rem);
+  background: var(--sos-menu-fundo);
+  border-bottom: 1px solid var(--sos-menu-borda);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, .12);
+  transition: box-shadow .2s ease;
 
-    .btn-sair {
-    background-color: #fff !important;
-    color: #212529 !important;
-}
+  &.header-scrolled {
+    box-shadow: 0 6px 24px rgba(0, 0, 0, .22);
+  }
 
-.btn-sair:hover,
-.btn-sair:focus {
-    background-color: #f8f9fa !important;
-    color: #212529 !important;
-}
-}
+  .container-fluid {
+    min-width: 0;
+    gap: .5rem;
+  }
 
-// Melhor usabilidade no menu responsivo, sem alterar os outros componentes.
-#header {
-  .dropdown-menu { min-width: 280px; max-height: min(70vh, 520px); overflow-y: auto; }
-  .dropdown-item { white-space: nowrap; line-height: 1.3; }
-  .dropdown-item.active { background: #344452; color: #fff; }
-  @media (max-width: 991px) {
-    .navbar-collapse { max-height: calc(100vh - 100px); overflow-y: auto; }
-    .dropdown-menu { min-width: 0; max-height: none; }
-    .dropdown-item { white-space: normal; }
+  .navbar-brand {
+    min-width: 0;
+    margin-right: 1rem;
+
+    img {
+      display: block;
+      width: 10rem;
+      max-width: 100%;
+      height: auto;
+      max-height: 3rem;
+      object-fit: contain;
+    }
+  }
+
+  .navbar-collapse {
+    min-width: 0;
+  }
+
+  .navbar-toggler {
+    padding: .55rem .7rem;
+    border: 1px solid var(--sos-menu-borda);
+    border-radius: .65rem;
+
+    &:hover,
+    &[aria-expanded="true"] {
+      background: rgba(255, 255, 255, .08);
+    }
+  }
+
+  .navbar-nav {
+    gap: .2rem;
+    margin: 0;
+    padding: 0;
+
+    .nav-item {
+      min-width: 0;
+      margin: 0;
+      white-space: normal;
+    }
+
+    .nav-link {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      min-width: 0;
+      padding: .65rem .8rem;
+      border-radius: .65rem;
+      color: var(--sos-menu-texto);
+      font-family: $font-family_2;
+      font-weight: 500;
+      line-height: 1.35;
+      text-decoration: none;
+      overflow-wrap: anywhere;
+      transition: color .2s ease, background-color .2s ease;
+
+      &:hover,
+      &:focus-visible,
+      &.active,
+      &[aria-expanded="true"] {
+        color: var(--sos-menu-destaque);
+        background: rgba(255, 255, 255, .08);
+      }
+    }
+
+    button.nav-link {
+      background-color: transparent;
+      border: 0;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .dropdown-toggle::after {
+      margin-left: .35rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .35rem;
+      border-radius: .65rem;
+      font-weight: 600;
+      padding: .6rem .85rem;
+    }
+  }
+
+  .dropdown-menu {
+    min-width: min(18rem, calc(100vw - 2rem));
+    max-width: min(22rem, calc(100vw - 2rem));
+    max-height: min(70vh, 30rem);
+    overflow-y: auto;
+    padding: .5rem;
+    background: var(--sos-menu-superficie);
+    border: 1px solid var(--sos-menu-borda);
+    border-radius: .85rem;
+    box-shadow: 0 14px 35px rgba(0, 0, 0, .2);
+  }
+
+  .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .7rem .8rem;
+    border-radius: .5rem;
+    color: var(--sos-menu-texto);
+    font-family: $font-family_2;
+    line-height: 1.4;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    transition: background-color .15s ease;
+
+    &:hover,
+    &:focus-visible {
+      background: #34434b;
+      color: #fff;
+    }
+
+    &.active {
+      background: #30533c;
+      color: #fff;
+      font-weight: 600;
+    }
+  }
+
+  .dropdown-divider {
+    border-color: var(--sos-menu-borda);
+  }
+
+  .btn-sair {
+    width: 100%;
+    background: transparent;
+    border: 0;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+      background: #493337;
+      color: #fff;
+    }
+  }
+
+  :is(.nav-link, .dropdown-item, .navbar-toggler, .btn):focus-visible {
+    outline: 3px solid var(--sos-menu-destaque);
+    outline-offset: 3px;
   }
 }
-.sos-credit-trigger { cursor: pointer; opacity: .75; }
-.sos-credit-trigger:hover { opacity: 1; }
+
+// Navegacao recolhida: smartphones e tablets.
+@media (max-width: 1199.98px) {
+  #header {
+    padding: .5rem .75rem;
+
+    .navbar-collapse {
+      max-height: calc(100vh - 76px);
+      max-height: calc(100dvh - 76px);
+      overflow-x: hidden;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+
+    .navbar-nav {
+      gap: .3rem;
+      padding: .75rem 0;
+
+      .nav-link {
+        display: flex;
+        width: 100%;
+        padding: .85rem .9rem;
+      }
+
+      .nav-item > .btn {
+        width: 100%;
+      }
+    }
+
+    .dropdown-menu {
+      position: static;
+      float: none;
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+      max-height: none;
+      margin: .25rem 0 .5rem;
+      box-shadow: none;
+    }
+
+    .dropdown-item {
+      min-height: 44px;
+      white-space: normal;
+    }
+  }
+}
+
+@media (max-width: 359.98px) {
+  #header {
+    .navbar-brand img {
+      width: 8rem;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #header,
+  #header .nav-link,
+  #header .dropdown-item {
+    transition: none;
+  }
+}
+
+// Creditos do rodape.
+.sos-credit-trigger {
+  cursor: pointer;
+  opacity: .75;
+
+  &:hover,
+  &:focus-visible {
+    opacity: 1;
+  }
+}

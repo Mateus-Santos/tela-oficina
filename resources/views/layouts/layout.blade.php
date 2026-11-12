@@ -49,23 +49,23 @@
 <body>
 
 <!-- Navegacao publica e interna: um unico componente, sem links ficticios. -->
-<nav id="header" class="navbar navbar-expand-lg fixed-top" aria-label="Menu principal">
+<nav id="header" class="navbar navbar-expand-xl navbar-dark fixed-top" aria-label="Menu principal">
     <div class="container-fluid">
         <a class="navbar-brand mb-0" href="{{ url('/') }}" aria-label="SOS Mecânica - início">
             <img src="{{ asset('img/New Logo.png') }}" alt="SOS Mecânica" width="160" height="48">
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Abrir menu">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Alternar menu de navegação">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNavDropdown">
-            <ul class="navbar-nav ms-auto align-items-lg-center">
+            <ul class="navbar-nav ms-auto align-items-xl-center">
                 @guest
                     @foreach([['Home', ''], ['Serviços', '#servicos'], ['Sobre', '#sobre'], ['Localização', '#localizacao'], ['Contato', '#contato']] as $link)
                         <li class="nav-item"><a class="nav-link" href="{{ url('/') }}{{ $link[1] }}">{{ $link[0] }}</a></li>
                     @endforeach
-                    <li class="nav-item ms-lg-2"><a class="btn btn-success" href="{{ url('/login') }}"><i class="bi bi-box-arrow-in-right"></i> Entrar</a></li>
+                    <li class="nav-item ms-xl-2"><a class="btn btn-success" href="{{ url('/login') }}"><i class="bi bi-box-arrow-in-right"></i> Entrar</a></li>
                     @if (Route::has('register'))
-                        <li class="nav-item ms-lg-2"><a class="btn btn-warning" href="{{ route('register') }}">Cadastre-se</a></li>
+                        <li class="nav-item ms-xl-2"><a class="btn btn-warning" href="{{ route('register') }}">Cadastre-se</a></li>
                     @endif
                 @endguest
                 @auth
@@ -127,17 +127,29 @@
                         }
                     @endphp
                     @foreach($gruposMenu as $grupo)
+                        @php
+                            $grupoAtivo = collect($grupo[2])->contains(
+                                fn ($item) => request()->routeIs(
+                                    $item[1],
+                                    \Illuminate\Support\Str::beforeLast($item[1], '.') . '.*'
+                                )
+                            );
+                        @endphp
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi {{ $grupo[1] }}"></i> {{ $grupo[0] }}</a>
+                            <button class="nav-link dropdown-toggle {{ $grupoAtivo ? 'active' : '' }}" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi {{ $grupo[1] }}" aria-hidden="true"></i> {{ $grupo[0] }}
+                            </button>
                             <ul class="dropdown-menu {{ $loop->last ? 'dropdown-menu-end' : '' }}">
                                 @foreach($grupo[2] as $item)
-                                    <li><a href="{{ route($item[1]) }}" class="dropdown-item {{ request()->routeIs($item[1]) ? 'active' : '' }}"><i class="bi {{ $item[2] }} me-2"></i>{{ $item[0] }}</a></li>
+                                    <li><a href="{{ route($item[1]) }}" class="dropdown-item {{ request()->routeIs($item[1]) ? 'active' : '' }}" @if(request()->routeIs($item[1])) aria-current="page" @endif><i class="bi {{ $item[2] }} me-2"></i>{{ $item[0] }}</a></li>
                                 @endforeach
                             </ul>
                         </li>
                     @endforeach
-                    <li class="nav-item dropdown ms-lg-2">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-person-circle"></i> {{ auth()->user()->name }}</a>
+                    <li class="nav-item dropdown ms-xl-2">
+                        <button class="nav-link dropdown-toggle {{ request()->is('perfil') ? 'active' : '' }}" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle" aria-hidden="true"></i> {{ auth()->user()->name }}
+                        </button>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" href="{{ url('/perfil') }}"><i class="bi bi-person-circle me-2"></i>Meu Perfil</a></li>
                             <li><hr class="dropdown-divider"></li>
