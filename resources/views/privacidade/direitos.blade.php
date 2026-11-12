@@ -10,7 +10,12 @@
     <h1>Seus direitos sobre dados pessoais</h1>
     <p>Você pode solicitar informações ou exercer os direitos previstos na LGPD em relação aos dados tratados pela S.O.S Mecânica.</p>
     <h2>Como entrar em contato</h2>
-    <p>@if(config('oficina.email'))Envie um e-mail para <a href="mailto:{{ config('oficina.email') }}">{{ config('oficina.email') }}</a> ou @endif
+    <p>
+      @if (filled(config('oficina.privacidade_email')))
+        Envie um e-mail para <a href="mailto:{{ config('oficina.privacidade_email') }}">{{ config('oficina.privacidade_email') }}</a> ou
+      @elseif (filled(config('oficina.email')))
+        Envie um e-mail para <a href="mailto:{{ config('oficina.email') }}">{{ config('oficina.email') }}</a> ou
+      @endif
       utilize o <a href="https://wa.me/{{ preg_replace('/\D+/', '', config('oficina.whatsapp')) }}" target="_blank" rel="noopener noreferrer">WhatsApp oficial</a>, informando “Solicitação LGPD”. Descreva qual direito deseja exercer. Não envie CPF, RG, documentos nem senhas antes de receber instruções seguras.</p>
     <h2>O que pode ser solicitado</h2>
     <ul>

@@ -2,7 +2,15 @@
 
 ## Antes da publicação desta sprint
 
-- [ ] Confirmar a **razão social, CNPJ** e o papel da empresa como controladora, sem inventar dados no texto público. A página atual usa o nome comercial e informa a necessidade de validação.
+**Gate obrigatório de publicação S15:** conferir a identidade do controlador, preencher
+`OFICINA_RAZAO_SOCIAL`, `OFICINA_CNPJ` e `OFICINA_PRIVACIDADE_EMAIL`
+com valores oficiais e válidos no ambiente de produção (ou documentar formalmente
+por que algum campo não se aplica). Não usar dados fictícios. Confirmar que o
+contato é atendido e que as informações coincidem com os registros da empresa.
+Essas variáveis são opcionais para testes e não são preenchidas automaticamente.
+Revisar o aviso público e os fornecedores efetivamente usados antes do deploy.
+
+- [ ] Confirmar **razão social, CNPJ** e o papel da empresa como controladora. A página pública mostra o nome comercial e o endereço; razão social e CNPJ só aparecem quando houver valores configurados e verificados.
 - [ ] Confirmar o endereço público, canais de contato, responsável pelo recebimento de solicitações LGPD e prazo interno de resposta; definir e divulgar e-mail especializado se disponível.
 - [ ] Homologar com jurídico/privacidade as finalidades e hipóteses legais, termos de uso, regras de relação de consumo, retenção e conteúdo informativo.
 - [ ] Conferir inventário de recursos externos efetivamente carregados no navegador (fontes Google, CDNs Bootstrap/jQuery, WhatsApp, Google Maps) e cookies definidos em navegação autenticada e anônima.

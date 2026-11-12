@@ -9,9 +9,24 @@
   <div class="campos">
     <h1>Política de Privacidade — S.O.S Mecânica</h1>
     <p class="small text-muted">Versão 2026-11-12. Esta página explica o tratamento de dados no site e no sistema de atendimento da oficina.</p>
-    <h2>1. Quem trata os dados</h2>
-    <p>A Oficina S.O.S Mecânica, em Feira de Santana/BA, administra o atendimento e o sistema para as finalidades aqui indicadas. A identificação jurídica completa e o responsável interno por privacidade devem ser confirmados e publicados após revisão administrativa.</p>
-    <p>Contato: @if(config('oficina.email'))<a href="mailto:{{ config('oficina.email') }}">{{ config('oficina.email') }}</a> ou @endif<a href="https://wa.me/{{ preg_replace('/\D+/', '', config('oficina.whatsapp')) }}" target="_blank" rel="noopener noreferrer">WhatsApp da oficina</a>. Informe que o assunto é proteção de dados. Não envie documentos pessoais sensíveis no primeiro contato.</p>
+    <h2>1. Identificação do controlador e contato</h2>
+    <p>A <strong>S.O.S Mecânica</strong>, com estabelecimento em {{ config('oficina.endereco') }}, é a controladora dos dados pessoais tratados nas atividades próprias de atendimento, orçamento e operação da oficina descritas nesta política.</p>
+    @if (filled(config('oficina.razao_social')))
+      <p><strong>Razão social:</strong> {{ config('oficina.razao_social') }}.</p>
+    @endif
+    @if (filled(config('oficina.cnpj')))
+      <p><strong>CNPJ:</strong> {{ config('oficina.cnpj') }}.</p>
+    @endif
+    <p>
+      <strong>Canal para solicitações sobre dados pessoais:</strong>
+      @if (filled(config('oficina.privacidade_email')))
+        <a href="mailto:{{ config('oficina.privacidade_email') }}">{{ config('oficina.privacidade_email') }}</a> ou
+      @elseif (filled(config('oficina.email')))
+        <a href="mailto:{{ config('oficina.email') }}">{{ config('oficina.email') }}</a> ou
+      @endif
+      <a href="https://wa.me/{{ preg_replace('/\D+/', '', config('oficina.whatsapp')) }}" target="_blank" rel="noopener noreferrer">WhatsApp da oficina</a>.
+      Informe que o assunto é proteção de dados. Não envie senhas, documentos ou informações sensíveis antes de receber instruções para uma verificação segura de identidade.
+    </p>
 
     <h2>2. Quais dados podem ser tratados</h2>
     <p>Dependendo do relacionamento: nome, telefone, WhatsApp, e-mail, dados de cadastro e autenticação, informações dos veículos, dados do atendimento, orçamentos, peças solicitadas, ordens de serviço, notas, compras, pagamentos e registros necessários à segurança do sistema.</p>
