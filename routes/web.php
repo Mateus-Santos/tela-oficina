@@ -841,6 +841,11 @@ Route::get(
     'erro-autenticacao'
 );
 
+// Transparencia e exercicio de direitos: acesso publico sem cadastro.
+Route::view('/politica-de-privacidade', 'privacidade.politica')->name('privacidade.politica');
+Route::view('/politica-de-cookies', 'privacidade.cookies')->name('privacidade.cookies');
+Route::view('/direitos-do-titular', 'privacidade.direitos')->name('privacidade.direitos');
+
 Route::get(
     '/termos-de-uso',
     function () {
