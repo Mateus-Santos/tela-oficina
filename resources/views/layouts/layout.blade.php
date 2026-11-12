@@ -163,6 +163,10 @@
         <div class="d-flex flex-wrap align-items-center gap-3 small">
             <a href="https://wa.me/{{ preg_replace('/\D+/', '', config('oficina.whatsapp')) }}" target="_blank" rel="noopener noreferrer"><i class="bi bi-whatsapp"></i> WhatsApp</a>
             <a href="{{ url('/#localizacao') }}"><i class="bi bi-geo-alt"></i> Endereço</a>
+            <a href="{{ route('privacidade.politica') }}">Privacidade</a>
+            <a href="{{ route('privacidade.cookies') }}">Cookies</a>
+            <a href="{{ route('privacidade.direitos') }}">Seus dados</a>
+            <a href="{{ route('termos') }}">Termos de uso</a>
             @if(config('oficina.email'))
                 <a href="mailto:{{ config('oficina.email') }}"><i class="bi bi-envelope"></i> E-mail</a>
             @endif
