@@ -11,7 +11,10 @@ class HomePublicaTest extends TestCase
         $this->get('/')
             ->assertOk()
             ->assertSee('Serviços para cuidar do seu veículo')
-            ->assertSee('Mapa de localização da Oficina SOS Mecânica')
+            ->assertSee('Venha visitar a SOS Mecânica')
+            ->assertSee('Carregar mapa do Google')
+            ->assertSee('data-sos-map-src', false)
+            ->assertDontSee('<iframe', false)
             ->assertSee('https://wa.me/'.config('oficina.whatsapp'), false);
     }
 }
