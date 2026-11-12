@@ -42,9 +42,16 @@ class CssHomeInformativoTest(unittest.TestCase):
 
     def test_modais_menu_filtros_e_rodape_compartilhados(self):
         css = (ROOT / audit.INDEX).read_text(encoding='utf-8')
-        for token in ('#footer {', '.footer-bottom {', '.navbar-mobile {',
-                      '.mobile-nav-toggle {', '.section-title {'):
+        for token in ('#footer {', '.footer-bottom {', '.section-title {'):
             self.assertIn(token, css)
+
+        menu = (ROOT / 'resources/scss/_menu.scss').read_text(encoding='utf-8')
+        for token in ('#header {', '.navbar-toggler {', '.dropdown-menu {'):
+            self.assertIn(token, menu)
+
+        for token in ('.navbar-mobile {', '.mobile-nav-toggle {'):
+            self.assertNotIn(token, css)
+            self.assertNotIn(token, menu)
         global_app = (ROOT / 'resources/scss/_app.scss').read_text(encoding='utf-8')
         for partial in ("@use './_filtros.scss';", "@use './_style_cad.scss';", "@use './_menu.scss';"):
             self.assertIn(partial, global_app)
