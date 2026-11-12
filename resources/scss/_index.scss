@@ -116,54 +116,6 @@ section {
 	}
 }
 
-.mobile-nav-toggle {
-	color: $color_5;
-	font-size: 28px;
-	cursor: pointer;
-	display: none;
-	line-height: 0;
-	transition: 0.5s;
-}
-
-.mobile-nav-toggle.bi-x {
-	color: $color_5;
-}
-
-.navbar-mobile {
-	position: fixed;
-	overflow: hidden;
-	top: 0;
-	right: 0;
-	left: 0;
-	bottom: 0;
-	background: $color_1;
-	transition: 0.3s;
-	z-index: 999;
-
-	.mobile-nav-toggle {
-		position: absolute;
-		top: 15px;
-		right: 15px;
-	}
-
-	ul {
-		display: block;
-		position: absolute;
-		top: 55px;
-		right: 15px;
-		bottom: 15px;
-		left: 15px;
-		padding: 10px 0;
-		border-radius: 10px;
-		overflow-y: hidden;
-		transition: 0.3s;
-	}
-
-	.active {
-		color: $color_4;
-	}
-}
-
 
 
 // Sessão erro404 e error-403:
