@@ -96,3 +96,33 @@ $espacamento: 1rem;
 }
 .sos-credit-trigger { cursor: pointer; opacity: .75; }
 .sos-credit-trigger:hover { opacity: 1; }
+
+
+// Navegacao Bootstrap: controles semanticos e foco acessivel.
+#header {
+  .navbar-nav .nav-link.dropdown-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    background: transparent;
+    border: 0;
+    color: $color_4;
+    font-family: $font-family_2;
+    cursor: pointer;
+  }
+
+  .navbar-nav .nav-link.dropdown-toggle:is(
+    :hover,
+    :focus-visible,
+    .active,
+    [aria-expanded="true"]
+  ) {
+    color: $color_2;
+  }
+
+  :is(.nav-link, .dropdown-item, .navbar-toggler):focus-visible {
+    outline: 3px solid $color_4;
+    outline-offset: 3px;
+    border-radius: .375rem;
+  }
+}
