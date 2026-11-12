@@ -29,17 +29,28 @@
     el.addEventListener('scroll', listener)
   }
   
-  const scrollto = (el) => {
-    const target = select(el)
+  // Hashes de URLs sao identificadores, nao seletores CSS arbitrarios.
+  const targetForHash = (hash) => {
+    if (!hash || hash === '#') return null
+    try {
+      return document.getElementById(decodeURIComponent(hash.slice(1)))
+    } catch {
+      return null
+    }
+  }
+
+  const scrollto = (hash) => {
+    const target = targetForHash(hash)
     if (!target) return
 
     const header = select('#header')
     const offset = header ? header.offsetHeight : 0
     const elementPos = target.getBoundingClientRect().top + window.scrollY
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     window.scrollTo({
       top: elementPos - offset,
-      behavior: 'smooth'
+      behavior: reducedMotion ? 'auto' : 'smooth'
     })
   }
 
@@ -72,19 +83,22 @@
     onscroll(document, toggleBacktotop)
   }
 
-  // Rolagem suave independente do menu Bootstrap.
+  // Nao interceptar links que apontam para outra pagina.
   on('click', '.scrollto', function(e) {
-    if (!this.hash || !select(this.hash)) return
+    const targetUrl = new URL(this.href, window.location.href)
+    const currentUrl = new URL(window.location.href)
+    if (targetUrl.origin !== currentUrl.origin ||
+        targetUrl.pathname !== currentUrl.pathname ||
+        targetUrl.search !== currentUrl.search ||
+        !targetForHash(targetUrl.hash)) return
 
     e.preventDefault()
-    scrollto(this.hash)
+    scrollto(targetUrl.hash)
   }, true)
 
   window.addEventListener('load', () => {
-    if (window.location.hash) {
-      if (select(window.location.hash)) {
-        scrollto(window.location.hash)
-      }
+    if (targetForHash(window.location.hash)) {
+      scrollto(window.location.hash)
     }
   });
 

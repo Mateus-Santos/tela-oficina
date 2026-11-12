@@ -61,7 +61,7 @@
             <ul class="navbar-nav ms-auto align-items-xl-center">
                 @guest
                     @foreach([['Home', ''], ['Serviços', '#servicos'], ['Sobre', '#sobre'], ['Localização', '#localizacao'], ['Contato', '#contato']] as $link)
-                        <li class="nav-item"><a class="nav-link" href="{{ url('/') }}{{ $link[1] }}">{{ $link[0] }}</a></li>
+                        <li class="nav-item"><a class="nav-link {{ $link[1] === '' && request()->is('/') ? 'active' : '' }}" href="{{ url('/') }}{{ $link[1] }}" @if($link[1] === '' && request()->is('/')) aria-current="page" @endif>{{ $link[0] }}</a></li>
                     @endforeach
                     <li class="nav-item ms-xl-2"><a class="btn btn-success" href="{{ url('/login') }}"><i class="bi bi-box-arrow-in-right"></i> Entrar</a></li>
                     @if (Route::has('register'))
@@ -141,7 +141,13 @@
                             </button>
                             <ul class="dropdown-menu {{ $loop->last ? 'dropdown-menu-end' : '' }}">
                                 @foreach($grupo[2] as $item)
-                                    <li><a href="{{ route($item[1]) }}" class="dropdown-item {{ request()->routeIs($item[1]) ? 'active' : '' }}" @if(request()->routeIs($item[1])) aria-current="page" @endif><i class="bi {{ $item[2] }} me-2"></i>{{ $item[0] }}</a></li>
+                                    @php
+                                        $itemAtivo = request()->routeIs(
+                                            $item[1],
+                                            \Illuminate\Support\Str::beforeLast($item[1], '.') . '.*'
+                                        );
+                                    @endphp
+                                    <li><a href="{{ route($item[1]) }}" class="dropdown-item {{ $itemAtivo ? 'active' : '' }}" @if(request()->routeIs($item[1])) aria-current="page" @endif><i class="bi {{ $item[2] }} me-2" aria-hidden="true"></i>{{ $item[0] }}</a></li>
                                 @endforeach
                             </ul>
                         </li>
@@ -151,7 +157,7 @@
                             <i class="bi bi-person-circle" aria-hidden="true"></i> {{ auth()->user()->name }}
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{{ url('/perfil') }}"><i class="bi bi-person-circle me-2"></i>Meu Perfil</a></li>
+                            <li><a class="dropdown-item {{ request()->is('perfil') ? 'active' : '' }}" href="{{ url('/perfil') }}" @if(request()->is('perfil')) aria-current="page" @endif><i class="bi bi-person-circle me-2" aria-hidden="true"></i>Meu Perfil</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><form action="{{ url('/logout') }}" method="POST">@csrf<button class="dropdown-item btn-sair" type="submit"><i class="bi bi-box-arrow-right me-2"></i>Sair</button></form></li>
                         </ul>
@@ -223,45 +229,6 @@
 @yield('scripts')
 
 
-<script id="bootstrap-modal-body-portal">
-document.addEventListener('DOMContentLoaded', function () {
-    /*
-     * Bootstrap cria o backdrop diretamente sob o <body>.
-     *
-     * Se um .modal estiver dentro de um elemento que cria
-     * stacking context (como .cadastro, que possui z-index),
-     * o modal pode ficar atrás do backdrop mesmo tendo um
-     * z-index numericamente maior.
-     *
-     * Todos os modais Bootstrap são promovidos para o body,
-     * eliminando esse conflito de empilhamento globalmente.
-     */
-    const moverModalParaBody = function (modal) {
-        if (
-            modal instanceof HTMLElement
-            && modal.classList.contains('modal')
-            && modal.parentElement !== document.body
-        ) {
-            document.body.appendChild(modal);
-        }
-    };
-
-    document
-        .querySelectorAll('.modal')
-        .forEach(moverModalParaBody);
-
-    /*
-     * Proteção adicional para modais inseridos
-     * dinamicamente depois do carregamento.
-     */
-    document.addEventListener(
-        'show.bs.modal',
-        function (event) {
-            moverModalParaBody(event.target);
-        }
-    );
-});
-</script>
 
 </body>
 </html>
