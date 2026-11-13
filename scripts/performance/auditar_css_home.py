@@ -48,10 +48,18 @@ def verificar(root=ROOT):
             erros.append(f'{selector}: nao aparece uma unica vez no CSS informativo.')
 
     for token in ('section {', '.section-title {', '#footer {', '.footer-bottom {',
-                  '.mobile-nav-toggle {', '.navbar-mobile {', '.profile {', '.manutencao {',
+                  '.profile {', '.manutencao {',
                   '.veiculos {'):
         if token not in index:
             erros.append(f'CSS compartilhado ausente: {token}')
+
+    menu = (root / 'resources/scss/_menu.scss').read_text(encoding='utf-8')
+    for token in ('#header {', '.navbar-toggler {', '.dropdown-menu {'):
+        if token not in menu:
+            erros.append(f'Menu moderno ausente: {token}')
+    for token in ('.mobile-nav-toggle {', '.navbar-mobile {'):
+        if token in index or token in menu:
+            erros.append(f'Seletor legado ainda presente: {token}')
 
     if '#footer {' in home or '.footer-top {' in home:
         erros.append('Rodape compartilhado duplicado no CSS da home.')

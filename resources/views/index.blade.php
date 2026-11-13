@@ -2,6 +2,7 @@
 
 @push('p04-css-pagina')
     @vite('resources/scss/home_entry.scss')
+    @vite('resources/scss/consentimento_mapa.scss')
 @endpush
 
 @section('content')
@@ -128,8 +129,12 @@
                     <p class="sos-intro">Confira a localização no mapa e abra a rota no seu aplicativo de navegação.</p>
                     <a class="sos-button sos-button--dark" href="https://www.google.com/maps/search/?api=1&amp;query={{ $mapaQuery }}" target="_blank" rel="noopener noreferrer"><i class="bi bi-sign-turn-right"></i> Abrir rota no Google Maps</a>
                 </div>
-                <div class="sos-map">
-                    <iframe title="Mapa de localização da Oficina SOS Mecânica" src="https://www.google.com/maps?q={{ $mapaQuery }}&amp;output=embed" width="100%" height="310" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+                <div class="sos-map" data-sos-map data-sos-map-src="https://www.google.com/maps?q={{ $mapaQuery }}&amp;output=embed">
+                    <div class="sos-map__placeholder" data-sos-map-placeholder>
+                        <p>O mapa externo do Google só será carregado se você permitir. Ele pode usar cookies e receber informações da sua conexão.</p>
+                        <button type="button" class="btn btn-primary" data-sos-map-choice="permitir">Carregar mapa do Google</button>
+                    </div>
+                    <button type="button" class="sos-map__preferences" data-sos-map-preferences>Preferências de privacidade</button>
                 </div>
             </div>
         </section>
@@ -158,4 +163,16 @@
         </section>
     </main>
 </div>
+<section class="sos-cookie-banner" data-sos-cookie-banner hidden role="region" aria-labelledby="sos-cookie-titulo">
+    <strong id="sos-cookie-titulo">Privacidade e cookies</strong>
+    <p>Usamos cookies necessários à autenticação e à segurança. O mapa externo do Google é opcional e só carrega se você permitir. Rejeitar não impede o uso do site.</p>
+    <p class="small">Consulte a <a href="{{ route('privacidade.politica') }}">Política de Privacidade</a> e a <a href="{{ route('privacidade.cookies') }}">Política de Cookies</a>. Sua escolha pode ser alterada em “Preferências de privacidade” na seção de localização.</p>
+    <div class="sos-cookie-banner__actions">
+        <button type="button" class="btn btn-outline-secondary" data-sos-map-choice="recusar">Rejeitar opcionais</button>
+        <button type="button" class="btn btn-primary" data-sos-map-choice="permitir">Permitir Google Maps</button>
+    </div>
+</section>
+@endsection
+@section('scripts')
+    @vite('resources/js/consentimento-mapa.js')
 @endsection

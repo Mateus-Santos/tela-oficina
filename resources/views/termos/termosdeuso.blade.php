@@ -7,7 +7,8 @@
 @section('content')
 <main class="termos-uso">
   <div class="campos">
-    <h1 class="mb-4">Termos de Uso do Sistema OFICINA SOS MECÂNICA</h1>
+    <h1 class="mb-4">Termos de Uso — S.O.S Mecânica</h1>
+    <p class="small text-muted">Versão 2026-11-12. Estes termos regulam o uso do portal e não substituem contratos, ordens de serviço ou normas de defesa do consumidor.</p>
 
     <div class="content">
       <h2>1. Objetivo do Sistema</h2>
@@ -20,9 +21,12 @@
         <li>Receber notificações e atualizações sobre o andamento dos serviços.</li>
       </ul>
 
-      <h2>2. Aceitação dos Termos de Uso</h2>
+      <h2>2. Condições de Uso</h2>
       <p>
-        Ao utilizar o Sistema, você ("Usuário") concorda com estes Termos de Uso e com todas as demais políticas aplicáveis, incluindo nossa Política de Privacidade. Caso não concorde com qualquer condição, solicitamos que não utilize o Sistema.
+        O portal disponibiliza informações e funcionalidades para a relação com a oficina. Seu uso deve respeitar as condições apresentadas nesta página e as normas aplicáveis. As condições de cada reparo, orçamento, venda ou ordem de serviço são tratadas nos respectivos documentos e atendimentos.
+      </p>
+      <p>
+        A <a href="{{ route('privacidade.politica') }}">Política de Privacidade</a> explica o tratamento dos dados. A leitura ou utilização do site não significa consentimento geral para finalidades opcionais; quando necessário, a escolha será solicitada separadamente.
       </p>
 
       <h2>3. Cadastro e Responsabilidades do Usuário</h2>
@@ -35,12 +39,12 @@
         O Sistema foi projetado para fornecer informações de acompanhamento e atualização, mas não substitui a comunicação direta com a oficina ou o diagnóstico técnico de profissionais qualificados. A oficina mecânica se reserva o direito de modificar o status ou as informações dos serviços conforme necessário, e o Sistema não garante a precisão em tempo real dos dados fornecidos.
       </p>
       <p>
-        A oficina mecânica não se responsabiliza por quaisquer danos diretos, indiretos, acidentais ou consequenciais resultantes do uso do Sistema, incluindo, mas não se limitando a, atrasos, erros de atualização, ou indisponibilidade temporária do Sistema.
+        Informações exibidas no portal podem exigir confirmação da equipe. Eventuais limitações técnicas não afastam direitos assegurados pela legislação aplicável, inclusive normas de proteção e defesa do consumidor e de proteção de dados pessoais.
       </p>
 
-      <h2>5. Privacidade e Uso de Dados</h2>
+      <h2>5. Privacidade e Proteção de Dados</h2>
       <p>
-        O Sistema coleta informações pessoais, como nome, dados de contato e informações sobre o veículo, exclusivamente para o propósito de proporcionar um serviço eficiente e personalizado aos clientes da oficina. Os dados coletados serão tratados de acordo com a nossa Política de Privacidade, que visa proteger as informações do Usuário contra uso não autorizado e assegurar sua confidencialidade.
+        O portal pode tratar dados de cadastro, contato, veículos, atendimentos, ordens de serviço, notas e orçamentos, conforme a finalidade e a base legal aplicável. Consulte a <a href="{{ route('privacidade.politica') }}">Política de Privacidade</a>, a <a href="{{ route('privacidade.cookies') }}">Política de Cookies</a> e o <a href="{{ route('privacidade.direitos') }}">canal para exercer seus direitos</a>.
       </p>
 
       <h2>6. Direitos de Propriedade Intelectual</h2>
@@ -53,9 +57,9 @@
         Estes Termos de Uso podem ser atualizados periodicamente para refletir mudanças no Sistema ou em requisitos legais. Sempre que mudanças significativas forem realizadas, a oficina mecânica notificará os Usuários para garantir ciência e aceitação das novas condições.
       </p>
 
-      <h2>8. Legislação Aplicável e Foro</h2>
+      <h2>8. Legislação e Solução de Conflitos</h2>
       <p>
-        Estes Termos de Uso serão regidos pela legislação vigente e todas as disputas que possam surgir em relação ao uso do Sistema deverão ser resolvidas no foro da comarca onde a oficina mecânica estiver sediada.
+        Aplica-se a legislação brasileira, observadas as regras legais de competência e os direitos dos consumidores e titulares de dados. Para esclarecimentos, utilize os canais de atendimento divulgados no site.
       </p>
     </div>
 
