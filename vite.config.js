@@ -23,7 +23,6 @@ export default defineConfig({
                 'resources/js/cadUser.js',
                 'resources/js/calcOrcamento.js',
                 'resources/js/cep.js',
-                'resources/js/main.js',
                 'resources/js/consentimento-mapa.js',
                 'resources/js/bootstrap.js',
                 'resources/js/cadOrdemservicoitem.js',

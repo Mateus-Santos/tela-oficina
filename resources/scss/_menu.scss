@@ -106,6 +106,7 @@
       align-items: center;
       justify-content: center;
       gap: .35rem;
+      min-height: 44px;
       border-radius: .65rem;
       font-weight: 600;
       padding: .6rem .85rem;
@@ -245,4 +246,10 @@
   &:focus-visible {
     opacity: 1;
   }
+}
+
+
+// Destinos do menu publico nao ficam escondidos sob a navbar fixa.
+:where(#servicos, #sobre, #localizacao, #contato) {
+  scroll-margin-top: 6rem;
 }

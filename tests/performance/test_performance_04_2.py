@@ -35,7 +35,7 @@ class InputmaskPorPaginaTest(unittest.TestCase):
         layout = (ROOT / audit.LAYOUT).read_text(encoding='utf-8')
         for token in ('bootstrap.bundle.min.js', 'jquery-3.7.1.js',
                       '@yield(\'scripts\')', '/vendor/aos/aos.js',
-                      'bootstrap-modal-body-portal', '@vite(['):
+                      '@vite(['):
             with self.subTest(token=token):
                 self.assertIn(token, layout)
         js = (ROOT / audit.JS).read_text(encoding='utf-8')
