@@ -164,12 +164,18 @@
     </main>
 </div>
 <section class="sos-cookie-banner" data-sos-cookie-banner hidden role="region" aria-labelledby="sos-cookie-titulo">
-    <strong id="sos-cookie-titulo">Privacidade e cookies</strong>
-    <p>Usamos cookies necessários à autenticação e à segurança. O mapa externo do Google é opcional e só carrega se você permitir. Rejeitar não impede o uso do site.</p>
-    <p class="small">Consulte a <a href="{{ route('privacidade.politica') }}">Política de Privacidade</a> e a <a href="{{ route('privacidade.cookies') }}">Política de Cookies</a>. Sua escolha pode ser alterada em “Preferências de privacidade” na seção de localização.</p>
-    <div class="sos-cookie-banner__actions">
-        <button type="button" class="btn btn-outline-secondary" data-sos-map-choice="recusar">Rejeitar opcionais</button>
-        <button type="button" class="btn btn-primary" data-sos-map-choice="permitir">Permitir Google Maps</button>
+    <strong id="sos-cookie-titulo">Privacidade e mapa</strong>
+    <p class="sos-cookie-banner__description">Usamos cookies essenciais para login e segurança. O Google Maps é opcional e só carrega com sua permissão. Você pode continuar sem ele.</p>
+    <div class="sos-cookie-banner__footer">
+        <p class="sos-cookie-banner__links">
+            <a href="{{ route('privacidade.politica') }}">Política de Privacidade</a>
+            <span aria-hidden="true">·</span>
+            <a href="{{ route('privacidade.cookies') }}">Política de Cookies</a>
+        </p>
+        <div class="sos-cookie-banner__actions">
+            <button type="button" class="sos-cookie-banner__button sos-cookie-banner__button--secondary" data-sos-map-choice="recusar">Rejeitar opcionais</button>
+            <button type="button" class="sos-cookie-banner__button sos-cookie-banner__button--primary" data-sos-map-choice="permitir">Carregar mapa</button>
+        </div>
     </div>
 </section>
 @endsection
