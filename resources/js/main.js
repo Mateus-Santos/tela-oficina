@@ -102,11 +102,16 @@
     }
   });
 
-  let preloader = select('#preloader');
+  // Liberar a pagina quando o DOM estiver pronto. Esperar window.load pode
+  // deixar esta camada sobre os botoes por causa de recursos externos lentos.
+  const preloader = select('#preloader');
   if (preloader) {
-    window.addEventListener('load', () => {
-      preloader.remove()
-    });
+    const removerPreloader = () => preloader.remove()
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', removerPreloader, { once: true })
+    } else {
+      removerPreloader()
+    }
   }
 
 })()

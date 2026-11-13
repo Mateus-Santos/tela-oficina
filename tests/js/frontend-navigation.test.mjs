@@ -58,51 +58,106 @@ test('portal de modais move elementos iniciais e dinamicos', async () => {
   }
 })
 
-test('menu recolhido fecha com ancora local e Escape, nao com link externo', async () => {
+test('menu recolhido: Escape no botao fecha; dropdown e foco externo sao preservados', async () => {
   const antigoDocument = globalThis.document
   const antigoWindow = globalThis.window
   const eventos = new Map()
   const eventosNav = new Map()
   let fechamento = 0
   let foco = 0
+  let evitados = 0
+  let dropdownAberto = false
   const breakpoint = { matches: true }
+  const toggler = { focus: () => foco++ }
+  const fora = {}
   const nav = {
     classList: { contains: name => name === 'show' },
-    contains: () => true,
-    querySelector: () => null,
+    contains: element => element?.dentroDoNav === true,
+    querySelector: seletor => seletor === '.dropdown-menu.show' && dropdownAberto ? {} : null,
     addEventListener: (tipo, callback) => eventosNav.set(tipo, callback),
   }
-  globalThis.document = {
+  const documento = {
     readyState: 'loading',
+    activeElement: toggler,
     getElementById: id => id === 'navbarNavDropdown' ? nav : null,
-    querySelector: () => ({ focus: () => foco++ }),
+    querySelector: () => toggler,
     addEventListener: (tipo, callback) => eventos.set(tipo, callback),
   }
+  globalThis.document = documento
   globalThis.window = {
     location: { href: 'https://oficina.test/' },
     matchMedia: () => breakpoint,
     bootstrap: { Collapse: { getOrCreateInstance: () => ({ hide: () => fechamento++ }) } },
   }
   const click = href => {
-    const link = { getAttribute: () => href, closest: () => link }
+    const link = { dentroDoNav: true, getAttribute: () => href, closest: () => link }
     eventosNav.get('click')({ target: link, button: 0, defaultPrevented: false })
   }
+  const escape = target => eventos.get('keydown')({
+    key: 'Escape', target,
+    preventDefault: () => evitados++,
+  })
   try {
-    await import('../../resources/js/navigation-menu.js?teste=front013')
+    await import('../../resources/js/navigation-menu.js?teste=front017d')
     eventos.get('DOMContentLoaded')()
+    assert.ok(eventos.has('keydown'), 'Escape deve ser ouvido no documento')
     click('#servicos')
     assert.equal(fechamento, 1)
     click('https://fornecedor.test/peca#detalhe')
-    assert.equal(fechamento, 1)
     click('/login')
     assert.equal(fechamento, 1)
     breakpoint.matches = false
     click('#sobre')
+    escape(toggler)
     assert.equal(fechamento, 1)
     breakpoint.matches = true
-    eventosNav.get('keydown')({ key: 'Escape', defaultPrevented: false })
-    assert.equal(fechamento, 2)
-    assert.equal(foco, 1)
+    documento.activeElement = fora
+    escape(fora)
+    assert.equal(fechamento, 1, 'Escape de fora nao pode fechar o menu')
+    documento.activeElement = toggler
+    dropdownAberto = true
+    escape(toggler)
+    assert.equal(fechamento, 1, 'Bootstrap deve fechar primeiro o dropdown')
+    dropdownAberto = false
+    escape(toggler)
+    assert.equal(fechamento, 2, 'Escape com foco no toggler deve fechar')
+    assert.equal(foco, 1, 'Foco deve retornar ao toggler')
+    assert.equal(evitados, 1)
+  } finally {
+    if (antigoDocument === undefined) delete globalThis.document
+    else globalThis.document = antigoDocument
+    if (antigoWindow === undefined) delete globalThis.window
+    else globalThis.window = antigoWindow
+  }
+})
+
+test('preloader libera clique apos DOMContentLoaded sem aguardar window.load', async () => {
+  const antigoDocument = globalThis.document
+  const antigoWindow = globalThis.window
+  const documentEvents = new Map()
+  const windowEvents = new Map()
+  let removed = 0
+  const preloader = { remove: () => removed++ }
+  globalThis.document = {
+    readyState: 'loading',
+    querySelector: seletor => seletor === '#preloader' ? preloader : null,
+    querySelectorAll: () => [],
+    getElementById: () => null,
+    addEventListener: (tipo, fn) => documentEvents.set(tipo, fn),
+  }
+  globalThis.window = {
+    location: { href: 'https://oficina.test/', hash: '' },
+    scrollY: 0,
+    addEventListener: (tipo, fn) => windowEvents.set(tipo, fn),
+    matchMedia: () => ({ matches: false }),
+  }
+  try {
+    await import('../../resources/js/main.js?teste=front017d-preloader')
+    assert.equal(removed, 0)
+    assert.ok(documentEvents.has('DOMContentLoaded'))
+    documentEvents.get('DOMContentLoaded')()
+    assert.equal(removed, 1)
+    assert.ok(windowEvents.has('load'))
   } finally {
     if (antigoDocument === undefined) delete globalThis.document
     else globalThis.document = antigoDocument

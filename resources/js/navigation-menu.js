@@ -31,15 +31,23 @@ const iniciarNavegacao = () => {
     recolher()
   })
 
-  // Escape fecha primeiro o dropdown Bootstrap. So depois o collapse.
-  nav.addEventListener('keydown', event => {
-    if (event.key !== 'Escape' || event.defaultPrevented || !telaRecolhida() ||
-        nav.querySelector('.dropdown-menu.show')) return
-    if (nav.classList.contains('show')) {
-      recolher()
-      toggler?.focus()
-    }
-  })
+  // Capture no documento: apos o clique o foco fica no botao, fora do nav.
+  // Nao capturar Escape de modais, formularios ou menus de outros componentes.
+  // Com dropdown aberto, Bootstrap recebe Escape e fecha somente o dropdown.
+  document.addEventListener('keydown', event => {
+    if (event.key !== 'Escape' || !telaRecolhida() ||
+        !nav.classList.contains('show')) return
+
+    const origem = event.target
+    const ativo = document.activeElement
+    const dentroDoMenu = element => element === toggler || nav.contains(element)
+    if (!dentroDoMenu(origem) && !dentroDoMenu(ativo)) return
+    if (nav.querySelector('.dropdown-menu.show')) return
+
+    recolher()
+    toggler?.focus()
+    event.preventDefault()
+  }, true)
 }
 
 if (document.readyState === 'loading') {
