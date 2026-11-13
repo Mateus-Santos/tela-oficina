@@ -12,7 +12,7 @@ class PrimeiraEtapaPerformance(unittest.TestCase):
         self.assertEqual(text.count("/vendor/waypoints/noframework.waypoints.js"), 1)
         self.assertIn("@yield('content')", text)
         self.assertIn("@yield('scripts')", text)
-        self.assertIn('bootstrap-modal-body-portal', text)
+        self.assertTrue((ROOT/'resources/js/modal-body-portal.js').is_file())
 
     def test_cache_apenas_assets_vite(self):
         text = NGINX.read_text(encoding='utf-8')
