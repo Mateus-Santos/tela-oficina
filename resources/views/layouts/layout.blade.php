@@ -64,8 +64,14 @@
                         <li class="nav-item"><a class="nav-link {{ $link[1] === '' && request()->is('/') ? 'active' : '' }}" href="{{ url('/') }}{{ $link[1] }}" @if($link[1] === '' && request()->is('/')) aria-current="page" @endif>{{ $link[0] }}</a></li>
                     @endforeach
                     <li class="nav-item ms-xl-2"><a class="btn btn-success" href="{{ url('/login') }}"><i class="bi bi-box-arrow-in-right"></i> Entrar</a></li>
-                    @if (Route::has('register'))
-                        <li class="nav-item ms-xl-2"><a class="btn btn-warning" href="{{ route('register') }}">Cadastre-se</a></li>
+                    @php
+                        // Cadastro seguro do cliente tem prioridade sobre o registro legado.
+                        $urlCadastroCliente = config('marketing.cadastro_cliente_habilitado')
+                            ? route('marketing.cadastro.create')
+                            : (Route::has('register') ? route('register') : null);
+                    @endphp
+                    @if ($urlCadastroCliente)
+                        <li class="nav-item ms-xl-2"><a class="btn btn-warning" href="{{ $urlCadastroCliente }}">Cadastre-se</a></li>
                     @endif
                 @endguest
                 @auth
