@@ -214,6 +214,9 @@
                 maxlength="7"
                 autocomplete="off"
                 required
+                inputmode="text"
+                autocapitalize="characters"
+                spellcheck="false"
             >
 
             @error('placa')
@@ -249,6 +252,7 @@
                 min="1900"
                 max="{{ date('Y') + 1 }}"
                 required
+                inputmode="numeric"
             >
 
             @error('ano')
