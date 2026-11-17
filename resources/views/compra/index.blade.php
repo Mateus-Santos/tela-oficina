@@ -300,6 +300,7 @@
                                 <th>Fornecedor</th>
                                 <th>Valor</th>
                                 <th>Status</th>
+                                <th>Integrações</th>
                                 <th class="text-end pe-3">Ações</th>
                             </tr>
                         </thead>
@@ -370,6 +371,10 @@
                                             <i class="bi {{ $statusConfig['icon'] }}"></i>
                                             {{ $statusConfig['label'] }}
                                         </span>
+                                    </td>
+
+                                    <td>
+                                        @include('compra.partials.indicadores-integracao', ['compra' => $compra])
                                     </td>
 
                                     <td class="text-end pe-3">
