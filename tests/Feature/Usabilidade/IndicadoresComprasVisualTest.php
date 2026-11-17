@@ -33,7 +33,7 @@ class IndicadoresComprasVisualTest extends TestCase
         foreach ($estados as $estado => $rotulo) {
             $html = $this->renderizar($estado, 'nao_vinculada');
             $this->assertStringContainsString('Estoque: '.$rotulo, $html);
-            $this->assertStringContainsString('Financeiro: Sem vinculo', $html);
+            $this->assertStringContainsString('Financeiro: Sem vínculo', $html);
         }
     }
 
@@ -73,8 +73,8 @@ class IndicadoresComprasVisualTest extends TestCase
     public function test_estados_desconhecidos_usam_fallback_sem_sucesso_falso(): void
     {
         $html = $this->renderizar('inexistente', 'inexistente');
-        $this->assertStringContainsString('Estoque: Nao informado', $html);
-        $this->assertStringContainsString('Financeiro: Nao informado', $html);
+        $this->assertStringContainsString('Estoque: Não informado', $html);
+        $this->assertStringContainsString('Financeiro: Não informado', $html);
         $this->assertStringNotContainsString('bg-success', $html);
     }
 
