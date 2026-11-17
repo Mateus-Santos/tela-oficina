@@ -90,6 +90,64 @@
 
 </div>
 
+{{-- Veiculos vinculados: relacao oficial cliente_veiculo_cliente. --}}
+@php
+    // Consulta uma vez, fora de loops Blade, e carrega os dados relacionados.
+    // Transferir o eager load para ClienteController::show em tarefa de Back-end.
+    $cliente->loadMissing('veiculosClientes.veiculo.montadora');
+    $veiculosVinculados = $cliente->veiculosClientes;
+@endphp
+<section class="card mb-4" aria-labelledby="fe05-veiculos-titulo" id="veiculos-vinculados">
+    <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <h2 id="fe05-veiculos-titulo" class="h5 mb-0">
+            <i class="bi bi-car-front me-1" aria-hidden="true"></i>
+            Veículos vinculados ({{ $veiculosVinculados->count() }})
+        </h2>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{{ route('veiculosclientes.create', ['cliente_id' => $cliente->id]) }}"
+               class="btn btn-sm btn-primary">
+                <i class="bi bi-plus-lg me-1" aria-hidden="true"></i> Cadastrar veículo
+            </a>
+            <a href="{{ route('veiculosclientes.index') }}" class="btn btn-sm btn-outline-secondary">
+                Consultar todos os veículos
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        @if ($veiculosVinculados->isEmpty())
+            <p class="text-body-secondary mb-0" role="status">
+                Nenhum veículo vinculado a este cliente. Use “Cadastrar veículo” para criar um registro e confirmar o responsável.
+            </p>
+        @else
+            <div class="row g-3">
+                @foreach ($veiculosVinculados as $veiculoVinculado)
+                    <div class="col-12 col-md-6 col-xl-4">
+                        <article class="border rounded p-3 h-100 d-flex flex-column gap-2">
+                            <h3 class="h6 mb-0 text-break">
+                                {{ $veiculoVinculado->veiculo?->montadora?->nome ?? 'Montadora não informada' }}
+                                {{ $veiculoVinculado->veiculo?->nome ?? 'Modelo não informado' }}
+                            </h3>
+                            <div class="small text-body-secondary text-break">
+                                Placa: <strong>{{ $veiculoVinculado->placa ?: 'Não informada' }}</strong>
+                                <span aria-hidden="true">·</span>
+                                Ano: {{ $veiculoVinculado->ano ?? 'Não informado' }}
+                            </div>
+                            <div class="mt-auto pt-2">
+                                <a href="{{ route('veiculosclientes.edit', $veiculoVinculado->id) }}"
+                                   class="btn btn-outline-primary btn-sm"
+                                   aria-label="Consultar ou editar veículo placa {{ $veiculoVinculado->placa ?: 'não informada' }}">
+                                    <i class="bi bi-pencil-square me-1" aria-hidden="true"></i>
+                                    Abrir cadastro do veículo
+                                </a>
+                            </div>
+                        </article>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+    </div>
+</section>
+
 {{-- Dados pessoais --}}
 <div class="card mb-4">
 

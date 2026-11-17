@@ -42,15 +42,15 @@
 
             <div class="col-12 col-lg-9">
 
+                {{-- Preselecao apenas administrativa; o servidor valida IDs e vinculos no POST. --}}
                 <livewire:cliente.seletor-cliente
                     :clientes-selecionados-ids="old(
                         'clientes',
                         isset($veiculoscliente)
-                            ? $veiculoscliente
-                                ->clientes
-                                ->pluck('id')
-                                ->all()
-                            : []
+                            ? $veiculoscliente->clientes->pluck('id')->all()
+                            : (request()->integer('cliente_id') > 0
+                                ? [request()->integer('cliente_id')]
+                                : [])
                     )"
                 />
 
