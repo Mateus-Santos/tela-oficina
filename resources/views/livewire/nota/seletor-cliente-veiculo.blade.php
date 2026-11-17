@@ -58,6 +58,7 @@
                         class="btn btn-sm btn-outline-danger"
                         wire:click="removerCliente"
                         title="Trocar cliente"
+                        aria-label="Trocar cliente"
                     >
                         <i class="bi bi-x-lg"></i>
                     </button>
@@ -86,10 +87,10 @@
                         </span>
 
                         <input
-                            type="text"
+                            type="search"
                             id="busca_cliente_nota"
                             class="form-control"
-                            placeholder="Nome, CPF ou telefone..."
+                            placeholder="Busque por nome, CPF ou telefone..."
                             autocomplete="off"
                             wire:model.live.debounce.300ms="buscaCliente"
                         >
@@ -97,6 +98,8 @@
                     </div>
 
                     <div
+                        role="status"
+                        aria-live="polite"
                         wire:loading
                         wire:target="buscaCliente"
                         class="small fw-semibold mt-1"
@@ -142,6 +145,7 @@
                                         <span class="text-start">
 
                                             <span class="d-block fw-bold">
+                                                <i class="bi bi-person me-1" aria-hidden="true"></i>
                                                 {{ $cliente['nome'] }}
                                             </span>
 
@@ -176,6 +180,10 @@
 
                             </div>
 
+                            <div class="busca-selecao__rodape">
+                                Role para visualizar os resultados.
+                            </div>
+
                         </div>
 
                     @elseif(
@@ -183,7 +191,7 @@
                         && count($resultadosClientes) === 0
                     )
 
-                        <div class="small fw-semibold mt-2">
+                        <div class="small fw-semibold mt-2" role="status" aria-live="polite">
                             Nenhum cliente encontrado.
                         </div>
 
@@ -430,6 +438,7 @@
                         class="btn btn-sm btn-outline-danger"
                         wire:click="removerVeiculo"
                         title="Trocar veículo"
+                        aria-label="Trocar veículo"
                     >
                         <i class="bi bi-x-lg"></i>
                     </button>
@@ -458,10 +467,10 @@
                         </span>
 
                         <input
-                            type="text"
+                            type="search"
                             id="busca_veiculo_nota"
                             class="form-control"
-                            placeholder="Placa, veículo ou montadora..."
+                            placeholder="Busque por placa, veículo ou montadora..."
                             autocomplete="off"
                             wire:model.live.debounce.300ms="buscaVeiculo"
                         >
@@ -469,6 +478,8 @@
                     </div>
 
                     <div
+                        role="status"
+                        aria-live="polite"
                         wire:loading
                         wire:target="buscaVeiculo"
                         class="small fw-semibold mt-1"
@@ -514,6 +525,7 @@
 
                                             <span class="d-block fw-bold">
 
+                                                <i class="bi bi-car-front me-1" aria-hidden="true"></i>
                                                 {{ $veiculo['veiculo'] }}
 
                                                 @if(!empty($veiculo['montadora']))
@@ -556,6 +568,10 @@
 
                             </div>
 
+                            <div class="busca-selecao__rodape">
+                                Apenas veículos vinculados ao cliente selecionado.
+                            </div>
+
                         </div>
 
                     @elseif(
@@ -563,7 +579,7 @@
                         && count($resultadosVeiculos) === 0
                     )
 
-                        <div class="small fw-semibold mt-2">
+                        <div class="small fw-semibold mt-2" role="status" aria-live="polite">
                             Nenhum veículo vinculado a esse cliente foi encontrado.
                         </div>
 
