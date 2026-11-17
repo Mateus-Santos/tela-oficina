@@ -394,6 +394,15 @@
 
                                             </span>
 
+                                            <a
+                                                href="{{ route('clientes.show', $cliente->id) }}"
+                                                class="btn btn-sm btn-outline-primary"
+                                                aria-label="Abrir ficha de {{ $cliente->pessoa?->nome ?? 'cliente sem nome' }}"
+                                            >
+                                                <i class="bi bi-person-vcard" aria-hidden="true"></i>
+                                                Ficha do cliente
+                                            </a>
+
                                         @endforeach
 
                                     </div>

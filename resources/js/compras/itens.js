@@ -687,87 +687,56 @@ export default function inicializarItensCompra() {
 
         item.innerHTML = `
             <div class="card-body">
-
                 <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
-
                     <h3 class="h6 mb-0">
-
                         <i class="bi bi-box"></i>
-
                         Item
-
                         <span class="item-numero">1</span>
-
                     </h3>
-
                     <button
                         type="button"
                         class="btn btn-danger btn-sm btn-remover-item"
                         title="Remover item"
                     >
-
                         <i class="bi bi-trash"></i>
-
                     </button>
-
                 </div>
-
                 <div class="row g-3">
-
                     <div class="col-12">
-
                         <label class="form-label">
-
                             <i class="bi bi-box-seam"></i>
-
                             Produto *
-
                         </label>
-
                         <div class="position-relative">
-
                             <div class="input-group">
-
                                 <span class="input-group-text">
-
                                     <i class="bi bi-search"></i>
-
                                 </span>
-
                                 <input
                                     type="search"
                                     class="form-control item-produto-busca"
                                     placeholder="Digite nome, código ou código de barras..."
+                                    aria-label="Buscar produto do item"
                                     autocomplete="off"
                                 >
-
                                 <button
                                     type="button"
                                     class="btn btn-outline-secondary btn-limpar-produto"
                                     title="Limpar produto"
+                                    aria-label="Limpar produto"
                                 >
-
                                     <i class="bi bi-x-lg"></i>
-
                                 </button>
-
                             </div>
-
                             <div
                                 class="list-group position-absolute w-100 item-produto-resultados shadow-sm"
                                 style="z-index: 1050;"
                             ></div>
-
                         </div>
-
-                        <div class="item-produto-status small text-muted mt-1">
-
+                        <div class="item-produto-status small text-muted mt-1" role="status" aria-live="polite">
                             Digite para pesquisar.
-
                         </div>
-
                         <div class="item-produto-selecionado mt-2 d-none"></div>
-
                         <input
                             type="hidden"
                             name="itens[${index}][produto_id]"
@@ -775,19 +744,12 @@ export default function inicializarItensCompra() {
                             value=""
                             required
                         >
-
                     </div>
-
                     <div class="col-12 col-md-6">
-
                         <label class="form-label">
-
                             <i class="bi bi-card-text"></i>
-
                             Descrição *
-
                         </label>
-
                         <input
                             type="text"
                             name="itens[${index}][descricao]"
@@ -795,19 +757,12 @@ export default function inicializarItensCompra() {
                             maxlength="255"
                             required
                         >
-
                     </div>
-
                     <div class="col-12 col-md-4">
-
                         <label class="form-label">
-
                             <i class="bi bi-boxes"></i>
-
                             Quantidade *
-
                         </label>
-
                         <input
                             type="number"
                             name="itens[${index}][quantidade]"
@@ -817,19 +772,12 @@ export default function inicializarItensCompra() {
                             step="0.001"
                             required
                         >
-
                     </div>
-
                     <div class="col-12 col-md-4">
-
                         <label class="form-label">
-
                             <i class="bi bi-currency-dollar"></i>
-
                             Valor unitário *
-
                         </label>
-
                         <input
                             type="text"
                             inputmode="numeric"
@@ -839,19 +787,12 @@ export default function inicializarItensCompra() {
                             autocomplete="off"
                             required
                         >
-
                     </div>
-
                     <div class="col-12 col-md-4">
-
                         <label class="form-label">
-
                             <i class="bi bi-percent"></i>
-
                             Desconto
-
                         </label>
-
                         <input
                             type="number"
                             name="itens[${index}][desconto]"
@@ -860,42 +801,26 @@ export default function inicializarItensCompra() {
                             min="0"
                             step="0.01"
                         >
-
                     </div>
-
                     <div class="col-12">
-
                         <div class="d-flex justify-content-end">
-
                             <div class="text-end">
-
                                 <small class="text-muted">
-
                                     Total do item
-
                                 </small>
-
                                 <div class="fw-bold item-valor-total">
-
                                     R$ 0,00
-
                                 </div>
-
                             </div>
-
                         </div>
-
                         <input
                             type="hidden"
                             name="itens[${index}][valor_total]"
                             class="item-valor-total-input"
                             value="0"
                         >
-
                     </div>
-
                 </div>
-
             </div>
         `;
 

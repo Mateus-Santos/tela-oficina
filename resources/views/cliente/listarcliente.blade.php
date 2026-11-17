@@ -234,6 +234,16 @@
                                     <i class="bi bi-eye"></i>
                                 </a>
 
+                                {{-- CADASTRAR VEICULO JA ASSOCIADO AO CONTEXTO --}}
+                                <a
+                                    href="{{ route('veiculosclientes.create', ['cliente_id' => $cliente->id]) }}"
+                                    class="btn btn-outline-primary btn-sm"
+                                    title="Cadastrar veículo para este cliente"
+                                    aria-label="Cadastrar veículo para {{ $cliente->pessoa?->nome ?? 'cliente sem nome' }}"
+                                >
+                                    <i class="bi bi-car-front" aria-hidden="true"></i>
+                                </a>
+
                                 {{-- EDITAR --}}
                                 <a
                                     href="{{ route(
