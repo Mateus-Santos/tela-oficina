@@ -13,6 +13,10 @@
         fn ($item) => $item->movimentacoesEstoque->contains('tipo', 'entrada')
     );
     $compraPossuiDivergencia = $compra->possuiDivergenciaConferencia();
+    $semEstoquePorAceiteZero = $compra->itens->isNotEmpty() && $compra->itens->every(
+        fn ($item) => $item->quantidade_conferida !== null
+            && (float) ($item->quantidade_aceita ?? $item->quantidade_conferida) == 0.0
+    );
 
     $algumEstoqueLancado = $compra->itens->contains(
         fn ($item) => $item->movimentacoesEstoque->contains('tipo', 'entrada')
@@ -139,7 +143,9 @@
                                 </small>
                             </div>
 
-                            @if ($estoqueLancado)
+                            @if ($semEstoquePorAceiteZero)
+                                <span class="badge bg-info text-dark">Sem entrada (0 aceito)</span>
+                            @elseif ($estoqueLancado)
                                 <span class="badge bg-success">
                                     <i class="bi bi-check-circle"></i>
                                     Concluído
@@ -157,7 +163,11 @@
                             @endif
                         </div>
 
-                        @if ($estoqueLancado)
+                        @if ($semEstoquePorAceiteZero)
+                            <div class="alert alert-info mb-0">
+                                Conferência concluída sem mercadorias aceitas. Nenhuma entrada de estoque é necessária.
+                            </div>
+                        @elseif ($estoqueLancado)
                             <div class="alert alert-success mb-0">
                                 <i class="bi bi-check-circle"></i>
                                 Todos os itens desta compra já possuem entrada registrada no estoque.
