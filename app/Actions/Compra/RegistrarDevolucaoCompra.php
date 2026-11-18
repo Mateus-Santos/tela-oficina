@@ -38,6 +38,38 @@ class RegistrarDevolucaoCompra
                 if ((int) $existente->compra_id !== (int) $compra->id) {
                     throw new InvalidArgumentException('Identificador de operacao ja utilizado por outra compra.');
                 }
+
+                // Repeticoes exatas sao idempotentes, mas o mesmo UUID nao pode
+                // confirmar silenciosamente quantidades ou documentos alterados.
+                $anteriores = $existente->itens()
+                    ->get(['compra_item_id', 'quantidade'])
+                    ->mapWithKeys(fn (CompraDevolucaoItem $linha) => [
+                        (int) $linha->compra_item_id => (string) $linha->quantidade,
+                    ])->all();
+                $reenviados = [];
+                foreach ($dados['itens'] as $id => $valor) {
+                    if (!ctype_digit((string) $id)) {
+                        throw new InvalidArgumentException('Item invalido na repeticao da operacao.');
+                    }
+                    $quantidade = Quantidade::milessimos((string) $valor);
+                    if ($quantidade > 0) {
+                        $reenviados[(int) $id] = Quantidade::formatar($quantidade);
+                    }
+                }
+                ksort($anteriores);
+                ksort($reenviados);
+                if (
+                    $existente->status !== 'efetivada'
+                    || $existente->referencia_documento !== trim((string) $dados['referencia_documento'])
+                    || $existente->chave_nfe !== ($dados['chave_nfe'] ?? null)
+                    || $existente->data_documento?->format('Y-m-d') !== $dados['data_documento']
+                    || $existente->motivo !== trim((string) $dados['motivo'])
+                    || $anteriores !== $reenviados
+                ) {
+                    throw new InvalidArgumentException(
+                        'Operacao ja registrada com dados diferentes. Reabra o formulario para uma nova devolucao.'
+                    );
+                }
                 return $existente;
             }
 

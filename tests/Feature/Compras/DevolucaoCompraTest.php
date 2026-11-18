@@ -116,6 +116,44 @@ class DevolucaoCompraTest extends TestCase
         $this->assertDatabaseCount('movimentacao_estoques', 2);
     }
 
+    public function test_uuid_repetido_com_quantidade_alterada_e_bloqueado(): void
+    {
+        [$compra, $item, $produto] = $this->compraComEstoque();
+        $dados = $this->dados($item, '2.000');
+        $action = app(RegistrarDevolucaoCompra::class);
+        $action->execute($compra, $dados, null);
+
+        $dados['itens'][$item->id] = '3.000';
+        try {
+            $action->execute($compra, $dados, null);
+            $this->fail('UUID de operacao com outra quantidade deve ser rejeitado.');
+        } catch (InvalidArgumentException $e) {
+            $this->assertStringContainsString('dados diferentes', $e->getMessage());
+        }
+        $this->assertSame(13.0, (float) $produto->fresh()->quantidade);
+        $this->assertDatabaseCount('compra_devolucoes', 1);
+        $this->assertDatabaseCount('movimentacao_estoques', 2);
+    }
+
+    public function test_uuid_repetido_com_documento_alterado_e_bloqueado(): void
+    {
+        [$compra, $item, $produto] = $this->compraComEstoque();
+        $dados = $this->dados($item);
+        $action = app(RegistrarDevolucaoCompra::class);
+        $action->execute($compra, $dados, null);
+
+        $dados['referencia_documento'] = 'DOCUMENTO-ALTERADO';
+        try {
+            $action->execute($compra, $dados, null);
+            $this->fail('UUID de operacao com documento alterado deve ser rejeitado.');
+        } catch (InvalidArgumentException $e) {
+            $this->assertStringContainsString('dados diferentes', $e->getMessage());
+        }
+        $this->assertSame(13.0, (float) $produto->fresh()->quantidade);
+        $this->assertDatabaseCount('compra_devolucoes', 1);
+        $this->assertDatabaseCount('movimentacao_estoques', 2);
+    }
+
     public function test_quantidade_excessiva_nao_grava_nada(): void
     {
         [$compra, $item, $produto] = $this->compraComEstoque();
