@@ -83,7 +83,7 @@ class AuditarOsVinculadas
             $repetidas = DB::table('notas_itens')
                 ->where('itemable_type', OrdemServico::class)
                 ->whereIn('itemable_id', $ids)
-                ->groupBy('itemable_id')->havingRaw('COUNT(*) > 1')->exists();
+                ->groupBy('itemable_id')->havingRaw('COUNT(*) > 1')->pluck('itemable_id')->isNotEmpty();
             if ($repetidas) {
                 throw new InvalidArgumentException('OS com vinculo duplicado. Revisao manual obrigatoria.');
             }
