@@ -21,6 +21,8 @@ class CompraPreConciliacaoController extends Controller
             'compra' => $compra,
             'previsao' => $previsao->montar($compra),
             'registro' => $compra->preConciliacao,
+            'efetivacao' => \App\Models\CompraConciliacaoEfetivacao::query()
+                ->where('compra_id', $compra->id)->first(),
         ]);
     }
 

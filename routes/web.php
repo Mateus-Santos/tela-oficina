@@ -669,6 +669,11 @@ Route::middleware([
             [CompraPreConciliacaoController::class, 'store']
         )->name('compras.preconciliacao.store');
 
+        // D03B: efetivacao supervisionada, separada da proposta D03A.
+        Route::post('compras/{compra}/conciliacao/efetivar',
+            [\App\Http\Controllers\CompraConciliacaoEfetivacaoController::class, 'store']
+        )->name('compras.conciliacao.efetivar');
+
         Route::resource(
             'compras',
             CompraController::class
