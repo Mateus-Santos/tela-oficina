@@ -5,6 +5,7 @@ namespace App\Actions\Compra;
 use App\Actions\Estoque\RegistrarSaida;
 use App\Models\Compra;
 use App\Models\MovimentacaoEstoque;
+use App\Support\Estoque\Quantidade;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -61,6 +62,11 @@ class EstornarCompra
             $entradasEncontradas = 0;
 
             foreach ($compra->itens as $item) {
+                // Itens conferidos com zero aceito nunca tiveram entrada para estornar.
+                if ($item->quantidade_conferida !== null
+                    && Quantidade::milessimos((string) ($item->quantidade_aceita ?? $item->quantidade_conferida)) === 0) {
+                    continue;
+                }
                 $entrada = MovimentacaoEstoque::query()
                     ->where('tipo', 'entrada')
                     ->where('origem_type', $item->getMorphClass())
