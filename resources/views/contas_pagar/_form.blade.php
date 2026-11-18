@@ -222,6 +222,27 @@
                             Nenhuma compra aprovada e disponível para vínculo.
                         </div>
                     @else
+                        <div class="row g-2 mb-3">
+                            <div class="col-12 col-md-7">
+                                <label for="compras-vinculadas-busca" class="form-label">Buscar compra, NF ou fornecedor</label>
+                                <input id="compras-vinculadas-busca" type="search" class="form-control"
+                                    autocomplete="off" placeholder="Ex.: 001245, NF-123 ou fornecedor">
+                            </div>
+                            <div class="col-8 col-md-3">
+                                <label for="compras-vinculadas-filtro" class="form-label">Exibir</label>
+                                <select id="compras-vinculadas-filtro" class="form-select">
+                                    <option value="todas">Todas</option>
+                                    <option value="selecionadas">Selecionadas</option>
+                                    <option value="nao-selecionadas">Não selecionadas</option>
+                                </select>
+                            </div>
+                            <div class="col-4 col-md-2 d-flex align-items-end">
+                                <button id="compras-vinculadas-limpar" class="btn btn-outline-secondary w-100"
+                                    type="button">Limpar</button>
+                            </div>
+                            <div class="col-12 small text-muted" id="compras-vinculadas-resultado"
+                                aria-live="polite" role="status"></div>
+                        </div>
                         <div class="row g-2">
                             @foreach ($comprasDisponiveis as $compraDisponivel)
                                 @php
@@ -560,6 +581,38 @@ document.addEventListener('DOMContentLoaded', function () {
         'compras-vinculadas-total'
     );
 
+    const busca = document.getElementById('compras-vinculadas-busca');
+    const filtro = document.getElementById('compras-vinculadas-filtro');
+    const limpar = document.getElementById('compras-vinculadas-limpar');
+    const resultado = document.getElementById('compras-vinculadas-resultado');
+
+    const normalizarBusca = function (texto) {
+        return String(texto || '').toLocaleLowerCase('pt-BR')
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    };
+
+    const atualizarVisibilidade = function () {
+        const termo = normalizarBusca(busca ? busca.value : '');
+        const modo = filtro ? filtro.value : 'todas';
+        let visiveis = 0;
+        checkboxes.forEach(function (checkbox) {
+            const item = checkbox.closest('[data-compra-item]');
+            if (!item) return;
+            const corresponde = normalizarBusca(item.textContent).includes(termo);
+            const correspondeSelecao = modo === 'todas'
+                || (modo === 'selecionadas' && checkbox.checked)
+                || (modo === 'nao-selecionadas' && !checkbox.checked);
+            const visivel = corresponde && correspondeSelecao;
+            item.classList.toggle('d-none', !visivel);
+            if (visivel) visiveis++;
+        });
+        if (resultado) {
+            resultado.textContent = visiveis === 0
+                ? 'Nenhuma compra encontrada com os filtros atuais.'
+                : visiveis + ' de ' + checkboxes.length + ' compras exibidas.';
+        }
+    };
+
     const formatarMoeda = function (numero) {
         return numero.toLocaleString(
             'pt-BR',
@@ -659,6 +712,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
         );
+        atualizarVisibilidade();
     };
 
     checkboxes.forEach(
@@ -676,6 +730,15 @@ document.addEventListener('DOMContentLoaded', function () {
             atualizar
         );
     }
+
+    if (busca) busca.addEventListener('input', atualizarVisibilidade);
+    if (filtro) filtro.addEventListener('change', atualizarVisibilidade);
+    if (limpar) limpar.addEventListener('click', function () {
+        if (busca) busca.value = '';
+        if (filtro) filtro.value = 'todas';
+        atualizarVisibilidade();
+        if (busca) busca.focus();
+    });
 
     atualizar();
 });
