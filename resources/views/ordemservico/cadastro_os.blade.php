@@ -161,6 +161,7 @@
                         value="{{ old('valor') }}"
                         placeholder="Ex.: 150,00"
                         required
+                        inputmode="decimal"
                     >
 
                     @error('valor')
@@ -184,6 +185,11 @@
                     <i class="bi bi-check-lg me-1"></i>
                     Cadastrar OS
                 </button>
+
+                <a href="{{ route('ordemservicos.index') }}" class="btn btn-outline-secondary ms-2">
+                    <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>
+                    Voltar às ordens de serviço
+                </a>
 
             </div>
 

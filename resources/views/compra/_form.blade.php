@@ -107,9 +107,10 @@
             pattern="[0-9]{44}"
             autocomplete="off"
             placeholder="44 dígitos"
+            aria-describedby="feux-chave-nf-ajuda"
         >
 
-        <small class="text-muted">
+        <small id="feux-chave-nf-ajuda" class="text-muted">
             Informe os 44 dígitos da chave da NF-e, quando disponível.
         </small>
     </div>

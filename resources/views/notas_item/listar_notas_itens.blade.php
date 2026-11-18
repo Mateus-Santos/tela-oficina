@@ -28,7 +28,7 @@
 
             <div class="row g-3 align-items-end">
 
-                <div class="col-12 col-lg-5">
+                <div class="col-12 col-lg-4">
 
                     <label
                         for="cliente"
@@ -69,7 +69,7 @@
                             value=""
                             @selected(!request()->filled('status'))
                         >
-                            Em aberto
+                            Aberto (padrão)
                         </option>
 
                         <option
@@ -142,7 +142,7 @@
 
                 </div>
 
-                <div class="col-12 col-md-4 col-lg-1">
+                <div class="col-12 col-md-4 col-lg-2">
 
                     <div class="filtros-container__actions">
 
@@ -151,13 +151,15 @@
                             class="btn btn-primary"
                             title="Filtrar notas"
                         >
-                            <i class="bi bi-search"></i>
+                            <i class="bi bi-search" aria-hidden="true"></i>
+                            Filtrar
                         </button>
 
                         <a
                             href="{{ route('notas.index') }}"
                             class="btn btn-secondary"
                             title="Limpar filtros"
+                            aria-label="Limpar filtros de notas"
                         >
                             <i class="bi bi-x-lg"></i>
                         </a>
@@ -221,6 +223,17 @@
         </x-slot:advanced>
 
     </x-filtros-container>
+
+    <div class="d-flex flex-wrap align-items-center gap-2 small text-body-secondary mb-3" role="status">
+        <i class="bi bi-info-circle" aria-hidden="true"></i>
+        <span>
+            {{ number_format($notas->total(), 0, ',', '.') }}
+            {{ $notas->total() === 1 ? 'nota encontrada' : 'notas encontradas' }}.
+            @if (!request()->filled('status'))
+                Exibindo somente notas abertas por padrão.
+            @endif
+        </span>
+    </div>
 
     @php
 

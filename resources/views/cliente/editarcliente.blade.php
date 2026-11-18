@@ -55,6 +55,7 @@
                         placeholder="Digite o nome completo"
                         maxlength="255"
                         required
+                        autocomplete="name"
                     >
                 </div>
 
@@ -79,6 +80,7 @@
                             placeholder="email@dominio.com"
                             maxlength="255"
                             required
+                            autocomplete="email"
                         >
 
                         <div class="form-text">
@@ -125,7 +127,8 @@
                         value="{{ old('telefone_1', $cliente->pessoa?->telefone_1) }}"
                         placeholder="(00) 00000-0000"
                         maxlength="15"
-                        autocomplete="off"
+                        autocomplete="tel"
+                        inputmode="tel"
                     >
                 </div>
 
@@ -147,6 +150,7 @@
                         placeholder="(00) 00000-0000"
                         maxlength="15"
                         autocomplete="off"
+                        inputmode="tel"
                     >
                 </div>
 
@@ -172,6 +176,7 @@
                         placeholder="000.000.000-00"
                         maxlength="14"
                         autocomplete="off"
+                        inputmode="numeric"
                     >
                 </div>
 
@@ -234,6 +239,7 @@
                         name="pontos"
                         value="{{ old('pontos', $cliente->pontos ?? 0) }}"
                         min="0"
+                        inputmode="numeric"
                     >
                 </div>
 

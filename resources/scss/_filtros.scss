@@ -140,7 +140,7 @@
 
   &__input {
     width: 100%;
-    max-width: 20rem;
+    max-width: 100%;
     min-width: 0;
 
     padding: $spacing-unit * 0.75 $spacing-unit;
@@ -259,4 +259,39 @@
     border-radius: 0.5rem;
   }
 
+}
+
+
+/* FE-UX-FINAL02: tamanho seguro dos controles de filtro. */
+.cadastro .filtros-container,
+.cadastro .filtros-container :is(.filtros-container__input, .filtros-container__select, .filtros-container__field) {
+    box-sizing: border-box;
+}
+
+/* FE-UX-FINAL01: filtros usam largura disponível sem invadir o viewport. */
+.cadastro .filtros-container {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: 0;
+
+    &__input,
+    &__select,
+    &__field {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    &__actions {
+        justify-content: flex-end;
+    }
+
+    @media (max-width: 575.98px) {
+        padding: 0.75rem;
+
+        &__actions > .btn {
+            flex: 1 1 auto;
+            min-height: 2.75rem;
+        }
+    }
 }
