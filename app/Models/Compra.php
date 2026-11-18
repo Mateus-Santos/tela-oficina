@@ -56,6 +56,11 @@ class Compra extends Model
         return $this->hasMany(CompraItem::class);
     }
 
+    public function devolucoes(): HasMany
+    {
+        return $this->hasMany(CompraDevolucao::class, 'compra_id')->latest('id');
+    }
+
     public function contaPagar(): HasOne
     {
         return $this->hasOne(ContaPagar::class);

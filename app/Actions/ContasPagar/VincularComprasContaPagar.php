@@ -88,6 +88,12 @@ class VincularComprasContaPagar
                 foreach ($ids as $id) {
                     $compra = $compras->get($id);
 
+                    if ($compra->devolucoes()->exists()) {
+                        throw new InvalidArgumentException(
+                            'Compra possui devolucao. Aguarde conciliacao D03 antes de vincular a conta a pagar.'
+                        );
+                    }
+
                     if (!$compra->estaAprovada()) {
                         throw new InvalidArgumentException(
                             'Somente compras aprovadas podem ser vinculadas a uma conta a pagar.'

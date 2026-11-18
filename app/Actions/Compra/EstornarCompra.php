@@ -31,6 +31,14 @@ class EstornarCompra
                 throw new InvalidArgumentException('Somente compras aprovadas podem ser estornadas.');
             }
 
+            // Devolucao parcial e estorno integral sao fluxos distintos.
+            // Evita baixar novamente unidades ja devolvidas.
+            if ($compra->devolucoes()->exists()) {
+                throw new InvalidArgumentException(
+                    'Esta compra possui devolucao registrada; estorno integral bloqueado. Regularize pelo fluxo de devolucoes.'
+                );
+            }
+
             if ($compra->itens->isEmpty()) {
                 throw new InvalidArgumentException('A compra não possui itens para estorno.');
             }

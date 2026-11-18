@@ -39,6 +39,13 @@ class GerarContaPagarCompra
              * agrupada, mesmo quando contas_pagar
              * .compra_id estiver null.
              */
+            // D03 reconciliara compras ja devolvidas; nunca gerar boleto pelo total original.
+            if ($compra->devolucoes()->exists()) {
+                throw new InvalidArgumentException(
+                    'Compra possui devolucao. Conciliacao financeira D03 obrigatoria antes de gerar conta a pagar.'
+                );
+            }
+
             if ($compra->contasPagar->isNotEmpty()) {
                 throw new InvalidArgumentException(
                     'Esta compra já possui uma conta a pagar vinculada.'

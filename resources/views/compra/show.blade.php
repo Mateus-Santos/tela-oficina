@@ -103,6 +103,9 @@
     </div>
 </div>
 
+{{-- D01A: devolucoes com rastreabilidade, sem emissao fiscal ou conciliacao financeira --}}
+@include('compra.devolucoes.resumo')
+
 {{-- INTEGRAÇÕES DA COMPRA --}}
 @if ($compra->status === 'aprovada')
     <div class="card shadow-sm mb-4">
