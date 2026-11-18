@@ -30,6 +30,11 @@ class GerarContaPagarCompra
                     'Somente compras aprovadas podem gerar uma conta a pagar.'
                 );
             }
+            if ($compra->possuiDivergenciaConferencia()) {
+                throw new InvalidArgumentException(
+                    'Compra com divergencia de recebimento. Conciliacao financeira D03 obrigatoria antes de gerar conta a pagar.'
+                );
+            }
 
             /*
              * A pivô é a nova fonte de verdade.

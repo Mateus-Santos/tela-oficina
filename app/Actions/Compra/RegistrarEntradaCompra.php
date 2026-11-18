@@ -11,74 +11,50 @@ use InvalidArgumentException;
 
 class RegistrarEntradaCompra
 {
-    public function __construct(
-        private RegistrarEntrada $registrarEntrada
-    ) {
+    public function __construct(private RegistrarEntrada $registrarEntrada)
+    {
     }
 
     public function execute(Compra $compra): void
     {
-        DB::transaction(function () use ($compra) {
-            $compra = Compra::query()
-                ->lockForUpdate()
-                ->with('itens.produto')
-                ->findOrFail($compra->id);
-
+        DB::transaction(function () use ($compra): void {
+            $compra = Compra::query()->lockForUpdate()->with('itens.produto')->findOrFail($compra->id);
             if (!$compra->estaAprovada()) {
-                throw new InvalidArgumentException(
-                    'Somente compras aprovadas podem ser lançadas no estoque.'
-                );
+                throw new InvalidArgumentException('Somente compras aprovadas podem ser lançadas no estoque.');
             }
-
             if ($compra->itens->isEmpty()) {
-                throw new InvalidArgumentException(
-                    'A compra não possui itens para entrada no estoque.'
-                );
+                throw new InvalidArgumentException('A compra não possui itens para entrada no estoque.');
             }
-
+            $lancaveis = [];
             foreach ($compra->itens as $item) {
-                $jaLancado = MovimentacaoEstoque::query()
+                if ($item->quantidade_conferida === null) {
+                    throw new InvalidArgumentException("O item '{$item->descricao}' não foi conferido.");
+                }
+                $quantidade = Quantidade::milessimos((string) ($item->quantidade_aceita ?? $item->quantidade_conferida));
+                if ($quantidade === 0) continue;
+                if (!$item->produto) {
+                    throw new InvalidArgumentException("Produto ausente no item '{$item->descricao}'.");
+                }
+                if (MovimentacaoEstoque::query()
                     ->where('tipo', 'entrada')
                     ->where('origem_type', $item->getMorphClass())
-                    ->where('origem_id', $item->id)
-                    ->exists();
-
-                if ($jaLancado) {
-                    throw new InvalidArgumentException(
-                        "O item '{$item->descricao}' da compra #{$compra->id} já foi lançado no estoque."
-                    );
+                    ->where('origem_id', $item->id)->exists()) {
+                    throw new InvalidArgumentException("O item '{$item->descricao}' já foi lançado no estoque.");
                 }
-
-                if ($item->quantidade_conferida === null) {
-                    throw new InvalidArgumentException(
-                        "O item '{$item->descricao}' ainda não foi conferido."
-                    );
-                }
-
-                $quantidade = Quantidade::milessimos((string) $item->quantidade_conferida);
-
-                if ($quantidade <= 0) {
-                    throw new InvalidArgumentException(
-                        "A quantidade conferida do item '{$item->descricao}' deve ser maior que zero."
-                    );
-                }
-
-                if (!$item->produto) {
-                    throw new InvalidArgumentException(
-                        "O produto do item '{$item->descricao}' não foi encontrado."
-                    );
-                }
+                $lancaveis[] = [$item, $quantidade];
             }
-
-            foreach ($compra->itens as $item) {
+            if ($lancaveis === []) {
+                throw new InvalidArgumentException('Nenhuma mercadoria aceita para lançar no estoque.');
+            }
+            foreach ($lancaveis as [$item, $quantidade]) {
                 $this->registrarEntrada->execute(
                     $item->produto,
-                    (string) $item->quantidade_conferida,
+                    Quantidade::formatar($quantidade),
                     (float) $item->valor_unitario,
                     $item,
-                    "Entrada referente à compra #{$compra->id}."
+                    "Entrada aceita da compra #{$compra->id}; divergências segregadas."
                 );
             }
-        });
+        }, 3);
     }
 }

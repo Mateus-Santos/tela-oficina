@@ -99,6 +99,11 @@ class VincularComprasContaPagar
                             'Somente compras aprovadas podem ser vinculadas a uma conta a pagar.'
                         );
                     }
+                    if ($compra->possuiDivergenciaConferencia()) {
+                        throw new InvalidArgumentException(
+                            'Compra com divergencia. Conciliacao financeira D03 obrigatoria antes de vincular conta a pagar.'
+                        );
+                    }
 
                     if ($fornecedorId === null) {
                         $fornecedorId =

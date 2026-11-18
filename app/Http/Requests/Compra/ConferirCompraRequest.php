@@ -14,30 +14,22 @@ class ConferirCompraRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'itens' => [
-                'required',
-                'array',
-                'min:1',
-            ],
-            'itens.*.quantidade_conferida' => [
-                'required',
-                'numeric',
-                'gt:0',
-                'decimal:0,3',
-                'max:999999999.999',
-            ],
+            'itens' => ['required', 'array', 'min:1'],
+            'itens.*.quantidade_conferida' => ['required', 'numeric', 'min:0', 'decimal:0,3', 'max:999999999.999'],
+            'itens.*.quantidade_avariada' => ['sometimes', 'required', 'numeric', 'min:0', 'decimal:0,3', 'max:999999999.999'],
+            'itens.*.quantidade_aceita' => ['nullable', 'numeric', 'min:0', 'decimal:0,3', 'max:999999999.999'],
+            'itens.*.observacao_divergencia' => ['nullable', 'string', 'max:2000'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'itens.required' => 'É necessário informar os itens da conferência.',
-            'itens.array' => 'Os itens informados são inválidos.',
-            'itens.min' => 'É necessário informar pelo menos um item para conferência.',
-            'itens.*.quantidade_conferida.required' => 'A quantidade recebida é obrigatória.',
-            'itens.*.quantidade_conferida.numeric' => 'A quantidade recebida deve ser numérica.',
-            'itens.*.quantidade_conferida.gt' => 'A quantidade recebida deve ser maior que zero.',
+            'itens.required' => 'Informe os itens da conferência.',
+            'itens.*.quantidade_conferida.required' => 'Informe a quantidade física recebida, inclusive zero.',
+            'itens.*.quantidade_conferida.min' => 'A quantidade recebida não pode ser negativa.',
+            'itens.*.quantidade_avariada.min' => 'A quantidade avariada não pode ser negativa.',
+            'itens.*.quantidade_aceita.min' => 'A quantidade aceita não pode ser negativa.',
         ];
     }
 }
