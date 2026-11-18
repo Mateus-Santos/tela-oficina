@@ -114,6 +114,15 @@
 {{-- D01A: devolucoes com rastreabilidade, sem emissao fiscal ou conciliacao financeira --}}
 @include('compra.devolucoes.resumo')
 
+@if (auth()->user()?->isAdmin())
+    <div class="mb-4">
+        <a class="btn btn-outline-primary" href="{{ route('compras.preconciliacao.show', $compra) }}">
+            <i class="bi bi-clipboard-check"></i> Pré-conciliação financeira (D03A)
+        </a>
+        <div class="small text-muted mt-1">Consulta e proposta em rascunho. Não realiza baixa ou pagamento.</div>
+    </div>
+@endif
+
 {{-- INTEGRAÇÕES DA COMPRA --}}
 @if ($compra->status === 'aprovada')
     <div class="card shadow-sm mb-4">

@@ -14,6 +14,7 @@ use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\CatalogoProdutoComplementoController;
 use App\Http\Controllers\ColaboradorController;
 use App\Http\Controllers\CompraController;
+use App\Http\Controllers\CompraPreConciliacaoController;
 use App\Http\Controllers\ContaPagarController;
 use App\Http\Controllers\ContaReceberController;
 use App\Http\Controllers\EnderecoController;
@@ -659,6 +660,14 @@ Route::middleware([
         Route::post('compras/{compra}/devolucoes',
             [\App\Http\Controllers\CompraDevolucaoController::class, 'store']
         )->name('compras.devolucoes.store');
+
+        // D03A: consulta e proposta de pre-conciliacao (somente ADMIN).
+        Route::get('compras/{compra}/pre-conciliacao',
+            [CompraPreConciliacaoController::class, 'show']
+        )->name('compras.preconciliacao.show');
+        Route::post('compras/{compra}/pre-conciliacao',
+            [CompraPreConciliacaoController::class, 'store']
+        )->name('compras.preconciliacao.store');
 
         Route::resource(
             'compras',
