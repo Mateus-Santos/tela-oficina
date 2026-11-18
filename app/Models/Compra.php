@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Support\Estoque\Quantidade;
 
 class Compra extends Model
 {
@@ -119,6 +120,21 @@ class Compra extends Model
     public function podeIniciarConferencia(): bool
     {
         return $this->estaPendente();
+    }
+
+    public function possuiDivergenciaConferencia(): bool
+    {
+        // Sem conferencia registrada: preservar compras legadas ate a conciliacao.
+        $itens = $this->relationLoaded('itens') ? $this->itens : $this->itens()->get();
+        foreach ($itens as $item) {
+            if ($item->quantidade_conferida === null) continue;
+            $nf = Quantidade::milessimos((string) $item->quantidade);
+            $recebida = Quantidade::milessimos((string) $item->quantidade_conferida);
+            $avariada = Quantidade::milessimos((string) ($item->quantidade_avariada ?? '0'));
+            $aceita = Quantidade::milessimos((string) ($item->quantidade_aceita ?? $item->quantidade_conferida));
+            if ($nf !== $recebida || $avariada !== 0 || $aceita !== $nf) return true;
+        }
+        return false;
     }
 
     public function podeSerAprovada(): bool

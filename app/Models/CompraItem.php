@@ -19,6 +19,9 @@ class CompraItem extends Model
         'descricao',
         'quantidade',
         'quantidade_conferida',
+        'quantidade_avariada',
+        'quantidade_aceita',
+        'observacao_divergencia',
         'valor_unitario',
         'desconto',
         'valor_total',
@@ -27,6 +30,8 @@ class CompraItem extends Model
     protected $casts = [
         'quantidade' => 'decimal:3',
         'quantidade_conferida' => 'decimal:3',
+        'quantidade_avariada' => 'decimal:3',
+        'quantidade_aceita' => 'decimal:3',
         'valor_unitario' => 'decimal:2',
         'desconto' => 'decimal:2',
         'valor_total' => 'decimal:2',
