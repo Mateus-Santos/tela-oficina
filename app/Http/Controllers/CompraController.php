@@ -161,6 +161,7 @@ class CompraController extends Controller
             'fornecedor',
             'itens.produto',
             'itens.movimentacoesEstoque',
+            'devolucoes.itens.itemCompra',
             'anexosVinculos.anexo',
             'contasPagar',
         ]);

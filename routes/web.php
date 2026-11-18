@@ -652,6 +652,14 @@ Route::middleware([
             'compras.estornar'
         );
 
+        // D01A: devolucao operacional de compras (grupo ADMIN existente).
+        Route::get('compras/{compra}/devolucoes/nova',
+            [\App\Http\Controllers\CompraDevolucaoController::class, 'create']
+        )->name('compras.devolucoes.create');
+        Route::post('compras/{compra}/devolucoes',
+            [\App\Http\Controllers\CompraDevolucaoController::class, 'store']
+        )->name('compras.devolucoes.store');
+
         Route::resource(
             'compras',
             CompraController::class
