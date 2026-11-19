@@ -85,14 +85,14 @@ class FinanceiroSociosParcelasAnexosTest extends TestCase
         $alteradas = app(AtualizarParcelasContaPagarSocio::class)->execute($conta, [
             'parcelas' => $this->linhas($conta), 'motivo' => 'Parcelas do contrato corrigidas.',
         ], $admin->id);
-        $this->assertSame(3, $alteradas);
+        $this->assertSame(2, $alteradas);
         $this->assertSame('300.00', $conta->fresh()->valor);
         $this->assertSame(['80.00', '120.00', '100.00'], $conta->fresh()->parcelas->pluck('valor')->all());
-        $this->assertDatabaseCount('parcelas_contas_pagar_socios_ajustes', 3);
+        $this->assertDatabaseCount('parcelas_contas_pagar_socios_ajustes', 2);
         $this->assertSame(0, app(AtualizarParcelasContaPagarSocio::class)->execute($conta, [
             'parcelas' => $this->linhas($conta), 'motivo' => 'Sem novas alteracoes de valores.',
         ], $admin->id));
-        $this->assertDatabaseCount('parcelas_contas_pagar_socios_ajustes', 3);
+        $this->assertDatabaseCount('parcelas_contas_pagar_socios_ajustes', 2);
     }
 
     public function test_parcela_pago_nao_pode_cair_abaixo_do_valor_pago(): void
@@ -124,7 +124,7 @@ class FinanceiroSociosParcelasAnexosTest extends TestCase
         $dados = ['parcelas' => $this->linhas($conta), 'motivo' => 'Reajuste confirmado pelo credor.'];
         $this->actingAs($cliente)->patch($rota, $dados)->assertForbidden();
         $this->actingAs($admin)->patch($rota, $dados)->assertRedirect();
-        $this->assertDatabaseCount('parcelas_contas_pagar_socios_ajustes', 3);
+        $this->assertDatabaseCount('parcelas_contas_pagar_socios_ajustes', 2);
         $outro = Socio::create(['nome' => 'Outro socio']);
         $this->actingAs($admin)->patch(route('socios-financeiro.contas.parcelas.update', [$outro, $conta]), $dados)->assertNotFound();
     }

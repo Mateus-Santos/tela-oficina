@@ -9,8 +9,8 @@ return new class extends Migration {
     {
         Schema::create('parcelas_contas_pagar_socios_ajustes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('conta_pagar_socio_id')->constrained('contas_pagar_socios')->cascadeOnDelete();
-            $table->foreignId('parcela_conta_pagar_socio_id')->constrained('parcelas_contas_pagar_socios')->cascadeOnDelete();
+            $table->foreignId('conta_pagar_socio_id')->constrained('contas_pagar_socios', 'id', 's01_ajuste_conta_fk')->cascadeOnDelete();
+            $table->foreignId('parcela_conta_pagar_socio_id')->constrained('parcelas_contas_pagar_socios', 'id', 's01_ajuste_parcela_fk')->cascadeOnDelete();
             $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->decimal('valor_anterior', 12, 2);
             $table->decimal('valor_novo', 12, 2);
