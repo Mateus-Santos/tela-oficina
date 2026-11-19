@@ -22,8 +22,34 @@ class CriarContaPagarSocio
         $base = intdiv($total, $quantidade);
         $resto = $total % $quantidade;
         $vencimento = Carbon::parse($dados['primeiro_vencimento']);
+        $personalizar = filter_var($dados['personalizar_parcelas'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $parcelasPersonalizadas = [];
+        if ($personalizar) {
+            $parcelas = $dados['parcelas'] ?? null;
+            if (!is_array($parcelas) || count($parcelas) !== $quantidade) {
+                throw new InvalidArgumentException('Informe valores e vencimentos de todas as parcelas.');
+            }
+            $soma = 0;
+            foreach ($parcelas as $linha) {
+                if (!is_array($linha)) {
+                    throw new InvalidArgumentException('Dados de parcela invalidos.');
+                }
+                $valor = DinheiroSocios::centavos((string) ($linha['valor'] ?? ''));
+                $data = (string) ($linha['data_vencimento'] ?? '');
+                $venc = \DateTimeImmutable::createFromFormat('!Y-m-d', $data);
+                if ($valor <= 0 || !$venc || $venc->format('Y-m-d') !== $data
+                    || $data < (string) $dados['data_emissao']) {
+                    throw new InvalidArgumentException('Valor ou vencimento invalido em parcela personalizada.');
+                }
+                $parcelasPersonalizadas[] = [$valor, $data];
+                $soma += $valor;
+            }
+            if ($soma !== $total) {
+                throw new InvalidArgumentException('A soma das parcelas deve ser igual ao valor da divida.');
+            }
+        }
 
-        return DB::transaction(function () use ($socio, $dados, $quantidade, $base, $resto, $vencimento) {
+        return DB::transaction(function () use ($socio, $dados, $quantidade, $base, $resto, $vencimento, $parcelasPersonalizadas) {
             $conta = $socio->contas()->create([
                 'descricao' => $dados['descricao'],
                 'credor' => $dados['credor'] ?? null,
@@ -35,13 +61,15 @@ class CriarContaPagarSocio
             ]);
 
             for ($numero = 1; $numero <= $quantidade; $numero++) {
-                $valorParcela = $base + ($numero <= $resto ? 1 : 0);
+                $personalizada = $parcelasPersonalizadas[$numero - 1] ?? null;
+                $valorParcela = $personalizada[0] ?? ($base + ($numero <= $resto ? 1 : 0));
+                $dataParcela = $personalizada[1] ?? $vencimento->copy()
+                    ->addMonthsNoOverflow($numero - 1)->toDateString();
 
                 $conta->parcelas()->create([
                     'numero' => $numero,
                     'valor' => DinheiroSocios::decimal($valorParcela),
-                    'data_vencimento' => $vencimento->copy()
-                        ->addMonthsNoOverflow($numero - 1)->toDateString(),
+                    'data_vencimento' => $dataParcela,
                 ]);
             }
 

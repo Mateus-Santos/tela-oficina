@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\FinanceiroSocios\AtualizarParcelasContaPagarSocio;
 use App\Actions\FinanceiroSocios\CriarContaPagarSocio;
 use App\Actions\FinanceiroSocios\EstornarPagamentoSocio;
 use App\Actions\FinanceiroSocios\EstornarRetiradaSocio;
@@ -71,6 +72,10 @@ class FinanceiroSociosController extends Controller
             'data_emissao' => ['required', 'date'],
             'primeiro_vencimento' => ['required', 'date', 'after_or_equal:data_emissao'],
             'quantidade_parcelas' => ['required', 'integer', 'min:1', 'max:120'],
+            'personalizar_parcelas' => ['sometimes', 'boolean'],
+            'parcelas' => ['required_if:personalizar_parcelas,1', 'array', 'max:120'],
+            'parcelas.*.valor' => ['required_with:parcelas', 'regex:/^\d{1,8}(?:\.\d{1,2})?$/'],
+            'parcelas.*.data_vencimento' => ['required_with:parcelas', 'date', 'after_or_equal:data_emissao'],
             'observacoes' => ['nullable', 'string', 'max:5000'],
         ]);
 
@@ -84,10 +89,32 @@ class FinanceiroSociosController extends Controller
             ->with('success', 'Divida pessoal e parcelas cadastradas.');
     }
 
+    public function atualizarParcelas(
+        Request $request,
+        Socio $socio,
+        ContaPagarSocio $conta,
+        AtualizarParcelasContaPagarSocio $action
+    ): RedirectResponse {
+        abort_unless((int) $conta->socio_id === (int) $socio->id, 404);
+        $dados = $request->validate([
+            'motivo' => ['required', 'string', 'min:10', 'max:500'],
+            'parcelas' => ['required', 'array', 'min:1', 'max:120'],
+            'parcelas.*.id' => ['required', 'integer', 'distinct'],
+            'parcelas.*.valor' => ['required', 'regex:/^\d{1,8}(?:\.\d{1,2})?$/'],
+            'parcelas.*.data_vencimento' => ['required', 'date', 'after_or_equal:' . $conta->data_emissao->format('Y-m-d')],
+        ]);
+        try {
+            $quantidade = $action->execute($conta, $dados, auth()->id());
+        } catch (InvalidArgumentException $e) {
+            throw ValidationException::withMessages(['parcelas' => $e->getMessage()]);
+        }
+        return back()->with('success', "{$quantidade} parcela(s) atualizada(s) com rastreabilidade.");
+    }
+
     public function showConta(Socio $socio, ContaPagarSocio $conta): View
     {
         abort_unless((int) $conta->socio_id === (int) $socio->id, 404);
-        $conta->load(['parcelas.pagamentosAtivos', 'pagamentos.retirada']);
+        $conta->load(['parcelas.pagamentosAtivos', 'pagamentos.retirada', 'anexosVinculos.anexo']);
         $formas = FormaPagamento::query()->where('ativo', true)->orderBy('nome')->get();
 
         return view('financeiro.socios.conta', compact('socio', 'conta', 'formas'));

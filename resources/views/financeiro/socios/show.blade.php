@@ -30,7 +30,7 @@
     <div class="card shadow-sm mb-4">
         <div class="card-header fw-bold text-start">Nova dívida pessoal</div>
         <div class="card-body text-start">
-            <form method="POST" action="{{ route('socios-financeiro.contas.store',$socio) }}" class="row g-3">
+            <form method="POST" action="{{ route('socios-financeiro.contas.store',$socio) }}" class="row g-3" data-socios-cadastro>
                 @csrf
                 <div class="col-md-6"><label class="form-label" for="descricao">Descrição</label><input class="form-control" id="descricao" name="descricao" required maxlength="255" value="{{ old('descricao') }}" placeholder="Ex.: financiamento do veículo"></div>
                 <div class="col-md-3"><label class="form-label" for="credor">Credor</label><input class="form-control" id="credor" name="credor" maxlength="255" value="{{ old('credor') }}"></div>
@@ -39,10 +39,23 @@
                 <div class="col-md-3"><label class="form-label" for="data_emissao">Data de emissão</label><input class="form-control" id="data_emissao" name="data_emissao" type="date" required value="{{ old('data_emissao',today()->toDateString()) }}"></div>
                 <div class="col-md-3"><label class="form-label" for="primeiro_vencimento">Primeiro vencimento</label><input class="form-control" id="primeiro_vencimento" name="primeiro_vencimento" type="date" required value="{{ old('primeiro_vencimento') }}"></div>
                 <div class="col-md-3"><label class="form-label" for="quantidade_parcelas">Nº parcelas mensais</label><input class="form-control" id="quantidade_parcelas" name="quantidade_parcelas" type="number" min="1" max="120" required value="{{ old('quantidade_parcelas',1) }}"></div>
+                <div class="col-12">
+                    <div class="form-check">
+                        <input class="form-check-input" id="personalizar_parcelas" type="checkbox" name="personalizar_parcelas" value="1" data-personalizar-parcelas @checked(old('personalizar_parcelas'))>
+                        <label class="form-check-label" for="personalizar_parcelas">Definir valores e vencimentos diferentes para cada parcela</label>
+                    </div>
+                </div>
+                <div class="col-12" data-painel-parcelas hidden>
+                    <div class="table-responsive border rounded"><table class="table table-sm align-middle mb-0">
+                        <thead><tr><th>Parcela</th><th>Valor (R$)</th><th>Vencimento</th></tr></thead>
+                        <tbody data-linhas-parcelas></tbody>
+                    </table></div>
+                    <p class="small mt-2" data-resumo-parcelas role="status">A soma deve ser igual ao valor total da dívida.</p>
+                </div>
                 <div class="col-md-9"><label class="form-label" for="observacoes">Observações</label><input class="form-control" id="observacoes" name="observacoes" value="{{ old('observacoes') }}"></div>
                 <div class="col-md-3 d-flex align-items-end"><button class="btn btn-primary w-100" type="submit">Cadastrar dívida</button></div>
             </form>
-            <p class="small text-muted mt-2 mb-0">As parcelas são distribuídas automaticamente em valores iguais, com vencimentos mensais. Conferir os valores reais do contrato antes de cadastrar.</p>
+            <p class="small text-muted mt-2 mb-0">Por padrão, parcelas iguais. Ative a personalização para ajustar valores e vencimentos por parcela; a soma deve corresponder ao valor total.</p>
         </div>
     </div>
 
@@ -105,4 +118,8 @@
         </table></div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+    @vite('resources/js/financeiro/socios-parcelas.js')
 @endsection
