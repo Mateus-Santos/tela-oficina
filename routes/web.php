@@ -776,6 +776,8 @@ Route::middleware([
         Route::get('financeiro/socios/{socio}', [FinanceiroSociosController::class, 'show'])->name('socios-financeiro.show');
         Route::post('financeiro/socios/{socio}/contas', [FinanceiroSociosController::class, 'storeConta'])->name('socios-financeiro.contas.store');
         Route::get('financeiro/socios/{socio}/contas/{conta}', [FinanceiroSociosController::class, 'showConta'])->name('socios-financeiro.contas.show');
+        Route::patch('financeiro/socios/{socio}/contas/{conta}/parcelas', [FinanceiroSociosController::class, 'atualizarParcelas'])->name('socios-financeiro.contas.parcelas.update');
+        Route::post('financeiro/socios/{socio}/contas/{conta}/anexos', [AnexoController::class, 'storeContaPagarSocio'])->name('socios-financeiro.contas.anexos.store');
         Route::post('financeiro/socios/{socio}/contas/{conta}/pagamentos', [FinanceiroSociosController::class, 'storePagamento'])->name('socios-financeiro.pagamentos.store');
         Route::post('financeiro/socios/{socio}/contas/{conta}/pagamentos/{pagamento}/estornar', [FinanceiroSociosController::class, 'estornarPagamento'])->name('socios-financeiro.pagamentos.estornar');
         Route::post('financeiro/socios/{socio}/retiradas', [FinanceiroSociosController::class, 'storeRetirada'])->name('socios-financeiro.retiradas.store');
