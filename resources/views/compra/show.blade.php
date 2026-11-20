@@ -5,8 +5,17 @@
 <div class="container cadastro">
 
 @php
-    $estoqueLancado = $compra->itens->isNotEmpty() && $compra->itens->every(
+    $itensParaEstoque = $compra->itens->filter(
+        fn ($item) => $item->quantidade_conferida !== null
+            && (float) ($item->quantidade_aceita ?? $item->quantidade_conferida) > 0
+    );
+    $estoqueLancado = $itensParaEstoque->isNotEmpty() && $itensParaEstoque->every(
         fn ($item) => $item->movimentacoesEstoque->contains('tipo', 'entrada')
+    );
+    $compraPossuiDivergencia = $compra->possuiDivergenciaConferencia();
+    $semEstoquePorAceiteZero = $compra->itens->isNotEmpty() && $compra->itens->every(
+        fn ($item) => $item->quantidade_conferida !== null
+            && (float) ($item->quantidade_aceita ?? $item->quantidade_conferida) == 0.0
     );
 
     $algumEstoqueLancado = $compra->itens->contains(
@@ -15,7 +24,6 @@
 
     $todosItensConferidos = $compra->itens->isNotEmpty() && $compra->itens->every(
         fn ($item) => $item->quantidade_conferida !== null
-            && (float) $item->quantidade_conferida > 0
     );
 
     /*
@@ -103,6 +111,18 @@
     </div>
 </div>
 
+{{-- D01A: devolucoes com rastreabilidade, sem emissao fiscal ou conciliacao financeira --}}
+@include('compra.devolucoes.resumo')
+
+@if (auth()->user()?->isAdmin())
+    <div class="mb-4">
+        <a class="btn btn-outline-primary" href="{{ route('compras.preconciliacao.show', $compra) }}">
+            <i class="bi bi-clipboard-check"></i> Pré-conciliação financeira (D03A)
+        </a>
+        <div class="small text-muted mt-1">Consulta e proposta em rascunho. Não realiza baixa ou pagamento.</div>
+    </div>
+@endif
+
 {{-- INTEGRAÇÕES DA COMPRA --}}
 @if ($compra->status === 'aprovada')
     <div class="card shadow-sm mb-4">
@@ -132,7 +152,9 @@
                                 </small>
                             </div>
 
-                            @if ($estoqueLancado)
+                            @if ($semEstoquePorAceiteZero)
+                                <span class="badge bg-info text-dark">Sem entrada (0 aceito)</span>
+                            @elseif ($estoqueLancado)
                                 <span class="badge bg-success">
                                     <i class="bi bi-check-circle"></i>
                                     Concluído
@@ -150,7 +172,11 @@
                             @endif
                         </div>
 
-                        @if ($estoqueLancado)
+                        @if ($semEstoquePorAceiteZero)
+                            <div class="alert alert-info mb-0">
+                                Conferência concluída sem mercadorias aceitas. Nenhuma entrada de estoque é necessária.
+                            </div>
+                        @elseif ($estoqueLancado)
                             <div class="alert alert-success mb-0">
                                 <i class="bi bi-check-circle"></i>
                                 Todos os itens desta compra já possuem entrada registrada no estoque.
@@ -167,7 +193,11 @@
                         @else
                             <div class="alert alert-info mb-3">
                                 <i class="bi bi-info-circle"></i>
-                                A compra está aprovada e pronta para entrada no estoque.
+                                @if ($itensParaEstoque->isEmpty())
+                                    Nenhum item aceito para entrada no estoque.
+                                @else
+                                    Os itens aceitos estão prontos para entrar no estoque. Excedentes e avarias permanecem fora do saldo.
+                                @endif
                             </div>
 
                             <form
@@ -180,6 +210,7 @@
                                 <button
                                     type="submit"
                                     class="btn btn-success"
+                                    @disabled($itensParaEstoque->isEmpty())
                                 >
                                     <i class="bi bi-box-arrow-in-down"></i>
                                     Lançar no estoque
@@ -259,15 +290,16 @@
                                 Nenhuma conta a pagar foi gerada para esta compra.
                             </div>
 
-                            <button
-                                type="button"
-                                class="btn btn-primary"
-                                data-bs-toggle="modal"
-                                data-bs-target="#modalGerarContaCompra"
-                            >
-                                <i class="bi bi-wallet2"></i>
-                                Gerar conta a pagar
-                            </button>
+                            @if ($compraPossuiDivergencia)
+                                <div class="alert alert-warning mb-0" role="status">
+                                    Divergência de recebimento: emissão de conta a pagar pelo valor original bloqueada até D03.
+                                </div>
+                            @else
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                    data-bs-target="#modalGerarContaCompra">
+                                    <i class="bi bi-wallet2"></i> Gerar conta a pagar
+                                </button>
+                            @endif
                         @endif
                     </div>
                 </div>
@@ -713,7 +745,8 @@
 
                 @if ($compra->status === 'conferindo')
                     <small class="text-muted">
-                        Informe abaixo a quantidade realmente recebida de cada produto.
+                        Informe quantidade recebida (inclusive zero), avariada, aceita e justificativa quando divergente.
+                        Mercadoria avariada e excedente não entram automaticamente no estoque.
                     </small>
                 @endif
             </div>
@@ -742,6 +775,9 @@
                             <th scope="col">DESCRIÇÃO</th>
                             <th scope="col">QUANTIDADE NF</th>
                             <th scope="col">RECEBIDA</th>
+                            <th scope="col">AVARIADA</th>
+                            <th scope="col">ACEITA</th>
+                            <th scope="col">DIVERGÊNCIA / MOTIVO</th>
                             <th scope="col">VALOR UNITÁRIO</th>
                             <th scope="col">DESCONTO</th>
                             <th scope="col">TOTAL</th>
@@ -801,7 +837,7 @@
                                             name="itens[{{ $item->id }}][quantidade_conferida]"
                                             class="form-control"
                                             value="{{ old('itens.' . $item->id . '.quantidade_conferida', $conferida) }}"
-                                            min="0.001"
+                                            min="0"
                                             step="0.001"
                                             required
                                         >
@@ -824,6 +860,37 @@
                                     @endif
                                 </td>
 
+                                <td>
+                                    @if ($compra->status === 'conferindo')
+                                        <label for="d02_avaria_{{ $item->id }}" class="visually-hidden">Quantidade avariada do item {{ $item->id }}</label>
+                                        <input id="d02_avaria_{{ $item->id }}" type="number" class="form-control" min="0" step="0.001"
+                                            name="itens[{{ $item->id }}][quantidade_avariada]"
+                                            value="{{ old('itens.'.$item->id.'.quantidade_avariada', $item->quantidade_avariada ?? '0') }}">
+                                    @else
+                                        {{ number_format((float) ($item->quantidade_avariada ?? 0), 3, ',', '.') }}
+                                    @endif
+                                </td>
+                                <td>
+                                    @if ($compra->status === 'conferindo')
+                                        <label for="d02_aceita_{{ $item->id }}" class="visually-hidden">Quantidade aceita do item {{ $item->id }}</label>
+                                        <input id="d02_aceita_{{ $item->id }}" type="number" class="form-control" min="0" step="0.001"
+                                            name="itens[{{ $item->id }}][quantidade_aceita]"
+                                            placeholder="Auto" value="{{ old('itens.'.$item->id.'.quantidade_aceita', $item->quantidade_aceita) }}">
+                                        <small class="form-text">Vazio: limite seguro automático</small>
+                                    @else
+                                        {{ number_format((float) ($item->quantidade_aceita ?? $conferida ?? 0), 3, ',', '.') }}
+                                    @endif
+                                </td>
+                                <td>
+                                    @if ($compra->status === 'conferindo')
+                                        <label for="d02_motivo_{{ $item->id }}" class="visually-hidden">Justificativa da divergência do item {{ $item->id }}</label>
+                                        <textarea id="d02_motivo_{{ $item->id }}" class="form-control" rows="2" maxlength="2000"
+                                            name="itens[{{ $item->id }}][observacao_divergencia]"
+                                            placeholder="Obrigatório para falta, excesso, avaria ou recusa">{{ old('itens.'.$item->id.'.observacao_divergencia', $item->observacao_divergencia) }}</textarea>
+                                    @else
+                                        <span class="text-break">{{ $item->observacao_divergencia ?: 'Sem divergência' }}</span>
+                                    @endif
+                                </td>
                                 <td>
                                     R$ {{ number_format((float) $item->valor_unitario, 2, ',', '.') }}
                                 </td>
@@ -1041,7 +1108,7 @@
                             type="button"
                             class="btn btn-success"
                             disabled
-                            title="Todos os itens precisam ser conferidos com quantidade maior que zero antes da aprovação."
+                            title="Todos os itens precisam ser conferidos antes da aprovação."
                         >
                             <i class="bi bi-check-circle"></i>
                             Aprovar compra
@@ -1117,7 +1184,7 @@
 
 @include('compra.show._modal_aprovacao')
 
-@if ($compra->status === 'aprovada' && !$contaPagar)
+@if ($compra->status === 'aprovada' && !$contaPagar && !$compraPossuiDivergencia)
     <div
         class="modal fade"
         id="modalGerarContaCompra"

@@ -42,15 +42,15 @@
 
             <div class="col-12 col-lg-9">
 
+                {{-- Preselecao apenas administrativa; o servidor valida IDs e vinculos no POST. --}}
                 <livewire:cliente.seletor-cliente
                     :clientes-selecionados-ids="old(
                         'clientes',
                         isset($veiculoscliente)
-                            ? $veiculoscliente
-                                ->clientes
-                                ->pluck('id')
-                                ->all()
-                            : []
+                            ? $veiculoscliente->clientes->pluck('id')->all()
+                            : (request()->integer('cliente_id') > 0
+                                ? [request()->integer('cliente_id')]
+                                : [])
                     )"
                 />
 
@@ -214,6 +214,9 @@
                 maxlength="7"
                 autocomplete="off"
                 required
+                inputmode="text"
+                autocapitalize="characters"
+                spellcheck="false"
             >
 
             @error('placa')
@@ -249,6 +252,7 @@
                 min="1900"
                 max="{{ date('Y') + 1 }}"
                 required
+                inputmode="numeric"
             >
 
             @error('ano')

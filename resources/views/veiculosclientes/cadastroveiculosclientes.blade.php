@@ -34,6 +34,11 @@
                 Cadastrar veículo
             </button>
 
+            <a href="{{ route('veiculosclientes.index') }}" class="btn btn-outline-secondary ms-2">
+                <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>
+                Voltar aos veículos
+            </a>
+
         </div>
 
     </form>

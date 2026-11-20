@@ -56,6 +56,7 @@
                         class="btn btn-sm btn-outline-danger"
                         wire:click="removerCliente"
                         title="Trocar cliente"
+                        aria-label="Trocar cliente"
                     >
                         <i class="bi bi-x-lg"></i>
                     </button>
@@ -79,10 +80,10 @@
                         </span>
 
                         <input
-                            type="text"
+                            type="search"
                             id="busca_cliente_os"
                             class="form-control"
-                            placeholder="Digite nome, CPF ou telefone..."
+                            placeholder="Busque por nome, CPF ou telefone..."
                             autocomplete="off"
                             wire:model.live.debounce.300ms="buscaCliente"
                         >
@@ -90,6 +91,8 @@
                     </div>
 
                     <div
+                        role="status"
+                        aria-live="polite"
                         wire:loading
                         wire:target="buscaCliente"
                         class="small fw-semibold mt-1"
@@ -181,7 +184,7 @@
                         && count($resultadosClientes) === 0
                     )
 
-                        <div class="small fw-semibold mt-2">
+                        <div class="small fw-semibold mt-2" role="status" aria-live="polite">
                             Nenhum cliente encontrado.
                         </div>
 
@@ -281,6 +284,7 @@
                         class="btn btn-sm btn-outline-danger"
                         wire:click="removerVeiculo"
                         title="Trocar veículo"
+                        aria-label="Trocar veículo"
                     >
                         <i class="bi bi-x-lg"></i>
                     </button>
@@ -304,10 +308,10 @@
                         </span>
 
                         <input
-                            type="text"
+                            type="search"
                             id="busca_veiculo_os"
                             class="form-control"
-                            placeholder="Digite placa, veículo ou montadora..."
+                            placeholder="Busque por placa, veículo ou montadora..."
                             autocomplete="off"
                             wire:model.live.debounce.300ms="buscaVeiculo"
                         >
@@ -315,6 +319,8 @@
                     </div>
 
                     <div
+                        role="status"
+                        aria-live="polite"
                         wire:loading
                         wire:target="buscaVeiculo"
                         class="small fw-semibold mt-1"
@@ -334,7 +340,7 @@
 
                                 <span>
                                     <i class="bi bi-car-front me-1"></i>
-                                    Veículos do cliente
+                                    Veículos vinculados ao cliente
                                 </span>
 
                                 <span class="badge text-bg-secondary">
@@ -422,7 +428,7 @@
                         && count($resultadosVeiculos) === 0
                     )
 
-                        <div class="small fw-semibold mt-2">
+                        <div class="small fw-semibold mt-2" role="status" aria-live="polite">
                             Nenhum veículo vinculado a esse cliente foi encontrado.
                         </div>
 

@@ -205,6 +205,7 @@
                             href="{{ route('ordemservicos.index') }}"
                             class="btn btn-secondary"
                             title="Limpar filtros"
+                            aria-label="Limpar filtros de ordens de serviço"
                         >
                             <i class="bi bi-x-lg"></i>
                         </a>
@@ -233,6 +234,9 @@
                     <input
                         type="number"
                         name="id"
+                        min="1"
+                        step="1"
+                        inputmode="numeric"
                         id="id"
                         class="filtros-container__input"
                         value="{{ request('id') }}"
@@ -342,6 +346,17 @@
 
     </x-filtros-container>
 
+    <div class="d-flex flex-wrap align-items-center gap-2 small text-body-secondary mb-3" role="status">
+        <i class="bi bi-info-circle" aria-hidden="true"></i>
+        <span>
+            {{ number_format($ordemservicos->total(), 0, ',', '.') }}
+            {{ $ordemservicos->total() === 1 ? 'ordem de serviço encontrada' : 'ordens de serviço encontradas' }}.
+            @if (!request()->filled('status'))
+                Exibindo somente OS abertas por padrão.
+            @endif
+        </span>
+    </div>
+
     @php
 
         $possuiFiltros = request()->hasAny([
@@ -374,7 +389,7 @@
 
             {{ $possuiFiltros
                 ? 'Nenhuma ordem de serviço encontrada com os filtros informados.'
-                : 'Nenhuma ordem de serviço cadastrada.' }}
+                : 'Nenhuma ordem de serviço aberta no momento.' }}
 
         </div>
 

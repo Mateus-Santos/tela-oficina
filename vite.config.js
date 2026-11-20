@@ -36,6 +36,7 @@ export default defineConfig({
                 'resources/js/notaitem/descontos.js',
                 'resources/js/produto/barcode.js',
                 'resources/js/conta-pagar.js',
+                'resources/js/financeiro/socios-parcelas.js',
                 'resources/js/conta-receber.js',
                 'resources/js/nota-show.js',
                 'resources/js/compras/show.js',
