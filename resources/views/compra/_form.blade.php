@@ -107,9 +107,10 @@
             pattern="[0-9]{44}"
             autocomplete="off"
             placeholder="44 dígitos"
+            aria-describedby="feux-chave-nf-ajuda"
         >
 
-        <small class="text-muted">
+        <small id="feux-chave-nf-ajuda" class="text-muted">
             Informe os 44 dígitos da chave da NF-e, quando disponível.
         </small>
     </div>
@@ -236,25 +237,41 @@
                     <div class="row g-3">
 
                         {{-- PRODUTO --}}
-                        <div class="col-12 col-md-6">
+                        <div class="col-12">
                             <label class="form-label">
                                 <i class="bi bi-box-seam"></i>
                                 Produto *
                             </label>
 
                             <div class="position-relative">
-                                <input
-                                    type="text"
-                                    class="form-control item-produto-busca"
-                                    placeholder="Digite nome, código ou código de barras..."
-                                    autocomplete="off"
-                                    value="{{ $produtoSelecionado['nome'] ?? ($produtoSelecionado->nome ?? '') }}"
-                                >
-
+                                <div class="input-group">
+                                    <span class="input-group-text" aria-hidden="true">
+                                        <i class="bi bi-search"></i>
+                                    </span>
+                                    <input
+                                        type="search"
+                                        class="form-control item-produto-busca"
+                                        placeholder="Digite nome, código ou código de barras..."
+                                        aria-label="Buscar produto do item"
+                                        autocomplete="off"
+                                        value="{{ $produtoSelecionado['nome'] ?? ($produtoSelecionado->nome ?? '') }}"
+                                    >
+                                    <button
+                                        type="button"
+                                        class="btn btn-outline-secondary btn-limpar-produto"
+                                        title="Limpar produto"
+                                        aria-label="Limpar produto"
+                                    >
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </div>
                                 <div
                                     class="list-group position-absolute w-100 shadow-sm item-produto-resultados"
                                     style="z-index: 1050;"
                                 ></div>
+                            </div>
+                            <div class="item-produto-status small text-muted mt-1" role="status" aria-live="polite">
+                                {{ empty($item['produto_id']) ? 'Digite para pesquisar.' : 'Produto selecionado.' }}
                             </div>
 
                             <input
@@ -298,13 +315,6 @@
                                             @endif
                                         </div>
 
-                                        <button
-                                            type="button"
-                                            class="btn btn-sm btn-outline-danger btn-limpar-produto"
-                                            title="Alterar produto"
-                                        >
-                                            <i class="bi bi-x-lg"></i>
-                                        </button>
                                     </div>
                                 </div>
                             </div>

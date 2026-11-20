@@ -48,7 +48,11 @@
                         </div>
 
                         <p class="mb-0">
-                            Deseja gerar também a conta a pagar desta compra?
+                            @if ($compraPossuiDivergencia)
+                                Há divergência de recebimento. Aprove sem gerar conta; a conciliação financeira será tratada na D03.
+                            @else
+                                Deseja gerar também a conta a pagar desta compra?
+                            @endif
                         </p>
                     </div>
 
@@ -198,6 +202,7 @@
                         Aprovar sem gerar conta
                     </button>
 
+                    @unless ($compraPossuiDivergencia)
                     <button
                         type="button"
                         class="btn btn-outline-primary"
@@ -206,6 +211,7 @@
                         <i class="bi bi-wallet2"></i>
                         Gerar conta a pagar
                     </button>
+                    @endunless
 
                     {{-- ETAPA PARCELAS --}}
                     <button

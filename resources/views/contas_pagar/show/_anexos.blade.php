@@ -192,6 +192,16 @@
                                         @if ($conta->status !== 'cancelada' && !$conta->estaPaga())
                                             <button
                                                 type="button"
+                                                class="btn btn-sm btn-outline-warning"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modalEditarAnexoPagar{{ $vinculo->id }}"
+                                                title="Editar anexo"
+                                                aria-label="Editar anexo {{ $anexo->nome_original }}"
+                                            >
+                                                <i class="bi bi-pencil" aria-hidden="true"></i>
+                                            </button>
+                                            <button
+                                                type="button"
                                                 class="btn btn-sm btn-outline-danger"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#modalExcluirAnexo{{ $vinculo->id }}"
@@ -207,6 +217,120 @@
                     </tbody>
                 </table>
             </div>
+        @endif
+
+        {{-- Edicao restrita aos vinculos diretos desta conta, nunca aos da compra. --}}
+        @if ($conta->status !== 'cancelada' && !$conta->estaPaga())
+            @foreach ($conta->anexosVinculos as $vinculo)
+                @php
+                    $anexo = $vinculo->anexo;
+                @endphp
+                <div
+                    class="modal fade"
+                    id="modalEditarAnexoPagar{{ $vinculo->id }}"
+                    tabindex="-1"
+                    aria-labelledby="tituloEditarAnexoPagar{{ $vinculo->id }}"
+                    aria-hidden="true"
+                >
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                            <form
+                                method="POST"
+                                action="{{ route('anexos.update', $vinculo) }}"
+                                enctype="multipart/form-data"
+                            >
+                                @csrf
+                                @method('PATCH')
+                                <div class="modal-header">
+                                    <h5
+                                        class="modal-title"
+                                        id="tituloEditarAnexoPagar{{ $vinculo->id }}"
+                                    >
+                                        <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                                        Editar anexo
+                                    </h5>
+                                    <button
+                                        type="button"
+                                        class="btn-close"
+                                        data-bs-dismiss="modal"
+                                        aria-label="Fechar"
+                                    ></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p class="small text-muted text-break">
+                                        Arquivo atual: <strong>{{ $anexo->nome_original }}</strong>
+                                    </p>
+                                    <div class="row g-3">
+                                        <div class="col-12 col-md-6">
+                                            <label
+                                                class="form-label"
+                                                for="tipo-editar-anexo-pagar-{{ $vinculo->id }}"
+                                            >Tipo</label>
+                                            <select
+                                                class="form-select"
+                                                name="tipo"
+                                                id="tipo-editar-anexo-pagar-{{ $vinculo->id }}"
+                                                required
+                                            >
+                                                @foreach ($tipos as $valor => $rotulo)
+                                                    <option
+                                                        value="{{ $valor }}"
+                                                        @selected($vinculo->tipo === $valor)
+                                                    >{{ $rotulo }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <label
+                                                class="form-label"
+                                                for="arquivo-editar-anexo-pagar-{{ $vinculo->id }}"
+                                            >Substituir arquivo (opcional)</label>
+                                            <input
+                                                type="file"
+                                                class="form-control"
+                                                name="arquivo"
+                                                id="arquivo-editar-anexo-pagar-{{ $vinculo->id }}"
+                                                accept=".pdf,.jpg,.jpeg,.png,.webp,.xml"
+                                                aria-describedby="ajuda-arquivo-pagar-{{ $vinculo->id }}"
+                                            >
+                                            <div
+                                                class="form-text"
+                                                id="ajuda-arquivo-pagar-{{ $vinculo->id }}"
+                                            >
+                                                Deixe vazio para manter o arquivo atual. Máximo de 2 MB.
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <label
+                                                class="form-label"
+                                                for="observacoes-editar-anexo-pagar-{{ $vinculo->id }}"
+                                            >Observações</label>
+                                            <textarea
+                                                class="form-control"
+                                                name="observacoes"
+                                                id="observacoes-editar-anexo-pagar-{{ $vinculo->id }}"
+                                                rows="3"
+                                                maxlength="1000"
+                                            >{{ $vinculo->observacoes }}</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button
+                                        type="button"
+                                        class="btn btn-secondary"
+                                        data-bs-dismiss="modal"
+                                    >Cancelar</button>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-check-lg" aria-hidden="true"></i>
+                                        Salvar alterações
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
         @endif
 
         @if ($conta->compra)

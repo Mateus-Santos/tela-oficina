@@ -14,6 +14,7 @@ use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\CatalogoProdutoComplementoController;
 use App\Http\Controllers\ColaboradorController;
 use App\Http\Controllers\CompraController;
+use App\Http\Controllers\CompraPreConciliacaoController;
 use App\Http\Controllers\ContaPagarController;
 use App\Http\Controllers\ContaReceberController;
 use App\Http\Controllers\EnderecoController;
@@ -652,6 +653,27 @@ Route::middleware([
             'compras.estornar'
         );
 
+        // D01A: devolucao operacional de compras (grupo ADMIN existente).
+        Route::get('compras/{compra}/devolucoes/nova',
+            [\App\Http\Controllers\CompraDevolucaoController::class, 'create']
+        )->name('compras.devolucoes.create');
+        Route::post('compras/{compra}/devolucoes',
+            [\App\Http\Controllers\CompraDevolucaoController::class, 'store']
+        )->name('compras.devolucoes.store');
+
+        // D03A: consulta e proposta de pre-conciliacao (somente ADMIN).
+        Route::get('compras/{compra}/pre-conciliacao',
+            [CompraPreConciliacaoController::class, 'show']
+        )->name('compras.preconciliacao.show');
+        Route::post('compras/{compra}/pre-conciliacao',
+            [CompraPreConciliacaoController::class, 'store']
+        )->name('compras.preconciliacao.store');
+
+        // D03B: efetivacao supervisionada, separada da proposta D03A.
+        Route::post('compras/{compra}/conciliacao/efetivar',
+            [\App\Http\Controllers\CompraConciliacaoEfetivacaoController::class, 'store']
+        )->name('compras.conciliacao.efetivar');
+
         Route::resource(
             'compras',
             CompraController::class
@@ -754,6 +776,8 @@ Route::middleware([
         Route::get('financeiro/socios/{socio}', [FinanceiroSociosController::class, 'show'])->name('socios-financeiro.show');
         Route::post('financeiro/socios/{socio}/contas', [FinanceiroSociosController::class, 'storeConta'])->name('socios-financeiro.contas.store');
         Route::get('financeiro/socios/{socio}/contas/{conta}', [FinanceiroSociosController::class, 'showConta'])->name('socios-financeiro.contas.show');
+        Route::patch('financeiro/socios/{socio}/contas/{conta}/parcelas', [FinanceiroSociosController::class, 'atualizarParcelas'])->name('socios-financeiro.contas.parcelas.update');
+        Route::post('financeiro/socios/{socio}/contas/{conta}/anexos', [AnexoController::class, 'storeContaPagarSocio'])->name('socios-financeiro.contas.anexos.store');
         Route::post('financeiro/socios/{socio}/contas/{conta}/pagamentos', [FinanceiroSociosController::class, 'storePagamento'])->name('socios-financeiro.pagamentos.store');
         Route::post('financeiro/socios/{socio}/contas/{conta}/pagamentos/{pagamento}/estornar', [FinanceiroSociosController::class, 'estornarPagamento'])->name('socios-financeiro.pagamentos.estornar');
         Route::post('financeiro/socios/{socio}/retiradas', [FinanceiroSociosController::class, 'storeRetirada'])->name('socios-financeiro.retiradas.store');

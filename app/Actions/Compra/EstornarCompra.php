@@ -5,6 +5,7 @@ namespace App\Actions\Compra;
 use App\Actions\Estoque\RegistrarSaida;
 use App\Models\Compra;
 use App\Models\MovimentacaoEstoque;
+use App\Support\Estoque\Quantidade;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -31,6 +32,14 @@ class EstornarCompra
                 throw new InvalidArgumentException('Somente compras aprovadas podem ser estornadas.');
             }
 
+            // Devolucao parcial e estorno integral sao fluxos distintos.
+            // Evita baixar novamente unidades ja devolvidas.
+            if ($compra->devolucoes()->exists()) {
+                throw new InvalidArgumentException(
+                    'Esta compra possui devolucao registrada; estorno integral bloqueado. Regularize pelo fluxo de devolucoes.'
+                );
+            }
+
             if ($compra->itens->isEmpty()) {
                 throw new InvalidArgumentException('A compra não possui itens para estorno.');
             }
@@ -53,6 +62,11 @@ class EstornarCompra
             $entradasEncontradas = 0;
 
             foreach ($compra->itens as $item) {
+                // Itens conferidos com zero aceito nunca tiveram entrada para estornar.
+                if ($item->quantidade_conferida !== null
+                    && Quantidade::milessimos((string) ($item->quantidade_aceita ?? $item->quantidade_conferida)) === 0) {
+                    continue;
+                }
                 $entrada = MovimentacaoEstoque::query()
                     ->where('tipo', 'entrada')
                     ->where('origem_type', $item->getMorphClass())

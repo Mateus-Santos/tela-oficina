@@ -1,0 +1,212 @@
+/* FEUX-MOBILE-01 — Escopo deliberado: listagens de Notas e Clientes. */
+.feux-listagem-notas,
+.feux-listagem-clientes {
+    min-width: 0;
+
+    .filtros-container {
+        max-width: 100%;
+    }
+
+    :is(.card, .card-body, .row, .dropdown, .btn-group, .pagination) {
+        min-width: 0;
+    }
+
+    .pagination {
+        flex-wrap: wrap;
+        gap: 0.25rem;
+        justify-content: center;
+    }
+
+    .page-link {
+        overflow-wrap: anywhere;
+    }
+}
+
+.feux-nota-card {
+    min-width: 0;
+    text-align: left;
+
+    &__identificacao,
+    &__cliente,
+    &__titulo,
+    &__data,
+    &__valor {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    &__dados > [class*='col-'] {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    &__dados :is(.form-select, .badge) {
+        max-width: 100%;
+    }
+
+    &__acoes {
+        position: relative;
+        min-width: 0;
+        text-align: left;
+    }
+
+    &__menu-interno {
+        width: min(19rem, calc(100vw - 3rem));
+        min-width: 0;
+        max-width: calc(100vw - 3rem);
+        white-space: normal;
+    }
+
+    &__acao-texto {
+        display: none;
+    }
+}
+
+.feux-cliente-card {
+    min-width: 0;
+    text-align: left;
+
+    &__nome,
+    &__telefone {
+        overflow-wrap: anywhere;
+        min-width: 0;
+    }
+
+    &__acoes {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.5rem;
+
+        > :is(a, form) {
+            min-width: 0;
+            width: 100%;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            width: 100%;
+            min-height: 2.75rem;
+            white-space: normal;
+            overflow-wrap: anywhere;
+        }
+    }
+
+    &__detalhes {
+        border-top: 1px solid var(--bs-border-color);
+        padding-top: 0.5rem;
+
+        summary {
+            cursor: pointer;
+            min-height: 2.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            color: var(--bs-body-color);
+
+            &::before {
+                content: '▸';
+                display: inline-block;
+            }
+        }
+
+        &[open] summary::before {
+            content: '▾';
+        }
+
+        :is(dt, dd) {
+            min-width: 0;
+            overflow-wrap: anywhere;
+        }
+    }
+}
+
+@media (max-width: 991.98px) {
+    .feux-listagem-notas,
+    .feux-listagem-clientes {
+        .filtros-container {
+            margin-left: 0;
+            margin-right: 0;
+            padding: 0.75rem;
+        }
+
+        .filtros-container__actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .filtros-container__actions .btn {
+            min-height: 2.75rem;
+        }
+    }
+
+    .feux-nota-card {
+        &__corpo {
+            padding: 0.875rem;
+        }
+
+        &__dados {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.875rem;
+            margin: 0;
+
+            > [class*='col-'] {
+                width: auto;
+                max-width: none;
+                padding: 0;
+            }
+
+            > :nth-child(1),
+            > :nth-child(3),
+            > :nth-child(4) {
+                grid-column: 1 / -1;
+            }
+        }
+
+        &__acoes {
+            display: grid !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            align-items: stretch;
+            gap: 0.5rem;
+
+            > :is(.btn-group, .dropdown, form, a, button) {
+                min-width: 0;
+                width: 100%;
+            }
+
+            :is(.btn, .dropdown-toggle) {
+                width: 100%;
+                min-width: 0;
+                min-height: 2.75rem;
+                white-space: normal;
+                overflow-wrap: anywhere;
+            }
+        }
+
+        &__acao-texto {
+            display: inline;
+        }
+    }
+}
+
+@media (max-width: 575.98px) {
+    .feux-nota-card__valor {
+        text-align: left;
+    }
+
+    .feux-listagem-notas,
+    .feux-listagem-clientes {
+        .pagination {
+            max-width: 100%;
+        }
+
+        .page-item {
+            max-width: 100%;
+        }
+    }
+}

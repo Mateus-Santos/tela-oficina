@@ -54,21 +54,20 @@
                 </x-button>
             </div>
         </form>
-        @if (Route::has('register'))
-            <form action="/register">
-                @csrf
-                <div class="flex items-center justify-end mt-4">
-                    <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('register') }}">
-                        {{ __('Não está registrado?') }}
-                    </a>
-
-                    @if (Route::has('register'))
-                        <x-button class="ms-4">
-                            {{ __('Cadastre-se') }}
-                        </x-button>
-                    @endif
-                </div>
-            </form>
+        @php
+            $urlCadastroCliente = config('marketing.cadastro_cliente_habilitado')
+                ? route('marketing.cadastro.create')
+                : (Route::has('register') ? route('register') : null);
+        @endphp
+        @if ($urlCadastroCliente)
+            <div class="flex items-center justify-end mt-4">
+                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ $urlCadastroCliente }}">
+                    {{ __('Não está registrado?') }}
+                </a>
+                <a class="ms-4 inline-flex items-center px-4 py-2 rounded-md bg-gray-800 text-white text-sm font-semibold" href="{{ $urlCadastroCliente }}">
+                    {{ __('Cadastre-se') }}
+                </a>
+            </div>
         @endif
     </x-authentication-card>
 </x-guest-layout>

@@ -5,7 +5,8 @@
     <x-list-header
         title="AJUSTE DE ESTOQUE"
         icon="bi-sliders"
-        create-route="estoque.index"
+        :create-route="$notaOrigem ? 'notas.show' : 'estoque.index'"
+        :create-params="$notaOrigem ? [$notaOrigem->id] : []"
         create-text="Voltar"
         create-icon="bi-arrow-left"
     />
@@ -74,7 +75,9 @@
 
             <form
                 method="POST"
-                action="{{ route('estoque.registrarAjuste', $produto) }}"
+                action="{{ route('estoque.registrarAjuste', $notaOrigem
+                    ? ['produto' => $produto, 'nota_id' => $notaOrigem->id]
+                    : ['produto' => $produto]) }}"
                 id="form-ajuste-estoque"
             >
                 @csrf
@@ -155,7 +158,9 @@
 
                 <div class="d-flex gap-2">
                     <a
-                        href="{{ route('estoque.index') }}"
+                        href="{{ $notaOrigem
+                            ? route('notas.show', $notaOrigem->id)
+                            : route('estoque.index') }}"
                         class="btn btn-outline-secondary"
                     >
                         <i class="bi bi-x-lg"></i>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\Estoque\RegistrarAjuste;
 use App\Actions\Estoque\RegistrarSaida;
+use App\Models\Nota;
 use App\Models\Produto;
 use Illuminate\Http\Request;
 use InvalidArgumentException;
@@ -238,11 +239,14 @@ class EstoqueController extends Controller
             );
     }
 
-    public function ajuste(Produto $produto)
+    public function ajuste(Request $request, Produto $produto)
     {
+        // A origem e aceita apenas se a Nota realmente contiver o produto.
+        $notaOrigem = $this->notaOrigemAjuste($request, $produto);
+
         return view(
             'estoque.ajuste',
-            compact('produto')
+            compact('produto', 'notaOrigem')
         );
     }
 
@@ -283,11 +287,43 @@ class EstoqueController extends Controller
                 ]);
         }
 
+        $notaOrigem = $this->notaOrigemAjuste($request, $produto);
+
         return redirect()
-            ->route('estoque.index')
+            ->to($notaOrigem
+                ? route('notas.show', $notaOrigem->id)
+                : route('estoque.index'))
             ->with(
                 'success',
                 'Ajuste de estoque registrado com sucesso!'
             );
+    }
+
+    /**
+     * Evita redirecionamento aberto e impede associar uma Nota arbitraria.
+     * O parametro nota_id so define a pagina de retorno, nao a origem
+     * contabil da movimentacao de estoque.
+     */
+    private function notaOrigemAjuste(Request $request, Produto $produto): ?Nota
+    {
+        $valor = $request->query('nota_id');
+        if (! is_string($valor)) {
+            return null;
+        }
+
+        $id = filter_var($valor, FILTER_VALIDATE_INT, [
+            'options' => ['min_range' => 1],
+        ]);
+        if ($id === false) {
+            return null;
+        }
+
+        return Nota::query()
+            ->whereKey($id)
+            ->whereHas('itens', function ($query) use ($produto) {
+                $query->where('itemable_type', Produto::class)
+                    ->where('itemable_id', $produto->id);
+            })
+            ->first();
     }
 }

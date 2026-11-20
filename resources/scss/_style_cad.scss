@@ -10,7 +10,7 @@ $larguras: 1rem;
     margin-top: 9rem;
     margin-bottom: 5rem;
     padding: $larguras;
-    overflow-x: auto;
+    overflow: visible;
     box-shadow: $background-color_2 1rem 1rem 3rem;
 
     &::before {
@@ -236,15 +236,29 @@ $larguras: 1rem;
     }
 
     &__resultados {
-        max-height: 320px;
+        max-height: min(20rem, 50vh);
         overflow-y: auto;
         overscroll-behavior: contain;
     }
 
     &__item {
+        width: 100%;
+        min-width: 0;
+        padding: 0.75rem 1rem;
+        text-align: left;
+        overflow-wrap: anywhere;
         border-left: 0;
         border-right: 0;
         border-radius: 0 !important;
+
+        > .text-start {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        > .bi {
+            flex-shrink: 0;
+        }
 
         &:first-child {
             border-top: 0;
@@ -252,6 +266,13 @@ $larguras: 1rem;
 
         &:last-child {
             border-bottom: 0;
+        }
+
+        &:focus-visible {
+            position: relative;
+            z-index: 1;
+            outline: 2px solid var(--bs-primary);
+            outline-offset: -2px;
         }
 
         &:disabled {
@@ -267,5 +288,123 @@ $larguras: 1rem;
         font-size: 0.75rem;
         font-weight: 500;
         color: var(--bs-secondary-color);
+    }
+
+    @media (max-width: 575.98px) {
+        &__cabecalho,
+        &__rodape {
+            padding: 0.625rem 0.75rem;
+        }
+
+        &__resultados {
+            max-height: min(17rem, 45vh);
+        }
+
+        &__item {
+            padding: 0.75rem;
+        }
+    }
+}
+
+
+/* FE-UX-FINAL01: formulários, resultados e menus de busca sem clipping. */
+.cadastro {
+    min-width: 0;
+    max-width: 100%;
+
+    .row > [class*="col-"] {
+        min-width: 0;
+    }
+
+    .card,
+    .card-body,
+    .input-group,
+    .position-relative {
+        min-width: 0;
+    }
+
+    .card-body,
+    .form-label,
+    .form-text,
+    .invalid-feedback {
+        overflow-wrap: anywhere;
+    }
+
+    .card-header {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .form-label {
+        max-width: 100%;
+        text-align: left;
+        line-height: 1.4;
+    }
+
+    :is(input.form-control, select.form-select, textarea.form-control) {
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    :is(input.form-control:not([type="hidden"]), select.form-select) {
+        min-height: 2.75rem;
+    }
+
+    :is(.form-control, .form-select, .filtros-container__input, .filtros-container__select):focus-visible {
+        outline: 2px solid var(--bs-primary);
+        outline-offset: 1px;
+    }
+
+    .table-responsive {
+        max-width: 100%;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .busca-selecao {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+
+        &__cabecalho,
+        &__rodape {
+            flex-wrap: wrap;
+            overflow-wrap: anywhere;
+        }
+
+        &__resultados {
+            overflow-x: hidden;
+        }
+    }
+
+    .item-produto-resultados {
+        max-height: min(18rem, 45vh);
+        max-height: min(18rem, 45dvh);
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        overflow-wrap: anywhere;
+        z-index: 1050;
+
+        :is(.list-group-item, button) {
+            white-space: normal;
+            overflow-wrap: anywhere;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        margin-top: 6.5rem;
+        margin-bottom: 2rem;
+        padding: 0.75rem;
+
+        h1 {
+            font-size: clamp(1.25rem, 6vw, 1.7rem);
+            padding: 0.75rem;
+            border-radius: 1rem;
+            overflow-wrap: anywhere;
+        }
+
+        :is(.text-center, .filtros-container__actions) > .btn {
+            max-width: 100%;
+        }
     }
 }

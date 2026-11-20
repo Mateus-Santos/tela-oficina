@@ -11,7 +11,9 @@ use App\Models\Anexo;
 use App\Models\AnexoVinculo;
 use App\Models\Compra;
 use App\Models\ContaPagar;
+use App\Models\ContaPagarSocio;
 use App\Models\ContaReceber;
+use App\Models\Socio;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
@@ -87,6 +89,26 @@ class AnexoController extends Controller
             );
     }
 
+    public function storeContaPagarSocio(
+        StoreAnexoRequest $request,
+        Socio $socio,
+        ContaPagarSocio $conta,
+        CriarAnexo $criarAnexo
+    ): RedirectResponse {
+        abort_unless((int) $conta->socio_id === (int) $socio->id, 404);
+        $destino = route('socios-financeiro.contas.show', [$socio, $conta]);
+        if (in_array($conta->status, ['paga', 'cancelada'], true)) {
+            return redirect($destino)->with('error', 'Conta encerrada: anexos bloqueados.');
+        }
+        $criarAnexo->execute(
+            $conta,
+            $request->file('arquivo'),
+            $request->validated('tipo'),
+            $request->validated('observacoes')
+        );
+        return redirect($destino)->with('success', 'Anexo enviado com sucesso!');
+    }
+
     public function storeContaReceber(
         StoreAnexoRequest $request,
         ContaReceber $contaReceber,
@@ -120,7 +142,7 @@ class AnexoController extends Controller
         $this->validarAnexavel($anexavel);
 
         if (
-            $anexavel instanceof ContaPagar
+            ($anexavel instanceof ContaPagar || $anexavel instanceof ContaPagarSocio)
             && in_array(
                 $anexavel->status,
                 [
@@ -227,7 +249,7 @@ class AnexoController extends Controller
         $this->validarAnexavel($anexavel);
 
         if (
-            $anexavel instanceof ContaPagar
+            ($anexavel instanceof ContaPagar || $anexavel instanceof ContaPagarSocio)
             && in_array(
                 $anexavel->status,
                 [
@@ -263,6 +285,7 @@ class AnexoController extends Controller
         abort_unless(
             $anexavel instanceof Compra
             || $anexavel instanceof ContaPagar
+            || $anexavel instanceof ContaPagarSocio
             || $anexavel instanceof ContaReceber,
             404
         );
@@ -285,6 +308,13 @@ class AnexoController extends Controller
                     'contas-pagar.show',
                     $anexavel
                 );
+        }
+
+        if ($anexavel instanceof ContaPagarSocio) {
+            return redirect()->route(
+                'socios-financeiro.contas.show',
+                [$anexavel->socio_id, $anexavel]
+            );
         }
 
         if ($anexavel instanceof ContaReceber) {
