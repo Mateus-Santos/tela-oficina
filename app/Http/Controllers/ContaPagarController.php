@@ -589,10 +589,17 @@ class ContaPagarController extends Controller
         ContaPagar $conta,
         AtualizarParcelasContaPagar $action
     ): RedirectResponse {
-        $action->execute(
-            $conta,
-            $request->validated('parcelas')
-        );
+        try {
+            $action->execute(
+                $conta,
+                $request->validated('parcelas')
+            );
+        } catch (InvalidArgumentException $exception) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->withErrors(['parcelas' => $exception->getMessage()]);
+        }
 
         return redirect()
             ->route(
