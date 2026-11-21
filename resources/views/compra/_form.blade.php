@@ -592,6 +592,12 @@
 
 {{-- ANEXOS --}}
 @if (!$isEdit)
+    @php
+        // Erros aninhados: anexos.0.arquivo, anexos.1.tipo etc.
+        $anexosTemErros = collect($errors->keys())->contains(
+            fn ($campo) => str_starts_with((string) $campo, 'anexos.')
+        );
+    @endphp
     <div class="card shadow-sm mt-4">
         <div class="card-body">
             <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
@@ -611,7 +617,7 @@
                     class="btn btn-outline-primary"
                     data-bs-toggle="collapse"
                     data-bs-target="#anexos-compra"
-                    aria-expanded="false"
+                    aria-expanded="{{ $anexosTemErros ? 'true' : 'false' }}"
                     aria-controls="anexos-compra"
                 >
                     <i class="bi bi-paperclip"></i>
@@ -622,7 +628,7 @@
 
             <div
                 id="anexos-compra"
-                class="collapse mt-4"
+                class="collapse mt-4 {{ $anexosTemErros ? 'show' : '' }}"
             >
                 @php
                     $anexosAnteriores = old('anexos');
