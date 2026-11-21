@@ -14,7 +14,7 @@ const files = [
   'resources/views/compra/_form.blade.php',
 ];
 const fieldNames = text => [...text.matchAll(/<(?:input|select|textarea)\b[^>]*\bname="([^"]+)"/gs)]
-  .map(match => match[1]).sort();
+  .map(match => match[1].replace(/\[\{\{ \$indiceAnexo \}\}\]/g, '[0]')).sort();
 const wires = text => [...text.matchAll(/\bwire:[a-zA-Z0-9_.:-]+\s*=\s*"[^"]*"/g)]
   .map(match => match[0]).sort();
 
