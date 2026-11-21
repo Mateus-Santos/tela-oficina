@@ -59,11 +59,14 @@ class CompraFormularioErrosUxTest extends TestCase
 
         $this->assertSame('Peça dois', session('_old_input.itens.2.descricao'));
         $this->assertSame('nf', session('_old_input.anexos.0.tipo'));
-        $this->assertSame('boleto', session('_old_input.anexos.1.tipo'));
+        // A validacao pode normalizar os indices; _old_input preserva o POST original (0,2).
+        $this->assertSame('boleto', session('_old_input.anexos.2.tipo'));
+        $this->assertNull(session('_old_input.anexos.1.tipo'));
 
         $pagina = $this->actingAs($admin)->get(route('compras.create'));
         $pagina->assertOk()
             ->assertSee('name="itens[2][descricao]"', false)
+            ->assertSee('name="anexos[2][tipo]"', false)
             ->assertSee('Peça dois')
             ->assertSee('Observação preservada A')
             ->assertSee('Observação preservada B')
