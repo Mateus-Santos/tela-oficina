@@ -161,6 +161,21 @@ class AtualizarParcelasContaPagar
                 );
             }
 
+            // Numa conta associada a compras, o valor global nao pode mudar
+            // por meio da edicao de parcelas. Redistribuir o mesmo total e permitido.
+            // Validar em centavos para evitar diferenças de ponto flutuante.
+            if ($conta->compra_id !== null || $conta->compras()->exists()) {
+                $valorContaCentavos = (int) round((float) $conta->valor * 100);
+                $valorParcelasCentavos = (int) round($valorTotal * 100);
+
+                if ($valorParcelasCentavos !== $valorContaCentavos) {
+                    throw new InvalidArgumentException(
+                        'O total das parcelas deve permanecer igual ao valor da conta com compras vinculadas. ' .
+                        'Redistribua os valores entre as parcelas sem alterar o total.'
+                    );
+                }
+            }
+
             $temporario = 1000000;
 
             foreach ($existentes as $parcela) {

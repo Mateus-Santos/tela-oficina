@@ -20,3 +20,15 @@
 ## Critério de encerramento
 
 Reprodução documentada, causa-raiz confirmada, testes no CI e em banco descartável, revisão financeira da conta afetada e homologação operacional explícita.
+
+## Bloco de diagnostico read-only (PR do incidente)
+
+A action `diagnosticar` do workflow `deploy.yml` executa **somente consultas agregadas em transacao READ ONLY** via SSH previamente configurado no GitHub, sob aprovacao do ambiente `production`. Nao faz deploy, backup ou migration.
+
+- `conta_id=0` exibe somente contagens globais e classificacao de erros do final do log Laravel, sem dados pessoais.
+- `conta_id=ID` exibe quantidade de parcelas/compras e diferencas em centavos, sem nomes, NF, CPF ou anexos.
+- O runner nao mostra mensagens completas das excecoes nem stack traces, pois podem conter dados pessoais.
+- Caso o erro tenha sido validacao de formulario, talvez nao haja entrada nos logs; reproduzir em homologacao.
+- Nao foi executada alteracao na conta real; nao confundir diferenca historica com causa raiz confirmada.
+
+O hotfix protege o total de contas com compras vinculadas contra alteracoes por redistribuicao de parcelas e retorna mensagem de validacao, em vez de propagar `InvalidArgumentException` como erro 500. Testes automatizados precisam passar antes de publicar.
