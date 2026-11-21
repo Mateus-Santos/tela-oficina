@@ -22,6 +22,22 @@
 
     <div class="card-body">
 
+        @if ($errors->any())
+            <div class="alert alert-danger" role="alert">
+                @foreach ($errors->all() as $mensagem)
+                    <div>{{ $mensagem }}</div>
+                @endforeach
+            </div>
+        @endif
+
+        @if ($conta->compras->isNotEmpty() || $conta->compra_id !== null)
+            <div class="alert alert-info" role="note">
+                Esta conta esta vinculada a compras. Voce pode acrescentar parcelas
+                e redistribuir os vencimentos e valores, mas o total deve permanecer
+                em R$ {{ number_format((float) $conta->valor, 2, ',', '.') }}.
+            </div>
+        @endif
+
         <form
             method="POST"
             action="{{ route('contas-pagar.parcelas.update', $conta) }}"
