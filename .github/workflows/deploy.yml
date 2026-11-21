@@ -223,7 +223,12 @@ jobs:
       - name: Testar deploy sem acesso a producao
         if: inputs.modo == 'validar'
         run: |
+          set -Eeuo pipefail
           bash tests/deploy/test_deploy.sh
+          # O runner do workflow_dispatch nao possui service MySQL pre-carregado.
+          # Baixar somente no runner de CI; a VPS continua com pull automatico bloqueado.
+          docker pull mysql:8.4
+          docker image inspect mysql:8.4 >/dev/null
           BACKUP_TEST_MYSQL=1 bash tests/deploy/test_backup_gate.sh
 
       - name: Configurar Docker Buildx
