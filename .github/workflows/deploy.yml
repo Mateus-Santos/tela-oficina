@@ -67,8 +67,11 @@ jobs:
           persist-credentials: false
       - name: Scripts e testes de deploy (Docker simulado)
         run: |
-          bash -n scripts/deploy.sh scripts/production/deploy_release.sh scripts/production/database_release.sh
+          bash -n scripts/deploy.sh scripts/production/deploy_release.sh scripts/production/database_release.sh \
+            scripts/production/backup_release.sh scripts/production/storage_release.sh \
+            scripts/production/mysql_restore_check.sh
           bash tests/deploy/test_deploy.sh
+          BACKUP_TEST_MYSQL=1 bash tests/deploy/test_backup_gate.sh
       - name: Testes de performance, layout e assets
         run: |
           python3 -m unittest discover -s tests/performance -p 'test_*.py' -v
@@ -199,8 +202,12 @@ jobs:
           set -euo pipefail
           bash -n scripts/production/deploy_release.sh
           bash -n scripts/production/database_release.sh
+          bash -n scripts/production/backup_release.sh
+          bash -n scripts/production/storage_release.sh
+          bash -n scripts/production/mysql_restore_check.sh
           bash -n scripts/deploy.sh
           test -f tests/deploy/test_deploy.sh
+          test -f tests/deploy/test_backup_gate.sh
           test -f compose.prod.yml
           test -f docker/production/Dockerfile.app
           test -f docker/production/Dockerfile.php-base
@@ -215,7 +222,9 @@ jobs:
 
       - name: Testar deploy sem acesso a producao
         if: inputs.modo == 'validar'
-        run: bash tests/deploy/test_deploy.sh
+        run: |
+          bash tests/deploy/test_deploy.sh
+          BACKUP_TEST_MYSQL=1 bash tests/deploy/test_backup_gate.sh
 
       - name: Configurar Docker Buildx
         if: inputs.modo == 'validar'
@@ -366,6 +375,9 @@ jobs:
             -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
             compose.prod.yml scripts/production/deploy_release.sh \
             scripts/production/database_release.sh \
+            scripts/production/backup_release.sh \
+            scripts/production/storage_release.sh \
+            scripts/production/mysql_restore_check.sh \
             "$REMOTE_USER@$REMOTE_HOST:$DEPLOY_DIR/releases/$TAG/"
 
       - name: Publicar imagens existentes na VPS com rollback
