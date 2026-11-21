@@ -3,12 +3,14 @@
 @endphp
 
 @if ($errors->any())
-    <div class="alert alert-danger">
+    <div id="compra-erros" class="alert alert-danger" role="alert" tabindex="-1">
         <div class="d-flex align-items-start gap-2">
             <i class="bi bi-exclamation-triangle"></i>
 
             <div>
                 <strong>Não foi possível salvar a compra.</strong>
+                <p class="mb-1 mt-2">Os dados de texto foram mantidos. Confira os campos destacados.
+                    Por segurança, arquivos enviados precisam ser selecionados novamente.</p>
 
                 <ul class="mb-0 mt-2">
                     @foreach ($errors->all() as $error)
@@ -18,6 +20,7 @@
             </div>
         </div>
     </div>
+    <script type="application/json" id="compra-erros-json">@json($errors->getMessages())</script>
 @endif
 
 {{-- DADOS DA COMPRA --}}
@@ -254,7 +257,7 @@
                                         placeholder="Digite nome, código ou código de barras..."
                                         aria-label="Buscar produto do item"
                                         autocomplete="off"
-                                        value="{{ $produtoSelecionado['nome'] ?? ($produtoSelecionado->nome ?? '') }}"
+                                        value="{{ $produtoSelecionado['nome'] ?? ($produtoSelecionado->nome ?? (!empty($item['produto_id']) ? ($item['descricao'] ?? '') : '')) }}"
                                     >
                                     <button
                                         type="button"
@@ -310,7 +313,7 @@
                                             @elseif (!empty($item['produto_id']))
                                                 <div class="fw-semibold">
                                                     <i class="bi bi-box-seam"></i>
-                                                    Produto #{{ $item['produto_id'] }}
+                                                    {{ $item['descricao'] ?? 'Produto' }} (produto #{{ $item['produto_id'] }})
                                                 </div>
                                             @endif
                                         </div>
@@ -589,6 +592,12 @@
 
 {{-- ANEXOS --}}
 @if (!$isEdit)
+    @php
+        // Erros aninhados: anexos.0.arquivo, anexos.1.tipo etc.
+        $anexosTemErros = collect($errors->keys())->contains(
+            fn ($campo) => str_starts_with((string) $campo, 'anexos.')
+        );
+    @endphp
     <div class="card shadow-sm mt-4">
         <div class="card-body">
             <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
@@ -608,7 +617,7 @@
                     class="btn btn-outline-primary"
                     data-bs-toggle="collapse"
                     data-bs-target="#anexos-compra"
-                    aria-expanded="false"
+                    aria-expanded="{{ $anexosTemErros ? 'true' : 'false' }}"
                     aria-controls="anexos-compra"
                 >
                     <i class="bi bi-paperclip"></i>
@@ -619,9 +628,16 @@
 
             <div
                 id="anexos-compra"
-                class="collapse mt-4"
+                class="collapse mt-4 {{ $anexosTemErros ? 'show' : '' }}"
             >
+                @php
+                    $anexosAnteriores = old('anexos');
+                    $anexosAnteriores = is_array($anexosAnteriores) && count($anexosAnteriores)
+                        ? $anexosAnteriores
+                        : [[]];
+                @endphp
                 <div id="anexos-container">
+                    @foreach ($anexosAnteriores as $indiceAnexo => $anexoAnterior)
                     <div class="anexo-item border rounded p-3 mb-3">
                         <div class="row g-3 align-items-end">
 
@@ -633,22 +649,22 @@
                                 </label>
 
                                 <select
-                                    name="anexos[0][tipo]"
+                                    name="anexos[{{ $indiceAnexo }}][tipo]"
                                     class="form-select"
                                 >
                                     <option value="">Selecione...</option>
-                                    <option value="nf">Nota fiscal</option>
-                                    <option value="nf_xml">NF-e XML</option>
-                                    <option value="foto">Foto</option>
-                                    <option value="comprovante">Comprovante</option>
-                                    <option value="boleto">Boleto</option>
-                                    <option value="contrato">Contrato</option>
-                                    <option value="orcamento">Orçamento</option>
-                                    <option value="conta_luz">Conta de luz</option>
-                                    <option value="conta_agua">Conta de água</option>
-                                    <option value="conta_telefone">Conta de telefone</option>
-                                    <option value="recibo">Recibo</option>
-                                    <option value="outro">Outro</option>
+                                    <option value="nf" @selected(($anexoAnterior['tipo'] ?? '') === 'nf')>Nota fiscal</option>
+                                    <option value="nf_xml" @selected(($anexoAnterior['tipo'] ?? '') === 'nf_xml')>NF-e XML</option>
+                                    <option value="foto" @selected(($anexoAnterior['tipo'] ?? '') === 'foto')>Foto</option>
+                                    <option value="comprovante" @selected(($anexoAnterior['tipo'] ?? '') === 'comprovante')>Comprovante</option>
+                                    <option value="boleto" @selected(($anexoAnterior['tipo'] ?? '') === 'boleto')>Boleto</option>
+                                    <option value="contrato" @selected(($anexoAnterior['tipo'] ?? '') === 'contrato')>Contrato</option>
+                                    <option value="orcamento" @selected(($anexoAnterior['tipo'] ?? '') === 'orcamento')>Orçamento</option>
+                                    <option value="conta_luz" @selected(($anexoAnterior['tipo'] ?? '') === 'conta_luz')>Conta de luz</option>
+                                    <option value="conta_agua" @selected(($anexoAnterior['tipo'] ?? '') === 'conta_agua')>Conta de água</option>
+                                    <option value="conta_telefone" @selected(($anexoAnterior['tipo'] ?? '') === 'conta_telefone')>Conta de telefone</option>
+                                    <option value="recibo" @selected(($anexoAnterior['tipo'] ?? '') === 'recibo')>Recibo</option>
+                                    <option value="outro" @selected(($anexoAnterior['tipo'] ?? '') === 'outro')>Outro</option>
                                 </select>
                             </div>
 
@@ -661,7 +677,7 @@
 
                                 <input
                                     type="file"
-                                    name="anexos[0][arquivo]"
+                                    name="anexos[{{ $indiceAnexo }}][arquivo]"
                                     class="form-control"
                                     accept=".pdf,.jpg,.jpeg,.png,.webp,.xml"
                                 >
@@ -687,15 +703,17 @@
 
                                 <input
                                     type="text"
-                                    name="anexos[0][observacoes]"
+                                    name="anexos[{{ $indiceAnexo }}][observacoes]"
                                     class="form-control"
                                     maxlength="1000"
                                     placeholder="Observações sobre o documento..."
+                                    value="{{ $anexoAnterior['observacoes'] ?? '' }}"
                                 >
                             </div>
 
                         </div>
                     </div>
+                    @endforeach
                 </div>
 
                 <div class="d-flex align-items-center gap-2 flex-wrap">
@@ -712,6 +730,9 @@
                 <div class="alert alert-light border mt-3 mb-0">
                     <i class="bi bi-info-circle"></i>
                     PDF, XML, JPG, JPEG ou WEBP — máximo de 2 MB por arquivo.
+                    @if ($errors->any())
+                        <span class="d-block fw-semibold mt-2 text-danger">Selecione novamente os arquivos antes de reenviar.</span>
+                    @endif
                 </div>
             </div>
         </div>

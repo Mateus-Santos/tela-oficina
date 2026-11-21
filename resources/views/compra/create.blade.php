@@ -2,14 +2,14 @@
 
 @section('content')
 
-<div class="container cadastro">
+<div class="container cadastro feux-compra">
 
     <x-list-header
         title="CADASTRAR COMPRA"
         icon="bi-cart-plus"
     />
 
-    <form
+    <form id="compra-form"
         method="POST"
         action="{{ route('compras.store') }}"
         enctype="multipart/form-data"
