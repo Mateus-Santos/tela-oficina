@@ -1,0 +1,33 @@
+@use './_colors.scss' as cores;
+
+// Contraste e validacao exclusivos do setor Compras.
+.feux-compra {
+    .list-header h1 {
+        background: #17191c;
+        color: cores.$amarelo;
+    }
+    .form-label, .card-body, .text-muted, .item-produto-status {
+        color: #20242a !important;
+    }
+    .card, .form-control, .form-select {
+        background-color: cores.$branco;
+        color: cores.$preto;
+    }
+    .form-control:focus-visible, .form-select:focus-visible {
+        outline: 2px solid #174ea6;
+        outline-offset: 2px;
+    }
+    .form-control.is-invalid, .form-select.is-invalid {
+        border: 2px solid #b42318;
+        background-color: #fff9f8;
+        color: cores.$preto;
+    }
+    .feux-compra-erro-campo {
+        color: #9f1d16;
+        font-weight: 600;
+        text-align: left;
+        margin-top: .25rem;
+    }
+    #compra-erros { text-align: left; }
+    button[aria-busy="true"] { cursor: progress; }
+}
