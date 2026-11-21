@@ -28,7 +28,7 @@
                     <div class="row">
                         <div class="col-md-12">
                             <label for="pessoa_id" class="form-label">Selecione uma Pessoa cadastrada:</label>
-                            <select name="pessoa_id" id="pessoa_id" class="form-select">
+                            <select name="pessoa_id" id="pessoa_id" class="form-select" aria-describedby="cliente-pessoa-existente-ajuda">
                                 <option value="">-- Ou preencha os dados de uma NOVA PESSOA abaixo --</option>
                                 @foreach($pessoasSemCliente as $pessoa)
                                     <option value="{{ $pessoa->id }}" {{ old('pessoa_id') == $pessoa->id ? 'selected' : '' }}>
@@ -36,6 +36,7 @@
                                     </option>
                                 @endforeach
                             </select>
+                            <div id="cliente-pessoa-existente-ajuda" class="form-text mt-2">Ao selecionar uma pessoa existente, o cadastro usará os dados já registrados dessa pessoa.</div>
                         </div>
                     </div>
                 </div>
@@ -51,17 +52,17 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label for="nome" class="form-label">Nome Completo *</label>
-                        <input type="text" class="form-control" id="nome" name="nome" value="{{ old('nome') }}" placeholder="Ex: João Silva">
+                        <input type="text" class="form-control" id="nome" name="nome" value="{{ old('nome') }}" placeholder="Ex: João Silva" autocomplete="name">
                     </div>
 
                     <div class="col-md-6">
                         <label for="email" class="form-label">E-mail</label>
-                        <input type="email" class="form-control" id="email" name="email" value="{{ old('email') }}" placeholder="cliente@email.com">
+                        <input type="email" class="form-control" id="email" name="email" value="{{ old('email') }}" placeholder="cliente@email.com" autocomplete="email">
                     </div>
 
                     <div class="col-md-3">
                         <label for="cpf" class="form-label">CPF</label>
-                        <input type="text" class="form-control" id="cpf" name="cpf" value="{{ old('cpf') }}" placeholder="000.000.000-00" maxlength="14" autocomplete="off">
+                        <input type="text" class="form-control" id="cpf" name="cpf" value="{{ old('cpf') }}" placeholder="000.000.000-00" maxlength="14" autocomplete="off" inputmode="numeric">
                     </div>
 
                     <div class="col-md-3">
@@ -76,12 +77,12 @@
 
                     <div class="col-md-3">
                         <label for="telefone_1" class="form-label">Telefone Principal</label>
-                        <input type="text" class="form-control" id="telefone_1" name="telefone_1" value="{{ old('telefone_1') }}" placeholder="(00) 00000-0000" maxlength="15" autocomplete="off">
+                        <input type="text" class="form-control" id="telefone_1" name="telefone_1" value="{{ old('telefone_1') }}" placeholder="(00) 00000-0000" maxlength="15" autocomplete="tel" inputmode="tel">
                     </div>
 
                     <div class="col-md-4">
                         <label for="telefone_2" class="form-label">Telefone Secundário</label>
-                        <input type="text" class="form-control" id="telefone_2" name="telefone_2" value="{{ old('telefone_2') }}" placeholder="(00) 00000-0000" maxlength="15" autocomplete="off">
+                        <input type="text" class="form-control" id="telefone_2" name="telefone_2" value="{{ old('telefone_2') }}" placeholder="(00) 00000-0000" maxlength="15" autocomplete="off" inputmode="tel">
                     </div>
 
                     {{-- Switch para geração de usuário e senha --}}
@@ -106,7 +107,7 @@
                 <div class="row g-3">
                     <div class="col-md-4">
                         <label for="pontos" class="form-label">Pontos Iniciais (Fidelidade)</label>
-                        <input type="number" class="form-control" id="pontos" name="pontos" value="{{ old('pontos', 0) }}" min="0">
+                        <input type="number" class="form-control" id="pontos" name="pontos" value="{{ old('pontos', 0) }}" min="0" inputmode="numeric">
                     </div>
                 </div>
             </div>

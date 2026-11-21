@@ -8,9 +8,9 @@ bash -n scripts/deploy.sh scripts/production/database_release.sh \
 bash scripts/deploy.sh --help | grep -q 'Uso:'
 
 test -f .github/workflows/deploy.yml
-grep -Fq 'database_release.sh' scripts/production/deploy_release.sh
+grep -Fq 'backup_release.sh' scripts/production/deploy_release.sh
 grep -Fq 'database_release.sh' .github/workflows/deploy.yml
-grep -Fq 'database_release.sh' scripts/production/deploy_release.sh
+grep -Fq 'backup_release.sh' scripts/production/deploy_release.sh
 grep -Fq 'php artisan migrate --force --no-interaction' scripts/production/database_release.sh
 
 TEMP="$(mktemp -d)"

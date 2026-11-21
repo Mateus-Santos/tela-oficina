@@ -60,7 +60,7 @@ def executar_json(comando, cwd=ROOT, timeout=240):
     return (payload, result.returncode), None
 
 
-def relatorio(inventario, composer=None, npm=None, erros=()):
+def relatorio(inventario, composer=None, npm=None, erros=(), nota_p03=None):
     linhas = [
         '# P03 — Auditoria das dependencias', '',
         '> Gerado automaticamente a partir dos lockfiles. Nao executa `install`, `update` ou `audit fix`.', '',
@@ -88,6 +88,8 @@ def relatorio(inventario, composer=None, npm=None, erros=()):
                 fix = info.get('fixAvailable')
                 linhas.append(f'- `{pacote}`: {info.get("severity", "indefinida")}; correcao disponivel: {str(fix)[:120]}')
         linhas.append('')
+    if nota_p03:
+        linhas.extend(['## Excecao P03 de desenvolvimento — temporaria', '', nota_p03, ''])
     if erros:
         linhas.extend(['## Falhas da auditoria', ''])
         linhas.extend(f'- {erro}' for erro in erros)
@@ -108,6 +110,7 @@ def main(argv=None):
     composer = npm = None
     erros = []
     findings = False
+    nota_p03 = None
     if args.live:
         c, erro = executar_json(['composer', 'audit', '--locked', '--format=json', '--abandoned=report', '--no-interaction'])
         if erro:
@@ -121,8 +124,29 @@ def main(argv=None):
             erros.append(erro)
         else:
             npm, code = n
-            findings |= (sum(contagem_npm(npm).values()) > 0 or code != 0)
-    texto = relatorio(inventario, composer, npm, erros)
+            vulnerabilidades_npm = sum(contagem_npm(npm).values())
+            if vulnerabilidades_npm > 0 and code == 1:
+                # Nao aceita novas vulnerabilidades, runtime, mudancas de lock
+                # ou excecao expirada. A auditoria completa SEMPRE e executada.
+                from p03_excecao_build import avaliar_excecao
+                aceita, motivo = avaliar_excecao(npm)
+                nota_p03 = motivo
+                if aceita:
+                    prod, erro_prod = executar_json([
+                        'npm', 'audit', '--package-lock-only', '--omit=dev', '--json',
+                    ])
+                    if erro_prod:
+                        erros.append('Auditoria npm --omit=dev: ' + erro_prod)
+                    else:
+                        payload_prod, code_prod = prod
+                        if code_prod != 0 or sum(contagem_npm(payload_prod).values()) != 0:
+                            findings = True
+                            nota_p03 = 'REPROVADO: avisos npm tambem em dependencias de producao.'
+                else:
+                    findings = True
+            elif vulnerabilidades_npm > 0 or code != 0:
+                findings = True
+    texto = relatorio(inventario, composer, npm, erros, nota_p03)
     if args.saida:
         args.saida.parent.mkdir(parents=True, exist_ok=True)
         args.saida.write_text(texto, encoding='utf-8')

@@ -108,7 +108,11 @@ class CompraTest extends TestCase
     {
         return app(ConferirCompra::class)->execute($compra, [
             'itens' => [
-                $item->id => ['quantidade_conferida' => $quantidade],
+                $item->id => [
+                    'quantidade_conferida' => $quantidade,
+                    'observacao_divergencia' => $quantidade > 0 && $quantidade != (float) $item->quantidade
+                        ? 'Recebimento parcial confirmado na conferência.' : null,
+                ],
             ],
         ]);
     }

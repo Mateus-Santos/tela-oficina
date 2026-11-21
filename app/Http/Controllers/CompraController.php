@@ -59,11 +59,70 @@ class CompraController extends Controller
                 ->count(),
         ];
 
+        /*
+         * U02 - indicadores para a listagem, sem N+1.
+         * A pivô compra_conta_pagar é a referência atual; o vínculo legado
+         * contaPagar é mantido para detectar dados anteriores à migração.
+         * Entradas e estornos são contados por ITEM, não por movimento,
+         * evitando contagem duplicada caso haja histórico adicional.
+         */
         $compras = $query
+            ->withCount([
+                'itens as u02_total_itens',
+                'itens as u02_itens_com_entrada' => fn ($q) => $q
+                    ->whereHas('movimentacoesEstoque', fn ($mov) => $mov
+                        ->where('tipo', 'entrada')),
+                'itens as u02_itens_com_estorno' => fn ($q) => $q
+                    ->whereHas('movimentacoesEstoque', fn ($mov) => $mov
+                        ->where('tipo', 'saida')
+                        ->where('observacoes', 'like', 'Estorno da entrada da Compra%')),
+            ])
+            ->withExists([
+                'contasPagar as u02_pivo_conta_ativa' => fn ($q) => $q
+                    ->where('contas_pagar.status', '!=', 'cancelada'),
+                'contaPagar as u02_legado_conta_ativa' => fn ($q) => $q
+                    ->where('status', '!=', 'cancelada'),
+                'contasPagar as u02_pivo_conta_cancelada' => fn ($q) => $q
+                    ->where('contas_pagar.status', 'cancelada'),
+                'contaPagar as u02_legado_conta_cancelada' => fn ($q) => $q
+                    ->where('status', 'cancelada'),
+            ])
             ->latest('data_entrada')
             ->latest('id')
             ->paginate(10)
             ->withQueryString();
+
+        /*
+         * Contrato para o agente Front-end: somente atributos transitórios.
+         * Não altera o banco, não consulta relacionamentos em cada linha,
+         * não confunde uma conta vinculada com uma conta quitada.
+         */
+        $compras->getCollection()->each(function (Compra $compra): void {
+            $total = (int) $compra->u02_total_itens;
+            $entradas = (int) $compra->u02_itens_com_entrada;
+            $estornos = (int) $compra->u02_itens_com_estorno;
+
+            $estoque = match (true) {
+                $total === 0 => 'sem_itens',
+                $compra->estaCancelada() && $entradas > 0 && $estornos >= $entradas => 'estornado',
+                $compra->estaCancelada() && $entradas > 0 => 'verificar_estorno',
+                $compra->estaCancelada() => 'sem_entrada',
+                $entradas === 0 => 'pendente',
+                $entradas < $total => 'parcial',
+                default => 'lancado',
+            };
+
+            $financeiro = match (true) {
+                (bool) $compra->u02_pivo_conta_ativa
+                    || (bool) $compra->u02_legado_conta_ativa => 'vinculada',
+                (bool) $compra->u02_pivo_conta_cancelada
+                    || (bool) $compra->u02_legado_conta_cancelada => 'vinculo_cancelado',
+                default => 'nao_vinculada',
+            };
+
+            $compra->setAttribute('integracao_estoque_status', $estoque);
+            $compra->setAttribute('integracao_financeiro_status', $financeiro);
+        });
 
         $fornecedores = Fornecedor::query()
             ->orderBy('nome')
@@ -102,6 +161,7 @@ class CompraController extends Controller
             'fornecedor',
             'itens.produto',
             'itens.movimentacoesEstoque',
+            'devolucoes.itens.itemCompra',
             'anexosVinculos.anexo',
             'contasPagar',
         ]);

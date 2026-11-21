@@ -14,6 +14,37 @@
         <div class="col-md-4"><div class="card shadow-sm"><div class="card-body text-start"><div class="text-muted small">Pago</div><div class="fs-4 fw-bold text-success">R$ {{ number_format($conta->valor_pago,2,',','.') }}</div></div></div></div>
         <div class="col-md-4"><div class="card shadow-sm"><div class="card-body text-start"><div class="text-muted small">Saldo em aberto</div><div class="fs-4 fw-bold">R$ {{ number_format($conta->saldo,2,',','.') }}</div></div></div></div>
     </div>
+    @if(!in_array($conta->status, ['paga', 'cancelada'], true))
+    <div class="card shadow-sm mb-4">
+        <div class="card-header fw-bold text-start"><i class="bi bi-pencil-square" aria-hidden="true"></i> Editar valores e vencimentos das parcelas</div>
+        <div class="card-body text-start">
+            <p class="small text-muted">Redistribua os valores sem alterar o total da dívida. Parcelas já pagas não podem ficar abaixo do que foi pago. O histórico dos pagamentos permanece intacto.</p>
+            <form method="POST" action="{{ route('socios-financeiro.contas.parcelas.update', [$socio, $conta]) }}" data-socios-edicao data-valor-conta-centavos="{{ (int) round((float) $conta->valor * 100) }}">
+                @csrf @method('PATCH')
+                <div class="table-responsive"><table class="table table-sm align-middle">
+                    <thead><tr><th>Parcela</th><th>Valor (R$)</th><th>Vencimento</th><th>Já pago</th></tr></thead>
+                    <tbody>
+                    @foreach($conta->parcelas as $indice => $parcela)
+                        <tr>
+                            <td class="align-middle">#{{ $parcela->numero }}<input type="hidden" name="parcelas[{{ $indice }}][id]" value="{{ $parcela->id }}"></td>
+                            <td><label class="visually-hidden" for="parcela-socio-valor-{{ $parcela->id }}">Valor da parcela {{ $parcela->numero }}</label>
+                                <input class="form-control form-control-sm" id="parcela-socio-valor-{{ $parcela->id }}" data-valor-parcela-edit type="number" min="{{ number_format(max(0.01, $parcela->valor_pago), 2, '.', '') }}" step="0.01" required name="parcelas[{{ $indice }}][valor]" value="{{ old('parcelas.'.$indice.'.valor', $parcela->valor) }}"></td>
+                            <td><label class="visually-hidden" for="parcela-socio-data-{{ $parcela->id }}">Vencimento da parcela {{ $parcela->numero }}</label>
+                                <input class="form-control form-control-sm" id="parcela-socio-data-{{ $parcela->id }}" type="date" required name="parcelas[{{ $indice }}][data_vencimento]" value="{{ old('parcelas.'.$indice.'.data_vencimento', $parcela->data_vencimento->toDateString()) }}"></td>
+                            <td class="align-middle">R$ {{ number_format($parcela->valor_pago, 2, ',', '.') }}</td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table></div>
+                <p class="small mb-3" data-resumo-edicao role="status"></p>
+                <div class="row g-2 align-items-end">
+                    <div class="col-12 col-md-8"><label class="form-label" for="socio-parcelas-motivo">Justificativa da alteração</label><input class="form-control" id="socio-parcelas-motivo" name="motivo" minlength="10" maxlength="500" required placeholder="Ex.: correção conforme extrato do credor"></div>
+                    <div class="col-12 col-md-4"><button type="submit" class="btn btn-primary w-100">Salvar parcelas</button></div>
+                </div>
+            </form>
+        </div>
+    </div>
+    @endif
     <div class="card shadow-sm mb-4">
         <div class="card-header fw-bold text-start">Agenda de parcelas e pagamentos</div>
         <div class="table-responsive"><table class="table table-hover align-middle text-start mb-0">
@@ -68,6 +99,11 @@
             </tbody>
         </table></div>
     </div>
+    @include('financeiro.socios._anexos')
     <div class="alert alert-info mt-3 small">Pagamentos de origem Oficina registram retirada definitiva no histórico deste sócio. O saldo de caixa empresarial ainda não é lançado automaticamente.</div>
 </div>
+@endsection
+
+@section('scripts')
+    @vite('resources/js/financeiro/socios-parcelas.js')
 @endsection

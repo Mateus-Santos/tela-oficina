@@ -2,7 +2,7 @@
 
 @section('content')
 
-<div class="container cadastro">
+<div class="container cadastro feux-listagem-notas">
 
     <x-list-header
         title="LISTAR NOTAS"
@@ -28,7 +28,7 @@
 
             <div class="row g-3 align-items-end">
 
-                <div class="col-12 col-lg-5">
+                <div class="col-12 col-lg-4">
 
                     <label
                         for="cliente"
@@ -69,7 +69,7 @@
                             value=""
                             @selected(!request()->filled('status'))
                         >
-                            Em aberto
+                            Aberto (padrão)
                         </option>
 
                         <option
@@ -142,7 +142,7 @@
 
                 </div>
 
-                <div class="col-12 col-md-4 col-lg-1">
+                <div class="col-12 col-md-4 col-lg-2">
 
                     <div class="filtros-container__actions">
 
@@ -151,13 +151,15 @@
                             class="btn btn-primary"
                             title="Filtrar notas"
                         >
-                            <i class="bi bi-search"></i>
+                            <i class="bi bi-search" aria-hidden="true"></i>
+                            Filtrar
                         </button>
 
                         <a
                             href="{{ route('notas.index') }}"
                             class="btn btn-secondary"
                             title="Limpar filtros"
+                            aria-label="Limpar filtros de notas"
                         >
                             <i class="bi bi-x-lg"></i>
                         </a>
@@ -221,6 +223,17 @@
         </x-slot:advanced>
 
     </x-filtros-container>
+
+    <div class="d-flex flex-wrap align-items-center gap-2 small text-body-secondary mb-3" role="status">
+        <i class="bi bi-info-circle" aria-hidden="true"></i>
+        <span>
+            {{ number_format($notas->total(), 0, ',', '.') }}
+            {{ $notas->total() === 1 ? 'nota encontrada' : 'notas encontradas' }}.
+            @if (!request()->filled('status'))
+                Exibindo somente notas abertas por padrão.
+            @endif
+        </span>
+    </div>
 
     @php
 
@@ -338,27 +351,27 @@
 
         @endphp
 
-        <div class="card shadow-sm mb-3">
+        <article class="card shadow-sm mb-3 feux-nota-card" aria-label="Nota #{{ $nota->id }}">
 
-            <div class="card-body">
+            <div class="card-body feux-nota-card__corpo">
 
                 <div
-                    class="d-flex flex-column flex-lg-row justify-content-between gap-3"
+                    class="d-flex flex-column flex-lg-row justify-content-between gap-3 feux-nota-card__cabecalho"
                 >
 
-                    <div>
+                    <div class="feux-nota-card__identificacao">
 
                         <div
                             class="d-flex flex-wrap align-items-center gap-2"
                         >
 
-                            <h5 class="mb-0">
+                            <h2 class="h5 mb-0 feux-nota-card__titulo">
 
                                 <i class="bi bi-receipt me-1"></i>
 
                                 Nota #{{ $nota->id }}
 
-                            </h5>
+                            </h2>
 
                             @if($nota->status === 'Aberto')
 
@@ -397,9 +410,9 @@
 
                         </div>
 
-                        <div class="text-muted mt-1">
+                        <div class="text-muted mt-1 feux-nota-card__cliente">
 
-                            <i class="bi bi-person"></i>
+                            <i class="bi bi-person" aria-hidden="true"></i>
 
                             {{
                                 $nota
@@ -411,9 +424,14 @@
 
                         </div>
 
+                        <div class="small text-muted mt-2 feux-nota-card__data">
+                            <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>
+                            Data: {{ $nota->created_at?->format('d/m/Y') ?? 'Não informada' }}
+                        </div>
+
                     </div>
 
-                    <div class="text-lg-end">
+                    <div class="text-lg-end feux-nota-card__valor">
 
                         <div class="small text-muted">
                             Valor
@@ -439,7 +457,7 @@
 
                 <hr>
 
-                <div class="row g-3 align-items-start">
+                <div class="row g-3 align-items-start feux-nota-card__dados">
 
                     <div class="col-12 col-md-6 col-xl-3">
 
@@ -650,7 +668,7 @@
                 </div>
 
                 <div
-                    class="d-flex flex-wrap justify-content-end gap-2 mt-4 pt-3 border-top"
+                    class="d-flex flex-wrap justify-content-end gap-2 mt-4 pt-3 border-top feux-nota-card__acoes"
                 >
 
                     <div class="btn-group">
@@ -665,7 +683,7 @@
                             PDF Cliente
                         </button>
 
-                        <ul class="dropdown-menu">
+                        <ul class="dropdown-menu dropdown-menu-end">
 
                             <li>
 
@@ -721,8 +739,7 @@
                             </button>
 
                             <div
-                                class="dropdown-menu dropdown-menu-end p-3"
-                                style="min-width: 290px;"
+                                class="dropdown-menu dropdown-menu-end p-3 feux-nota-card__menu-interno"
                             >
 
                                 <form
@@ -805,8 +822,10 @@
                                 type="submit"
                                 class="btn btn-outline-danger btn-sm"
                                 title="Excluir Nota"
+                                aria-label="Excluir Nota #{{ $nota->id }}"
                             >
-                                <i class="bi bi-trash3"></i>
+                                <i class="bi bi-trash3" aria-hidden="true"></i>
+                                <span class="feux-nota-card__acao-texto">Excluir</span>
                             </button>
 
                         </form>
@@ -817,8 +836,10 @@
                             type="button"
                             class="btn btn-outline-secondary btn-sm"
                             disabled
+                            aria-label="Exclusão indisponível para Nota #{{ $nota->id }}"
                         >
-                            <i class="bi bi-lock"></i>
+                            <i class="bi bi-lock" aria-hidden="true"></i>
+                            <span class="feux-nota-card__acao-texto">Bloqueada</span>
                         </button>
 
                     @endif
@@ -827,17 +848,17 @@
 
             </div>
 
-        </div>
+        </article>
 
     @endforeach
 
     @if($notas->hasPages())
 
-        <div class="d-flex justify-content-center mt-4">
+        <nav class="feux-listagem-notas__paginacao d-flex justify-content-center mt-4" aria-label="Paginação de notas">
 
             {{ $notas->links() }}
 
-        </div>
+        </nav>
 
     @endif
 

@@ -82,6 +82,7 @@
                     min="0"
                     step="1"
                     placeholder="Ex.: 85000"
+                    inputmode="numeric"
                 >
 
             </div>
@@ -115,6 +116,7 @@
                     min="0"
                     step="1"
                     placeholder="Ex.: 10000"
+                    inputmode="numeric"
                 >
 
             </div>

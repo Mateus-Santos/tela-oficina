@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class ContaPagarSocio extends Model
 {
@@ -35,6 +36,11 @@ class ContaPagarSocio extends Model
     public function pagamentosAtivos(): HasMany
     {
         return $this->pagamentos()->whereNull('estornado_em');
+    }
+
+    public function anexosVinculos(): MorphMany
+    {
+        return $this->morphMany(AnexoVinculo::class, 'vinculavel')->with('anexo');
     }
 
     public function getValorPagoAttribute(): float

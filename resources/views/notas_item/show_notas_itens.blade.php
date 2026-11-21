@@ -802,10 +802,10 @@
                                     <td class="text-center">
 
                                         <a
-                                            href="{{ route(
-                                                'estoque.ajuste',
-                                                $problema['produto_id']
-                                            ) }}"
+                                            href="{{ route('estoque.ajuste', [
+                                                'produto' => $problema['produto_id'],
+                                                'nota_id' => $nota->id,
+                                            ]) }}"
                                             class="btn btn-outline-primary btn-sm"
                                         >
                                             <i class="bi bi-sliders"></i>

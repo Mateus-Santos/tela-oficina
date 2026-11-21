@@ -50,7 +50,7 @@ class NotasItemController extends Controller
         );
 
         return redirect()
-            ->route('notas.index')
+            ->route('notas.show', $nota->id)
             ->with(
                 'success',
                 'Nota Fiscal criada com '
@@ -103,7 +103,7 @@ class NotasItemController extends Controller
         );
 
         return redirect()
-            ->route('notas.index')
+            ->route('notas.show', $nota->id)
             ->with(
                 'success',
                 'Nota Fiscal #'
