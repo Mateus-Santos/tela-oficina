@@ -1240,6 +1240,12 @@
 
     </div>
 
+    @include('anexo._gestao_operacional', [
+        'urlStore' => route('notas.anexos.store', $nota),
+        'podeAlterar' => $nota->status === 'Aberto' && auth()->user()?->isAdmin(),
+        'anexosVinculos' => $nota->anexosVinculos,
+    ])
+
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
 
         <a
