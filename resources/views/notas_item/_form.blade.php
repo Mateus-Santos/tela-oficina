@@ -20,7 +20,7 @@
      1. IDENTIFICAÇÃO DA NOTA / O.S.
 ========================================================= --}}
 
-<div class="card mb-4">
+<div class="card mb-4 feux-notas-secao" id="feux-notas-identificacao">
 
     <div class="card-header">
 
@@ -164,7 +164,7 @@
      2. RESUMO FINANCEIRO
 ========================================================= --}}
 
-<div class="card mb-4">
+<div class="card mb-4 feux-notas-secao" id="feux-notas-resumo">
 
     <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
 
@@ -398,7 +398,7 @@
      3. ITENS DA NOTA / O.S.
 ========================================================= --}}
 
-<div class="card mb-4">
+<div class="card mb-4 feux-notas-secao" id="feux-notas-itens">
 
     <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
 
@@ -994,7 +994,7 @@
      4. DESCONTOS GERAIS
 ========================================================= --}}
 
-<div class="card mb-4">
+<div class="card mb-4 feux-notas-secao" id="feux-notas-descontos">
 
     <div class="card-header">
 
@@ -1041,7 +1041,7 @@
      5. BOTÕES
 ========================================================= --}}
 
-<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+<div id="feux-notas-salvar" class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4 feux-notas-acoes">
 
     <a
         href="{{ route('notas.index') }}"
