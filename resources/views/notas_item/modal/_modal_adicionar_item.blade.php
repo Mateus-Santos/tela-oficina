@@ -69,6 +69,13 @@
                     </select>
                 </div>
 
+                <p class="feux-notas-tipo-contexto small" role="note">
+                    <i class="bi bi-lightbulb" aria-hidden="true"></i>
+                    <span class="feux-notas-tipo-contexto__texto">
+                        Produtos: pesquise por nome, código ou descrição e confira preço e estoque.
+                    </span>
+                </p>
+
                 {{-- =====================================================
                      PESQUISA
                 ====================================================== --}}
@@ -141,9 +148,16 @@
                      RESULTADOS
                 ====================================================== --}}
 
+                <div class="feux-notas-resultados-cabecalho">
+                    <strong><i class="bi bi-ui-checks" aria-hidden="true"></i> Resultados da pesquisa</strong>
+                    <span class="small">Selecione um resultado para preencher o item</span>
+                </div>
+
                 <div
                     id="builder_resultados"
-                    class="list-group mb-4"
+                    class="list-group mb-4 feux-notas-resultados-lote05"
+                    role="group"
+                    aria-label="Resultados da pesquisa de produtos ou ordens de serviço"
                     aria-live="polite"
                 ></div>
 

@@ -50,7 +50,8 @@
         'resources/js/notaitem/itens.js',
         'resources/js/notaitem/descontos.js',
         'resources/js/notaitem/feux-notas-lote02.js',
-        'resources/js/notaitem/feux-notas-lote04.js'
+        'resources/js/notaitem/feux-notas-lote04.js',
+        'resources/js/notaitem/feux-notas-lote05.js'
     ])
 
 @endsection
