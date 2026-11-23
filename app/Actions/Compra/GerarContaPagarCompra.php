@@ -30,9 +30,10 @@ class GerarContaPagarCompra
                     'Somente compras aprovadas podem gerar uma conta a pagar.'
                 );
             }
-            if ($compra->possuiDivergenciaConferencia()) {
+            $valorDevido = app(\App\Services\Compra\ValorDevidoCompra::class);
+            if (!$valorDevido->divergenciaCoberta($compra)) {
                 throw new InvalidArgumentException(
-                    'Compra com divergencia de recebimento. Conciliacao financeira D03 obrigatoria antes de gerar conta a pagar.'
+                    'Divergencia sem devolucao documentada e conciliada; finalize a regularizacao antes.'
                 );
             }
 
@@ -44,10 +45,9 @@ class GerarContaPagarCompra
              * agrupada, mesmo quando contas_pagar
              * .compra_id estiver null.
              */
-            // D03 reconciliara compras ja devolvidas; nunca gerar boleto pelo total original.
-            if ($compra->devolucoes()->exists()) {
+            if ($valorDevido->precisaConciliacao($compra)) {
                 throw new InvalidArgumentException(
-                    'Compra possui devolucao. Conciliacao financeira D03 obrigatoria antes de gerar conta a pagar.'
+                    'Devolucao operacional legada ou abatimento pendente: conciliacao obrigatoria.'
                 );
             }
 
@@ -63,9 +63,7 @@ class GerarContaPagarCompra
                 );
             }
 
-            $valorTotalEmCentavos = (int) round(
-                (float) $compra->valor_total * 100
-            );
+            $valorTotalEmCentavos = $valorDevido->valorLiquidoCentavos($compra);
 
             $valorParcelasEmCentavos = 0;
 
@@ -134,7 +132,7 @@ class GerarContaPagarCompra
                 'descricao' =>
                     $this->gerarDescricao($compra),
                 'valor' =>
-                    $compra->valor_total,
+                    number_format($valorTotalEmCentavos / 100, 2, '.', ''),
                 'data_emissao' =>
                     $compra->data_emissao
                     ?? $compra->data_entrada,
