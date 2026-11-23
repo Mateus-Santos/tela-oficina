@@ -85,6 +85,7 @@
                         type="search"
                         id="builder_item_busca"
                         aria-describedby="builder_busca_status"
+                        aria-controls="builder_resultados"
                         class="form-control"
                         placeholder="Digite nome, código, descrição ou número..."
                         autocomplete="off"
@@ -97,6 +98,12 @@
                     >
                         Digite para pesquisar.
                     </div>
+
+                    <p class="feux-notas-busca-teclado small mb-0">
+                        <i class="bi bi-keyboard" aria-hidden="true"></i>
+                        No teclado: <kbd>↓</kbd> para ir aos resultados, <kbd>↑</kbd>/<kbd>↓</kbd>
+                        para navegar, <kbd>Enter</kbd> para selecionar. Também é possível tocar nos resultados.
+                    </p>
 
                     {{-- AÇÃO RÁPIDA PARA O.S. --}}
 
