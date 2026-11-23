@@ -879,7 +879,7 @@
 
             @else
 
-                <div class="table-responsive">
+                <div class="table-responsive feux-notas-itens-leitura">
 
                     <table class="table table-bordered table-hover align-middle mb-0">
 

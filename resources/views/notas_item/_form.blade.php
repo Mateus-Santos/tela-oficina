@@ -421,7 +421,7 @@
 
     <div class="card-body">
 
-        <div class="table-responsive">
+        <div class="table-responsive feux-notas-itens-mobile">
 
             <table
                 class="table table-bordered table-hover align-middle"

@@ -1,5 +1,5 @@
 <div
-    class="modal fade"
+    class="modal fade feux-notas-modal-itens"
     id="modalAdicionarItem"
     tabindex="-1"
     aria-labelledby="modalAdicionarItemLabel"
@@ -37,6 +37,11 @@
                     class="mb-3 d-none"
                     aria-live="polite"
                 ></div>
+
+                <p class="feux-notas-modal-ajuda">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                    Pesquise um produto ou uma Ordem de Serviço, selecione o resultado e confira quantidade e valores antes de adicionar.
+                </p>
 
                 {{-- =====================================================
                      TIPO
@@ -79,6 +84,7 @@
                     <input
                         type="search"
                         id="builder_item_busca"
+                        aria-describedby="builder_busca_status"
                         class="form-control"
                         placeholder="Digite nome, código, descrição ou número..."
                         autocomplete="off"
