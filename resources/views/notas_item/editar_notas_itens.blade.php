@@ -12,6 +12,36 @@
             <i class="bi bi-arrow-left" aria-hidden="true"></i> Voltar às notas
         </a>
     </header>
+    @if ($errors->any())
+        <section class="feux-notas-avisos" aria-label="Erros de validação da nota" role="alert" tabindex="-1">
+            <div class="feux-notas-avisos__cabecalho">
+                <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                <div>
+                    <h2 class="h5 mb-1">Revise os campos da nota</h2>
+                    <p class="mb-0">Confira as mensagens abaixo antes de salvar novamente.</p>
+                </div>
+            </div>
+            <ul class="feux-notas-avisos__lista">
+                @foreach ($errors->getMessages() as $feuxCampo => $feuxMensagens)
+                    @php
+                        $feuxCampoTexto = (string) $feuxCampo;
+                        $feuxSecao = str_starts_with($feuxCampoTexto, 'itens.') || $feuxCampoTexto === 'itens'
+                            ? 'itens'
+                            : (in_array($feuxCampoTexto, ['cliente_id', 'veiculo_cliente_id', 'km', 'km_proxima_troca_oleo', 'km_diferenca_troca_oleo'], true)
+                                ? 'identificacao'
+                                : (str_contains($feuxCampoTexto, 'desconto') ? 'descontos' : 'salvar'));
+                    @endphp
+                    @foreach ($feuxMensagens as $feuxMensagem)
+                        <li>
+                            <span>{{ $feuxMensagem }}</span>
+                            <a href="#feux-notas-{{ $feuxSecao }}" class="feux-notas-avisos__atalho">Ir à seção</a>
+                        </li>
+                    @endforeach
+                @endforeach
+            </ul>
+        </section>
+    @endif
+
     <nav class="feux-notas-passos" aria-label="Navegação do formulário de notas">
         <a href="#feux-notas-identificacao"><span>01</span> Identificação</a>
         <a href="#feux-notas-resumo"><span>02</span> Resumo</a>
@@ -20,15 +50,7 @@
         <a href="#feux-notas-salvar"><span>05</span> Salvar</a>
     </nav>
 
-    @if ($errors->any())
-        <div class="alert alert-danger">
-            <ul class="mb-0">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+    <p class="feux-notas-envio-status visually-hidden" role="status" aria-live="polite"></p>
 
     <form data-feux-form="true"
         action="{{ route('notasitem.update', $nota->id) }}"
@@ -54,6 +76,7 @@
     'resources/js/notaitem/descontos.js',
         'resources/js/notaitem/feux-notas-lote02.js',
         'resources/js/notaitem/feux-notas-lote04.js',
-        'resources/js/notaitem/feux-notas-lote05.js'
+        'resources/js/notaitem/feux-notas-lote05.js',
+        'resources/js/notaitem/feux-notas-lote06.js'
 ])
 @endsection
