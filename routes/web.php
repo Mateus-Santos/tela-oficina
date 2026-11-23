@@ -298,6 +298,9 @@ Route::middleware([
             [NotaController::class, 'cancelar']
         )->name('notas.cancelar');
 
+        Route::get('notas/{nota}/duplicar', [\App\Http\Controllers\DuplicarRegistroController::class, 'nota'])->name('notas.duplicar');
+        Route::post('notas/{nota}/duplicar', [\App\Http\Controllers\DuplicarRegistroController::class, 'duplicarNota'])->name('notas.duplicar.store');
+
         Route::resource(
             'notas',
             NotaController::class
@@ -405,6 +408,8 @@ Route::middleware([
         )->name(
             'ordemservicos.cancelar'
         );
+
+        Route::get('ordemservicos/{ordemservico}/anexos', [OrdemServicoController::class, 'anexos'])->name('ordemservicos.anexos');
 
         Route::resource(
             'ordemservicos',
@@ -674,6 +679,9 @@ Route::middleware([
             [\App\Http\Controllers\CompraConciliacaoEfetivacaoController::class, 'store']
         )->name('compras.conciliacao.efetivar');
 
+        Route::get('compras/{compra}/duplicar', [\App\Http\Controllers\DuplicarRegistroController::class, 'compra'])->name('compras.duplicar');
+        Route::post('compras/{compra}/duplicar', [\App\Http\Controllers\DuplicarRegistroController::class, 'duplicarCompra'])->name('compras.duplicar.store');
+
         Route::resource(
             'compras',
             CompraController::class
@@ -689,6 +697,8 @@ Route::middleware([
         ]);
 
         // Anexos
+        Route::post('notas/{nota}/anexos', [AnexoController::class, 'storeNota'])->name('notas.anexos.store');
+        Route::post('ordemservicos/{ordemservico}/anexos', [AnexoController::class, 'storeOrdemServico'])->name('ordemservicos.anexos.store');
 
         Route::post(
             'compras/{compra}/anexos',
