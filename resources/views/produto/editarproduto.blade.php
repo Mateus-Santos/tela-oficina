@@ -1,7 +1,7 @@
 @extends('layouts.layout')
 
 @section('content')
-<section class="container cadastro">
+<section class="container cadastro feux-moderno">
     <h1>
         <i class="bi bi-gear"></i> EDITAR PRODUTO
     </h1>
@@ -24,7 +24,7 @@
         </div>
     @endif
 
-    <form
+    <form data-feux-form="true"
         id="form-produto"
         action="{{ route('produtos.update', $produto->id) }}"
         enctype="multipart/form-data"

@@ -34,7 +34,7 @@
 @endphp
 
 <section
-    class="container cadastro"
+    class="container cadastro feux-moderno"
     id="cadastro-conta-receber"
     data-clientes-endpoint="{{ route('api.contas-receber.clientes.buscar') }}"
     data-notas-endpoint="{{ route('api.contas-receber.notas.buscar') }}"
@@ -60,7 +60,7 @@
         </div>
     @endif
 
-    <form
+    <form data-feux-form="true"
         action="{{ route('contas-receber.store') }}"
         method="POST"
         id="form-conta-receber"

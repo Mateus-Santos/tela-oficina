@@ -2,7 +2,7 @@
 
 @section('content')
 
-<section class="container cadastro">
+<section class="container cadastro feux-moderno">
 
 
 <h1>
@@ -28,7 +28,7 @@
     </div>
 @endif
 
-<form
+<form data-feux-form="true"
     action="{{ route('contas-receber.update', $contaReceber) }}"
     method="POST"
     class="row g-3"

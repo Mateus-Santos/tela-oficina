@@ -1,7 +1,7 @@
 @extends('layouts.layout')
 
 @section('content')
-<div class="container cadastro">
+<div class="container cadastro feux-moderno">
     <h1 class="mb-4">
         GERENCIAR ITENS DA NOTA / O.S.
     </h1>
@@ -16,7 +16,7 @@
         </div>
     @endif
 
-    <form
+    <form data-feux-form="true"
         action="{{ route('notasitem.update', $nota->id) }}"
         method="POST"
         id="form-os-itens"

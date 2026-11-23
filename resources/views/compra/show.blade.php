@@ -2,7 +2,7 @@
 
 @section('content')
 
-<div class="container cadastro">
+<div class="container cadastro feux-moderno">
 
 @php
     $itensParaEstoque = $compra->itens->filter(

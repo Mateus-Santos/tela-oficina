@@ -2,7 +2,7 @@
 
 @section('content')
 
-<div class="container cadastro feux-listagem-notas">
+<div class="container cadastro feux-listagem-notas feux-moderno">
 
     <x-list-header
         title="LISTAR NOTAS"

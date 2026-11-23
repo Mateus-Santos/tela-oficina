@@ -1,7 +1,7 @@
 @extends('layouts.layout')
 
 @section('content')
-<div class="container cadastro feux-listagem-compras">
+<div class="container cadastro feux-listagem-compras feux-moderno">
     <x-list-header
         title="LISTAR COMPRAS"
         icon="bi-cart-check"

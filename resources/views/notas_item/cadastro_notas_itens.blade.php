@@ -2,13 +2,13 @@
 
 @section('content')
 
-<div class="container cadastro">
+<div class="container cadastro feux-moderno">
 
     <h1 class="mb-4">
         GERENCIAR ITENS DA NOTA / O.S.
     </h1>
 
-    <form
+    <form data-feux-form="true"
         action="{{ route('notasitem.store') }}"
         method="POST"
         id="form-os-itens"

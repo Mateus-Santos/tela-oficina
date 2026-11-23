@@ -2,7 +2,7 @@
 
 @section('content')
 
-<section class="container cadastro py-4">
+<section class="container cadastro py-4 feux-moderno">
 
     <h1 class="mb-4">
         <i class="bi bi-person-gear"></i>
@@ -25,7 +25,7 @@
         </div>
     @endif
 
-    <form
+    <form data-feux-form="true"
         action="{{ route('clientes.update', $cliente->id) }}"
         method="POST"
         class="row g-3"
