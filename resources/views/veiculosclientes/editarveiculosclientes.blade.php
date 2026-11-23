@@ -8,14 +8,14 @@
 
 @section('content')
 
-<section class="container cadastro">
+<section class="container cadastro feux-moderno">
 
     <h1>
         <i class="bi bi-pencil-square"></i>
         EDITAR VEÍCULO
     </h1>
 
-    <form
+    <form data-feux-form="true"
         action="{{ route(
             'veiculosclientes.update',
             $veiculoscliente->id

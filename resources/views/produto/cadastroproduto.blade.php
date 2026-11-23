@@ -2,7 +2,7 @@
 
 @section('content')
 
-<section class="container cadastro">
+<section class="container cadastro feux-moderno">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="mb-0">
@@ -43,7 +43,7 @@
         </div>
     @endif
 
-    <form
+    <form data-feux-form="true"
         id="form-produto"
         action="{{ route('produtos.store') }}"
         method="POST"

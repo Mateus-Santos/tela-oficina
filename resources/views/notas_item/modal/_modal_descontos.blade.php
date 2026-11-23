@@ -3,7 +3,7 @@
 ========================================================= --}}
 
 <div
-    class="modal fade"
+    class="modal fade feux-notas-modal-descontos"
     id="modalDescontos"
     tabindex="-1"
     aria-labelledby="modalDescontosLabel"

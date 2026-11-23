@@ -1,7 +1,7 @@
 @extends('layouts.layout')
 
 @section('content')
-<div class="container cadastro">
+<div class="container cadastro feux-moderno">
     <x-list-header
         title="AJUSTE DE ESTOQUE"
         icon="bi-sliders"
@@ -73,7 +73,7 @@
                 </div>
             </div>
 
-            <form
+            <form data-feux-form="true"
                 method="POST"
                 action="{{ route('estoque.registrarAjuste', $notaOrigem
                     ? ['produto' => $produto, 'nota_id' => $notaOrigem->id]

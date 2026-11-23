@@ -1,0 +1,167 @@
+/* FEUX LOTE 03 — Itens responsivos de Notas e modais; estilos locais. */
+.cadastro.feux-notas-lote02 {
+    .feux-notas-itens-mobile,
+    .feux-notas-itens-leitura {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .feux-notas-itens-mobile .input-descricao,
+    .feux-notas-itens-mobile .input-valor,
+    .feux-notas-itens-mobile .input-desconto,
+    .feux-notas-itens-mobile .input-qtd,
+    .feux-notas-itens-mobile .input-garantia {
+        min-width: 0;
+        max-width: 100%;
+    }
+}
+
+.modal.feux-notas-modal-itens,
+.modal.feux-notas-modal-descontos {
+    .modal-content {
+        border: 1px solid #cdd7e1;
+        border-radius: .9rem;
+        box-shadow: 0 1rem 2.75rem rgba(18, 39, 62, .22);
+    }
+    .modal-header {
+        background: #f5f8fc;
+        color: #203650;
+        border-bottom-color: #dce4ed;
+    }
+    .modal-title { font-weight: 750; line-height: 1.35; }
+    .form-label { font-weight: 650; color: #21364c; }
+    .form-control:focus-visible,
+    .form-select:focus-visible,
+    .btn:focus-visible {
+        outline: 2px solid #195994;
+        outline-offset: 2px;
+    }
+    .btn { min-height: 2.75rem; }
+    .modal-footer { background: #fff; border-top-color: #dce4ed; }
+}
+
+.modal.feux-notas-modal-itens {
+    .feux-notas-modal-ajuda {
+        display: flex;
+        gap: .55rem;
+        align-items: flex-start;
+        padding: .75rem .9rem;
+        border: 1px solid #cfdff0;
+        border-radius: .6rem;
+        background: #f2f7fd;
+        color: #29445f;
+        font-size: .875rem;
+        line-height: 1.5;
+        margin-bottom: 1rem;
+    }
+    .feux-notas-modal-ajuda .bi { flex: 0 0 auto; }
+    #builder_resultados { min-width: 0; }
+    #builder_resultados .list-group-item {
+        min-width: 0;
+        min-height: 3rem;
+        overflow-wrap: anywhere;
+    }
+    #builder_previa {
+        border-color: #bfd1e2;
+        background: #eef5fd;
+        color: #193c61;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .cadastro.feux-notas-lote02.feux-notas-formulario .feux-notas-itens-mobile,
+    .cadastro.feux-notas-lote02.feux-notas-detalhe .feux-notas-itens-leitura {
+        overflow: visible;
+    }
+
+    .cadastro.feux-notas-lote02.feux-notas-formulario .feux-notas-itens-mobile,
+    .cadastro.feux-notas-lote02.feux-notas-detalhe .feux-notas-itens-leitura {
+        table, tbody { display: block; width: 100%; max-width: 100%; }
+        thead {
+            position: absolute !important;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            white-space: nowrap;
+            clip-path: inset(50%);
+        }
+        tbody tr:not(#linha-vazia) {
+            display: block;
+            padding: .55rem;
+            margin: 0 0 .9rem;
+            border: 1px solid #d6e0eb;
+            border-radius: .85rem;
+            background: #fff;
+            box-shadow: 0 .125rem .55rem rgba(20, 41, 65, .08);
+        }
+        tbody tr:not(#linha-vazia) td {
+            display: grid;
+            grid-template-columns: minmax(6rem, 35%) minmax(0, 1fr);
+            align-items: center;
+            gap: .6rem;
+            width: 100%;
+            min-width: 0;
+            border: 0;
+            border-bottom: 1px solid #ecf0f5;
+            padding: .6rem .4rem;
+            text-align: left;
+            overflow-wrap: anywhere;
+        }
+        tbody tr:not(#linha-vazia) td:last-child { border-bottom: 0; }
+        tbody tr:not(#linha-vazia) td::before {
+            display: block;
+            color: #3b5268;
+            font-size: .78rem;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+        tbody tr:not(#linha-vazia) td:first-child {
+            display: block;
+            background: #f6f9fd;
+            border-radius: .5rem;
+            padding: .75rem;
+        }
+        tbody tr:not(#linha-vazia) td:first-child::before { margin-bottom: .5rem; }
+        tbody tr:not(#linha-vazia) td > * { min-width: 0; max-width: 100%; }
+        tbody tr:not(#linha-vazia) td input { width: 100%; min-width: 0; }
+        #linha-vazia { display: block; }
+        #linha-vazia td { display: block; width: 100%; }
+    }
+
+    .cadastro.feux-notas-lote02.feux-notas-formulario .feux-notas-itens-mobile {
+        tbody tr:not(#linha-vazia) td:nth-child(1)::before { content: 'Item'; }
+        tbody tr:not(#linha-vazia) td:nth-child(2)::before { content: 'Descrição'; }
+        tbody tr:not(#linha-vazia) td:nth-child(3)::before { content: 'Quantidade'; }
+        tbody tr:not(#linha-vazia) td:nth-child(4)::before { content: 'Valor unitário'; }
+        tbody tr:not(#linha-vazia) td:nth-child(5)::before { content: 'Desconto'; }
+        tbody tr:not(#linha-vazia) td:nth-child(6)::before { content: 'Garantia (dias)'; }
+        tbody tr:not(#linha-vazia) td:nth-child(7)::before { content: 'Total do item'; }
+        tbody tr:not(#linha-vazia) td:nth-child(8)::before { content: 'Ações'; }
+        .btn-remover-item { min-width: 2.75rem; min-height: 2.75rem; }
+    }
+
+    .cadastro.feux-notas-lote02.feux-notas-detalhe .feux-notas-itens-leitura {
+        tbody tr:not(#linha-vazia) td:nth-child(1)::before { content: 'Item'; }
+        tbody tr:not(#linha-vazia) td:nth-child(2)::before { content: 'Descrição'; }
+        tbody tr:not(#linha-vazia) td:nth-child(3)::before { content: 'Quantidade'; }
+        tbody tr:not(#linha-vazia) td:nth-child(4)::before { content: 'Valor unitário'; }
+        tbody tr:not(#linha-vazia) td:nth-child(5)::before { content: 'Desconto'; }
+        tbody tr:not(#linha-vazia) td:nth-child(6)::before { content: 'Total do item'; }
+        tbody tr:not(#linha-vazia) td:nth-child(7)::before { content: 'Garantia'; }
+    }
+
+    .modal.feux-notas-modal-itens,
+    .modal.feux-notas-modal-descontos {
+        .modal-dialog { width: auto; max-width: none; margin: .5rem; }
+        .modal-content { border-radius: .75rem; }
+        .modal-header { padding: .85rem 1rem; }
+        .modal-body { padding: 1rem; }
+        .modal-footer {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: .5rem;
+            padding: .75rem;
+        }
+        .modal-footer > * { width: 100%; margin: 0; }
+    }
+}

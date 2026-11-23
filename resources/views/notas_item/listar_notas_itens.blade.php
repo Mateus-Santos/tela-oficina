@@ -2,7 +2,7 @@
 
 @section('content')
 
-<div class="container cadastro feux-listagem-notas">
+<div class="container cadastro feux-listagem-notas feux-notas-lote02 feux-notas-lista feux-moderno">
 
     <x-list-header
         title="LISTAR NOTAS"
@@ -11,6 +11,19 @@
         create-text="Nova Nota"
         create-icon="bi-plus-lg"
     />
+
+
+    <section class="feux-notas-orientacao" aria-label="Como usar a listagem de notas">
+        <div>
+            <p class="feux-notas-eyebrow mb-1">Atendimento e vendas</p>
+            <h2 class="h5 mb-1">Suas notas em um só lugar</h2>
+            <p class="mb-0">Encontre pelo cliente ou refine por status, veículo e placa.</p>
+        </div>
+        <a class="btn btn-outline-dark feux-notas-atalho" href="#feux-notas-resultados">
+            <i class="bi bi-arrow-down-circle" aria-hidden="true"></i>
+            Ir para resultados
+        </a>
+    </section>
 
     <x-filtros-container
         action="{{ route('notas.index') }}"
@@ -224,6 +237,16 @@
 
     </x-filtros-container>
 
+    <div id="feux-notas-resultados" class="feux-notas-ancora" tabindex="-1"></div>
+    <div class="feux-notas-resumo" aria-label="Resumo da busca">
+        <span class="feux-notas-resumo__titulo">Resultado da consulta</span>
+        <span class="feux-notas-resumo__numero">{{ number_format($notas->total(), 0, ',', '.') }} registros</span>
+        @if(request()->hasAny(['cliente', 'veiculo', 'placa', 'status', 'etapa_id']))
+            <span class="feux-notas-resumo__chip">Filtros aplicados</span>
+        @else
+            <span class="feux-notas-resumo__chip">Notas abertas</span>
+        @endif
+    </div>
     <div class="d-flex flex-wrap align-items-center gap-2 small text-body-secondary mb-3" role="status">
         <i class="bi bi-info-circle" aria-hidden="true"></i>
         <span>

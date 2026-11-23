@@ -2,7 +2,7 @@
 
 @section('content')
 
-<div class="container cadastro feux-compra">
+<div class="container cadastro feux-compra feux-moderno">
 
     <x-list-header
         title="EDITAR COMPRA"

@@ -1,5 +1,5 @@
 <div
-    class="modal fade"
+    class="modal fade feux-notas-modal-itens"
     id="modalAdicionarItem"
     tabindex="-1"
     aria-labelledby="modalAdicionarItemLabel"
@@ -38,6 +38,11 @@
                     aria-live="polite"
                 ></div>
 
+                <p class="feux-notas-modal-ajuda">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                    Pesquise um produto ou uma Ordem de Serviço, selecione o resultado e confira quantidade e valores antes de adicionar.
+                </p>
+
                 {{-- =====================================================
                      TIPO
                 ====================================================== --}}
@@ -64,6 +69,13 @@
                     </select>
                 </div>
 
+                <p class="feux-notas-tipo-contexto small" role="note">
+                    <i class="bi bi-lightbulb" aria-hidden="true"></i>
+                    <span class="feux-notas-tipo-contexto__texto">
+                        Produtos: pesquise por nome, código ou descrição e confira preço e estoque.
+                    </span>
+                </p>
+
                 {{-- =====================================================
                      PESQUISA
                 ====================================================== --}}
@@ -79,6 +91,8 @@
                     <input
                         type="search"
                         id="builder_item_busca"
+                        aria-describedby="builder_busca_status"
+                        aria-controls="builder_resultados"
                         class="form-control"
                         placeholder="Digite nome, código, descrição ou número..."
                         autocomplete="off"
@@ -91,6 +105,12 @@
                     >
                         Digite para pesquisar.
                     </div>
+
+                    <p class="feux-notas-busca-teclado small mb-0">
+                        <i class="bi bi-keyboard" aria-hidden="true"></i>
+                        No teclado: <kbd>↓</kbd> para ir aos resultados, <kbd>↑</kbd>/<kbd>↓</kbd>
+                        para navegar, <kbd>Enter</kbd> para selecionar. Também é possível tocar nos resultados.
+                    </p>
 
                     {{-- AÇÃO RÁPIDA PARA O.S. --}}
 
@@ -128,9 +148,16 @@
                      RESULTADOS
                 ====================================================== --}}
 
+                <div class="feux-notas-resultados-cabecalho">
+                    <strong><i class="bi bi-ui-checks" aria-hidden="true"></i> Resultados da pesquisa</strong>
+                    <span class="small">Selecione um resultado para preencher o item</span>
+                </div>
+
                 <div
                     id="builder_resultados"
-                    class="list-group mb-4"
+                    class="list-group mb-4 feux-notas-resultados-lote05"
+                    role="group"
+                    aria-label="Resultados da pesquisa de produtos ou ordens de serviço"
                     aria-live="polite"
                 ></div>
 
