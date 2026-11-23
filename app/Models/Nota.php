@@ -86,10 +86,21 @@ class Nota extends Model
         );
     }
 
+    public function anexosVinculos(): HasMany
+    {
+        return $this->hasMany(AnexoVinculo::class, 'vinculavel_id')
+            ->where('vinculavel_type', self::class);
+    }
+
     public function scopeFiltro(
         Builder $query,
         array $filters
     ): Builder {
+        // Busca exata pelo codigo da Nota (inclui status historico).
+        if (!empty($filters['id'])) {
+            $query->whereKey((int) $filters['id']);
+        }
+
         /*
          * =====================================================
          * CLIENTE
