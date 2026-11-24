@@ -37,6 +37,9 @@ test -f "$PROJECT_DIR/.env"
 test -d "$PROJECT_DIR/storage"
 test -f "$NOVO"
 test -f "$RELEASE/database_release.sh"
+test -f "$RELEASE/backup_release.sh"
+test -f "$RELEASE/storage_release.sh"
+test -f "$RELEASE/mysql_restore_check.sh"
 docker network inspect sos-mecanica_sail >/dev/null
 test "$(docker inspect -f '{{.State.Health.Status}}' sos-mecanica-mysql-1)" = healthy
 test "$(docker inspect -f '{{.State.Health.Status}}' sosmecanica-prod-web-1)" = healthy
@@ -57,8 +60,8 @@ cp -p "$COMPOSE_ANTIGO" "$ROLLBACK"
 SOS_IMAGE_TAG="$TAG" docker compose --project-directory "$PROJECT_DIR" \
   -f "$NOVO" config --quiet
 
-echo '========== 2. BACKUP VALIDADO ANTES DO CORTE =========='
-bash "$RELEASE/database_release.sh" backup "$TAG"
+echo '========== 2. BACKUP + RESTAURACAO DE ENSAIO ANTES DO CORTE =========='
+bash "$RELEASE/backup_release.sh" "$TAG"
 
 echo '========== 3. BAIXANDO SOMENTE CAMADAS NOVAS =========='
 # O registro pode ser privado. Credencial e mantida apenas ate o final do script.

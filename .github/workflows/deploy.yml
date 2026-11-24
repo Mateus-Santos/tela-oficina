@@ -15,6 +15,12 @@ on:
         options:
           - validar
           - publicar
+          - diagnosticar
+      conta_id:
+        description: 'Somente modo diagnosticar: ID tecnico da conta (0 = resumo sem valores individuais)'
+        required: false
+        type: string
+        default: '0'
       confirmacao:
         description: 'Exclusivo de publicar: digite PUBLICAR apos homologacao e backup'
         required: false
@@ -67,8 +73,12 @@ jobs:
           persist-credentials: false
       - name: Scripts e testes de deploy (Docker simulado)
         run: |
-          bash -n scripts/deploy.sh scripts/production/deploy_release.sh scripts/production/database_release.sh
+          bash -n scripts/deploy.sh scripts/production/deploy_release.sh scripts/production/database_release.sh \
+            scripts/production/backup_release.sh scripts/production/storage_release.sh \
+            scripts/production/mysql_restore_check.sh
           bash tests/deploy/test_deploy.sh
+          BACKUP_TEST_MYSQL=1 bash tests/deploy/test_backup_gate.sh
+          bash -n scripts/production/diagnosticar_conta_pagar_readonly.sh
       - name: Testes de performance, layout e assets
         run: |
           python3 -m unittest discover -s tests/performance -p 'test_*.py' -v
@@ -145,6 +155,62 @@ jobs:
             exit 1
           }
 
+  diagnostico_financeiro:
+    name: Diagnostico read-only de contas e parcelas na VPS
+    if: github.event_name == 'workflow_dispatch' && inputs.modo == 'diagnosticar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    environment:
+      name: production
+    env:
+      REMOTE_USER: ${{ vars.REMOTE_USER }}
+      REMOTE_HOST: ${{ vars.REMOTE_HOST }}
+      REMOTE_PORT: ${{ vars.REMOTE_PORT }}
+      CONTA_ID: ${{ inputs.conta_id || '0' }}
+    steps:
+      - name: Conferir autorizacao e parametros de diagnostico
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          [[ "$GITHUB_REF" == refs/heads/master ]]
+          [[ "$CONTA_ID" =~ ^[0-9]{1,10}$ ]]
+          [[ "$REMOTE_PORT" =~ ^[0-9]+$ ]]
+          [[ -n "$REMOTE_USER" && -n "$REMOTE_HOST" ]]
+      - name: Checkout somente leitura
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Verificar contrato do diagnostico
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          bash -n scripts/production/diagnosticar_conta_pagar_readonly.sh
+          test -s scripts/production/diagnosticar_conta_pagar_readonly.sh
+      - name: Configurar chave SSH existente
+        uses: webfactory/ssh-agent@v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
+      - name: Conferir identidade SSH conhecida
+        env:
+          HOST_KEY: ${{ secrets.SERVER_SSH_HOST_KEY }}
+        run: |
+          set -Eeuo pipefail
+          test -n "$HOST_KEY"
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$HOST_KEY" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/known_hosts"
+      - name: Consultar somente integridade e tipos de erro
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          ssh -T -p "$REMOTE_PORT" \
+            -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            "$REMOTE_USER@$REMOTE_HOST" \
+            "bash -s -- '$CONTA_ID'" < scripts/production/diagnosticar_conta_pagar_readonly.sh
+
   release:
     permissions:
       contents: read
@@ -199,8 +265,12 @@ jobs:
           set -euo pipefail
           bash -n scripts/production/deploy_release.sh
           bash -n scripts/production/database_release.sh
+          bash -n scripts/production/backup_release.sh
+          bash -n scripts/production/storage_release.sh
+          bash -n scripts/production/mysql_restore_check.sh
           bash -n scripts/deploy.sh
           test -f tests/deploy/test_deploy.sh
+          test -f tests/deploy/test_backup_gate.sh
           test -f compose.prod.yml
           test -f docker/production/Dockerfile.app
           test -f docker/production/Dockerfile.php-base
@@ -215,7 +285,14 @@ jobs:
 
       - name: Testar deploy sem acesso a producao
         if: inputs.modo == 'validar'
-        run: bash tests/deploy/test_deploy.sh
+        run: |
+          set -Eeuo pipefail
+          bash tests/deploy/test_deploy.sh
+          # O runner do workflow_dispatch nao possui service MySQL pre-carregado.
+          # Baixar somente no runner de CI; a VPS continua com pull automatico bloqueado.
+          docker pull mysql:8.4
+          docker image inspect mysql:8.4 >/dev/null
+          BACKUP_TEST_MYSQL=1 bash tests/deploy/test_backup_gate.sh
 
       - name: Configurar Docker Buildx
         if: inputs.modo == 'validar'
@@ -366,6 +443,9 @@ jobs:
             -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
             compose.prod.yml scripts/production/deploy_release.sh \
             scripts/production/database_release.sh \
+            scripts/production/backup_release.sh \
+            scripts/production/storage_release.sh \
+            scripts/production/mysql_restore_check.sh \
             "$REMOTE_USER@$REMOTE_HOST:$DEPLOY_DIR/releases/$TAG/"
 
       - name: Publicar imagens existentes na VPS com rollback
