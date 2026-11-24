@@ -1,4 +1,4 @@
-<div>
+<div class="feux-seletor-cliente-veiculo">
 
     {{-- CLIENTE --}}
     <div class="row mb-4">

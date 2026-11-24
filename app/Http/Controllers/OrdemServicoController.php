@@ -7,6 +7,9 @@ use App\Actions\OrdemServico\CriarOrdemServico;
 use App\Actions\OrdemServico\FinalizarOrdemServico;
 use App\Models\Etapa;
 use App\Models\OrdemServico;
+use App\Models\NotasItem;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use App\Models\SetorServico;
 use Illuminate\Http\Request;
 use InvalidArgumentException;
@@ -38,11 +41,8 @@ class OrdemServicoController extends Controller
                     $request->input('status')
                 );
             }
-        } else {
-            $query->where(
-                'status',
-                'aberta'
-            );
+        } elseif (!$request->filled('id')) {
+            $query->where('status', 'aberta');
         }
 
         if ($request->filled('etapa_id')) {
@@ -227,16 +227,58 @@ class OrdemServicoController extends Controller
             );
     }
 
+    // U03: somente OS aberta e sem vinculo com Nota pode ser editada.
     public function edit(string $id)
     {
-        //
+        $ordemServico = OrdemServico::with([
+            'cliente.pessoa', 'veiculosCliente.veiculo', 'setorServico',
+        ])->findOrFail($id);
+        if ($ordemServico->status !== 'aberta' || $this->possuiNota($ordemServico)) {
+            return redirect()->route('ordemservicos.index')->with(
+                'error', 'Esta OS esta encerrada ou vinculada a Nota e nao pode ser editada.'
+            );
+        }
+        $setorservicos = SetorServico::orderBy('setor')->get();
+        return view('ordemservico.editar_os', compact('ordemServico', 'setorservicos'));
     }
 
-    public function update(
-        Request $request,
-        string $id
-    ) {
-        //
+    public function update(Request $request, string $id)
+    {
+        $dados = $request->validate([
+            'setor_servico_id' => ['required', 'integer', 'exists:setor_servicos,id'],
+            'descricao' => ['required', 'string', 'max:250'],
+            'valor' => ['required', 'string', 'regex:/^\d{1,9}(?:[,.]\d{1,2})?$/'],
+        ]);
+        DB::transaction(function () use ($id, $dados) {
+            $os = OrdemServico::query()->lockForUpdate()->findOrFail($id);
+            if ($os->status !== 'aberta' || $this->possuiNota($os)) {
+                throw ValidationException::withMessages([
+                    'os' => 'OS encerrada ou vinculada a Nota: edicao bloqueada.',
+                ]);
+            }
+            // Cliente, veiculo, etapa, status e historico nao sao editaveis aqui.
+            $os->update([
+                'setor_servico_id' => (int) $dados['setor_servico_id'],
+                'descricao' => $dados['descricao'],
+                'valor' => str_replace(',', '.', $dados['valor']),
+            ]);
+        });
+        return redirect()->route('ordemservicos.index')->with(
+            'success', 'Ordem de servico atualizada com seguranca.'
+        );
+    }
+
+    private function possuiNota(OrdemServico $os): bool
+    {
+        return NotasItem::query()
+            ->where('itemable_type', OrdemServico::class)
+            ->where('itemable_id', $os->id)->exists();
+    }
+
+    public function anexos(OrdemServico $ordemservico)
+    {
+        $ordemservico->load('anexosVinculos.anexo');
+        return view('ordemservico.anexos', compact('ordemservico'));
     }
 
     public function finalizar(
