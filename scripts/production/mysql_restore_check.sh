@@ -31,14 +31,34 @@ docker run -d --rm --name "$NOME" --network none --cpus=1 --memory=1024m \
   -e "MYSQL_ROOT_PASSWORD=$PASSWORD" -e MYSQL_DATABASE=jaime_automotivo \
   mysql:8.4 >/dev/null
 INICIOU=1
+# A imagem oficial mysql:8.4 inicia um mysqld temporario para bootstrap.
+# Um SELECT 1 via socket pode funcionar nesse mysqld, mas ele sera desligado
+# antes da subida do servidor definitivo. A importacao NAO pode ocorrer antes
+# de o entrypoint terminar o bootstrap e de o servidor final responder.
 PRONTO=0
+BOOTSTRAP_CONCLUIDO=0
 for (( tentativa=1; tentativa<=90; tentativa++ )); do
-  if docker exec -e "MYSQL_PWD=$PASSWORD" "$NOME" mysql -uroot -N -e 'SELECT 1' >/dev/null 2>&1; then
+  if docker logs "$NOME" 2>&1 | grep -Fq 'MySQL init process done. Ready for start up.'; then
+    BOOTSTRAP_CONCLUIDO=1
+  fi
+  if (( BOOTSTRAP_CONCLUIDO == 1 )) && \
+     docker exec -e "MYSQL_PWD=$PASSWORD" "$NOME" mysql -uroot -N -e 'SELECT 1' >/dev/null 2>&1; then
     PRONTO=1; break
+  fi
+  # Se a instancia realmente morreu, nao aguardar o timeout inteiro.
+  if [[ "$(docker inspect -f '{{.State.Running}}' "$NOME")" != true ]]; then
+    echo 'MySQL 8.4 descartavel encerrou durante inicializacao.' >&2
+    docker logs "$NOME" >&2 || true
+    exit 1
   fi
   sleep 2
 done
-(( PRONTO == 1 )) || { echo 'MySQL temporario nao inicializou.' >&2; exit 1; }
+(( PRONTO == 1 )) || {
+  echo 'MySQL 8.4 definitivo nao inicializou no prazo: ensaio bloqueado.' >&2
+  docker logs "$NOME" >&2 || true
+  exit 1
+}
+echo 'MySQL 8.4 de ensaio: bootstrap encerrado e servidor definitivo pronto.'
 # Erro do gzip OU do mysql reprova o gate (pipefail). 10min maximo de importacao.
 gzip -cd -- "$DUMP" | timeout 600s docker exec -i -e "MYSQL_PWD=$PASSWORD" "$NOME" \
   mysql -uroot --default-character-set=utf8mb4 jaime_automotivo >/dev/null

@@ -14,6 +14,8 @@ grep -Fq 'storage_release.sh' .github/workflows/deploy.yml
 grep -Fq 'mysql_restore_check.sh' .github/workflows/deploy.yml
 grep -Fq 'bash tests/deploy/test_backup_gate.sh' .github/workflows/deploy.yml
 grep -Fq -- '--network none' scripts/production/mysql_restore_check.sh
+# Regressao: nao considerar pronto o MySQL temporario do bootstrap.
+grep -Fq 'MySQL init process done. Ready for start up.' scripts/production/mysql_restore_check.sh
 grep -Fq -- 'gzip -cd -- "$DUMP" | timeout 600s docker exec -i' scripts/production/mysql_restore_check.sh
 
 TEMP="$(mktemp -d)"
