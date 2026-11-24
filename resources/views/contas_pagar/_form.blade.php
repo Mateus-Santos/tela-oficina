@@ -226,6 +226,7 @@
                             <div class="col-12 col-md-7">
                                 <label for="compras-vinculadas-busca" class="form-label">Buscar compra, NF ou fornecedor</label>
                                 <input id="compras-vinculadas-busca" type="search" class="form-control"
+                                    aria-describedby="compras-vinculadas-resultado"
                                     autocomplete="off" placeholder="Ex.: 001245, NF-123 ou fornecedor">
                             </div>
                             <div class="col-8 col-md-3">
@@ -243,75 +244,85 @@
                             <div class="col-12 small text-muted" id="compras-vinculadas-resultado"
                                 aria-live="polite" role="status"></div>
                         </div>
-                        <div class="row g-2">
-                            @foreach ($comprasDisponiveis as $compraDisponivel)
-                                @php
-                                    $selecionada = in_array(
-                                        (int) $compraDisponivel->id,
-                                        $comprasSelecionadas,
-                                        true
-                                    );
-                                @endphp
+                        <div
+                            id="compras-vinculadas-lista"
+                            class="border rounded p-2"
+                            role="region"
+                            aria-label="Compras disponíveis para vincular (lista com rolagem)"
+                            tabindex="0"
+                            style="max-height: min(55vh, 24rem); overflow-y: auto; overscroll-behavior: contain;"
+                        >
+                            <div class="row g-2">
+                                @foreach ($comprasDisponiveis as $compraDisponivel)
+                                    @php
+                                        $selecionada = in_array(
+                                            (int) $compraDisponivel->id,
+                                            $comprasSelecionadas,
+                                            true
+                                        );
+                                    @endphp
 
-                                <div
-                                    class="col-12 col-lg-6"
-                                    data-compra-item
-                                >
-                                    <label
-                                        class="border rounded p-3 h-100 d-block"
-                                        style="cursor: pointer;"
+                                    <div
+                                        class="col-12 col-lg-6"
+                                        data-compra-item
+                                        data-compra-busca="{{ $compraDisponivel->id }} {{ str_pad($compraDisponivel->id, 6, '0', STR_PAD_LEFT) }} {{ $compraDisponivel->numero_nf ?? '' }} {{ $compraDisponivel->fornecedor?->nome ?? '' }}"
                                     >
-                                        <div
-                                            class="d-flex align-items-start gap-3"
+                                        <label
+                                            class="border rounded p-3 h-100 d-block"
+                                            style="cursor: pointer;"
                                         >
-                                            <input
-                                                type="checkbox"
-                                                name="compras[]"
-                                                value="{{ $compraDisponivel->id }}"
-                                                class="form-check-input mt-1"
-                                                data-compra-checkbox
-                                                data-fornecedor-id="{{ $compraDisponivel->fornecedor_id }}"
-                                                data-valor="{{ number_format((float) $compraDisponivel->valor_total, 2, '.', '') }}"
-                                                @checked($selecionada)
+                                            <div
+                                                class="d-flex align-items-start gap-3"
                                             >
-
-                                            <div class="flex-grow-1">
-                                                <div
-                                                    class="d-flex justify-content-between gap-3"
+                                                <input
+                                                    type="checkbox"
+                                                    name="compras[]"
+                                                    value="{{ $compraDisponivel->id }}"
+                                                    class="form-check-input mt-1"
+                                                    data-compra-checkbox
+                                                    data-fornecedor-id="{{ $compraDisponivel->fornecedor_id }}"
+                                                    data-valor="{{ number_format((float) $compraDisponivel->valor_total, 2, '.', '') }}"
+                                                    @checked($selecionada)
                                                 >
-                                                    <div>
-                                                        <div class="fw-semibold">
-                                                            Compra
-                                                            #{{ str_pad($compraDisponivel->id, 6, '0', STR_PAD_LEFT) }}
+
+                                                <div class="flex-grow-1">
+                                                    <div
+                                                        class="d-flex justify-content-between gap-3"
+                                                    >
+                                                        <div>
+                                                            <div class="fw-semibold">
+                                                                Compra
+                                                                #{{ str_pad($compraDisponivel->id, 6, '0', STR_PAD_LEFT) }}
+                                                            </div>
+
+                                                            <div class="small text-muted">
+                                                                {{ $compraDisponivel->fornecedor?->nome ?? 'Fornecedor não informado' }}
+                                                            </div>
                                                         </div>
 
-                                                        <div class="small text-muted">
-                                                            {{ $compraDisponivel->fornecedor?->nome ?? 'Fornecedor não informado' }}
+                                                        <div class="text-end">
+                                                            <div class="fw-semibold">
+                                                                R$
+                                                                {{ number_format((float) $compraDisponivel->valor_total, 2, ',', '.') }}
+                                                            </div>
                                                         </div>
                                                     </div>
 
-                                                    <div class="text-end">
-                                                        <div class="fw-semibold">
-                                                            R$
-                                                            {{ number_format((float) $compraDisponivel->valor_total, 2, ',', '.') }}
-                                                        </div>
+                                                    <div class="small text-muted mt-2">
+                                                        NF
+                                                        {{ $compraDisponivel->numero_nf ?: 'não informada' }}
+
+                                                        <span class="mx-1">•</span>
+
+                                                        Emissão:
+                                                        {{ $compraDisponivel->data_emissao?->format('d/m/Y') ?? 'não informada' }}
                                                     </div>
-                                                </div>
-
-                                                <div class="small text-muted mt-2">
-                                                    NF
-                                                    {{ $compraDisponivel->numero_nf ?: 'não informada' }}
-
-                                                    <span class="mx-1">•</span>
-
-                                                    Emissão:
-                                                    {{ $compraDisponivel->data_emissao?->format('d/m/Y') ?? 'não informada' }}
                                                 </div>
                                             </div>
-                                        </div>
-                                    </label>
-                                </div>
-                            @endforeach
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
                         </div>
 
                         <div
@@ -598,7 +609,7 @@ document.addEventListener('DOMContentLoaded', function () {
         checkboxes.forEach(function (checkbox) {
             const item = checkbox.closest('[data-compra-item]');
             if (!item) return;
-            const corresponde = normalizarBusca(item.textContent).includes(termo);
+            const corresponde = normalizarBusca(item.dataset.compraBusca || item.textContent).includes(termo);
             const correspondeSelecao = modo === 'todas'
                 || (modo === 'selecionadas' && checkbox.checked)
                 || (modo === 'nao-selecionadas' && !checkbox.checked);
