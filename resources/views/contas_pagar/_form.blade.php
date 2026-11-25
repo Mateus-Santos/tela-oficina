@@ -260,6 +260,10 @@
                                             $comprasSelecionadas,
                                             true
                                         );
+                                        $valorLiquidoDisponivel = max(0, round(
+                                            (float) $compraDisponivel->valor_total
+                                            - (float) ($compraDisponivel->d04_total_abatimento ?? 0), 2
+                                        ));
                                     @endphp
 
                                     <div
@@ -281,7 +285,7 @@
                                                     class="form-check-input mt-1"
                                                     data-compra-checkbox
                                                     data-fornecedor-id="{{ $compraDisponivel->fornecedor_id }}"
-                                                    data-valor="{{ number_format((float) $compraDisponivel->valor_total, 2, '.', '') }}"
+                                                    data-valor="{{ number_format($valorLiquidoDisponivel, 2, '.', '') }}"
                                                     @checked($selecionada)
                                                 >
 
@@ -303,7 +307,7 @@
                                                         <div class="text-end">
                                                             <div class="fw-semibold">
                                                                 R$
-                                                                {{ number_format((float) $compraDisponivel->valor_total, 2, ',', '.') }}
+                                                                {{ number_format($valorLiquidoDisponivel, 2, ',', '.') }}
                                                             </div>
                                                         </div>
                                                     </div>

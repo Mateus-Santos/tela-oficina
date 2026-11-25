@@ -13,6 +13,7 @@ class CompraDevolucaoItem extends Model
     protected $fillable = [
         'compra_devolucao_id', 'compra_item_id', 'produto_id',
         'quantidade', 'movimentacao_estoque_id',
+        'modalidade', 'valor_abatimento',
     ];
 
     protected $casts = ['quantidade' => 'decimal:3'];
