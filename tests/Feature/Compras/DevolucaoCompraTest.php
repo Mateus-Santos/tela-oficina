@@ -201,21 +201,33 @@ class DevolucaoCompraTest extends TestCase
         $this->assertDatabaseCount('compra_devolucoes', 0);
     }
 
-    public function test_estorno_integral_e_financeiro_bloqueados_apos_devolucao(): void
+    public function test_estorno_integral_bloqueado_mas_financeiro_original_permitido_apos_devolucao_operacional(): void
     {
-        [$compra, $item] = $this->compraComEstoque();
-        app(RegistrarDevolucaoCompra::class)->execute($compra, $this->dados($item), null);
+        [$compra, $item, $produto] = $this->compraComEstoque();
+        $devolucao = app(RegistrarDevolucaoCompra::class)->execute($compra, $this->dados($item), null);
+        $this->assertSame('operacional', $devolucao->fresh()->modalidade);
+        $this->assertSame('nao_aplicavel', $devolucao->fresh()->situacao_financeira);
+
         try {
             app(EstornarCompra::class)->execute($compra);
             $this->fail('Estorno integral deveria ser bloqueado.');
         } catch (InvalidArgumentException $e) {
             $this->assertStringContainsString('devolucao', $e->getMessage());
         }
-        $this->expectException(InvalidArgumentException::class);
-        app(GerarContaPagarCompra::class)->execute($compra, [[
+
+        // D01A altera apenas estoque: nao abate nem bloqueia o valor fiscal original.
+        $this->assertSame(500.0, (float) $compra->fresh()->valor_total);
+        $this->assertSame(13.0, (float) $produto->fresh()->quantidade);
+        $conta = app(GerarContaPagarCompra::class)->execute($compra, [[
             'numero' => 1, 'valor' => 500,
             'data_vencimento' => now()->addMonth()->toDateString(),
         ]]);
+        $this->assertSame(500.0, (float) $conta->fresh()->valor);
+        $this->assertSame(500.0, (float) DB::table('compra_conta_pagar')
+            ->where('compra_id', $compra->id)->value('valor_vinculado'));
+        $this->assertDatabaseCount('compra_devolucoes', 1);
+        $this->assertDatabaseCount('movimentacao_estoques', 2);
+        $this->assertSame(Compra::STATUS_APROVADA, $compra->fresh()->status);
     }
 
     public function test_usuario_cliente_nao_acessa_formulario_nem_registra_devolucao(): void

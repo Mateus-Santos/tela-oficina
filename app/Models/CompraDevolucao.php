@@ -13,6 +13,7 @@ class CompraDevolucao extends Model
     protected $fillable = [
         'compra_id', 'usuario_id', 'operacao_uuid', 'referencia_documento',
         'chave_nfe', 'data_documento', 'motivo', 'status',
+        'modalidade', 'situacao_financeira', 'valor_abatimento', 'assinatura_operacao',
     ];
 
     protected $casts = ['data_documento' => 'date'];
