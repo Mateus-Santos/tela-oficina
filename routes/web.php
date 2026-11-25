@@ -653,6 +653,14 @@ Route::middleware([
             'compras.estornar'
         );
 
+        // D04: devolucao documentada apos aprovacao, com abatimento auditavel.
+        Route::get('compras/{compra}/devolucoes/documental',
+            [\App\Http\Controllers\CompraDevolucaoDocumentalController::class, 'create']
+        )->name('compras.devolucoes.documental.create');
+        Route::post('compras/{compra}/devolucoes/documental',
+            [\App\Http\Controllers\CompraDevolucaoDocumentalController::class, 'store']
+        )->name('compras.devolucoes.documental.store');
+
         // D01A: devolucao operacional de compras (grupo ADMIN existente).
         Route::get('compras/{compra}/devolucoes/nova',
             [\App\Http\Controllers\CompraDevolucaoController::class, 'create']

@@ -88,9 +88,10 @@ class VincularComprasContaPagar
                 foreach ($ids as $id) {
                     $compra = $compras->get($id);
 
-                    if ($compra->devolucoes()->exists()) {
+                    $valorDevido = app(\App\Services\Compra\ValorDevidoCompra::class);
+                    if ($valorDevido->precisaConciliacao($compra)) {
                         throw new InvalidArgumentException(
-                            'Compra possui devolucao. Aguarde conciliacao D03 antes de vincular a conta a pagar.'
+                            'Compra possui devolucao documental pendente ou abatimento D03 anterior: conciliacao financeira obrigatoria.'
                         );
                     }
 
@@ -99,9 +100,9 @@ class VincularComprasContaPagar
                             'Somente compras aprovadas podem ser vinculadas a uma conta a pagar.'
                         );
                     }
-                    if ($compra->possuiDivergenciaConferencia()) {
+                    if (!$valorDevido->divergenciaCoberta($compra)) {
                         throw new InvalidArgumentException(
-                            'Compra com divergencia. Conciliacao financeira D03 obrigatoria antes de vincular conta a pagar.'
+                            'Divergencia da compra sem devolucao documental conciliada; regularize antes do vinculo.'
                         );
                     }
 
@@ -117,11 +118,7 @@ class VincularComprasContaPagar
                         );
                     }
 
-                    $valorCompra =
-                        round(
-                            (float) $compra->valor_total,
-                            2
-                        );
+                    $valorCompra = $valorDevido->valorLiquidoCentavos($compra) / 100;
 
                     if ($valorCompra <= 0) {
                         throw new InvalidArgumentException(
@@ -200,10 +197,8 @@ class VincularComprasContaPagar
                     $compra = $compras->get($id);
 
                     $dadosSync[$id] = [
-                        'valor_vinculado' => round(
-                            (float) $compra->valor_total,
-                            2
-                        ),
+                        'valor_vinculado' => app(\App\Services\Compra\ValorDevidoCompra::class)
+                            ->valorLiquidoCentavos($compra) / 100,
                     ];
                 }
 

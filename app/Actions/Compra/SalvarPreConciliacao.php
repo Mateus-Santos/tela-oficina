@@ -17,6 +17,12 @@ class SalvarPreConciliacao
     {
         return DB::transaction(function () use ($compra, $dados, $usuarioId): CompraPreConciliacao {
             $compra = Compra::query()->lockForUpdate()->findOrFail($compra->id);
+            if ($compra->devolucoes()->where('modalidade', 'documental')
+                ->where('situacao_financeira', 'aplicada')->exists()) {
+                throw new InvalidArgumentException(
+                    'Compra ja possui abatimento documental D04; conciliacao D03 automatica bloqueada contra duplicidade.'
+                );
+            }
             if (!$compra->estaAprovada()) {
                 throw new InvalidArgumentException('Somente compras aprovadas admitem pre-conciliacao.');
             }
