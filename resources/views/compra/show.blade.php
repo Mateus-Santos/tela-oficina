@@ -799,9 +799,18 @@
 
                             <tr>
                                 <td>
-                                    <strong>
-                                        {{ $item->produto->nome ?? 'Produto não encontrado' }}
-                                    </strong>
+                                    @if($item->produto)
+                                        <a href="{{ route('estoque.index', ['produto_id' => $item->produto->id]) }}"
+                                           class="fw-bold" title="Ver estoque do produto">
+                                            {{ $item->produto->nome }}
+                                        </a>
+                                        <div class="small mt-1 d-flex gap-2 flex-wrap">
+                                            <a href="{{ route('estoque.index', ['produto_id' => $item->produto->id]) }}">Ver estoque</a>
+                                            <a href="{{ route('estoque.movimentacoes.index', ['produto_id' => $item->produto->id]) }}">Movimentações</a>
+                                        </div>
+                                    @else
+                                        <strong>Produto não encontrado</strong>
+                                    @endif
 
                                     @if ($item->produto?->codigo)
                                         <br>

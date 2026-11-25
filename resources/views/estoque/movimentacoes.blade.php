@@ -12,6 +12,13 @@
         create-icon="bi-boxes"
     />
 
+    @if(request()->filled('produto_id'))
+        <div class="alert alert-info d-flex align-items-center justify-content-between gap-2 flex-wrap" role="status">
+            <span>Movimentações do produto #{{ request('produto_id') }}</span>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ route('estoque.index', ['produto_id' => request('produto_id')]) }}">Voltar ao estoque deste produto</a>
+        </div>
+    @endif
+
     <x-filtros-container
         action="{{ route('estoque.movimentacoes.index') }}"
         id="filtros-movimentacoes"
@@ -24,6 +31,9 @@
     >
 
         <x-slot:primary>
+            @if(request()->filled('produto_id'))
+                <input type="hidden" name="produto_id" value="{{ request('produto_id') }}">
+            @endif
 
             <div class="row g-3 align-items-end">
 
@@ -78,6 +88,9 @@
         </x-slot:primary>
 
         <x-slot:advanced>
+            @if(request()->filled('produto_id'))
+                <input type="hidden" name="produto_id" value="{{ request('produto_id') }}">
+            @endif
 
             <div class="row g-3">
 
@@ -538,42 +551,41 @@
 
                             <td>
 
-                                @if($origem instanceof \App\Models\NotasItem)
-
-                                    <div class="fw-semibold">
-
-                                        <i class="bi bi-receipt me-1"></i>
-
-                                        Nota #{{ $origem->nota_id }}
-
-                                    </div>
-
-                                    <div class="small text-muted">
-                                        Item #{{ $origem->id }}
-                                    </div>
-
+                                {{-- O ID mostrado e o da Compra/Nota; nunca o ID tecnico do item. --}}
+                                @if($origem instanceof \App\Models\CompraItem)
+                                    @if($origem->compra)
+                                        <a class="fw-semibold" href="{{ route('compras.show', $origem->compra->id) }}">
+                                            <i class="bi bi-cart-check me-1"></i>Compra #{{ $origem->compra->id }}
+                                        </a>
+                                    @else
+                                        <span class="text-muted">Compra indisponível</span>
+                                    @endif
+                                @elseif($origem instanceof \App\Models\CompraDevolucaoItem)
+                                    @if($origem->devolucao?->compra)
+                                        <a class="fw-semibold" href="{{ route('compras.show', $origem->devolucao->compra->id) }}">
+                                            <i class="bi bi-arrow-return-left me-1"></i>Devolução da Compra #{{ $origem->devolucao->compra->id }}
+                                        </a>
+                                    @else
+                                        <span class="text-muted">Compra da devolução indisponível</span>
+                                    @endif
+                                @elseif($origem instanceof \App\Models\NotasItem)
+                                    @if($origem->nota)
+                                        <a class="fw-semibold" href="{{ route('notas.show', $origem->nota->id) }}">
+                                            <i class="bi bi-receipt me-1"></i>Nota #{{ $origem->nota->id }}
+                                        </a>
+                                    @else
+                                        <span class="text-muted">Nota indisponível</span>
+                                    @endif
+                                @elseif($origem instanceof \App\Models\Compra)
+                                    <a class="fw-semibold" href="{{ route('compras.show', $origem->id) }}">Compra #{{ $origem->id }}</a>
+                                @elseif($origem instanceof \App\Models\Nota)
+                                    <a class="fw-semibold" href="{{ route('notas.show', $origem->id) }}">Nota #{{ $origem->id }}</a>
                                 @elseif($origem)
-
-                                    <div class="fw-semibold">
-
-                                        {{ class_basename(
-                                            $movimentacao->origem_type
-                                        ) }}
-
-                                        #{{ $movimentacao->origem_id }}
-
-                                    </div>
-
+                                    <span class="text-muted">{{ class_basename($origem) }} #{{ $origem->id }}</span>
+                                @elseif($movimentacao->origem_type && $movimentacao->origem_id)
+                                    <span class="text-muted">Registro de origem indisponível</span>
                                 @else
-
-                                    <span class="text-muted">
-
-                                        <i class="bi bi-person-gear me-1"></i>
-
-                                        Manual
-
-                                    </span>
-
+                                    <span class="text-muted"><i class="bi bi-person-gear me-1"></i>Manual</span>
                                 @endif
 
                                 @if($movimentacao->observacoes)
