@@ -26,6 +26,7 @@ class NavegacaoOrigensEstoqueTest extends TestCase
             'nome' => $nome, 'descricao' => $nome,
             'quantidade' => '10.000', 'estoque_minimo' => '1.000',
             'preco_uni' => '12.00', 'status' => true,
+            'codigo_fabricante' => 'UX-NAV-' . substr(hash('sha256', $nome), 0, 20),
         ]);
     }
 
