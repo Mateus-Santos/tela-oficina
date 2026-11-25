@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Etapas\RealocarVinculosEtapa;
 use App\Models\Etapa;
 use App\Models\Nota;
 use App\Models\OrdemServico;
@@ -23,6 +24,7 @@ class EtapaController extends Controller
 
         $etapas =
             Etapa::query()
+                ->withCount(['notas', 'ordensServico'])
                 ->orderBy('ordem')
                 ->orderBy('id')
                 ->get();
@@ -152,12 +154,14 @@ class EtapaController extends Controller
                 ],
             ]);
 
-        DB::transaction(
+        $resultado = DB::transaction(
             function () use (
                 $request,
                 $etapa,
                 $dados
             ) {
+                // Serializar com movimentacoes de notas/OS em andamento.
+                $etapa = Etapa::query()->lockForUpdate()->findOrFail($etapa->id);
                 if (
                     in_array(
                         $etapa->tipo,
@@ -181,7 +185,7 @@ class EtapaController extends Controller
                         'ativo' => true,
                     ]);
 
-                    return;
+                    return ['notas' => 0, 'os' => 0];
                 }
 
                 $aplicaNota =
@@ -202,63 +206,19 @@ class EtapaController extends Controller
                 if (
                     ! $aplicaNota
                     && ! $aplicaOrdemServico
+                    && $ativo
                 ) {
                     throw ValidationException::withMessages([
-                        'aplica_nota' => 'A etapa deve ser utilizada em Nota, Ordem de Serviço ou em ambos.',
+                        'aplica_nota' => 'Uma etapa ativa precisa pertencer a Notas, O.S. ou ambos os fluxos.',
                     ]);
                 }
 
-                if (
-                    ! $aplicaNota
-                    && $etapa
-                        ->aplica_nota
-                ) {
-                    $possuiNotasAbertas =
-                        Nota::query()
-                            ->where(
-                                'etapa_id',
-                                $etapa->id
-                            )
-                            ->where(
-                                'status',
-                                'Aberto'
-                            )
-                            ->exists();
-
-                    if (
-                        $possuiNotasAbertas
-                    ) {
-                        throw ValidationException::withMessages([
-                            'aplica_nota' => 'Esta etapa possui Notas abertas e não pode ser removida do fluxo de Notas.',
-                        ]);
-                    }
-                }
-
-                if (
-                    ! $aplicaOrdemServico
-                    && $etapa
-                        ->aplica_ordem_servico
-                ) {
-                    $possuiOrdensAbertas =
-                        OrdemServico::query()
-                            ->where(
-                                'etapa_id',
-                                $etapa->id
-                            )
-                            ->where(
-                                'status',
-                                'aberta'
-                            )
-                            ->exists();
-
-                    if (
-                        $possuiOrdensAbertas
-                    ) {
-                        throw ValidationException::withMessages([
-                            'aplica_ordem_servico' => 'Esta etapa possui Ordens de Serviço abertas e não pode ser removida do fluxo de O.S.',
-                        ]);
-                    }
-                }
+                $movidos = app(RealocarVinculosEtapa::class)->execute(
+                    $etapa,
+                    ! $ativo || ! $aplicaNota,
+                    ! $ativo || ! $aplicaOrdemServico,
+                    $request->user()?->id
+                );
 
                 $etapa->update([
                     'nome' => $dados['nome'],
@@ -276,15 +236,44 @@ class EtapaController extends Controller
 
                     'ativo' => $ativo,
                 ]);
-            }
+
+                return $movidos;
+            }, 3
         );
 
         return redirect()
             ->route('etapas.index')
             ->with(
                 'success',
-                'Etapa atualizada com sucesso.'
+                sprintf('Etapa atualizada. %d nota(s) e %d O.S. realocada(s) para a etapa inicial.', $resultado['notas'], $resultado['os'])
             );
+    }
+
+    public function destroy(Request $request, Etapa $etapa): RedirectResponse
+    {
+        $this->garantirAcesso($request);
+
+        DB::transaction(function () use ($etapa) {
+            $etapa = Etapa::query()->lockForUpdate()->findOrFail($etapa->id);
+
+            if ($etapa->tipo !== 'normal' || $etapa->ativo) {
+                throw ValidationException::withMessages([
+                    'etapa' => 'Somente etapas normais e inativas podem ser excluidas.',
+                ]);
+            }
+
+            if ($etapa->notas()->exists() || $etapa->ordensServico()->exists()) {
+                throw ValidationException::withMessages([
+                    'etapa' => 'Exclusao bloqueada: etapa ainda possui Notas ou O.S. vinculadas.',
+                ]);
+            }
+
+            // O historico guarda nomes, e suas FKs de etapa usam nullOnDelete.
+            $etapa->delete();
+        }, 3);
+
+        return redirect()->route('etapas.index')
+            ->with('success', 'Etapa inativa excluida. Historicos preservados.');
     }
 
     private function gerarSlugUnico(
