@@ -258,9 +258,8 @@
                     <th>NOTA</th>
                     <th>O.S.</th>
                     <th>ATIVA</th>
-                    <th class="text-center">
-                        SALVAR
-                    </th>
+                    <th class="text-center">SALVAR</th>
+                    <th class="text-center">EXCLUIR</th>
                 </tr>
 
             </thead>
@@ -295,7 +294,11 @@
 
                     @endphp
 
-                    <tr>
+                    <tr
+                        data-etapa-ativa="{{ $etapa->ativo ? '1' : '0' }}"
+                        data-notas-count="{{ $etapa->notas_count }}"
+                        data-os-count="{{ $etapa->ordens_servico_count }}"
+                    >
 
                         <form
                             method="POST"
@@ -341,6 +344,9 @@
                                     maxlength="255"
                                     placeholder="Descrição"
                                 >
+                                <div class="small text-muted mt-1">
+                                    Notas: {{ $etapa->notas_count }} · O.S.: {{ $etapa->ordens_servico_count }}
+                                </div>
 
                             </td>
 
@@ -495,11 +501,26 @@
                                 <button
                                     type="submit"
                                     class="btn btn-primary btn-sm"
+                                    data-confirmar-etapa
                                     title="Salvar etapa"
                                 >
                                     <i class="bi bi-floppy"></i>
                                 </button>
 
+                            </td>
+
+                            <td class="text-center">
+                                @if(! $estrutural && ! $etapa->ativo)
+                                    <button type="submit"
+                                        form="excluir-etapa-{{ $etapa->id }}"
+                                        class="btn btn-outline-danger btn-sm"
+                                        title="Excluir etapa inativa"
+                                        aria-label="Excluir etapa {{ $etapa->nome }}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                @else
+                                    <span class="text-muted">—</span>
+                                @endif
                             </td>
 
                         </form>
@@ -514,6 +535,18 @@
 
     </div>
 
+    @foreach($etapas as $etapa)
+        @if($etapa->tipo === 'normal' && ! $etapa->ativo)
+            <form id="excluir-etapa-{{ $etapa->id }}"
+                method="POST"
+                action="{{ route('etapas.destroy', $etapa) }}"
+                onsubmit="return confirm('Excluir esta etapa inativa? O historico sera mantido.');">
+                @csrf
+                @method('DELETE')
+            </form>
+        @endif
+    @endforeach
+
     <div class="alert alert-light border mt-3">
 
         <i class="bi bi-info-circle"></i>
@@ -524,10 +557,35 @@
         <strong>Final</strong>
         fazem parte da estrutura do fluxo e não podem ser desativadas.
 
-        Etapas normais podem ser reorganizadas, desativadas e aplicadas somente a Notas, somente a O.S. ou a ambos.
+        Ao desativar uma etapa normal, todas as Notas e O.S. vinculadas voltam para a etapa Inicial.
+        O sistema preserva o status e registra a movimentacao no historico.
+        Etapas normais inativas podem ser excluidas somente se estiverem vazias.
 
     </div>
 
 </div>
+
+<script>
+document.querySelectorAll('[data-confirmar-etapa]').forEach(function (botao) {
+    botao.addEventListener('click', function (evento) {
+        const linha = botao.closest('tr');
+        if (!linha || linha.dataset.etapaAtiva !== '1') return;
+
+        const ativo = linha.querySelector('input[name="ativo"]');
+        const aplicaNota = linha.querySelector('input[name="aplica_nota"]:not([type="hidden"])');
+        const aplicaOs = linha.querySelector('input[name="aplica_ordem_servico"]:not([type="hidden"])');
+        const desativando = ativo && !ativo.checked;
+        const qtdNotas = Number(linha.dataset.notasCount || 0);
+        const qtdOs = Number(linha.dataset.osCount || 0);
+        const moverNotas = (desativando || (aplicaNota && !aplicaNota.checked)) ? qtdNotas : 0;
+        const moverOs = (desativando || (aplicaOs && !aplicaOs.checked)) ? qtdOs : 0;
+        if (desativando || moverNotas || moverOs) {
+            const texto = 'Esta alteracao realocara ' + moverNotas + ' Nota(s) e ' +
+                moverOs + ' O.S. para a etapa inicial, preservando status e historicos. Confirmar?';
+            if (!window.confirm(texto)) evento.preventDefault();
+        }
+    });
+});
+</script>
 
 @endsection

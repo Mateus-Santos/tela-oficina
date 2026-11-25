@@ -23,17 +23,14 @@ class AlterarEtapaNota
                 $userId,
                 $motivo
             ) {
+                $etapa = Etapa::query()
+                    ->lockForUpdate()
+                    ->findOrFail($etapa->id);
+
                 $nota = Nota::query()
                     ->lockForUpdate()
                     ->with('etapa')
-                    ->findOrFail(
-                        $nota->id
-                    );
-
-                $etapa = Etapa::query()
-                    ->findOrFail(
-                        $etapa->id
-                    );
+                    ->findOrFail($nota->id);
 
                 /*
                  * =====================================================
