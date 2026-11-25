@@ -858,6 +858,7 @@ Route::middleware([
             'index',
             'store',
             'update',
+            'destroy',
         ]);
     });
 });
