@@ -91,7 +91,7 @@ class VincularComprasContaPagar
                     $valorDevido = app(\App\Services\Compra\ValorDevidoCompra::class);
                     if ($valorDevido->precisaConciliacao($compra)) {
                         throw new InvalidArgumentException(
-                            'Compra possui devolucao operacional ou abatimento pendente: conciliacao obrigatoria.'
+                            'Compra possui devolucao documental pendente ou abatimento D03 anterior: conciliacao financeira obrigatoria.'
                         );
                     }
 

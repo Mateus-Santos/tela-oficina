@@ -10,6 +10,8 @@
         A NF de entrada permanece com seu valor original. Para itens que <strong>não foram aceitos</strong>,
         o sistema não movimenta estoque; para itens <strong>já lançados</strong>, registra uma saída.
         Contas com pagamentos ou inconsistências ficam com abatimento financeiro pendente de conciliação.
+        As devoluções operacionais antigas permanecem no histórico, sem abatimento automático;
+        suas quantidades já baixadas do estoque não podem ser devolvidas novamente.
     </div>
 
     <a class="btn btn-outline-secondary mb-3" href="{{ route('compras.show', $compra) }}">

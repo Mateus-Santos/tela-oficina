@@ -33,7 +33,7 @@ class GerarContaPagarCompra
             $valorDevido = app(\App\Services\Compra\ValorDevidoCompra::class);
             if (!$valorDevido->divergenciaCoberta($compra)) {
                 throw new InvalidArgumentException(
-                    'Divergencia sem devolucao documentada e conciliada; finalize a regularizacao antes.'
+                    'Divergencia de conferencia nao coberta por devolucao documental. Regularize pela conciliacao D03 antes de gerar conta a pagar.'
                 );
             }
 
@@ -47,7 +47,7 @@ class GerarContaPagarCompra
              */
             if ($valorDevido->precisaConciliacao($compra)) {
                 throw new InvalidArgumentException(
-                    'Devolucao operacional legada ou abatimento pendente: conciliacao obrigatoria.'
+                    'Devolucao documental pendente ou abatimento D03 anterior: conciliacao financeira obrigatoria.'
                 );
             }
 

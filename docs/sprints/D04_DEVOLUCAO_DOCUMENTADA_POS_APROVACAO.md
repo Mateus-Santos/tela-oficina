@@ -9,10 +9,15 @@
 - Sem duplicar a baixa: saldo do item confrontado com entradas e devoluções anteriores, sob lock da compra.
 - Valor abatido proporcional ao valor líquido original do item, com arredondamento cumulativo em centavos.
 - Compra aprovada permanece aprovada.
+- D01A antiga permanece `modalidade=operacional`, `situacao_financeira=nao_aplicavel`: histórico e estoque preservados, **sem abatimento automático** do valor devido. Pode ser vinculada a conta pelo valor original se não houver outros bloqueios.
+- D04 nova é cadastrada dentro da Compra e mantém `compra_id`; apenas documentos `modalidade=documental` e `situacao_financeira=aplicada` integram o valor financeiro líquido.
+- D04 respeita as quantidades já devolvidas pela D01A, sem repetir baixa de estoque. Não converte documentos antigos em novos automaticamente.
+- Documento D04 com `situacao_financeira=pendente` bloqueia novas vinculações; abatimentos D03B anteriores exigem revisão antes de nova vinculação para evitar sobrescrita.
+- Divergência de excesso (recebido maior que a NF) não é resolvida simplesmente por `aceita == quantidade da NF`: continua sujeita a regularização D03.
 - Se a compra foi DESVINCULADA anteriormente, nenhuma conta antiga e inferida ou alterada: o operador ajusta/revincula explicitamente a conta desejada.
 - Descontos globais e discrepancias que fariam abatimento superar o saldo liquido geram pendencia, nunca saldo negativo.
 - Conta vinculada aberta, sem nenhum histórico de pagamento, com pivôs/parcelas consistentes: ajustar total, pivô e parcelas numa transação.
-- Contas pagas, parciais, canceladas, com parcelas sem saldo ou documentos legados: devolver mercadoria/documentar, mas abatimento financeiro fica PENDENTE de conciliação.
+- Contas pagas, parciais, canceladas ou com parcelas sem saldo: devolver mercadoria/documentar, mas abatimento financeiro fica PENDENTE de conciliação. Registros D01A antigos são apenas operacionais e não geram abatimento automático.
 - Contas agrupadas do mesmo fornecedor e com parcelas múltiplas: redistribuição proporcional em centavos, preservando datas e números e impedindo parcelas zeradas.
 - `VincularComprasContaPagar` e `GerarContaPagarCompra` usam valor líquido calculado e exigem que TODAS as pendências estejam resolvidas.
 - Divergência por item só é considerada resolvida se o quantitativo não aceito foi formalmente recusado e financeiramente aplicado.

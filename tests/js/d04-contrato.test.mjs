@@ -52,3 +52,14 @@ test('D04 limita o acesso a admin, sem emissao fiscal', () => {
     assert.match(routes, /compras\.devolucoes\.documental\.store/);
     assert.match(get('resources/views/compra/devolucoes/documental.blade.php'), /não é emissão de NF-e/);
 });
+
+
+test('D04 separa devolucao operacional legada da documental financeira', () => {
+    const valor = get('app/Services/Compra/ValorDevidoCompra.php');
+    const resumo = get('resources/views/compra/devolucoes/resumo.blade.php');
+    const migration = get('database/migrations/2026_11_23_100000_devolucao_documentada_apos_aprovacao.php');
+    assert.match(valor, /->where\('modalidade', 'documental'\)/);
+    assert.doesNotMatch(valor, /->where\('modalidade', '!=', 'documental'\)/);
+    assert.match(resumo, /sem abatimento financeiro/);
+    assert.match(migration, /default\('operacional'\)/);
+});

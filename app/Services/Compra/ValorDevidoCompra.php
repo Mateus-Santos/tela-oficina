@@ -27,10 +27,23 @@ class ValorDevidoCompra
 
     public function precisaConciliacao(Compra $compra): bool
     {
-        return $compra->devolucoes()->where(function ($q): void {
-            $q->where('modalidade', '!=', 'documental')
-              ->orWhere('situacao_financeira', '!=', 'aplicada');
-        })->exists();
+        // D01A e apenas operacional. Seus registros continuam compondo o
+        // historico e os saldos fisicos, mas NAO reduzem o valor financeiro
+        // nem impedem o vinculo pelo valor fiscal original da Compra.
+        // Uma devolucao D04 pendente continua bloqueando novas vinculacoes.
+        if ($compra->devolucoes()
+            ->where('modalidade', 'documental')
+            ->where('situacao_financeira', '!=', 'aplicada')
+            ->exists()) {
+            return true;
+        }
+
+        // Um abatimento D03B anterior nao deve ser sobrescrito silenciosamente
+        // por uma nova vinculacao calculada somente pelas devolucoes D04.
+        return \App\Models\CompraConciliacaoEfetivacao::query()
+            ->where('compra_id', $compra->id)
+            ->where('tratamento', 'abatimento')
+            ->exists();
     }
 
     /** Divergencias integralmente cobertas por recusa formal, sem estoque, podem ser vinculadas. */
@@ -47,7 +60,10 @@ class ValorDevidoCompra
             $nf = Quantidade::milessimos((string) $item->quantidade);
             $aceita = Quantidade::milessimos((string)
                 ($item->quantidade_aceita ?? $item->quantidade_conferida));
-            if ($aceita > $nf) {
+            // Excedente recebido (> NF) nao e recusa de mercadoria da NF:
+            // nao liberar a geracao de conta sem regularizacao explicita.
+            $recebida = Quantidade::milessimos((string) $item->quantidade_conferida);
+            if ($recebida > $nf || $aceita > $nf) {
                 return false;
             }
             $recusas = CompraDevolucaoItem::query()

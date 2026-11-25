@@ -3,12 +3,12 @@
         <div class="d-flex justify-content-between flex-wrap gap-2 align-items-center mb-3">
             <div>
                 <h2 id="devolucoes-compra-titulo" class="h5 mb-1">Devoluções ao fornecedor</h2>
-                <p class="text-body-secondary small mb-0">Documentos internos. A emissão de NF-e ocorre fora deste sistema; abatimentos financeiros só são aplicados quando seguros.</p>
+                <p class="text-body-secondary small mb-0">Operacional: controle físico e histórico, sem abatimento automático. Documental: registra o documento e aplica abatimento financeiro somente quando seguro. A NF-e é emitida fora do sistema.</p>
             </div>
             @if ($compra->estaAprovada() && auth()->user()?->isAdmin())
                 <div class="d-flex flex-wrap gap-2">
                     <a class="btn btn-danger btn-sm" href="{{ route('compras.devolucoes.documental.create', $compra) }}">
-                        Devolução documentada (com abatimento)
+                        Nova devolução documental (impacto financeiro)
                     </a>
                     <a class="btn btn-outline-secondary btn-sm" href="{{ route('compras.devolucoes.create', $compra) }}">
                         Controle operacional legado
@@ -25,6 +25,8 @@
                         <span class="badge {{ $devolucao->situacao_financeira === 'aplicada' ? 'bg-success' : 'bg-warning text-dark' }}">
                             Financeiro: {{ $devolucao->situacao_financeira }}
                         </span>
+                    @else
+                        <span class="badge bg-info text-dark">Operacional · sem abatimento financeiro</span>
                     @endif
                 </div>
                 <div class="small text-body-secondary">{{ $devolucao->data_documento?->format('d/m/Y') }} — {{ $devolucao->itens->count() }} item(ns)</div>
@@ -43,7 +45,7 @@
                 </ul>
             </div>
         @empty
-            <p class="text-body-secondary mb-0">Nenhuma devolução operacional registrada nesta compra.</p>
+            <p class="text-body-secondary mb-0">Nenhuma devolução registrada nesta compra.</p>
         @endforelse
     </div>
 </section>

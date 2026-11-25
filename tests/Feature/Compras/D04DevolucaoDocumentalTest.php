@@ -4,6 +4,9 @@ namespace Tests\Feature\Compras;
 
 use App\Actions\Compra\RegistrarDevolucaoDocumentalCompra;
 use App\Actions\Compra\RegistrarEntradaCompra;
+use App\Actions\Compra\RegistrarDevolucaoCompra;
+use App\Actions\Compra\GerarContaPagarCompra;
+use App\Services\Compra\SaldoDevolucaoCompra;
 use App\Actions\ContasPagar\VincularComprasContaPagar;
 use App\Models\Compra;
 use App\Models\CompraItem;
@@ -185,5 +188,71 @@ class D04DevolucaoDocumentalTest extends TestCase
             ->post(route('compras.devolucoes.documental.store', $compra), $this->dados([
                 $item->id => ['quantidade' => '1.000', 'modalidade' => 'estoque'],
             ]))->assertForbidden();
+    }
+
+    public function test_devolucao_operacional_antiga_nao_abate_e_nao_bloqueia_vinculo(): void
+    {
+        $compra = $this->compra($this->fornecedor(), 200);
+        [$item, $produto] = $this->item($compra, 2, 2, 100);
+        app(RegistrarEntradaCompra::class)->execute($compra);
+
+        $operacional = app(RegistrarDevolucaoCompra::class)->execute($compra, [
+            'operacao_uuid' => (string) Str::uuid(),
+            'referencia_documento' => 'DEV-LEGADO-SEM-FINANCEIRO',
+            'chave_nfe' => null,
+            'data_documento' => today()->toDateString(),
+            'motivo' => 'Historico fisico sem abatimento automatico da conta.',
+            'confirmacao_fisica' => '1',
+            'itens' => [$item->id => '1.000'],
+        ], null);
+
+        $valorDevido = app(ValorDevidoCompra::class);
+        $this->assertSame('operacional', $operacional->fresh()->modalidade);
+        $this->assertSame('nao_aplicavel', $operacional->fresh()->situacao_financeira);
+        $this->assertSame(20000, $valorDevido->valorLiquidoCentavos($compra));
+        $this->assertFalse($valorDevido->precisaConciliacao($compra));
+        $this->assertSame(11.0, (float) $produto->fresh()->quantidade);
+
+        $conta = app(GerarContaPagarCompra::class)->execute($compra, [[
+            'numero' => 1, 'valor' => '200.00',
+            'data_vencimento' => today()->addMonth()->toDateString(),
+        ]]);
+        $this->assertSame('200.00', $conta->fresh()->valor);
+        $this->assertSame(200.0, (float) DB::table('compra_conta_pagar')
+            ->where('compra_id', $compra->id)->value('valor_vinculado'));
+        $this->assertDatabaseCount('compra_devolucoes', 1);
+        $this->assertSame(200.0, (float) $compra->fresh()->valor_total);
+    }
+
+    public function test_documental_aplica_abatimento_somente_no_saldo_que_nao_foi_devolvido(): void
+    {
+        $compra = $this->compra($this->fornecedor(), 200);
+        [$item, $produto] = $this->item($compra, 2, 2, 100);
+        app(RegistrarEntradaCompra::class)->execute($compra);
+        app(RegistrarDevolucaoCompra::class)->execute($compra, [
+            'operacao_uuid' => (string) Str::uuid(),
+            'referencia_documento' => 'DEV-LEGADO-PARCIAL',
+            'chave_nfe' => null,
+            'data_documento' => today()->toDateString(),
+            'motivo' => 'Primeira unidade devolvida pelo controle operacional.',
+            'confirmacao_fisica' => '1',
+            'itens' => [$item->id => '1.000'],
+        ], null);
+        $conta = app(GerarContaPagarCompra::class)->execute($compra, [[
+            'numero' => 1, 'valor' => '200.00',
+            'data_vencimento' => today()->addMonth()->toDateString(),
+        ]]);
+        $saldo = app(SaldoDevolucaoCompra::class)->consultar($compra);
+        $this->assertSame(1000, $saldo[$item->id]['estoque']);
+        $documental = app(RegistrarDevolucaoDocumentalCompra::class)->execute($compra,
+            $this->dados([$item->id => ['quantidade' => '1.000', 'modalidade' => 'estoque']]), null);
+        $this->assertSame('documental', $documental->modalidade);
+        $this->assertSame('aplicada', $documental->situacao_financeira);
+        $this->assertSame(10000, app(ValorDevidoCompra::class)->valorLiquidoCentavos($compra));
+        $this->assertSame(100.0, (float) $conta->fresh()->valor);
+        $this->assertSame(100.0, (float) $conta->parcelas()->sum('valor'));
+        $this->assertSame(10.0, (float) $produto->fresh()->quantidade);
+        $this->assertDatabaseCount('movimentacao_estoques', 3);
+        $this->assertDatabaseCount('compra_devolucoes', 2);
     }
 }
