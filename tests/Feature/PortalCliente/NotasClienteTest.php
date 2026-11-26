@@ -206,6 +206,7 @@ class NotasClienteTest extends TestCase
 
         $finalizada = $this->nota($cliente, null, [
             'status' => 'Finalizado',
+            'etapa_id' => \App\Models\Etapa::query()->paraNota()->ativas()->finais()->firstOrFail()->id,
         ]);
 
         $cancelada = $this->nota($cliente, null, [

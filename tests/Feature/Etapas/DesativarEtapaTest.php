@@ -7,6 +7,7 @@ use App\Actions\Notas\CriarNota;
 use App\Models\Etapa;
 use App\Models\Nota;
 use App\Models\OrdemServico;
+use App\Models\NotasItem;
 use App\Models\SetorServico;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -81,13 +82,32 @@ class DesativarEtapaTest extends TestCase
             'created_at' => now(), 'updated_at' => now(),
         ]);
         $setor = SetorServico::create(['setor' => 'Mecanica', 'nivel' => 1]);
-        return OrdemServico::create([
-            'data_abertura' => now(), 'descricao' => 'Inspecao',
-            'valor' => 100, 'status' => 'aberta',
-            'cliente_id' => $clienteId, 'veiculo_cliente_id' => $veiculoClienteId,
-            'setor_servico_id' => $setor->id,
-            'etapa_id' => Etapa::where('slug', 'diagnostico')->value('id'),
-        ]);
+        return DB::transaction(function () use ($clienteId, $veiculoClienteId, $setor): OrdemServico {
+            $nota = app(CriarNota::class)->execute([
+                'cliente_id' => $clienteId,
+                'veiculo_cliente_id' => $veiculoClienteId,
+                'itens' => [],
+            ]);
+            $os = OrdemServico::create([
+                'nota_id' => $nota->id,
+                'data_abertura' => now(), 'descricao' => 'Inspecao',
+                'valor' => 100, 'status' => 'aberta',
+                'cliente_id' => $clienteId, 'veiculo_cliente_id' => $veiculoClienteId,
+                'setor_servico_id' => $setor->id,
+                'etapa_id' => Etapa::where('slug', 'diagnostico')->value('id'),
+            ]);
+            NotasItem::create([
+                'nota_id' => $nota->id,
+                'itemable_type' => OrdemServico::class,
+                'itemable_id' => $os->id,
+                'descricao' => $os->descricao,
+                'quantidade' => 1,
+                'valor_unitario' => $os->valor,
+                'desconto' => 0,
+                'valor_total' => $os->valor,
+            ]);
+            return $os;
+        });
     }
 
     public function test_desativar_transfere_todas_as_notas_e_os_e_preserva_historico(): void
@@ -96,7 +116,7 @@ class DesativarEtapaTest extends TestCase
         $origem = Etapa::where('slug', 'diagnostico')->firstOrFail();
         $destino = Etapa::inicialParaNota();
         $aberta = $this->notaEmDiagnostico();
-        $encerrada = $this->notaEmDiagnostico('Finalizado');
+        $cancelada = $this->notaEmDiagnostico('Cancelado');
         $os = $this->ordemEmDiagnostico();
 
         $this->actingAs($admin)
@@ -105,11 +125,11 @@ class DesativarEtapaTest extends TestCase
 
         $this->assertFalse($origem->fresh()->ativo);
         $this->assertSame($destino->id, $aberta->fresh()->etapa_id);
-        $this->assertSame($destino->id, $encerrada->fresh()->etapa_id);
-        $this->assertSame('Finalizado', $encerrada->fresh()->status);
+        $this->assertSame($destino->id, $cancelada->fresh()->etapa_id);
+        $this->assertSame('Cancelado', $cancelada->fresh()->status);
         $this->assertSame($destino->id, $os->fresh()->etapa_id);
         $this->assertDatabaseHas('nota_etapa_historicos', [
-            'nota_id' => $encerrada->id, 'etapa_origem_id' => $origem->id,
+            'nota_id' => $cancelada->id, 'etapa_origem_id' => $origem->id,
             'etapa_destino_id' => $destino->id, 'user_id' => $admin->id,
         ]);
         $this->assertDatabaseHas('ordem_servico_etapa_historicos', [
