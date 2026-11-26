@@ -116,7 +116,6 @@ class DesativarEtapaTest extends TestCase
         $origem = Etapa::where('slug', 'diagnostico')->firstOrFail();
         $destino = Etapa::inicialParaNota();
         $aberta = $this->notaEmDiagnostico();
-        $finalizada = $this->notaEmDiagnostico('Finalizado');
         $cancelada = $this->notaEmDiagnostico('Cancelado');
         $os = $this->ordemEmDiagnostico();
 
@@ -126,15 +125,9 @@ class DesativarEtapaTest extends TestCase
 
         $this->assertFalse($origem->fresh()->ativo);
         $this->assertSame($destino->id, $aberta->fresh()->etapa_id);
-        $this->assertSame($destino->id, $finalizada->fresh()->etapa_id);
-        $this->assertSame('Finalizado', $finalizada->fresh()->status);
         $this->assertSame($destino->id, $cancelada->fresh()->etapa_id);
         $this->assertSame('Cancelado', $cancelada->fresh()->status);
         $this->assertSame($destino->id, $os->fresh()->etapa_id);
-        $this->assertDatabaseHas('nota_etapa_historicos', [
-            'nota_id' => $finalizada->id, 'etapa_origem_id' => $origem->id,
-            'etapa_destino_id' => $destino->id, 'user_id' => $admin->id,
-        ]);
         $this->assertDatabaseHas('nota_etapa_historicos', [
             'nota_id' => $cancelada->id, 'etapa_origem_id' => $origem->id,
             'etapa_destino_id' => $destino->id, 'user_id' => $admin->id,
@@ -145,6 +138,31 @@ class DesativarEtapaTest extends TestCase
         ]);
         $this->assertSame(0, Nota::where('etapa_id', $origem->id)->count());
         $this->assertSame(0, OrdemServico::where('etapa_id', $origem->id)->count());
+    }
+
+    /**
+     * Uma Nota ainda em Diagnostico nao pode ser marcada como finalizada.
+     * As Notas efetivamente finalizadas ficam na etapa final; portanto nao
+     * devem ser usadas como registros de Diagnostico para testar realocacao.
+     */
+    public function test_nota_em_diagnostico_nao_pode_receber_status_finalizado_ou_concluido(): void
+    {
+        $diagnostico = Etapa::where('slug', 'diagnostico')->firstOrFail();
+
+        foreach (['Finalizado', 'Concluido'] as $status) {
+            $nota = $this->notaEmDiagnostico();
+            try {
+                $nota->update(['status' => $status]);
+                $this->fail('Era esperado bloquear finalizacao fora da etapa final: '.$status);
+            } catch (\Illuminate\Validation\ValidationException $e) {
+                $this->assertSame(
+                    'Nota finalizada deve permanecer na última etapa operacional.',
+                    $e->errors()['etapa_id'][0] ?? null
+                );
+            }
+            $this->assertSame('Aberto', $nota->fresh()->status);
+            $this->assertSame($diagnostico->id, $nota->fresh()->etapa_id);
+        }
     }
 
     public function test_excluir_etapa_inativa_vazia_preserva_nomes_no_historico(): void
