@@ -1,0 +1,198 @@
+/* FEUX Notas Workspace — redesenho estrutural de cadastro/edicao.
+   So atua nas telas .feux-workspace-redesign; sem seletores globais de componentes. */
+.cadastro.feux-notas-lote02.feux-notas-formulario.feux-workspace-redesign {
+    --fw-ink: #142b42;
+    --fw-sub: #526779;
+    --fw-accent: #126e72;
+    --fw-line: #d7e2ea;
+    --fw-bg: #eef3f7;
+    --fw-card: #fff;
+    --fw-soft: #f6f9fb;
+    max-width: 1560px;
+    width: calc(100% - 1.25rem);
+    padding: clamp(.9rem, 2.3vw, 2.25rem);
+    margin-top: 7rem;
+    margin-bottom: 3rem;
+    color: var(--fw-ink);
+    background: var(--fw-bg);
+    border: 1px solid #e2e9ef;
+    border-radius: 1.5rem;
+    box-shadow: none;
+    text-align: left;
+    &::before, &::after { display: none; content: none; }
+    :is(.row, .card, .card-body, .col-12, .form-control) { min-width: 0; }
+    .feux-notas-cabecalho {
+        position: relative;
+        overflow: hidden;
+        padding: clamp(1.4rem, 3.5vw, 2.4rem);
+        background: linear-gradient(124deg, #0e273d 0%, #17475b 67%, #136d70 100%);
+        border: 0;
+        border-radius: 1.15rem;
+        box-shadow: 0 14px 32px rgba(8, 36, 55, .12);
+        color: #fff;
+        &::before {
+            content: '';
+            position: absolute;
+            width: 15rem;
+            height: 15rem;
+            border-radius: 50%;
+            right: -7rem;
+            top: -10rem;
+            background: rgba(255,255,255,.09);
+            pointer-events: none;
+        }
+    }
+    .feux-notas-cabecalho__texto { position: relative; z-index: 1; }
+    .feux-notas-eyebrow { color: #b8eee6; font-size: .74rem; letter-spacing: .15em; }
+    .feux-notas-cabecalho__titulo {
+        color: #fff;
+        font-size: clamp(1.75rem, 3vw, 2.6rem);
+        font-weight: 800;
+        letter-spacing: -.035em;
+    }
+    .feux-notas-cabecalho__descricao { max-width: 42rem; color: #d4e5eb; font-size: 1rem; line-height: 1.65; }
+    .feux-notas-cabecalho > .btn {
+        color: #fff;
+        border: 1px solid rgba(255,255,255,.52);
+        background: rgba(255,255,255,.08);
+        padding: .68rem 1rem;
+        font-weight: 650;
+        min-height: 2.8rem;
+        &:hover, &:focus-visible { color: #102d44; background: #fff; border-color: #fff; }
+    }
+    .feux-notas-passos {
+        padding: .45rem;
+        background: rgba(255,255,255,.72);
+        border: 1px solid var(--fw-line);
+        border-radius: 1rem;
+        gap: .35rem;
+        margin: 1.15rem 0;
+    }
+    .feux-notas-passos a {
+        background: transparent;
+        border-color: transparent;
+        border-radius: .7rem;
+        font-weight: 650;
+        min-height: 3.05rem;
+        color: #244054;
+        &:hover, &:focus-visible { background: #e6f2f1; border-color: #b8d8d8; }
+        > span { color: var(--fw-accent); }
+    }
+    .feux-notas-workspace__grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(18rem, 20rem);
+        align-items: start;
+        gap: clamp(1rem, 2vw, 1.6rem);
+    }
+    .feux-notas-workspace__editor { min-width: 0; }
+    #form-os-itens { display: block; min-width: 0; }
+    #form-os-itens .feux-notas-secao {
+        border: 1px solid var(--fw-line);
+        border-radius: 1rem;
+        background: var(--fw-card);
+        box-shadow: 0 4px 16px rgba(19, 49, 67, .04);
+        margin-bottom: 1.2rem !important;
+    }
+    #form-os-itens .feux-notas-secao .card-header {
+        display: flex;
+        align-items: center;
+        padding: 1rem clamp(1rem, 2vw, 1.5rem);
+        background: var(--fw-soft);
+        color: var(--fw-ink);
+        border-bottom: 1px solid var(--fw-line);
+        border-radius: 1rem 1rem 0 0;
+        h5 { margin: 0; font-size: 1.05rem; font-weight: 800; letter-spacing: -.012em; }
+        h5 .bi { color: var(--fw-accent); margin-right: .3rem; }
+    }
+    #form-os-itens .feux-notas-secao .card-body { padding: clamp(1rem, 2.1vw, 1.65rem); }
+    #form-os-itens .feux-notas-secao .form-label { color: #25465c; font-weight: 650; font-size: .87rem; }
+    #form-os-itens .feux-notas-secao :is(.form-control, .form-select) {
+        background-color: #fcfdfd;
+        border: 1px solid #c8d7e0;
+        border-radius: .65rem;
+        min-height: 2.8rem;
+        box-shadow: none;
+        &:focus { border-color: var(--fw-accent); box-shadow: 0 0 0 .2rem rgba(18,110,114,.12); }
+    }
+    #feux-notas-resumo .card-body > .row.g-3 > div > .border {
+        border: 1px solid #d5e2e8 !important;
+        border-radius: .85rem !important;
+        background: #f8fbfd;
+    }
+    #feux-notas-resumo #valor-geral-os { color: #0b6065; font-variant-numeric: tabular-nums; font-size: clamp(1.5rem, 2.2vw, 2rem) !important; }
+    #feux-notas-itens :is(.btn-primary, .btn-outline-primary) { min-height: 2.75rem; }
+    #feux-notas-itens .table-responsive { border: 1px solid var(--fw-line); border-radius: .8rem; }
+    #feux-notas-itens table thead th { background: #eaf1f5; color: #21435a; border-color: #d8e3e9; font-size: .78rem; font-weight: 800; text-transform: uppercase; letter-spacing: .03em; }
+    #form-os-itens .feux-notas-acoes { background: #fff; border-color: var(--fw-line); border-radius: 1rem; }
+    #form-os-itens #btn-salvar-nota { background: #136e66; border-color: #136e66; font-weight: 750; padding: .7rem 1.35rem; }
+    #form-os-itens #btn-salvar-nota:hover { background: #0d5a55; border-color: #0d5a55; }
+    .feux-notas-workspace__aside { min-width: 0; }
+    .feux-notas-workspace__aside-inner {
+        position: sticky;
+        top: 6.4rem;
+        overflow: hidden;
+        background: #fff;
+        border: 1px solid var(--fw-line);
+        border-radius: 1.15rem;
+        box-shadow: 0 14px 35px rgba(17,51,68,.08);
+    }
+    .feux-notas-workspace__aside-top { display: flex; gap: .75rem; align-items: center; padding: 1.25rem 1.15rem; border-bottom: 1px solid var(--fw-line); }
+    .feux-notas-workspace__aside-icon { display: grid; place-items: center; flex: none; width: 2.6rem; height: 2.6rem; border-radius: .75rem; background: #dff1ee; color: #0c716f; font-size: 1.3rem; }
+    .feux-notas-workspace__aside-kicker { margin: 0 0 .15rem; color: #147478; font-size: .67rem; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
+    .feux-notas-workspace__aside-title { margin: 0; color: var(--fw-ink); font-size: .96rem; font-weight: 800; line-height: 1.3; }
+    .feux-notas-workspace__value { display: flex; flex-direction: column; gap: .3rem; padding: 1.25rem 1.15rem; background: linear-gradient(145deg, #e8f5f3, #f4faf9); }
+    .feux-notas-workspace__value > span { color: #325c61; font-size: .82rem; font-weight: 650; }
+    .feux-notas-workspace__value strong { color: #0c6261; font-size: clamp(1.75rem, 2.5vw, 2.15rem); letter-spacing: -.03em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; line-height: 1.2; }
+    .feux-notas-workspace__value small { color: #506e70; line-height: 1.5; }
+    .feux-notas-workspace__facts { margin: 0; padding: .3rem 1.15rem; }
+    .feux-notas-workspace__facts > div { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem; padding: .78rem 0; border-bottom: 1px dashed #dce6eb; }
+    .feux-notas-workspace__facts > div:last-child { border: 0; }
+    .feux-notas-workspace__facts dt { color: #576c7b; font-size: .81rem; font-weight: 600; white-space: nowrap; }
+    .feux-notas-workspace__facts dt .bi { margin-right: .3rem; color: var(--fw-accent); }
+    .feux-notas-workspace__facts dd { max-width: 60%; margin: 0; color: #1d3b50; font-size: .82rem; font-weight: 800; text-align: right; overflow-wrap: anywhere; }
+    .feux-notas-workspace__aside-nav { border-top: 1px solid var(--fw-line); padding: 1.05rem 1.15rem .5rem; }
+    .feux-notas-workspace__aside-nav h3 { margin-bottom: .55rem; font-size: .8rem; color: #587284; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; }
+    .feux-notas-workspace__aside-nav a { display: flex; align-items: center; gap: .65rem; padding: .65rem .3rem; border-radius: .4rem; color: #27475a; text-decoration: none; font-size: .84rem; font-weight: 700; }
+    .feux-notas-workspace__aside-nav a:hover { background: #eef7f5; color: #096a67; }
+    .feux-notas-workspace__aside-nav a span { color: #0a7670; font-size: .7rem; font-variant-numeric: tabular-nums; }
+    .feux-notas-workspace__aside-nav a .bi { margin-left: auto; }
+    .feux-notas-workspace__save-link { display: flex; justify-content: space-between; align-items: center; margin: .5rem 1.15rem .8rem; padding: .9rem 1rem; background: #126d66; color: #fff; border-radius: .7rem; font-weight: 800; text-decoration: none; min-height: 3rem; }
+    .feux-notas-workspace__save-link:hover { color: #fff; background: #0d5754; }
+    .feux-notas-workspace__aside-note { margin: 0; padding: .85rem 1.15rem 1rem; font-size: .76rem; color: #5e6c79; background: #fafcfd; line-height: 1.5; }
+    .feux-notas-workspace__aside-note .bi { color: #0b6f6e; margin-right: .3rem; }
+    .feux-notas-workspace__aside a:focus-visible { outline: 3px solid #127e7b; outline-offset: 2px; }
+    .feux-notas-workspace__value, .feux-notas-workspace__facts dd { transition: color .15s ease; }
+}
+@media (max-width: 1199.98px) {
+    .cadastro.feux-notas-lote02.feux-notas-formulario.feux-workspace-redesign {
+        .feux-notas-workspace__grid { grid-template-columns: minmax(0,1fr); }
+        .feux-notas-workspace__aside { order: -1; }
+        .feux-notas-workspace__aside-inner { position: static; }
+        .feux-notas-workspace__aside-nav { display: none; }
+        .feux-notas-workspace__facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; }
+        .feux-notas-workspace__facts > div { flex-wrap: wrap; border: 0; }
+        .feux-notas-workspace__facts dd { max-width: 100%; text-align: left; }
+    }
+}
+@media (max-width: 575.98px) {
+    .cadastro.feux-notas-lote02.feux-notas-formulario.feux-workspace-redesign {
+        margin-top: 6rem;
+        width: calc(100% - .5rem);
+        padding: .55rem;
+        border-radius: 1rem;
+        .feux-notas-cabecalho { padding: 1.15rem; border-radius: .85rem; }
+        .feux-notas-passos { display: flex; flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; padding: .4rem; }
+        .feux-notas-passos a { flex: 0 0 auto; white-space: nowrap; min-height: 2.8rem; }
+        .feux-notas-workspace__facts { grid-template-columns: minmax(0, 1fr); }
+        .feux-notas-workspace__facts > div { display: flex; justify-content: space-between; border-bottom: 1px dashed #e1e9ed; }
+        .feux-notas-workspace__facts dd { text-align: right; }
+        .feux-notas-workspace__value strong { font-size: 1.9rem; }
+        .feux-notas-workspace__aside-top { padding: 1rem; }
+        #form-os-itens .feux-notas-secao .card-body { padding: .85rem; }
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .cadastro.feux-notas-lote02.feux-notas-formulario.feux-workspace-redesign {
+        .feux-notas-workspace__value, .feux-notas-workspace__facts dd { transition: none; }
+    }
+}

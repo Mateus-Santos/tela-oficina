@@ -161,6 +161,11 @@ class NotasItemController extends Controller
                 ->lockForUpdate()
                 ->findOrFail($id);
 
+            if ($itemTransacional->itemable_type === \App\Models\OrdemServico::class) {
+                throw ValidationException::withMessages([
+                    'nota' => 'A O.S. vinculada nao pode ser removida isoladamente.',
+                ]);
+            }
             $itemTransacional->delete();
 
             $notaTransacional->load('itens');

@@ -2,7 +2,7 @@
 
 @section('content')
 
-<section class="container cadastro py-4">
+<section class="container cadastro py-4 feux-moderno">
     <h1 class="mb-4">CADASTRO DE CLIENTE</h1>
 
     {{-- Exibição de erros de validação --}}
@@ -16,7 +16,7 @@
         </div>
     @endif
 
-    <form action="{{ route('clientes.store') }}" method="POST">
+    <form data-feux-form="true" action="{{ route('clientes.store') }}" method="POST">
         @csrf
 
         @if(isset($pessoasSemCliente) && $pessoasSemCliente->count() > 0)

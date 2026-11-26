@@ -1,3 +1,5 @@
+import { inicializarFeedbackFormulario } from './components/form-feedback.js';
+import { inicializarRascunhoCompra } from './compras/rascunho-sessao.js';
 import inicializarChaveNfe from './compras/chave-nfe.js';
 import inicializarItensCompra from './compras/itens.js';
 import inicializarAnexosCompra from './compras/anexos.js';
@@ -6,4 +8,6 @@ document.addEventListener('DOMContentLoaded', function () {
     inicializarChaveNfe();
     inicializarItensCompra();
     inicializarAnexosCompra();
+    inicializarFeedbackFormulario();
+    inicializarRascunhoCompra();
 });

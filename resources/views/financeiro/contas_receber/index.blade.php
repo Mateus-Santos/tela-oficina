@@ -1,7 +1,7 @@
 @extends('layouts.layout')
 
 @section('content')
-<div class="container cadastro">
+<div class="container cadastro feux-moderno">
     <x-list-header
         title="LISTAR CONTAS A RECEBER"
         icon="bi-cash-stack"

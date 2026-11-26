@@ -2,14 +2,14 @@
 
 @section('content')
 
-<div class="container cadastro">
+<div class="container cadastro feux-compra feux-moderno">
 
     <x-list-header
         title="EDITAR COMPRA"
         icon="bi-pencil-square"
     />
 
-    <form
+    <form id="compra-form"
         method="POST"
         action="{{ route('compras.update', $compra) }}"
     >

@@ -11,7 +11,7 @@ $larguras: 1rem;
     margin-bottom: 5rem;
     padding: $larguras;
     overflow: visible;
-    box-shadow: $background-color_2 1rem 1rem 3rem;
+    box-shadow: $cinza-escuro-translucido 1rem 1rem 3rem;
 
     &::before {
         content: '';
@@ -39,14 +39,14 @@ $larguras: 1rem;
 .cadastro h1 {
     padding: $larguras;
     font-family: $font-family_2;
-    color: $background-color_5;
-    background-image: $background-color_3;
+    color: $gradiente-amarelo;
+    background-image: $gradiente-escuro;
     border-radius: 5rem;
-    box-shadow: $background-color_2 1rem 1rem 3rem;
+    box-shadow: $cinza-escuro-translucido 1rem 1rem 3rem;
 }
 
 .campos {
-    color: $background-color_5;
+    color: $gradiente-amarelo;
     font-family: $font-family_8;
     font-size: larger;
     text-align: left;
@@ -54,8 +54,8 @@ $larguras: 1rem;
     padding: $larguras $larguras $larguras $larguras;
 
     label {
-        color: $color_4;
-        background-image: $background-color_3;
+        color: $amarelo;
+        background-image: $gradiente-escuro;
         border-radius: 0.5rem;
         padding: 0.1rem 0.5rem 0.1rem 0.5rem;
     }
@@ -85,8 +85,8 @@ $larguras: 1rem;
         margin: 0 0 1rem;
         padding: 0.5rem 0.75rem;
         border-radius: 0.5rem;
-        background-image: $background-color_3;
-        color: $color_5;
+        background-image: $gradiente-escuro;
+        color: $branco;
         font-family: $font-family_2;
         font-size: 1.1rem;
         font-weight: 600;
@@ -98,7 +98,7 @@ $larguras: 1rem;
 
     .formulario-secao__descricao {
         margin: -0.5rem 0 1rem;
-        color: $color_4;
+        color: $amarelo;
         font-size: 0.9rem;
     }
 }
@@ -132,7 +132,7 @@ $larguras: 1rem;
     overflow-y: auto;
     padding-right: 5px;
     scrollbar-width: thin;
-    scrollbar-color: $color_5_1 transparent;
+    scrollbar-color: $cinza-claro-translucido transparent;
 }
 
 .tags-container::-webkit-scrollbar {
@@ -140,7 +140,7 @@ $larguras: 1rem;
 }
 
 .tags-container::-webkit-scrollbar-thumb {
-    background-color: $color_5_1;
+    background-color: $cinza-claro-translucido;
     border-radius: 4px;
 }
 
@@ -149,8 +149,8 @@ $larguras: 1rem;
 }
 
 .tag {
-    background-color: $color_6;
-    color: $color_5;
+    background-color: $laranja;
+    color: $branco;
     padding: 4px 10px;
     border-radius: 15px;
     display: flex;

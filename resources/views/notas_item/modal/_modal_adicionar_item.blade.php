@@ -1,5 +1,5 @@
 <div
-    class="modal fade"
+    class="modal fade feux-notas-modal-itens feux-notas-selecao-workspace"
     id="modalAdicionarItem"
     tabindex="-1"
     aria-labelledby="modalAdicionarItemLabel"
@@ -38,6 +38,21 @@
                     aria-live="polite"
                 ></div>
 
+                <p class="feux-notas-modal-ajuda">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                    Pesquise um produto ou uma Ordem de Serviço, selecione o resultado e confira quantidade e valores antes de adicionar.
+                </p>
+
+                <div class="feux-notas-selecao-grid">
+                    <section class="feux-notas-selecao-buscar" aria-label="Escolher produto ou ordem de serviço">
+                        <div class="feux-notas-selecao-passo">
+                            <span class="feux-notas-selecao-passo__numero" aria-hidden="true">01</span>
+                            <div>
+                                <h3>Localize o item</h3>
+                                <p>Escolha o tipo e encontre o produto ou serviço para esta nota.</p>
+                            </div>
+                        </div>
+
                 {{-- =====================================================
                      TIPO
                 ====================================================== --}}
@@ -64,6 +79,13 @@
                     </select>
                 </div>
 
+                <p class="feux-notas-tipo-contexto small" role="note">
+                    <i class="bi bi-lightbulb" aria-hidden="true"></i>
+                    <span class="feux-notas-tipo-contexto__texto">
+                        Produtos: pesquise por nome, código ou descrição e confira preço e estoque.
+                    </span>
+                </p>
+
                 {{-- =====================================================
                      PESQUISA
                 ====================================================== --}}
@@ -79,6 +101,8 @@
                     <input
                         type="search"
                         id="builder_item_busca"
+                        aria-describedby="builder_busca_status"
+                        aria-controls="builder_resultados"
                         class="form-control"
                         placeholder="Digite nome, código, descrição ou número..."
                         autocomplete="off"
@@ -91,6 +115,12 @@
                     >
                         Digite para pesquisar.
                     </div>
+
+                    <p class="feux-notas-busca-teclado small mb-0">
+                        <i class="bi bi-keyboard" aria-hidden="true"></i>
+                        No teclado: <kbd>↓</kbd> para ir aos resultados, <kbd>↑</kbd>/<kbd>↓</kbd>
+                        para navegar, <kbd>Enter</kbd> para selecionar. Também é possível tocar nos resultados.
+                    </p>
 
                     {{-- AÇÃO RÁPIDA PARA O.S. --}}
 
@@ -128,9 +158,16 @@
                      RESULTADOS
                 ====================================================== --}}
 
+                <div class="feux-notas-resultados-cabecalho">
+                    <strong><i class="bi bi-ui-checks" aria-hidden="true"></i> Resultados da pesquisa</strong>
+                    <span class="small">Selecione um resultado para preencher o item</span>
+                </div>
+
                 <div
                     id="builder_resultados"
-                    class="list-group mb-4"
+                    class="list-group mb-4 feux-notas-resultados-lote05"
+                    role="group"
+                    aria-label="Resultados da pesquisa de produtos ou ordens de serviço"
                     aria-live="polite"
                 ></div>
 
@@ -482,6 +519,16 @@
                     </div>
                 </div>
 
+                    </section>
+                    <section class="feux-notas-selecao-configurar" aria-label="Configurar o item selecionado">
+                        <div class="feux-notas-selecao-passo">
+                            <span class="feux-notas-selecao-passo__numero" aria-hidden="true">02</span>
+                            <div>
+                                <h3>Configure os valores</h3>
+                                <p>Revise descrição, quantidade, preço, desconto e garantia.</p>
+                            </div>
+                        </div>
+
                 {{-- =====================================================
                      ITEM SELECIONADO
                 ====================================================== --}}
@@ -636,6 +683,8 @@
                     </div>
                 </div>
 
+                    </section>
+                </div>
             </div>
 
             <div class="modal-footer">
@@ -668,4 +717,5 @@
 @vite([
     'resources/js/notaitem/os-rapida.js',
     'resources/js/notaitem/produto-rapido.js',
+    'resources/js/notaitem/feux-notas-selecao-workspace.js',
 ])

@@ -19,16 +19,23 @@ class OrdemServico extends Model
         'descricao',
         'valor',
         'cliente_id',
+        'nota_id',
         'data_abertura',
         'data_fechamento',
     ];
 
     protected $casts = [
+        'nota_id' => 'integer',
         'etapa_id' => 'integer',
         'valor' => 'decimal:2',
         'data_abertura' => 'datetime',
         'data_fechamento' => 'datetime',
     ];
+
+    public function nota(): BelongsTo
+    {
+        return $this->belongsTo(Nota::class, 'nota_id');
+    }
 
     public function veiculosCliente(): BelongsTo
     {
@@ -60,6 +67,12 @@ class OrdemServico extends Model
             Etapa::class,
             'etapa_id'
         );
+    }
+
+    public function anexosVinculos(): HasMany
+    {
+        return $this->hasMany(AnexoVinculo::class, 'vinculavel_id')
+            ->where('vinculavel_type', self::class);
     }
 
     public function historicoEtapas(): HasMany

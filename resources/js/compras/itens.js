@@ -1,3 +1,4 @@
+import { proximoIndiceDisponivel } from './indices.js';
 import BuscaItens from '../busca/busca-itens.js';
 
 import {
@@ -16,8 +17,12 @@ export default function inicializarItensCompra() {
         return;
     }
 
-    let proximoIndice =
-        document.querySelectorAll('.compra-item').length;
+    // O indice de linhas restauradas pode ser esparso apos uma validacao.
+    // Nunca reutilizar um indice que continua preenchido.
+    let proximoIndice = proximoIndiceDisponivel(
+        Array.from(itensContainer.querySelectorAll('.compra-item'))
+            .map(item => item.dataset.itemIndex)
+    );
 
     function formatarMoeda(valor) {
         return Number(valor || 0).toLocaleString('pt-BR', {

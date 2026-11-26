@@ -1,0 +1,196 @@
+// FEUX LOTE 02 — Notas. Nenhum seletor global; sem alterar menu, modais ou regras.
+.cadastro.feux-notas-lote02 {
+    --nota-borda: #dbe2e9;
+    --nota-texto: #192b3d;
+    --nota-muted: #4b5b6c;
+    --nota-surface: #ffffff;
+    --nota-fundo: #f4f6fa;
+    --nota-acao: #1f4a79;
+    color: var(--nota-texto);
+    min-width: 0;
+    text-align: left;
+
+    .feux-notas-eyebrow {
+        color: var(--nota-acao);
+        font-size: .72rem;
+        font-weight: 750;
+        line-height: 1.4;
+        letter-spacing: .085em;
+        text-transform: uppercase;
+    }
+
+    .feux-notas-ancora,
+    .feux-notas-secao { scroll-margin-top: 7.5rem; }
+    .feux-notas-ancora { height: 0; }
+
+    .feux-notas-orientacao,
+    .feux-notas-cabecalho {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: clamp(1rem, 2.5vw, 1.5rem);
+        background: var(--nota-surface);
+        border: 1px solid var(--nota-borda);
+        border-left: 4px solid #d19c24;
+        border-radius: .9rem;
+        margin-bottom: 1rem;
+        min-width: 0;
+    }
+
+    .feux-notas-orientacao > div,
+    .feux-notas-cabecalho__texto { min-width: 0; }
+    .feux-notas-orientacao h2 { font-weight: 750; color: var(--nota-texto); }
+    .feux-notas-orientacao p:not(.feux-notas-eyebrow),
+    .feux-notas-cabecalho__descricao { color: var(--nota-muted); font-size: .92rem; }
+
+    .feux-notas-cabecalho__titulo {
+        color: var(--nota-texto);
+        font-size: clamp(1.4rem, 3vw, 2rem);
+        font-weight: 750;
+        margin: 0 0 .4rem;
+        border-radius: 0;
+        padding: 0;
+        background: transparent;
+        background-image: none;
+        box-shadow: none;
+    }
+    .feux-notas-cabecalho__descricao { margin: 0; }
+
+    .feux-notas-passos {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: stretch;
+        gap: .5rem;
+        margin: 0 0 1.1rem;
+    }
+    .feux-notas-passos a {
+        display: inline-flex;
+        flex: 1 1 auto;
+        align-items: center;
+        justify-content: center;
+        gap: .4rem;
+        min-height: 2.75rem;
+        padding: .55rem .7rem;
+        border: 1px solid var(--nota-borda);
+        background: var(--nota-surface);
+        color: var(--nota-texto);
+        border-radius: .6rem;
+        font-size: .87rem;
+        text-decoration: none;
+        white-space: normal;
+    }
+    .feux-notas-passos a:hover { border-color: var(--nota-acao); background: #f1f6fc; }
+    .feux-notas-passos a:focus-visible,
+    .feux-notas-atalho:focus-visible,
+    .feux-notas-detalhe__navegacao a:focus-visible {
+        outline: 3px solid #2861a4;
+        outline-offset: 2px;
+    }
+    .feux-notas-passos a > span {
+        font-variant-numeric: tabular-nums;
+        font-weight: 800;
+        color: var(--nota-acao);
+    }
+    .feux-notas-passos small {
+        font-weight: 650;
+        color: var(--nota-muted);
+    }
+    .feux-notas-secao { overflow: visible; }
+    .feux-notas-secao .card-header {
+        border-radius: .8rem .8rem 0 0;
+        font-weight: 700;
+    }
+    .feux-notas-secao :is(input, select, textarea) { max-width: 100%; }
+    .feux-notas-secao :is(input, select, textarea):focus-visible {
+        outline: 2px solid #2861a4;
+        outline-offset: 1px;
+    }
+    .feux-notas-acoes {
+        padding: .85rem;
+        border: 1px solid var(--nota-borda);
+        background: var(--nota-surface);
+        border-radius: .85rem;
+    }
+    .feux-notas-acoes .btn { min-height: 2.75rem; }
+
+    .feux-notas-resumo {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: .5rem .8rem;
+        padding: .8rem 1rem;
+        background: #eaf0f7;
+        border: 1px solid #d4e0eb;
+        border-radius: .8rem;
+        margin-bottom: .6rem;
+    }
+    .feux-notas-resumo__titulo { font-size: .85rem; font-weight: 650; }
+    .feux-notas-resumo__numero { font-size: .95rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+    .feux-notas-resumo__chip {
+        display: inline-block;
+        border-radius: 2rem;
+        background: #ffffff;
+        border: 1px solid #b8c8d9;
+        padding: .2rem .65rem;
+        font-size: .75rem;
+    }
+    .feux-nota-card {
+        border-radius: .85rem;
+        box-shadow: 0 2px 9px rgba(12, 32, 55, .06);
+        transition: box-shadow .16s ease, border-color .16s ease;
+    }
+    .feux-nota-card:hover { border-color: #b0c2d5; box-shadow: 0 4px 18px rgba(12, 32, 55, .09); }
+    .feux-nota-card__titulo { color: var(--nota-texto); font-weight: 750; }
+    .feux-nota-card__dados { padding-top: .6rem; }
+    .feux-nota-card__acoes { gap: .55rem; }
+    .feux-nota-card__acoes :is(a.btn, button.btn) { min-height: 2.75rem; }
+    .feux-nota-card__acoes .dropdown-menu { z-index: 12; }
+
+    .feux-notas-detalhe__navegacao {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: .6rem;
+        margin-bottom: 1rem;
+    }
+    .feux-notas-detalhe__navegacao a {
+        color: var(--nota-acao);
+        text-decoration: none;
+        font-weight: 650;
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        min-height: 2.75rem;
+        padding: .45rem .65rem;
+        border: 1px solid var(--nota-borda);
+        background: var(--nota-surface);
+        border-radius: .6rem;
+    }
+    .feux-notas-detalhe__navegacao a:hover { text-decoration: underline; }
+    .table-responsive { overscroll-behavior-x: contain; }
+    .table-responsive .table { min-width: max-content; }
+    .card-body, .card-header { overflow-wrap: break-word; }
+}
+
+@media (max-width: 767.98px) {
+    .cadastro.feux-notas-lote02 {
+        .feux-notas-orientacao,
+        .feux-notas-cabecalho { align-items: stretch; flex-direction: column; }
+        .feux-notas-atalho, .feux-notas-cabecalho > .btn { width: 100%; }
+        .feux-notas-passos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .feux-notas-passos a { min-width: 0; justify-content: flex-start; }
+        .feux-notas-acoes { align-items: stretch !important; }
+        .feux-notas-acoes > :is(a, button) { flex: 1 1 100%; }
+        .feux-nota-card__acoes > :is(a, form, .btn-group, .dropdown) { min-width: 0; }
+        .feux-notas-resumo { align-items: flex-start; }
+    }
+}
+
+@media (max-width: 390px) {
+    .cadastro.feux-notas-lote02 .feux-notas-passos { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cadastro.feux-notas-lote02 .feux-nota-card { transition: none; }
+}

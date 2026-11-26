@@ -4,6 +4,8 @@ namespace Tests\Feature\PortalCliente;
 
 use App\Models\Cliente;
 use App\Models\Etapa;
+use App\Models\Nota;
+use App\Models\NotasItem;
 use App\Models\OrdemServico;
 use App\Models\SetorServico;
 use App\Models\User;
@@ -81,16 +83,42 @@ class OrdensServicoClienteTest extends TestCase
             ->where('slug', 'diagnostico')
             ->firstOrFail();
 
-        return OrdemServico::create(array_merge([
-            'cliente_id' => $cliente->id,
-            'veiculo_cliente_id' => $veiculo->id,
-            'setor_servico_id' => $setor->id,
-            'etapa_id' => $etapa->id,
-            'status' => 'aberta',
-            'descricao' => 'SEGREDO_INTERNO_OS',
-            'valor' => '230.55',
-            'data_abertura' => now(),
-        ], $dados));
+        return DB::transaction(function () use ($cliente, $veiculo, $setor, $etapa, $dados): OrdemServico {
+            // Fixture de seguranca: preserva inclusive o caso adversarial de veiculo alheio.
+            // Nao usa a Action publica, que deve recusar esse caso em producao.
+            $nota = Nota::create([
+                'cliente_id' => $cliente->id,
+                'veiculo_cliente_id' => $veiculo->id,
+                'etapa_id' => $etapa->id,
+                'tipo' => 'Venda',
+                'status' => 'Aberto',
+                'subtotal' => '230.55',
+                'desconto' => 0,
+                'total' => '230.55',
+            ]);
+            $os = OrdemServico::create(array_merge([
+                'nota_id' => $nota->id,
+                'cliente_id' => $cliente->id,
+                'veiculo_cliente_id' => $veiculo->id,
+                'setor_servico_id' => $setor->id,
+                'etapa_id' => $etapa->id,
+                'status' => 'aberta',
+                'descricao' => 'SEGREDO_INTERNO_OS',
+                'valor' => '230.55',
+                'data_abertura' => now(),
+            ], $dados));
+            NotasItem::create([
+                'nota_id' => $nota->id,
+                'itemable_type' => OrdemServico::class,
+                'itemable_id' => $os->id,
+                'descricao' => $os->descricao,
+                'quantidade' => 1,
+                'valor_unitario' => $os->valor,
+                'desconto' => 0,
+                'valor_total' => $os->valor,
+            ]);
+            return $os;
+        });
     }
 
     public function test_visitante_nao_acessa_portal_de_os(): void

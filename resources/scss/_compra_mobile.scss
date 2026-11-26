@@ -1,0 +1,45 @@
+// FEUX-06G: estilos exclusivos da listagem de Compras.
+.feux-listagem-compras {
+    min-width: 0;
+
+    .feux-compra-mobile__item {
+        min-width: 0;
+        background: #fff;
+    }
+
+    .feux-compra-mobile__identificacao,
+    .feux-compra-mobile__dados,
+    .feux-compra-mobile__integracoes {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .feux-compra-mobile__dados {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: .75rem;
+    }
+
+    .feux-compra-mobile__dados dt {
+        font-size: .8125rem;
+        font-weight: 500;
+        color: #4b5563;
+    }
+
+    .feux-compra-mobile__dados dd { margin: .25rem 0 0; }
+
+    .feux-compra-mobile__integracoes .badge {
+        max-width: 100%;
+        white-space: normal;
+        text-align: left;
+        overflow-wrap: anywhere;
+    }
+
+    .feux-compra-mobile__acoes .btn { min-height: 2.75rem; }
+
+    @media (max-width: 575.98px) {
+        .feux-compra-mobile__dados { grid-template-columns: minmax(0, 1fr); }
+        .feux-compra-mobile__acoes > :is(a, form) { width: 100%; }
+        .feux-compra-mobile__acoes .btn { width: 100%; }
+    }
+}

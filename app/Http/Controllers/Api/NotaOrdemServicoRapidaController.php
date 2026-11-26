@@ -72,11 +72,9 @@ class NotaOrdemServicoRapidaController extends Controller
                 'valor.required' => 'Informe o valor da O.S.',
             ]);
 
-        $ordemServico =
-            $criarOrdemServico->execute(
-                $dados,
-                $request->user()->id
-            );
+        $resultado = app(\App\Services\Nota\CriarOsComNota::class)
+            ->execute($dados, $request->user()->id);
+        $ordemServico = $resultado['os'];
 
         return response()->json([
             'message' => "O.S. #{$ordemServico->id} criada com sucesso.",
@@ -94,9 +92,10 @@ class NotaOrdemServicoRapidaController extends Controller
 
                 'status' => $ordemServico->status,
 
-                'disponivel' => true,
+                'disponivel' => false,
 
-                'nota' => null,
+                'nota' => ['id' => $resultado['nota']->id],
+                'nota_id' => $resultado['nota']->id,
             ],
         ], 201);
     }

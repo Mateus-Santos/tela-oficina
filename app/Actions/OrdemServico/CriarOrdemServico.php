@@ -12,88 +12,61 @@ use InvalidArgumentException;
 
 class CriarOrdemServico
 {
-    public function execute(
-        array $dados,
-        ?int $userId = null
-    ): OrdemServico {
-        return DB::transaction(
-            function () use (
-                $dados,
-                $userId
-            ) {
-                $veiculoCliente =
-                    VeiculosCliente::query()
-                        ->where(
-                            'id',
-                            $dados['veiculo_cliente_id']
-                        )
-                        ->whereHas(
-                            'clientes',
-                            function ($query) use ($dados) {
-                                $query->where(
-                                    'clientes.id',
-                                    $dados['cliente_id']
-                                );
-                            }
-                        )
-                        ->first();
+    /** Entrada publica: nao permite O.S. persistida sem Nota. */
+    public function execute(array $dados, ?int $userId = null): OrdemServico
+    {
+        return app(\App\Services\Nota\CriarOsComNota::class)
+            ->execute($dados, $userId)['os'];
+    }
 
-                if (! $veiculoCliente) {
-                    throw ValidationException::withMessages([
-                        'veiculo_cliente_id' => 'O veículo selecionado não está vinculado ao cliente informado.',
-                    ]);
-                }
-
-                $etapaInicial =
-                    $this->obterEtapaInicial();
-
-                $valor =
-                    $this->normalizarValor(
-                        $dados['valor']
-                    );
-
-                $ordemServico =
-                    OrdemServico::create([
-                        'data_abertura' => now(),
-
-                        'cliente_id' => $dados['cliente_id'],
-
-                        'veiculo_cliente_id' => $dados['veiculo_cliente_id'],
-
-                        'setor_servico_id' => $dados['setor_servico_id'],
-
-                        'etapa_id' => $etapaInicial->id,
-
-                        'descricao' => $dados['descricao'] ?? null,
-
-                        'valor' => $valor,
-
-                        'status' => 'aberta',
-                    ]);
-
-                OrdemServicoEtapaHistorico::create([
-                    'ordem_servico_id' => $ordemServico->id,
-
-                    'etapa_origem_id' => null,
-
-                    'etapa_destino_id' => $etapaInicial->id,
-
-                    'etapa_origem_nome' => null,
-
-                    'etapa_destino_nome' => $etapaInicial->nome,
-
-                    'user_id' => $userId,
-
-                    'motivo' => 'Etapa inicial definida na criação da Ordem de Serviço.',
-                ]);
-
-                return $ordemServico->fresh([
-                    'setorServico',
-                    'etapa',
-                    'historicoEtapas',
-                ]);
-            }
-        );
+    /**
+     * Operacao interna: apenas dentro da transacao da Nota ja criada.
+     * O chamador deve inserir o NotasItem antes do commit externo.
+     */
+    public function criarParaNota(\App\Models\Nota $nota, array $dados, ?int $userId = null): OrdemServico
+    {
+        if (DB::transactionLevel() < 1) {
+            throw new \LogicException('Criacao de O.S. vinculada exige transacao da Nota.');
+        }
+        $nota = \App\Models\Nota::query()->lockForUpdate()->findOrFail($nota->id);
+        if ($nota->status !== 'Aberto') {
+            throw ValidationException::withMessages(['nota' => 'Somente Nota aberta recebe O.S.']);
+        }
+        if ((int) $nota->cliente_id !== (int) ($dados['cliente_id'] ?? 0)
+            || (int) $nota->veiculo_cliente_id !== (int) ($dados['veiculo_cliente_id'] ?? 0)) {
+            throw ValidationException::withMessages(['nota' => 'Cliente ou veiculo da O.S. divergente da Nota.']);
+        }
+        $veiculo = VeiculosCliente::query()
+            ->whereKey($dados['veiculo_cliente_id'])
+            ->whereHas('clientes', fn ($q) => $q->where('clientes.id', $dados['cliente_id']))
+            ->first();
+        if (! $veiculo) {
+            throw ValidationException::withMessages([
+                'veiculo_cliente_id' => 'O veiculo nao pertence ao cliente informado.',
+            ]);
+        }
+        $etapa = $this->obterEtapaInicial();
+        $ordemServico = OrdemServico::create([
+            'nota_id' => $nota->id,
+            'data_abertura' => now(),
+            'cliente_id' => $dados['cliente_id'],
+            'veiculo_cliente_id' => $dados['veiculo_cliente_id'],
+            'setor_servico_id' => $dados['setor_servico_id'],
+            'etapa_id' => $etapa->id,
+            'descricao' => $dados['descricao'] ?? null,
+            'valor' => $this->normalizarValor($dados['valor']),
+            'status' => 'aberta',
+        ]);
+        OrdemServicoEtapaHistorico::create([
+            'ordem_servico_id' => $ordemServico->id,
+            'etapa_origem_id' => null,
+            'etapa_destino_id' => $etapa->id,
+            'etapa_origem_nome' => null,
+            'etapa_destino_nome' => $etapa->nome,
+            'user_id' => $userId,
+            'motivo' => 'Etapa inicial definida na criacao da Ordem de Servico.',
+        ]);
+        return $ordemServico->fresh(['nota', 'setorServico', 'etapa', 'historicoEtapas']);
     }
 
     private function obterEtapaInicial(): Etapa

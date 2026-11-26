@@ -2,11 +2,20 @@
 
 @section('content')
 
-<div class="container cadastro">
+<div class="container cadastro feux-notas-lote02 feux-notas-detalhe feux-moderno">
 
     {{-- =====================================================
         CABEÇALHO
     ====================================================== --}}
+
+    <div class="feux-notas-detalhe__navegacao">
+        <a href="{{ route('notas.index') }}" class="feux-notas-link-retorno">
+            <i class="bi bi-arrow-left" aria-hidden="true"></i> Todas as notas
+        </a>
+        <a href="#feux-notas-itens" class="feux-notas-link-itens">
+            <i class="bi bi-list-ul" aria-hidden="true"></i> Ir para itens
+        </a>
+    </div>
 
     <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
 
@@ -830,6 +839,8 @@
 
     @endif
 
+    <div id="feux-notas-itens" class="feux-notas-ancora" tabindex="-1"></div>
+
     {{-- =====================================================
         ITENS
     ====================================================== --}}
@@ -868,7 +879,7 @@
 
             @else
 
-                <div class="table-responsive">
+                <div class="table-responsive feux-notas-itens-leitura">
 
                     <table class="table table-bordered table-hover align-middle mb-0">
 
@@ -1239,6 +1250,12 @@
         </div>
 
     </div>
+
+    @include('anexo._gestao_operacional', [
+        'urlStore' => route('notas.anexos.store', $nota),
+        'podeAlterar' => $nota->status === 'Aberto' && auth()->user()?->isAdmin(),
+        'anexosVinculos' => $nota->anexosVinculos,
+    ])
 
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
 

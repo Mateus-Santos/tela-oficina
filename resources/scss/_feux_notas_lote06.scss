@@ -1,0 +1,96 @@
+/* FEUX L06 — feedback de erros e salvamento do formulario de Notas. */
+.cadastro.feux-notas-lote02.feux-notas-formulario {
+    .feux-notas-avisos {
+        padding: clamp(.9rem, 2vw, 1.25rem);
+        margin: 0 0 1.25rem;
+        border: 1px solid #e3a99f;
+        border-left: 5px solid #b33128;
+        border-radius: .85rem;
+        background: #fff8f7;
+        color: #702b25;
+        text-align: left;
+        scroll-margin-top: 8rem;
+    }
+    .feux-notas-avisos__cabecalho {
+        display: flex;
+        align-items: flex-start;
+        gap: .8rem;
+    }
+    .feux-notas-avisos__cabecalho > .bi {
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+    .feux-notas-avisos__cabecalho h2 { color: #702b25; }
+    .feux-notas-avisos__lista {
+        margin: .9rem 0 0;
+        padding: 0;
+        list-style: none;
+    }
+    .feux-notas-avisos__lista li {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: .25rem .8rem;
+        border-top: 1px solid #edd2cd;
+        padding: .55rem 0;
+        overflow-wrap: anywhere;
+    }
+    .feux-notas-avisos__atalho {
+        color: #7b241b;
+        font-weight: 700;
+        text-decoration: underline;
+        text-underline-offset: .15em;
+    }
+    .feux-notas-avisos__atalho:focus-visible {
+        outline: 3px solid #7b241b;
+        outline-offset: 3px;
+        border-radius: .2rem;
+    }
+    .feux-notas-acoes {
+        gap: .75rem;
+    }
+    #form-os-itens[data-feux-enviando='1'] #btn-salvar-nota {
+        opacity: .8;
+        cursor: progress;
+    }
+    #form-os-itens[data-feux-enviando='1'] #btn-salvar-nota::after {
+        content: '';
+        display: inline-block;
+        width: .8rem;
+        height: .8rem;
+        margin-left: .55rem;
+        vertical-align: -.05rem;
+        border: 2px solid currentColor;
+        border-right-color: transparent;
+        border-radius: 50%;
+        animation: feux-notas-l06-giro 1s linear infinite;
+    }
+}
+@keyframes feux-notas-l06-giro { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+    .cadastro.feux-notas-lote02.feux-notas-formulario #form-os-itens[data-feux-enviando='1'] #btn-salvar-nota::after { animation: none; }
+}
+@media (max-width: 767.98px) {
+    .cadastro.feux-notas-lote02.feux-notas-formulario {
+        #form-os-itens .feux-notas-acoes {
+            position: sticky;
+            bottom: 0;
+            z-index: 5;
+            background: #fff;
+            border: 1px solid #dce3ea;
+            border-radius: .8rem;
+            padding: .7rem;
+            padding-bottom: max(.7rem, env(safe-area-inset-bottom));
+            box-shadow: 0 -6px 24px rgba(28, 49, 74, .12);
+        }
+        #form-os-itens .feux-notas-acoes > :is(a, button) {
+            flex: 1 1 9rem;
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .4rem;
+        }
+    }
+}

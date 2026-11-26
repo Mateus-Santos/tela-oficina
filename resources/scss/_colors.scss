@@ -1,11 +1,19 @@
-$color_1: #000000; // Preto Plata de trânsito.
-$color_2: #43da43; //Verde Semáforo.
-$color_2_1: #008000; //Verde Semáforo.
-$color_3: #FF0000; // Vermelho Semáforo.
-$color_4: #f9fd00; // Amarelo Semáforo.
-$color_5: #FFFFFF; // Faixa Pedestre
-$color_5_1: #e4e4e4a8; // Faixa Pedestre
-$color_6: #ff7919; // Marrom Meio-fio/Calçadas.
+$preto: #000000; // Preto Plata de trânsito.
+$color_1: $preto; // alias legado, remocao em sprint dedicada
+$verde-claro: #43da43; //Verde Semáforo.
+$color_2: $verde-claro; // alias legado, remocao em sprint dedicada
+$verde-escuro: #008000; //Verde Semáforo.
+$color_2_1: $verde-escuro; // alias legado, remocao em sprint dedicada
+$vermelho: #FF0000; // Vermelho Semáforo.
+$color_3: $vermelho; // alias legado, remocao em sprint dedicada
+$amarelo: #f9fd00; // Amarelo Semáforo.
+$color_4: $amarelo; // alias legado, remocao em sprint dedicada
+$branco: #FFFFFF; // Faixa Pedestre
+$color_5: $branco; // alias legado, remocao em sprint dedicada
+$cinza-claro-translucido: #e4e4e4a8; // Faixa Pedestre
+$color_5_1: $cinza-claro-translucido; // alias legado, remocao em sprint dedicada
+$laranja: #ff7919; // Marrom Meio-fio/Calçadas.
+$color_6: $laranja; // alias legado, remocao em sprint dedicada
 $font-family_1: "Open Sans", sans-serif;
 $font-family_2: "Jost", sans-serif;
 $font-family_3: "Poppins", sans-serif;
@@ -15,8 +23,14 @@ $font-family_6: 'Montserrat', sans-serif;
 $font-family_7: 'Merriweather', serif;
 $font-family_8: 'Source Sans Pro', sans-serif;
 $spacing-unit: 1rem;
-$background-color_1: rgba(0, 0, 0, 0.842);
-$background-color_2: rgba(36, 36, 35, 0.815);
-$background-color_3: linear-gradient(360deg, $color_1, #333333);
-$background-color_4: linear-gradient(360deg, $color_5, $color_5_1);
-$background-color_5: linear-gradient(90deg, $color_4, #b3b600);
+// Valores nomeados: aliases legados permanecem ate a migracao gradual.
+$preto-translucido: rgba(0, 0, 0, 0.842);
+$cinza-escuro-translucido: rgba(36, 36, 35, 0.815);
+$gradiente-escuro: linear-gradient(360deg, $preto, #333333);
+$gradiente-claro: linear-gradient(360deg, $branco, $cinza-claro-translucido);
+$gradiente-amarelo: linear-gradient(90deg, $amarelo, #b3b600);
+$background-color_1: $preto-translucido;
+$background-color_2: $cinza-escuro-translucido;
+$background-color_3: $gradiente-escuro;
+$background-color_4: $gradiente-claro;
+$background-color_5: $gradiente-amarelo;

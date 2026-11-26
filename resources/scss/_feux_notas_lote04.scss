@@ -1,0 +1,54 @@
+/* FEUX L04 — teclado e leitura dos resultados. Somente o modal de Notas. */
+.modal.feux-notas-modal-itens {
+    .feux-notas-busca-teclado {
+        display: flex;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: .25rem .45rem;
+        color: #41546a;
+        line-height: 1.5;
+        margin-top: .5rem;
+        margin-bottom: 1rem !important;
+    }
+    .feux-notas-busca-teclado kbd {
+        display: inline-block;
+        padding: .05rem .35rem;
+        border: 1px solid #c5d4e4;
+        border-radius: .3rem;
+        background: #f3f7fc;
+        color: #243e59;
+        box-shadow: 0 1px 0 #d7e1ec;
+        font: inherit;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+    #builder_resultados {
+        max-height: min(19rem, 40vh);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-gutter: stable;
+        border-radius: .6rem;
+    }
+    #builder_resultados button.list-group-item-action {
+        min-height: 3rem;
+        text-align: left;
+        line-height: 1.45;
+        overflow-wrap: anywhere;
+    }
+    #builder_resultados button.list-group-item-action:focus-visible {
+        position: relative;
+        z-index: 1;
+        outline: 3px solid #195994;
+        outline-offset: -3px;
+        background: #eaf3fd;
+    }
+}
+@media (max-width: 575.98px) {
+    .modal.feux-notas-modal-itens {
+        .feux-notas-busca-teclado { font-size: .82rem; }
+        #builder_resultados { max-height: 32vh; }
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .modal.feux-notas-modal-itens #builder_resultados { scroll-behavior: auto; }
+}

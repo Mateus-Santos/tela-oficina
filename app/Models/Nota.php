@@ -38,6 +38,26 @@ class Nota extends Model
         'total' => 'decimal:2',
     ];
 
+    /**
+     * Uma Nota finalizada não pode ser gravada fora da última etapa.
+     * Também bloqueia mudança manual da etapa de Nota já finalizada.
+     * Atualizações SQL diretas não acionam eventos Eloquent: auditoria separada.
+     */
+    protected static function booted(): void
+    {
+        static::saving(static function (self $nota): void {
+            if (! in_array($nota->status, ['Finalizado', 'Concluido'], true)) return;
+            if (! $nota->isDirty('status') && ! $nota->isDirty('etapa_id')) return;
+            $valida = Etapa::query()->paraNota()->ativas()->finais()
+                ->whereKey($nota->etapa_id)->exists();
+            if (! $valida) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'etapa_id' => 'Nota finalizada deve permanecer na última etapa operacional.',
+                ]);
+            }
+        });
+    }
+
     public function itens(): HasMany
     {
         return $this->hasMany(
@@ -86,10 +106,21 @@ class Nota extends Model
         );
     }
 
+    public function anexosVinculos(): HasMany
+    {
+        return $this->hasMany(AnexoVinculo::class, 'vinculavel_id')
+            ->where('vinculavel_type', self::class);
+    }
+
     public function scopeFiltro(
         Builder $query,
         array $filters
     ): Builder {
+        // Busca exata pelo codigo da Nota (inclui status historico).
+        if (!empty($filters['id'])) {
+            $query->whereKey((int) $filters['id']);
+        }
+
         /*
          * =====================================================
          * CLIENTE

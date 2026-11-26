@@ -1,7 +1,7 @@
 @extends('layouts.layout')
 
 @section('content')
-<div class="container cadastro">
+<div class="container cadastro feux-listagem-compras feux-moderno">
     <x-list-header
         title="LISTAR COMPRAS"
         icon="bi-cart-check"
@@ -291,7 +291,64 @@
                     </div>
                 </div>
 
-                <div class="table-responsive">
+                {{-- FEUX-06G: cards compactos apenas em telas menores; tabela desktop preservada. --}}
+                <div class="feux-compra-mobile d-lg-none" aria-label="Compras do dia">
+                    @foreach($comprasDoDia as $compra)
+                        <article class="feux-compra-mobile__item border-bottom p-3">
+                            <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap mb-3">
+                                <div class="feux-compra-mobile__identificacao">
+                                    <div class="small text-muted">Compra #{{ $compra->id }}</div>
+                                    <h6 class="fw-bold mb-0">NF {{ $compra->numero_nf }}</h6>
+                                    @if($compra->serie_nf)
+                                        <div class="small text-muted">Série {{ $compra->serie_nf }}</div>
+                                    @endif
+                                </div>
+                                @include('compra.partials.status-compra', ['compra' => $compra])
+                            </div>
+
+                            <dl class="feux-compra-mobile__dados mb-3">
+                                <div>
+                                    <dt>Fornecedor</dt>
+                                    <dd>{{ $compra->fornecedor?->nome ?? 'Não informado' }}</dd>
+                                </div>
+                                <div>
+                                    <dt>Valor</dt>
+                                    <dd class="fw-semibold">R$ {{ number_format($compra->valor_total, 2, ',', '.') }}</dd>
+                                </div>
+                            </dl>
+                            <div class="feux-compra-mobile__integracoes mb-3">
+                                <div class="small fw-semibold mb-1">Integrações</div>
+                                @include('compra.partials.indicadores-integracao', ['compra' => $compra])
+                            </div>
+                            <div class="feux-compra-mobile__acoes d-flex gap-2 flex-wrap">
+                                <a href="{{ route('compras.show', $compra) }}"
+                                   class="btn btn-sm btn-outline-primary"
+                                   aria-label="Visualizar compra #{{ $compra->id }}">
+                                    <i class="bi bi-eye" aria-hidden="true"></i> Visualizar
+                                </a>
+                                @if(in_array($compra->status, ['pendente', 'conferindo'], true))
+                                    <a href="{{ route('compras.edit', $compra) }}"
+                                       class="btn btn-sm btn-outline-secondary"
+                                       aria-label="Editar compra #{{ $compra->id }}">
+                                        <i class="bi bi-pencil" aria-hidden="true"></i> Editar
+                                    </a>
+                                    <form action="{{ route('compras.destroy', $compra) }}"
+                                          method="POST"
+                                          onsubmit="return confirm('Tem certeza que deseja excluir esta compra?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                aria-label="Excluir compra #{{ $compra->id }}">
+                                            <i class="bi bi-trash" aria-hidden="true"></i> Excluir
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
+                        </article>
+                    @endforeach
+                </div>
+
+                <div class="table-responsive d-none d-lg-block">
                     <table class="table table-hover align-middle mb-0">
                         <thead>
                             <tr>
@@ -307,35 +364,7 @@
 
                         <tbody>
                             @foreach($comprasDoDia as $compra)
-                                @php
-                                    $statusConfig = match ($compra->status) {
-                                        'pendente' => [
-                                            'class' => 'bg-warning text-dark',
-                                            'icon' => 'bi-clock',
-                                            'label' => 'Pendente',
-                                        ],
-                                        'conferindo' => [
-                                            'class' => 'bg-info text-dark',
-                                            'icon' => 'bi-search',
-                                            'label' => 'Conferindo',
-                                        ],
-                                        'aprovada' => [
-                                            'class' => 'bg-success',
-                                            'icon' => 'bi-check-circle',
-                                            'label' => 'Aprovada',
-                                        ],
-                                        'cancelada' => [
-                                            'class' => 'bg-danger',
-                                            'icon' => 'bi-x-circle',
-                                            'label' => 'Cancelada',
-                                        ],
-                                        default => [
-                                            'class' => 'bg-secondary',
-                                            'icon' => 'bi-question-circle',
-                                            'label' => ucfirst($compra->status),
-                                        ],
-                                    };
-                                @endphp
+
 
                                 <tr>
                                     <td class="ps-3">
@@ -367,10 +396,7 @@
                                     </td>
 
                                     <td>
-                                        <span class="badge {{ $statusConfig['class'] }}">
-                                            <i class="bi {{ $statusConfig['icon'] }}"></i>
-                                            {{ $statusConfig['label'] }}
-                                        </span>
+                                        @include('compra.partials.status-compra', ['compra' => $compra])
                                     </td>
 
                                     <td>

@@ -40,16 +40,21 @@ class AuditoriaOsVinculadasTest extends TestCase
         ]);
         $setor = SetorServico::create(['setor' => 'Auditoria', 'nivel' => 1]);
         $inicial = Etapa::query()->where('tipo', 'inicial')->where('aplica_ordem_servico', true)->firstOrFail();
+        $etapaNota = in_array($statusNota, ['Finalizado', 'Concluido'], true)
+            ? Etapa::query()->paraNota()->ativas()->finais()->firstOrFail()
+            : Etapa::inicialParaNota();
+        $nota = Nota::create([
+            'cliente_id' => $cliente->id, 'veiculo_cliente_id' => $veiculoCliente,
+            'etapa_id' => $etapaNota->id,
+            'tipo' => 'Servico', 'status' => $statusNota, 'subtotal' => 50,
+            'desconto' => 0, 'total' => 50,
+        ]);
         $os = OrdemServico::create([
+            'nota_id' => $nota->id,
             'data_abertura' => $agora, 'setor_servico_id' => $setor->id,
             'veiculo_cliente_id' => $veiculoCliente, 'cliente_id' => $cliente->id,
             'etapa_id' => $inicial->id, 'descricao' => 'Servico legado',
             'valor' => '50.00', 'status' => $statusOs,
-        ]);
-        $nota = Nota::create([
-            'cliente_id' => $cliente->id, 'veiculo_cliente_id' => $veiculoCliente,
-            'tipo' => 'Servico', 'status' => $statusNota, 'subtotal' => 50,
-            'desconto' => 0, 'total' => 50,
         ]);
         NotasItem::create([
             'nota_id' => $nota->id, 'itemable_type' => OrdemServico::class,
@@ -83,19 +88,52 @@ class AuditoriaOsVinculadasTest extends TestCase
         $this->assertDatabaseCount('movimentacao_estoques', 0);
     }
 
-    public function test_os_vinculada_mais_de_uma_vez_exige_revisao(): void
+    public function test_indice_unico_impede_os_vinculada_mais_de_uma_vez(): void
     {
         [$nota, $os] = $this->cenario();
+        $this->expectException(\Illuminate\Database\UniqueConstraintViolationException::class);
         NotasItem::create([
             'nota_id' => $nota->id, 'itemable_type' => OrdemServico::class,
             'itemable_id' => $os->id, 'descricao' => 'Duplicidade legado',
             'quantidade' => 1, 'valor_unitario' => 50, 'desconto' => 0, 'valor_total' => 50,
         ]);
+    }
+
+    public function test_item_comercial_com_nota_diferente_da_fk_exige_revisao(): void
+    {
+        [$nota, $os] = $this->cenario();
+        $outra = Nota::create([
+            'cliente_id' => $nota->cliente_id,
+            'veiculo_cliente_id' => $nota->veiculo_cliente_id,
+            'etapa_id' => Etapa::query()->paraNota()->ativas()->finais()->firstOrFail()->id,
+            'tipo' => 'Servico', 'status' => 'Finalizado',
+            'subtotal' => 50, 'desconto' => 0, 'total' => 50,
+        ]);
+        // Simular item legado divergente contornando APENAS o evento Eloquent
+        // neste teste; a protecao de NotasItem segue ativa em producao.
+        $alterados = DB::table('notas_itens')
+            ->where('nota_id', $nota->id)
+            ->where('itemable_type', OrdemServico::class)
+            ->where('itemable_id', $os->id)
+            ->update(['nota_id' => $outra->id]);
+        $this->assertSame(1, $alterados);
+        $this->assertDatabaseHas('notas_itens', [
+            'nota_id' => $outra->id,
+            'itemable_type' => OrdemServico::class,
+            'itemable_id' => $os->id,
+        ]);
+
         $auditoria = app(AuditarOsVinculadas::class);
-        $this->assertSame('vinculo_duplicado', $auditoria->auditar($nota->id)[0]['situacao']);
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('duplicado');
-        $auditoria->corrigirNota($nota->id);
+        $this->assertSame('nota_canonica_divergente', $auditoria->auditar($outra->id)[0]['situacao']);
+        try {
+            $auditoria->corrigirNota($outra->id);
+            $this->fail('A auditoria nao pode corrigir vinculo canonico divergente.');
+        } catch (InvalidArgumentException $e) {
+            $this->assertStringContainsString('canonica divergente', $e->getMessage());
+        }
+        $this->assertSame('aberta', $os->fresh()->status);
+        $this->assertSame($nota->id, $os->fresh()->nota_id);
+        $this->assertDatabaseCount('movimentacao_estoques', 0);
     }
 
     public function test_nota_cancelada_nao_dispara_correcao_automatica(): void
