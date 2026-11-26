@@ -25,9 +25,11 @@ class ExcecaoP03Test(unittest.TestCase):
             },
         }
 
-    def test_excecao_exata_dev_tem_prazo(self):
-        ok, _ = POL.avaliar_excecao(self.payload(), hoje=date(2026, 11, 17))
-        self.assertTrue(ok)
+    def test_excecao_antiga_nao_cobre_lockfiles_novos(self):
+        # A whitelist P03 antiga nao pode autorizar a nova arvore de dependencias.
+        ok, motivo = POL.avaliar_excecao(self.payload(), hoje=date(2026, 11, 17))
+        self.assertFalse(ok)
+        self.assertIn('lockfile ou empacotamento mudou', motivo)
 
     def test_excecao_expirada_reprova(self):
         ok, _ = POL.avaliar_excecao(self.payload(), hoje=date(2026, 12, 2))

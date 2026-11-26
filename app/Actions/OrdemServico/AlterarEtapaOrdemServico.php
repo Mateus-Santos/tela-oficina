@@ -23,19 +23,14 @@ class AlterarEtapaOrdemServico
                 $userId,
                 $motivo
             ) {
-                $ordemServico =
-                    OrdemServico::query()
-                        ->lockForUpdate()
-                        ->with('etapa')
-                        ->findOrFail(
-                            $ordemServico->id
-                        );
+                $etapa = Etapa::query()
+                    ->lockForUpdate()
+                    ->findOrFail($etapa->id);
 
-                $etapa =
-                    Etapa::query()
-                        ->findOrFail(
-                            $etapa->id
-                        );
+                $ordemServico = OrdemServico::query()
+                    ->lockForUpdate()
+                    ->with('etapa')
+                    ->findOrFail($ordemServico->id);
 
                 /*
                  * =====================================================

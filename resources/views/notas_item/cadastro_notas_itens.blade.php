@@ -2,7 +2,7 @@
 
 @section('content')
 
-<div class="container cadastro feux-notas-lote02 feux-notas-formulario feux-moderno">
+<div class="container cadastro feux-notas-lote02 feux-notas-formulario feux-workspace-redesign feux-moderno">
 
     <header class="feux-notas-cabecalho">
         <div class="feux-notas-cabecalho__texto">
@@ -54,6 +54,8 @@
 
     <p class="feux-notas-envio-status visually-hidden" role="status" aria-live="polite"></p>
 
+    <div class="feux-notas-workspace__grid">
+        <div class="feux-notas-workspace__editor">
     <form data-feux-form="true"
         action="{{ route('notasitem.store') }}"
         method="POST"
@@ -65,6 +67,9 @@
         @include('notas_item._form')
 
     </form>
+        </div>
+        @include('notas_item.partials._workspace_sidebar')
+    </div>
 
 </div>
 
@@ -84,7 +89,9 @@
         'resources/js/notaitem/feux-notas-lote02.js',
         'resources/js/notaitem/feux-notas-lote04.js',
         'resources/js/notaitem/feux-notas-lote05.js',
-        'resources/js/notaitem/feux-notas-lote06.js'
+        'resources/js/notaitem/feux-notas-lote06.js',
+        'resources/js/notaitem/feux-notas-workspace.js',
+        'resources/js/notaitem/feux-notas-itens-operacao.js'
     ])
 
 @endsection

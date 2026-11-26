@@ -1,0 +1,156 @@
+/* FEUX Workspace L02 — interface operacional de itens (nao altera modal ou backend). */
+.cadastro.feux-notas-lote02.feux-workspace-redesign.feux-notas-formulario {
+    #feux-notas-itens {
+        .feux-notas-operacao {
+            margin-bottom: 1.1rem;
+            border: 1px solid #cadde0;
+            border-radius: 1.1rem;
+            background: linear-gradient(145deg, #f8fbfb 0%, #edf5f5 100%);
+            overflow: hidden;
+            box-shadow: 0 7px 22px rgba(12, 66, 72, .065);
+            color: #153b46;
+        }
+        .feux-notas-operacao__topo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.1rem 1.25rem .85rem;
+        }
+        .feux-notas-operacao__eyebrow {
+            color: #21726d;
+            font-weight: 850;
+            text-transform: uppercase;
+            letter-spacing: .105em;
+            font-size: .68rem;
+            margin-bottom: .2rem;
+        }
+        .feux-notas-operacao__titulo {
+            font-size: clamp(1.1rem, 2vw, 1.35rem);
+            font-weight: 800;
+            letter-spacing: -.02em;
+            color: #173847;
+            margin: 0 0 .2rem;
+        }
+        .feux-notas-operacao__ajuda { margin: 0; color: #526873; font-size: .83rem; line-height: 1.45; }
+        .feux-notas-operacao__total {
+            display: flex;
+            align-items: center;
+            flex: none;
+            gap: .65rem;
+            padding: .6rem .8rem;
+            background: #fff;
+            border: 1px solid #d3e5e5;
+            border-radius: .8rem;
+            box-shadow: 0 2px 8px rgba(25, 72, 77, .04);
+        }
+        .feux-notas-operacao__total strong { color: #106b66; font-size: 1.7rem; line-height: 1; font-variant-numeric: tabular-nums; }
+        .feux-notas-operacao__total span { font-size: .72rem; max-width: 3.5rem; color: #55717b; line-height: 1.2; font-weight: 650; }
+        .feux-notas-operacao__ferramentas {
+            display: grid;
+            grid-template-columns: minmax(14rem, 1fr) auto;
+            align-items: end;
+            gap: .8rem;
+            padding: .15rem 1.25rem 1.1rem;
+        }
+        .feux-notas-operacao__busca { display: flex; flex-direction: column; gap: .4rem; min-width: 0; }
+        .feux-notas-operacao__busca > span { color: #335863; font-weight: 700; font-size: .77rem; }
+        .feux-notas-operacao__busca input {
+            width: 100%;
+            min-height: 2.85rem;
+            min-width: 0;
+            padding: .7rem .85rem;
+            border: 1px solid #b8d3d5;
+            border-radius: .7rem;
+            background: #fff;
+            color: #173c46;
+            font-size: .88rem;
+        }
+        .feux-notas-operacao__filtros { display: flex; flex-wrap: wrap; gap: .3rem; padding: .25rem; background: #e2eeee; border: 1px solid #cbdddd; border-radius: .72rem; }
+        .feux-notas-operacao__filtros button {
+            min-height: 2.35rem;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: .55rem;
+            padding: .45rem .7rem;
+            font-size: .79rem;
+            line-height: 1.2;
+            font-weight: 700;
+            color: #315d65;
+            white-space: normal;
+        }
+        .feux-notas-operacao__filtros button[aria-pressed='true'] {
+            background: #fff;
+            color: #075b57;
+            border-color: #bcd7d6;
+            box-shadow: 0 1px 5px rgba(12, 66, 72, .09);
+        }
+        .feux-notas-operacao__rodape {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: .5rem;
+            padding: .7rem 1.25rem;
+            border-top: 1px solid #d9e6e7;
+            background: rgba(255,255,255,.55);
+        }
+        .feux-notas-operacao__status { color: #365f66; font-size: .82rem; font-weight: 700; margin: 0; }
+        .feux-notas-operacao__atalho {
+            color: #0d6763;
+            border: 0;
+            background: transparent;
+            font-size: .78rem;
+            font-weight: 800;
+            min-height: 2.35rem;
+            padding: .4rem .55rem;
+            border-radius: .5rem;
+        }
+        .feux-notas-operacao__atalho:hover { background: #dbefeb; }
+        .feux-notas-operacao__atalho:disabled { opacity: .5; cursor: default; }
+        .feux-notas-operacao__informacao { color: #59747b; font-size: .73rem; margin: 0; padding: .5rem 1.25rem .75rem; line-height: 1.35; }
+        .feux-notas-operacao :is(button, input):focus-visible { outline: 3px solid #096e68; outline-offset: 2px; }
+        .feux-notas-itens-mobile { background: #fff; }
+        #tabela-itens-os { margin: 0; border-collapse: separate; border-spacing: 0; }
+        #tabela-itens-os thead th {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background: #e7f1f1;
+            color: #24505b;
+            border: 0;
+            border-bottom: 2px solid #bed5d7;
+            font-size: .73rem;
+            letter-spacing: .065em;
+            padding: .95rem .85rem;
+        }
+        #tabela-itens-os tbody tr[data-item-index] { transition: background-color .12s ease, box-shadow .12s ease; }
+        #tabela-itens-os tbody tr[data-item-index]:hover { background: #f4faf9; }
+        #tabela-itens-os tbody tr[data-item-index]:focus-within { background: #e9f7f4; box-shadow: inset 4px 0 #0d7770; }
+        #tabela-itens-os tbody tr[data-item-index] td { vertical-align: middle; border-color: #e3ebed; padding: .85rem .7rem; }
+        #tabela-itens-os tbody tr[hidden] { display: none !important; }
+    }
+}
+@media (max-width: 1199.98px) {
+    .cadastro.feux-notas-lote02.feux-workspace-redesign.feux-notas-formulario #feux-notas-itens {
+        .feux-notas-operacao__ferramentas { grid-template-columns: minmax(0,1fr); }
+        .feux-notas-operacao__filtros { justify-content: space-between; }
+        .feux-notas-operacao__filtros button { flex: 1 1 auto; }
+    }
+}
+@media (max-width: 575.98px) {
+    .cadastro.feux-notas-lote02.feux-workspace-redesign.feux-notas-formulario #feux-notas-itens {
+        .feux-notas-operacao__topo { padding: .9rem; align-items: start; }
+        .feux-notas-operacao__total { flex-direction: column; gap: .2rem; text-align: center; padding: .5rem .6rem; }
+        .feux-notas-operacao__total strong { font-size: 1.45rem; }
+        .feux-notas-operacao__total span { max-width: none; }
+        .feux-notas-operacao__ferramentas { padding: .15rem .9rem .9rem; }
+        .feux-notas-operacao__filtros button { min-height: 2.75rem; }
+        .feux-notas-operacao__rodape { padding: .65rem .9rem; align-items: flex-start; }
+        .feux-notas-operacao__informacao { padding: .55rem .9rem .85rem; }
+        #tabela-itens-os thead th { position: static; }
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .cadastro.feux-notas-lote02.feux-workspace-redesign.feux-notas-formulario #feux-notas-itens #tabela-itens-os tbody tr[data-item-index] { transition: none; }
+}

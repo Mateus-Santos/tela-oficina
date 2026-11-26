@@ -203,6 +203,7 @@ class EtapaNotaTest extends TestCase
 
         $nota->update([
             'status' => 'Finalizado',
+            'etapa_id' => Etapa::query()->paraNota()->ativas()->finais()->firstOrFail()->id,
         ]);
 
         $diagnostico =

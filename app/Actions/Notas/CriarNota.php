@@ -245,12 +245,16 @@ class CriarNota
             }
 
             if ($tipo === OrdemServico::class) {
-                $this->validarOrdemServico(
-                    $itemId,
-                    $index,
-                    $clienteId,
-                    $veiculoClienteId
-                );
+                if ($itemId < 0) {
+                    \App\Services\Nota\OsRascunhoNaNota::validar(
+                        $dadosItem, $clienteId, $veiculoClienteId,
+                        "itens.{$index}.itemable_id"
+                    );
+                } else {
+                    $this->validarOrdemServico(
+                        $itemId, $index, $clienteId, $veiculoClienteId
+                    );
+                }
             }
 
             $totaisItem =
@@ -431,6 +435,14 @@ class CriarNota
                 now()
                     ->addDays($garantiaDias)
                     ->format('Y-m-d');
+        }
+
+        if ($dadosItem['itemable_type'] === OrdemServico::class
+            && (int) $dadosItem['itemable_id'] < 0) {
+            $novaOs = \App\Services\Nota\OsRascunhoNaNota::criar(
+                $nota, $dadosItem, auth()->id()
+            );
+            $dadosItemNota['itemable_id'] = $novaOs->id;
         }
 
         return NotasItem::create(

@@ -214,17 +214,12 @@ class OrdemServicoController extends Controller
             ]
         );
 
-        $criarOrdemServico->execute(
-            $dados,
-            $request->user()->id
-        );
+        $resultado = app(\App\Services\Nota\CriarOsComNota::class)
+            ->execute($dados, $request->user()->id);
 
         return redirect()
-            ->route('ordemservicos.index')
-            ->with(
-                'success',
-                'Ordem de serviço cadastrada com sucesso!'
-            );
+            ->route('notas.show', $resultado['nota']->id)
+            ->with('success', 'O.S. criada e vinculada a Nota #' . $resultado['nota']->id . '.');
     }
 
     // U03: somente OS aberta e sem vinculo com Nota pode ser editada.
@@ -342,6 +337,14 @@ class OrdemServicoController extends Controller
                     'error',
                     'Somente Ordens de Serviço abertas podem ser excluídas.'
                 );
+        }
+
+        // FEUX: nao destruir uma O.S. utilizada como item de Nota.
+        if (\App\Models\NotasItem::query()
+            ->where('itemable_type', \App\Models\OrdemServico::class)
+            ->where('itemable_id', $ordemservico->id)->exists()) {
+            return redirect()->route('ordemservicos.index')
+                ->with('error', 'O.S. vinculada a Nota nao pode ser excluida.');
         }
 
         $ordemservico->delete();

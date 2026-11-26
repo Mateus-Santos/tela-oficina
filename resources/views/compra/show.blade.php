@@ -41,6 +41,23 @@
     </a>
 </div>
 
+@php
+    $d04ValorLiquido = app(\App\Services\Compra\ValorDevidoCompra::class)
+        ->valorLiquidoCentavos($compra) / 100;
+    $d04Pendentes = $compra->devolucoes()
+        ->where('modalidade', 'documental')
+        ->where('situacao_financeira', 'pendente')->count();
+@endphp
+@if ($compra->devolucoes()->where('modalidade', 'documental')->exists())
+    <div class="alert alert-info text-start" role="status">
+        NF original: R$ {{ number_format((float) $compra->valor_total, 2, ',', '.') }} ·
+        Valor líquido reconhecido: <strong>R$ {{ number_format($d04ValorLiquido, 2, ',', '.') }}</strong>.
+        @if ($d04Pendentes > 0)
+            <strong class="text-danger">{{ $d04Pendentes }} devolução(ões) com abatimento financeiro PENDENTE.</strong>
+        @endif
+    </div>
+@endif
+
 @if (session('success'))
     <div class="alert alert-success">
         <i class="bi bi-check-circle"></i>

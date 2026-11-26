@@ -27,6 +27,28 @@ class NotasItem extends Model
     ];
 
 
+    /**
+     * Nao aceita inserir ou transferir item O.S. para Nota diferente
+     * daquela registrada na FK canonica. Operacoes em massa continuam
+     * protegidas nos Actions/Controllers; nao sao eventos Eloquent.
+     */
+    protected static function booted(): void
+    {
+        $verificar = static function (self $item): void {
+            if ($item->itemable_type !== OrdemServico::class) {
+                return;
+            }
+            $os = OrdemServico::query()->findOrFail((int) $item->itemable_id);
+            if ((int) $os->nota_id !== (int) $item->nota_id) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'itens' => 'O.S. vinculada a Nota divergente. Operacao bloqueada.',
+                ]);
+            }
+        };
+        static::creating($verificar);
+        static::updating($verificar);
+    }
+
     public function itemable()
     {
         return $this->morphTo();

@@ -108,6 +108,17 @@ class AtualizarNota
                         ->values()
                         ->all();
 
+                $osRemovidas = $nota->itens()
+                    ->where('itemable_type', OrdemServico::class)
+                    ->when(!empty($idsEnviados),
+                        fn ($q) => $q->whereNotIn('id', $idsEnviados))
+                    ->exists();
+                if ($osRemovidas) {
+                    throw ValidationException::withMessages([
+                        'itens' => 'Nao e permitido remover O.S. vinculada da Nota.'
+                    ]);
+                }
+
                 if (!empty($idsEnviados)) {
                     $nota
                         ->itens()
@@ -253,12 +264,19 @@ class AtualizarNota
                             'nota_id',
                             $nota->id
                         )
-                        ->exists();
+                        ->first();
 
                 if (!$itemPertence) {
                     throw ValidationException::withMessages([
                         "itens.{$index}.id" =>
                             'Um dos itens enviados não pertence a esta Nota.',
+                    ]);
+                }
+                if ($itemPertence->itemable_type === OrdemServico::class
+                    && ($dadosItem['itemable_type'] !== OrdemServico::class
+                        || (int) $dadosItem['itemable_id'] !== (int) $itemPertence->itemable_id)) {
+                    throw ValidationException::withMessages([
+                        "itens.{$index}.id" => 'Nao e permitido trocar o vinculo da O.S. nesta Nota.',
                     ]);
                 }
             }
@@ -304,13 +322,16 @@ class AtualizarNota
                 $tipo
                 === OrdemServico::class
             ) {
-                $this->validarOrdemServico(
-                    $nota,
-                    $itemId,
-                    $index,
-                    $clienteId,
-                    $veiculoClienteId
-                );
+                if ($itemId < 0) {
+                    \App\Services\Nota\OsRascunhoNaNota::validar(
+                        $dadosItem, $clienteId, $veiculoClienteId,
+                        "itens.{$index}.itemable_id"
+                    );
+                } else {
+                    $this->validarOrdemServico(
+                        $nota, $itemId, $index, $clienteId, $veiculoClienteId
+                    );
+                }
             }
 
             $totaisItem =
@@ -465,6 +486,14 @@ class AtualizarNota
                     $valorUnitario,
                     $desconto
                 );
+
+        if ($dadosItem['itemable_type'] === OrdemServico::class
+            && (int) $dadosItem['itemable_id'] < 0) {
+            $novaOs = \App\Services\Nota\OsRascunhoNaNota::criar(
+                $nota, $dadosItem, auth()->id()
+            );
+            $dadosItem['itemable_id'] = $novaOs->id;
+        }
 
         $dadosParaSalvar = [
             'nota_id' =>
