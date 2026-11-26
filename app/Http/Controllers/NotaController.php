@@ -80,11 +80,11 @@ class NotaController extends Controller
         $filters =
             $request->all();
 
-        $filters['status'] =
-            $request->input(
-                'status',
-                'Aberto'
-            );
+        // Ao buscar pelo codigo, nao ocultar Notas finalizadas por padrao.
+        $filters['status'] = $request->input(
+            'status',
+            $request->filled('id') ? 'Todos' : 'Aberto'
+        );
 
         $notas =
             Nota::query()
@@ -159,6 +159,7 @@ class NotaController extends Controller
         $nota->load([
             'cliente.pessoa',
             'veiculosCliente.veiculo.montadora',
+            'anexosVinculos.anexo',
 
             'itens.itemable' => function (
                 MorphTo $morphTo

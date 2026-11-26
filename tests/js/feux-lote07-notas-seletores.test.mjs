@@ -12,7 +12,7 @@ const app = readFileSync('resources/scss/_app.scss','utf8');
 
 test('L07: apenas o contêiner de seletores Livewire foi alterado', () => {
     assert.match(before, /^<div class="row g-3">/);
-    assert.equal(after, before.replace(/^<div class="row g-3">/, '<div class="row g-3 feux-nota-seletores">'));
+    assert.equal(after, before.replace(/^<div class="row g-3">/, '<div class="row g-3 feux-nota-seletores feux-seletor-cliente-veiculo">'));
 });
 
 test('L07: mantém contratos de busca, vínculo e venda de balcão', () => {

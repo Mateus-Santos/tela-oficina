@@ -13,7 +13,15 @@ const routes = s => [...s.matchAll(/route\(\s*'([^']+)'/g)].map(m=>m[1]).sort();
 for (const p of ['listar_notas_itens.blade.php','show_notas_itens.blade.php','cadastro_notas_itens.blade.php','editar_notas_itens.blade.php','_form.blade.php']) {
     test(`Notas: preservar campos e chamadas existentes em ${p}`, () => {
         const path=dir+p;
-        assert.deepEqual(names(read(path)), names(before(path)));
+        const anteriores=names(before(path));
+        const atuais=names(read(path));
+        if (p==='listar_notas_itens.blade.php') {
+            // U03 acrescentou somente a busca exata de Nota por ID.
+            assert.deepEqual(atuais,[...anteriores,'id'].sort());
+            assert.match(read(path),/name="id"\s+type="number"\s+min="1"\s+step="1"/);
+        } else {
+            assert.deepEqual(atuais,anteriores);
+        }
         const wire = s => [...s.matchAll(/<livewire:[^>]+>/gs)].map(m=>m[0]);
         assert.deepEqual(wire(read(path)),wire(before(path)));
         // Nenhuma rota antiga pode ser removida. Formularios recebem apenas link de retorno.

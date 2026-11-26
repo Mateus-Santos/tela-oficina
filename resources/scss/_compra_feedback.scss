@@ -31,3 +31,34 @@
     #compra-erros { text-align: left; }
     button[aria-busy="true"] { cursor: progress; }
 }
+
+// U03: ajustes locais sem alterar dropdowns globais.
+.feux-compra {
+    min-width: 0;
+    .compra-item, .card-body, .row > [class*="col-"] { min-width: 0; }
+    .compra-item { position: relative; }
+    .compra-item:focus-within { z-index: 6; }
+    .item-produto-resultados {
+        margin-top: .375rem;
+        max-height: min(18rem, 45dvh);
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        border-radius: .5rem;
+        line-height: 1.4;
+        z-index: 1050;
+    }
+    .item-produto-resultados .list-group-item {
+        padding: .75rem .875rem;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+}
+
+// U03: seletores de Cliente/Veiculo em Notas e OS seguem o mesmo ritmo visual.
+.feux-seletor-cliente-veiculo {
+    min-width: 0;
+    .busca-selecao { margin-top: .375rem; max-width: 100%; }
+    .busca-selecao__item { padding: .75rem .875rem; }
+    .form-control:focus-visible { outline-offset: 2px; }
+}

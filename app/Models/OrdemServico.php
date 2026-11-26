@@ -69,6 +69,12 @@ class OrdemServico extends Model
         );
     }
 
+    public function anexosVinculos(): HasMany
+    {
+        return $this->hasMany(AnexoVinculo::class, 'vinculavel_id')
+            ->where('vinculavel_type', self::class);
+    }
+
     public function historicoEtapas(): HasMany
     {
         return $this->hasMany(

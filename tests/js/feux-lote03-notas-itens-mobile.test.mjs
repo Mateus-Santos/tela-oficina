@@ -18,7 +18,14 @@ const routes = text => [...text.matchAll(/route\(\s*'([^']+)'/g)].map(x => x[1])
 for (const file of files) {
   test(`Notas L03: preservar atributos, rotas e formulários em ${file}`, () => {
     assert.deepEqual(attrs(read(file)), attrs(old(file)));
-    assert.deepEqual(routes(read(file)), routes(old(file)));
+    const anteriores=routes(old(file));
+    const atuais=routes(read(file));
+    if (file.endsWith('/show_notas_itens.blade.php')) {
+      // U06 incluiu exatamente a rota privada de anexos da Nota.
+      assert.deepEqual(atuais,[...anteriores,'notas.anexos.store'].sort());
+    } else {
+      assert.deepEqual(atuais,anteriores);
+    }
     for (const pattern of [/@csrf/g, /@method\(/g, /@vite\(/g]) {
       assert.equal((read(file).match(pattern) || []).length, (old(file).match(pattern) || []).length);
     }

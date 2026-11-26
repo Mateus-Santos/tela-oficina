@@ -117,9 +117,12 @@ class EstornarCompra
                 );
             }
 
-            $compra->update([
+            // Preserva a chave no historico, libera UNIQUE ativo no mesmo UPDATE.
+            $compra->forceFill([
                 'status' => Compra::STATUS_CANCELADA,
-            ]);
+                'chave_nf_cancelada' => $compra->chave_nf,
+                'chave_nf' => null,
+            ])->save();
 
             return $compra->fresh();
         });
