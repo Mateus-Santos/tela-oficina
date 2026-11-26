@@ -97,6 +97,9 @@ class AuditarOsVinculadas
             // Validar todo o conjunto antes da primeira alteração.
             foreach ($ids as $id) {
                 $os = $ordens->get($id);
+                if ((int) $os->nota_id !== (int) $nota->id) {
+                    throw new InvalidArgumentException("OS #{$id} com Nota canonica divergente.");
+                }
                 if ($this->vinculoInconsistente($nota, $os)) {
                     throw new InvalidArgumentException("OS #{$id} com cliente ou veiculo divergente.");
                 }
@@ -127,6 +130,7 @@ class AuditarOsVinculadas
         if ($duplicada) return 'vinculo_duplicado';
         if (!$nota) return 'nota_ausente';
         if (!$os) return 'os_ausente';
+        if ((int) $os->nota_id !== (int) $nota->id) return 'nota_canonica_divergente';
         if ($this->vinculoInconsistente($nota, $os)) return 'cliente_ou_veiculo_divergente';
         if (in_array($nota->status, ['Finalizado', 'Concluido'], true)) {
             if ($os->status === 'aberta') return 'corrigivel_com_confirmacao';
