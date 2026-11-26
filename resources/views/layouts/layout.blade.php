@@ -83,7 +83,11 @@
                                     ['Clientes', 'clientes.index', 'bi-people'],
                                     ['Veículos dos Clientes', 'veiculosclientes.index', 'bi-car-front'],
                                     ['Ordens de Serviço', 'ordemservicos.index', 'bi-wrench'],
-                                    ['Notas', 'notasitem.index', 'bi-receipt'],
+                                    [
+                                        config('feux_notas.central_vue3', false) ? 'Central de Notas' : 'Notas',
+                                        config('feux_notas.central_vue3', false) ? 'notas.workspace' : 'notasitem.index',
+                                        config('feux_notas.central_vue3', false) ? 'bi-kanban' : 'bi-receipt',
+                                    ],
                                     ['Orçamentos de peças', 'marketing.leads.index', 'bi-chat-square-text'],
                                 ]],
                                 ['Operações', 'bi-boxes', [

@@ -1,0 +1,302 @@
+/* S.O.S Mecânica · Vue Central de Notas. Escopo isolado do Blade/Livewire legado. */
+/* L03K: design tokens SEMÂNTICOS de TEXTO.
+ * Não modificar variáveis globais de Blade/Livewire. Cores de etapa continuam
+ * nos pontos de status, não nos nomes dos clientes nem títulos das colunas.
+ */
+.sos-vue-notas-shell {
+    --sos-text-primary: #17243c;
+    --sos-text-heading: #12233e;
+    --sos-text-card-heading: #23364e;
+    --sos-text-stage-heading: #29415e;
+    --sos-text-secondary: #4b607a;
+    --sos-text-muted: #526982;
+    --sos-text-subtle: #62758b;
+    --sos-text-disabled: #637287;
+    --sos-text-field: #263b55;
+    --sos-text-value: #102d51;
+    --sos-text-link: #1855ad;
+    --sos-text-action: #255db2;
+    --sos-text-icon: #2b6299;
+    --sos-text-on-primary: #ffffff;
+    --sos-text-info: #275285;
+    --sos-text-success: #176343;
+    --sos-text-danger: #95283d;
+    --sos-text-warning: #80520e;
+    --sos-text-whatsapp: #137b4e;
+    --sos-text-status-open: #205cc0;
+    --sos-text-status-done: #146a41;
+    --sos-text-status-cancelled: #a9273c;
+}
+.sos-vue-notas-shell { --sos-line:#dbe4f0; --sos-paper:#fff; --sos-primary:#2563eb; --sos-soft:#f4f7fb; color:var(--sos-text-primary); background:linear-gradient(125deg,#edf3fa,#f7f9fd 65%,#eef4fb); padding:118px 22px 85px; min-height:100vh; font-family:Inter,system-ui,-apple-system,'Segoe UI',sans-serif; }
+.sos-vue-app {max-width:1560px;margin:0 auto;} .sos-label {font-size:.7rem;letter-spacing:.1em;font-weight:800;color:var(--sos-text-subtle);}
+.sos-vue-head {display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:22px;} .sos-vue-head h1{font-size:clamp(1.55rem,2.8vw,2.4rem);font-weight:800;margin:5px 0 4px;color:var(--sos-text-heading);letter-spacing:-.035em;} .sos-vue-head p{margin:0;color:var(--sos-text-muted);font-size:.95rem;}
+.sos-btn {border:1px solid transparent;border-radius:13px;padding:10px 15px;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:.88rem;font-weight:700;line-height:1.35;min-height:42px;text-decoration:none;cursor:pointer;transition:filter .15s,transform .15s,box-shadow .15s;} .sos-btn:disabled,.sos-note button:disabled{opacity:.62;cursor:progress;} .sos-btn:not(:disabled):hover{filter:brightness(.96);transform:translateY(-1px);} .sos-btn--primary{background:#1e56d6;color:var(--sos-text-on-primary)!important;box-shadow:0 7px 15px #1b58c829;} .sos-btn--secondary{background:#e8eefb;color:var(--sos-text-link);border-color:#d4dff3;} .sos-btn--quiet{background:white;color:var(--sos-text-primary);border-color:var(--sos-line);} .sos-btn--danger{background:#fff1f1;color:var(--sos-text-danger);border-color:#f2cbd1;}
+.sos-tabs{display:flex;flex-wrap:wrap;gap:6px;padding:5px;background:#e8eef6;border:1px solid #dfe7f2;border-radius:15px;width:max-content;max-width:100%;margin-bottom:17px;} .sos-tabs button,.sos-toggle button,.sos-type-tabs button{background:transparent;border:0;padding:10px 16px;font-size:.86rem;font-weight:750;color:var(--sos-text-secondary);border-radius:10px;cursor:pointer;} .sos-tabs button.is-active,.sos-toggle button.is-active,.sos-type-tabs button.is-active{background:#fff;color:var(--sos-text-link);box-shadow:0 2px 9px #1f416b15;}
+.sos-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}.sos-metric{background:var(--sos-paper);border:1px solid var(--sos-line);border-radius:17px;padding:17px 19px;box-shadow:0 5px 20px #1f42600a;display:flex;flex-direction:column;gap:7px;min-width:0;}.sos-metric>span{font-size:.82rem;font-weight:700;color:var(--sos-text-secondary);}.sos-metric>span i{margin-right:6px;color:var(--sos-text-icon);}.sos-metric>strong{font-size:clamp(1.15rem,1.85vw,1.7rem);line-height:1.1;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.04em;}.sos-metric>small{color:var(--sos-text-muted);font-size:.78rem;}.sos-total-caption{font-size:.83rem;color:var(--sos-text-secondary);margin:10px 2px 17px;}.sos-total-caption strong{color:var(--sos-text-value);}
+.sos-toolbar{display:flex;align-items:center;gap:10px;margin:20px 0 18px;flex-wrap:wrap;} .sos-search{background:#fff;border:1px solid var(--sos-line);border-radius:13px;display:flex;align-items:center;min-height:44px;flex:1 1 300px;max-width:630px;padding:0 12px;gap:8px;color:var(--sos-text-muted);}.sos-search input{border:0;outline:0;min-width:0;width:100%;font-size:.88rem;color:var(--sos-text-field);background:transparent;}.sos-search button{border:0;background:transparent;font-size:1.1rem;color:var(--sos-text-action);cursor:pointer;}.sos-toggle{display:flex;background:#e9eff7;border:1px solid #dce6f1;padding:4px;border-radius:13px;margin-left:auto;}.sos-toggle button{padding:9px 14px;}.sos-pill{display:inline-flex;background:#d6e4ff;color:var(--sos-text-link);border-radius:999px;padding:1px 7px;font-size:.7rem;}
+.sos-alert{background:#eff5ff;border:1px solid #d7e7ff;color:var(--sos-text-info);border-radius:13px;padding:11px 14px;margin:11px 0;display:flex;gap:10px;align-items:center;font-size:.87rem;}.sos-alert--error{background:#fff0f1;color:var(--sos-text-danger);border-color:#eec6ca;}.sos-alert--success{background:#eafaf1;color:var(--sos-text-success);border-color:#c0e7d2;}.sos-alert button{margin-left:auto;border:none;background:transparent;color:inherit;font-size:1.2rem;}
+.sos-board{display:flex;gap:14px;overflow-x:auto;overflow-y:visible;scroll-snap-type:x proximity;padding:2px 2px 20px;min-height:380px;}.sos-lane{min-width:290px;width:290px;max-width:290px;flex:none;background:#e9eef6;border:1px solid #d8e1ee;border-radius:17px;padding:10px;scroll-snap-align:start;}.sos-lane__head{display:flex;align-items:center;justify-content:space-between;padding:11px 6px 16px;}.sos-lane__name{display:flex;align-items:center;gap:8px;min-width:0;}.sos-lane__head h2{font-size:.91rem;font-weight:800;margin:0;overflow-wrap:anywhere;}.sos-stage-dot{flex:none;width:10px;height:10px;background:#64748b;border-radius:99px;}.sos-stage--primary .sos-stage-dot{background:#3b82f6}.sos-stage--success .sos-stage-dot{background:#16a34a}.sos-stage--warning .sos-stage-dot{background:#e0a327}.sos-stage--danger .sos-stage-dot{background:#df4660}.sos-stage--info .sos-stage-dot{background:#06a5c1}.sos-stage--dark .sos-stage-dot{background:#1e293b}.sos-count{border-radius:20px;background:#fff;padding:4px 9px;font-size:.76rem;font-weight:700;color:var(--sos-text-subtle);}.sos-lane__cards{display:grid;gap:11px;align-content:start;min-height:160px;}.sos-lane__empty{font-size:.82rem;color:var(--sos-text-disabled);border:1px dashed #c1cbdb;border-radius:12px;margin:0;padding:25px 14px;text-align:center;}
+.sos-note{position:relative;border-radius:14px;background:#fff;border:1px solid #dce4ee;padding:14px 14px 12px;box-shadow:0 4px 9px #172b4910;cursor:grab;}.sos-note:active{cursor:grabbing}.sos-note.is-busy{opacity:.74;cursor:progress}.sos-note__head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}.sos-note__head>strong:first-child{font-size:.92rem}.sos-note__total{margin-left:auto;color:var(--sos-text-value);font-size:.9rem;}.sos-tag{font-size:.66rem;font-weight:800;padding:3px 7px;background:#eef3fd;color:var(--sos-text-link);border-radius:999px;}.sos-tag--open{background:#e5efff;color:var(--sos-text-status-open)}.sos-tag--red{background:#ffe7e9;color:var(--sos-text-status-cancelled)}.sos-tag--green{background:#def9ec;color:var(--sos-text-status-done)}.sos-note h3{font-size:.9rem;font-weight:800;line-height:1.4;margin:13px 0 4px;}.sos-note__contact,.sos-note__details{display:flex;gap:7px;flex-wrap:wrap;align-items:center;font-size:.75rem;color:var(--sos-text-secondary);}.sos-note__contact a{color:var(--sos-text-whatsapp);font-size:.95rem}.sos-note__details{margin-top:12px;display:grid;gap:5px;}.sos-note__details i{margin-right:3px}.sos-note__tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;}.sos-note__tags>span:not(.sos-tag){font-size:.68rem;background:#eff3f8;color:var(--sos-text-secondary);padding:4px 7px;border-radius:7px;}.sos-note__foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid #eef0f5;}.sos-link{color:var(--sos-text-link);background:none;border:0;cursor:pointer;font-size:.8rem;font-weight:750;text-decoration:none;}.sos-link:hover{text-decoration:underline;}.sos-stage-select select{max-width:132px;font-size:.72rem;color:var(--sos-text-field);border:1px solid #d7e0eb;border-radius:8px;background:white;padding:5px;}.sos-note__closed{font-size:.74rem;color:var(--sos-text-disabled)}.sos-note__spinner{position:absolute;inset:0;background:#ffffffbb;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:.78rem;color:var(--sos-text-info);}.sos-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:13px;}.sos-pagination{display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap;margin:19px 0;color:var(--sos-text-secondary);font-size:.84rem;}.sos-skeleton,.sos-empty{border:1px dashed #c5d2e3;background:#fafdff;border-radius:16px;text-align:center;padding:40px 18px;color:var(--sos-text-secondary);display:flex;gap:11px;align-items:center;justify-content:center;}
+.sos-drawer-overlay{position:fixed;z-index:1120;inset:0;background:rgba(9,22,38,.36);display:flex;justify-content:flex-start;}.sos-drawer{background:rgba(247,250,255,.94);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);width:min(390px,95vw);height:100%;overflow:auto;padding:28px 25px;box-shadow:15px 0 45px #10243a33;border-right:1px solid #fff9;display:flex;flex-direction:column;gap:18px;}.sos-drawer header{display:flex;align-items:center;justify-content:space-between;}.sos-drawer h2{font-size:1.4rem;font-weight:800;margin:3px 0;}.sos-drawer footer{display:flex;gap:8px;margin-top:auto;border-top:1px solid #dbe5ee;padding-top:20px;}.sos-drawer footer>.sos-btn{flex:1;}.sos-icon-button{border:1px solid #dce3ed;background:#fff;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;color:var(--sos-text-secondary);width:38px;height:38px;flex:none;cursor:pointer;}
+.sos-modal{width:min(820px,calc(100vw - 28px));max-width:none;border:1px solid #d7e3f0;border-radius:19px;box-shadow:0 18px 70px #10243a40;color:var(--sos-text-primary);max-height:min(92vh,950px);padding:0;background:#fff;}.sos-modal--wide{width:min(1060px,calc(100vw - 28px));}.sos-modal::backdrop{background:#0b1b32a8;backdrop-filter:blur(2px);}.sos-modal__head{display:flex;justify-content:space-between;align-items:center;padding:18px 23px;border-bottom:1px solid #e5ebf4;gap:16px;}.sos-modal__head h2{font-size:1.35rem;font-weight:850;letter-spacing:-.03em;margin:3px 0 0;}.sos-modal__body{padding:22px 24px 26px;max-height:calc(92vh - 85px);overflow-y:auto;}.sos-modal-actions{display:flex;gap:9px;justify-content:flex-end;margin-top:20px;padding-top:18px;border-top:1px solid #e5edf5;}.sos-modal-actions--wrap{flex-wrap:wrap;justify-content:flex-start;}
+.sos-field{font-size:.81rem;color:var(--sos-text-secondary);font-weight:750;display:flex;flex-direction:column;gap:7px;min-width:0;position:relative;}.sos-field input,.sos-field select,.sos-item-row input{border:1px solid #ccd7e5;border-radius:10px;padding:10px 11px;font-size:.88rem;color:var(--sos-text-field);background:white;min-width:0;width:100%;outline-color:#568df0;}.sos-field select:disabled{background:#eff3f7;color:var(--sos-text-disabled);}.sos-field__hint{font-size:.74rem;font-weight:400;color:var(--sos-text-muted);}.sos-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;}.sos-field--wide{grid-column:1/-1;}.sos-form-section{padding:16px 0 22px;border-bottom:1px solid #e7ecf5;}.sos-form-section:first-child{padding-top:0;}.sos-form-section h3,.sos-detail h3,.sos-finalize h3{font-size:1.1rem;font-weight:800;margin:0 0 15px;}.sos-inline{display:flex;gap:7px;align-items:center;}.sos-mini-button{border:1px solid #d5dfec;background:#f2f6fd;border-radius:10px;padding:7px 9px;color:var(--sos-text-link);}.sos-suggestions{border:1px solid #d1dbe9;border-radius:12px;background:#fff;box-shadow:0 8px 19px #1c2e4420;display:grid;max-height:230px;overflow:auto;z-index:10;}.sos-suggestions button{padding:10px 12px;border:0;border-bottom:1px solid #f1f3f7;background:white;text-align:left;font-size:.84rem;color:var(--sos-text-field);display:flex;align-items:center;justify-content:space-between;gap:8px;}.sos-suggestions button:hover{background:#eef5ff;}.sos-type-tabs{display:flex;flex-wrap:wrap;gap:5px;background:#f0f4fa;width:max-content;max-width:100%;padding:4px;border-radius:12px;margin-bottom:15px;}.sos-search-block{display:grid;gap:8px;position:relative;}.sos-search-block .sos-suggestions{position:relative;}.sos-items{display:grid;gap:10px;margin-top:18px;}.sos-item-row{border:1px solid #dae3ef;background:#fcfdff;padding:13px;border-radius:12px;display:grid;grid-template-columns:minmax(180px,2.8fr) repeat(3,minmax(80px,1fr)) auto auto;gap:10px;align-items:end;}.sos-item-row label{font-size:.7rem;font-weight:700;color:var(--sos-text-secondary);}.sos-item-row label input{display:block;margin-top:5px;}.sos-item-row__name strong{display:block;color:var(--sos-text-secondary);font-size:.72rem;margin:0 0 4px;}.sos-item-row__total{font-size:.81rem;font-weight:800;white-space:nowrap;padding-bottom:11px;}.sos-form-total,.sos-detail__total{display:flex;align-items:center;justify-content:flex-end;gap:16px;margin-top:15px;font-size:.9rem;color:var(--sos-text-secondary);}.sos-form-total strong,.sos-detail__total strong{font-size:1.35rem;color:var(--sos-text-value);}
+.sos-detail__main{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:18px;}.sos-detail__main h3{font-size:1.3rem;font-weight:800;margin:4px 0 8px;}.sos-detail__main p{margin:8px 0;}.sos-contact{display:flex;gap:13px;align-items:center;font-size:.9rem;color:var(--sos-text-subtle);}.sos-contact a{color:var(--sos-text-whatsapp);text-decoration:none;font-weight:800;}.sos-detail__grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:20px 0 25px;}.sos-detail__grid>div{padding:14px;border:1px solid #e0e7f1;background:#f8fafe;border-radius:12px;display:flex;flex-direction:column;gap:6px;}.sos-detail__grid small{font-size:.73rem;color:var(--sos-text-muted);}.sos-detail__grid strong{font-size:.87rem;}.sos-detail__items{display:grid;gap:8px;}.sos-detail__items>div{border-bottom:1px solid #e9eef5;padding:9px 0;display:flex;justify-content:space-between;gap:15px;font-size:.88rem;}.sos-detail__items p{margin:3px 0;font-size:.84rem;color:var(--sos-text-secondary);}.sos-detail__items small{color:var(--sos-text-muted);font-size:.72rem;}.sos-detail__items>div>strong{white-space:nowrap;}.sos-finalize{border:1px solid #c3d5f1;background:#f6f9ff;padding:17px;border-radius:15px;margin-top:18px;display:grid;gap:10px;}.sos-finalize p{font-size:.81rem;color:var(--sos-text-secondary);}.sos-pending{display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--sos-text-info);margin-top:14px;}
+@media (max-width:1080px){.sos-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.sos-item-row{grid-template-columns:repeat(3,1fr)}.sos-item-row__name{grid-column:1/-1}.sos-item-row__total{align-self:center}.sos-detail__grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:650px){.sos-vue-notas-shell{padding:99px 12px 70px}.sos-vue-head{align-items:flex-start;flex-direction:column;}.sos-tabs{width:100%;}.sos-tabs button{flex:1;padding:10px 6px;font-size:.75rem;}.sos-metrics{gap:8px;}.sos-metric{padding:13px;}.sos-metric>strong{font-size:1.2rem;}.sos-metric>span{font-size:.72rem}.sos-metric>small{font-size:.68rem}.sos-toolbar{gap:8px}.sos-toggle{margin:0;width:100%;}.sos-toggle button{flex:1}.sos-board{margin-right:-12px;padding-right:12px;}.sos-lane{width:270px;min-width:270px;max-width:270px;}.sos-modal__head{padding:14px 16px}.sos-modal__body{padding:16px 13px}.sos-form-grid{grid-template-columns:1fr}.sos-field--wide{grid-column:auto}.sos-item-row{grid-template-columns:repeat(2,minmax(0,1fr));}.sos-detail__grid{grid-template-columns:repeat(2,minmax(0,1fr));}.sos-modal-actions{flex-wrap:wrap}.sos-modal-actions .sos-btn{flex:1 1 140px;}}
+@media(prefers-reduced-motion:reduce){.sos-btn{transition:none;}}
+
+.sos-parcela-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 38px;gap:9px;align-items:end;}
+.sos-parcela-row .sos-icon-button{margin-bottom:2px;}
+.sos-parcela-error{color:var(--sos-text-danger)!important;font-weight:750;}
+.sos-pdf-interno{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.sos-pdf-interno input[type=password]{min-height:42px;border:1px solid #cad6e4;border-radius:11px;font-size:.82rem;padding:8px 10px;width:148px;}
+@media(max-width:650px){.sos-parcela-row{grid-template-columns:1fr 1fr 38px}.sos-pdf-interno{width:100%}.sos-pdf-interno input{flex:1;}}
+
+/* L03J: foco visivel para teclado e aviso local de validacao. */
+.sos-vue-app button:focus-visible, .sos-vue-app a:focus-visible, .sos-vue-app input:focus-visible, .sos-vue-app select:focus-visible, .sos-modal button:focus-visible, .sos-modal input:focus-visible, .sos-drawer button:focus-visible, .sos-drawer input:focus-visible, .sos-drawer select:focus-visible{outline:3px solid #f5a623;outline-offset:3px;}
+.sos-modal .sos-alert--error{margin-bottom:12px;}
+
+/* L03K: escopo explicito para neutralizar regras globais do tema legado,
+   responsaveis por títulos/nomes amarelos sobre cartões claros. */
+.sos-vue-notas-shell .sos-vue-head h1,
+.sos-vue-notas-shell .sos-modal__head h2,
+.sos-vue-notas-shell .sos-drawer h2,
+.sos-vue-notas-shell .sos-detail h3,
+.sos-vue-notas-shell .sos-form-section h3,
+.sos-vue-notas-shell .sos-finalize h3 { color: var(--sos-text-heading) !important; }
+.sos-vue-notas-shell .sos-lane__head h2 { color: var(--sos-text-stage-heading) !important; }
+.sos-vue-notas-shell .sos-note h3 { color: var(--sos-text-card-heading) !important; }
+.sos-vue-notas-shell .sos-note__total,
+.sos-vue-notas-shell .sos-metric > strong { color: var(--sos-text-value) !important; }
+.sos-vue-notas-shell .sos-note__details,
+.sos-vue-notas-shell .sos-note__contact,
+.sos-vue-notas-shell .sos-lane__empty { color: var(--sos-text-secondary); }
+.sos-vue-notas-shell .sos-field input::placeholder,
+.sos-vue-notas-shell .sos-search input::placeholder { color: var(--sos-text-subtle); opacity:1; }
+.sos-vue-notas-shell .sos-move-feedback {
+    position:fixed; z-index:1100; inset:auto 20px 20px auto;
+    display:flex; align-items:center; gap:9px;
+    width:max-content; max-width:min(410px,calc(100vw - 32px));
+    margin:0; padding:12px 14px; border:1px solid #bcdcca;
+    border-radius:12px; background:#eafaf1;
+    color:var(--sos-text-success); font-size:.86rem;
+    font-weight:650; box-shadow:0 7px 28px #182b3c25;
+}
+.sos-vue-notas-shell .sos-move-feedback button {
+    background:transparent; border:0; color:inherit;
+    margin-left:10px; font-size:1.2rem; cursor:pointer;
+}
+@media(max-width:650px){.sos-vue-notas-shell .sos-move-feedback{inset:auto 12px 12px 12px;width:auto;}}
+
+
+/* L03L — Altura operacional e independência dos estilos globais de section.
+   Design tokens semânticos: cancelamento é um ESTADO sistêmico e nunca a cor da etapa. */
+.sos-vue-notas-shell {
+    --sos-text-card-cancelled: #394554;
+    --sos-text-cancelled-secondary: #515e70;
+    --sos-bg-card-cancelled: #e2e6ec;
+    --sos-border-card-cancelled: #aeb8c5;
+    --sos-bg-tag-cancelled: #cbd3dc;
+    --sos-text-tag-cancelled: #344253;
+    --sos-kanban-height: clamp(355px, 56vh, 610px);
+    padding: 92px 20px 36px;
+}
+.sos-vue-notas-shell .sos-vue-head { margin-bottom: 10px; gap: 10px; }
+.sos-vue-notas-shell .sos-vue-head h1 { font-size: clamp(1.55rem, 2.2vw, 2rem); margin: 2px 0 1px; }
+.sos-vue-notas-shell .sos-vue-head p { font-size: .84rem; }
+.sos-vue-notas-shell .sos-status-line { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
+.sos-vue-notas-shell .sos-tabs { margin: 0; }
+.sos-vue-notas-shell .sos-cancel-switch { display: inline-flex; align-items:center; gap: 9px; cursor: pointer; font-size: .8rem; font-weight: 700; color: var(--sos-text-secondary); padding: 8px 10px; border: 1px solid var(--sos-line); border-radius: 11px; background: #fff; }
+.sos-vue-notas-shell .sos-cancel-switch input { width: 17px; height:17px; accent-color:var(--sos-primary); cursor:pointer; }
+.sos-vue-notas-shell .sos-cancel-rule { display:flex; align-items: center; gap: 7px; margin: 5px 1px 9px; font-size: .76rem; line-height: 1.35; color: var(--sos-text-muted); }
+/* 'section' é estilizado globalmente no tema antigo. Não deixar espaços vazios de 60px. */
+.sos-vue-notas-shell .sos-vue-app > section.sos-metrics { padding:0 !important; margin:8px 0 7px !important; overflow:visible !important; }
+.sos-vue-notas-shell .sos-metrics { gap:9px; }
+.sos-vue-notas-shell .sos-metric { padding:10px 13px; gap:4px; border-radius:13px; }
+.sos-vue-notas-shell .sos-metric > strong { font-size:clamp(1.05rem,1.6vw,1.4rem); }
+.sos-vue-notas-shell .sos-metric > span { font-size:.75rem; }
+.sos-vue-notas-shell .sos-metric > small { font-size:.72rem; }
+.sos-vue-notas-shell .sos-total-caption { margin: 5px 2px 8px; font-size:.77rem; }
+.sos-vue-notas-shell .sos-vue-app > section.sos-toolbar { padding:0 !important; margin:8px 0 10px !important; overflow:visible !important; }
+.sos-vue-notas-shell .sos-kanban-viewport { min-width:0; }
+.sos-vue-notas-shell .sos-board-controls { display:flex; align-items:center; justify-content:space-between; gap:12px; font-size:.76rem; font-weight:650; color:var(--sos-text-secondary); margin-bottom:4px; }
+.sos-vue-notas-shell .sos-board-navigation { display:flex;gap:5px; }
+.sos-vue-notas-shell .sos-board-navigation button { border:1px solid var(--sos-line); background:#fff; color:var(--sos-text-link); border-radius:8px; padding:4px 12px; min-width:38px; cursor:pointer; }
+.sos-vue-notas-shell .sos-board-navigation button:disabled { opacity:.42; cursor:default; }
+.sos-vue-notas-shell .sos-board-rail { overflow-x:auto; overflow-y:hidden; height:19px; max-width:100%; scrollbar-width:auto; scrollbar-color:#8296b1 #e5ebf3; margin-bottom:5px; }
+.sos-vue-notas-shell .sos-board-rail__track { height:2px; min-width:100%; }
+.sos-vue-notas-shell .sos-board-rail::-webkit-scrollbar { height:11px; }
+.sos-vue-notas-shell .sos-board-rail::-webkit-scrollbar-thumb { background:#8296b1; border-radius:10px; }
+.sos-vue-notas-shell .sos-kanban-viewport section.sos-board {
+    box-sizing:border-box; max-height:var(--sos-kanban-height); min-height:260px;
+    overflow-x:auto !important; overflow-y:auto !important; overscroll-behavior:contain;
+    padding: 2px 2px 11px !important; margin:0 !important; align-items:flex-start;
+    scrollbar-color:#8296b1 #e6ecf4;
+}
+.sos-vue-notas-shell .sos-lane__head { position:sticky; top:0; z-index:1; background:#e9eef6; border-radius:10px 10px 0 0; padding:9px 5px 11px; }
+.sos-vue-notas-shell .sos-note.sos-note--cancelled { background:var(--sos-bg-card-cancelled); border-color:var(--sos-border-card-cancelled); color:var(--sos-text-card-cancelled); box-shadow:none; cursor:default; }
+.sos-vue-notas-shell .sos-note.sos-note--cancelled h3,
+.sos-vue-notas-shell .sos-note.sos-note--cancelled .sos-note__total { color:var(--sos-text-card-cancelled) !important; }
+.sos-vue-notas-shell .sos-note.sos-note--cancelled .sos-note__contact,
+.sos-vue-notas-shell .sos-note.sos-note--cancelled .sos-note__details,
+.sos-vue-notas-shell .sos-note.sos-note--cancelled .sos-note__closed { color:var(--sos-text-cancelled-secondary) !important; }
+.sos-vue-notas-shell .sos-note.sos-note--cancelled .sos-note__tags > span:not(.sos-tag) { background: #d0d6df; color:var(--sos-text-card-cancelled); }
+.sos-vue-notas-shell .sos-tag--cancelled { background:var(--sos-bg-tag-cancelled); color:var(--sos-text-tag-cancelled); }
+.sos-vue-notas-shell .sos-note.sos-note--cancelled .sos-link { color:var(--sos-text-card-cancelled); text-decoration:underline; }
+@media(max-width:650px) {
+    .sos-vue-notas-shell { --sos-kanban-height:clamp(320px, 53vh, 510px); padding:92px 12px 35px; }
+    .sos-vue-notas-shell .sos-status-line { align-items:stretch; }
+    .sos-vue-notas-shell .sos-tabs { width:100%; }
+    .sos-vue-notas-shell .sos-cancel-switch { width:max-content;max-width:100%; }
+    .sos-vue-notas-shell .sos-metric { padding:10px; }
+    .sos-vue-notas-shell .sos-board-controls > span { font-size:.71rem; }
+}
+
+/* L03M — Navegacao unica: slider superior SEM scroll sincronizado em ciclo.
+ * Sem scrollbar vertical interna/overscroll contain: o wheel vertical pertence a pagina.
+ * Apenas duas notas por etapa inicialmente; Ver mais expande sob demanda.
+ */
+.sos-vue-notas-shell {
+    --sos-text-metric-label: #4b607a;
+    --sos-text-metric-value: #102d51;
+    --sos-border-metric-divider: #dbe4f0;
+    --sos-bg-nav-jump: #ffffff;
+    --sos-text-stage-more: #1855ad;
+}
+.sos-vue-notas-shell .sos-kanban-viewport {
+    width:100%; max-width:100%; min-width:0;
+}
+.sos-vue-notas-shell .sos-board-controls { flex-wrap:wrap; }
+.sos-vue-notas-shell .sos-board-navigation { margin-left:auto; }
+.sos-vue-notas-shell .sos-board-navigation button { min-height:38px; min-width:44px; touch-action:manipulation; }
+.sos-vue-notas-shell .sos-board-jump {
+    display:flex; align-items:center; gap:12px; margin:5px 0 8px;
+    padding:7px 11px; background:var(--sos-bg-nav-jump);
+    border:1px solid var(--sos-line); border-radius:11px;
+}
+.sos-vue-notas-shell .sos-board-jump label {
+    white-space:nowrap; font-weight:700; font-size:.76rem;
+    color:var(--sos-text-secondary);
+}
+.sos-vue-notas-shell .sos-board-jump select {
+    width:min(260px,42vw); min-width:110px; border:1px solid var(--sos-line);
+    border-radius:8px; padding:7px; background:#fff;
+    color:var(--sos-text-field); font-size:.82rem;
+}
+.sos-vue-notas-shell .sos-board-progress {
+    flex:1; min-width:60px; width:100%; height:26px;
+    margin:0; cursor:ew-resize; accent-color:var(--sos-primary);
+    touch-action:pan-x;
+}
+/* Neutraliza o scroller vertical e o snap da L03L, incluindo regras globais section. */
+.sos-vue-notas-shell .sos-kanban-viewport section.sos-board {
+    display:flex; width:100%; min-width:0; max-width:100%;
+    max-height:none !important; min-height:0 !important; height:auto !important;
+    overflow-x:auto !important; overflow-y:hidden !important;
+    overscroll-behavior-x:contain !important; overscroll-behavior-y:auto !important;
+    scroll-snap-type:none !important;
+    -webkit-overflow-scrolling:touch;
+    touch-action:pan-x pan-y;
+    padding:2px 2px 11px !important;
+}
+.sos-vue-notas-shell .sos-lane { scroll-snap-align:none; align-self:flex-start; }
+.sos-vue-notas-shell .sos-lane__head { position:static; }
+.sos-vue-notas-shell .sos-lane__more {
+    display:block; width:100%; margin-top:10px; padding:11px 6px;
+    border:1px solid var(--sos-line); background:#fff;
+    border-radius:10px; color:var(--sos-text-stage-more);
+    font-size:.78rem; font-weight:750; cursor:pointer;
+}
+.sos-vue-notas-shell .sos-lane__more span { font-weight:450; }
+.sos-vue-notas-shell .sos-lane__more:hover { background:#f3f7ff; }
+.sos-vue-notas-shell .sos-lane__more:focus-visible,
+.sos-vue-notas-shell .sos-board-jump select:focus-visible,
+.sos-vue-notas-shell .sos-board-progress:focus-visible {
+    outline:3px solid #f5a623; outline-offset:2px;
+}
+.sos-vue-notas-shell .sos-metric--finance { gap:7px; }
+.sos-vue-notas-shell .sos-metric__finance { display:grid; margin:0; gap:3px; }
+.sos-vue-notas-shell .sos-metric__finance > div {
+    display:flex; align-items:baseline; justify-content:space-between; gap:8px;
+}
+.sos-vue-notas-shell .sos-metric__finance dt {
+    color:var(--sos-text-metric-label); font-size:.74rem; font-weight:650;
+}
+.sos-vue-notas-shell .sos-metric__finance dd {
+    margin:0; color:var(--sos-text-metric-value); font-size:.84rem;
+    font-weight:750; font-variant-numeric:tabular-nums; white-space:nowrap;
+}
+.sos-vue-notas-shell .sos-metric__finance-total {
+    border-top:1px solid var(--sos-border-metric-divider); padding-top:5px; margin-top:3px;
+}
+.sos-vue-notas-shell .sos-metric__finance-total dt,
+.sos-vue-notas-shell .sos-metric__finance-total dd { font-weight:850; }
+@media (max-width:650px) {
+    .sos-vue-notas-shell .sos-board-controls { gap:5px; }
+    .sos-vue-notas-shell .sos-board-hint { max-width:215px; font-size:.68rem; }
+    .sos-vue-notas-shell .sos-board-jump { flex-wrap:wrap; gap:7px; }
+    .sos-vue-notas-shell .sos-board-jump select { flex:1; min-width:110px; width:auto; }
+    .sos-vue-notas-shell .sos-board-progress { flex-basis:100%; }
+    .sos-vue-notas-shell .sos-metric__finance > div { flex-wrap:wrap; gap:0 6px; }
+    .sos-vue-notas-shell .sos-metric__finance dd { font-size:.75rem; }
+}
+
+/* L03N — status final tem identidade propria, independente da cor operacional.
+ * Drag targets esticados permitem soltar um cartao alto em qualquer etapa. */
+.sos-vue-notas-shell {
+    --sos-bg-card-finished: #e8f7ed;
+    --sos-border-card-finished: #4a9f70;
+    --sos-text-card-finished: #154e34;
+    --sos-text-finished-secondary: #37664c;
+    --sos-bg-tag-finished: #c9efda;
+    --sos-text-tag-finished: #125a34;
+    --sos-border-drop-target: #1e66db;
+    --sos-bg-drop-target: #e7f0ff;
+}
+.sos-vue-notas-shell .sos-kanban-viewport section.sos-board { align-items:stretch !important; }
+.sos-vue-notas-shell .sos-board .sos-lane {
+    align-self:stretch !important; display:flex; flex-direction:column;
+    height:auto; box-sizing:border-box; transition:border-color .12s,background-color .12s;
+}
+.sos-vue-notas-shell .sos-board .sos-lane__cards { flex:1 1 auto; align-content:start; }
+.sos-vue-notas-shell .sos-board .sos-lane--drop-target {
+    border:2px dashed var(--sos-border-drop-target); background:var(--sos-bg-drop-target);
+}
+.sos-vue-notas-shell .sos-lane__finish-hint {
+    margin:0 0 9px; padding:8px; border-radius:8px; border:1px solid #b5dbca;
+    background:#ecfaf1; color:var(--sos-text-status-done); font-size:.71rem; line-height:1.5;
+}
+.sos-vue-notas-shell .sos-note.sos-note--finished {
+    background:var(--sos-bg-card-finished); border-color:var(--sos-border-card-finished);
+    border-left:4px solid var(--sos-border-card-finished); cursor:default;
+}
+.sos-vue-notas-shell .sos-note.sos-note--finished h3,
+.sos-vue-notas-shell .sos-note.sos-note--finished .sos-note__total {
+    color:var(--sos-text-card-finished) !important;
+}
+.sos-vue-notas-shell .sos-note.sos-note--finished .sos-note__details,
+.sos-vue-notas-shell .sos-note.sos-note--finished .sos-note__contact,
+.sos-vue-notas-shell .sos-note.sos-note--finished .sos-note__closed {
+    color:var(--sos-text-finished-secondary) !important;
+}
+.sos-vue-notas-shell .sos-note.sos-note--finished .sos-tag--green {
+    background:var(--sos-bg-tag-finished); color:var(--sos-text-tag-finished);
+}
+.sos-vue-notas-shell .sos-detail__finished {
+    display:flex; align-items:center; gap:8px; padding:10px 12px; border-radius:11px;
+    border:1px solid var(--sos-border-card-finished);
+    background:var(--sos-bg-card-finished); color:var(--sos-text-card-finished);
+    font-size:.86rem; font-weight:800;
+}
+.sos-vue-notas-shell .sos-batch-entry { min-height:36px; padding:7px 11px; font-size:.77rem; }
+.sos-vue-notas-shell .sos-batch-form { display:grid; gap:12px; }
+.sos-vue-notas-shell .sos-batch-form > p { font-size:.85rem; color:var(--sos-text-secondary); margin:0; }
+.sos-vue-notas-shell .sos-batch-preview { padding:12px; background:#f1f6fe; border-radius:10px; }
+/* Potencial custo de composicao no modal: nao aplicar blur ao viewport inteiro.
+ * Mantem o dialogo nativo, sem animacoes que prejudicam o FPS em GPU fraca. */
+.sos-vue-notas-shell .sos-modal::backdrop { backdrop-filter:none !important; -webkit-backdrop-filter:none !important; background:rgba(8,20,37,.67); }
+.sos-vue-notas-shell .sos-modal { box-shadow:0 10px 28px rgba(16,36,58,.22); }
+.sos-vue-notas-shell .sos-modal__body { scrollbar-gutter:stable; }
+@media (prefers-reduced-motion: reduce) {
+    .sos-vue-notas-shell .sos-board .sos-lane { transition:none; }
+}

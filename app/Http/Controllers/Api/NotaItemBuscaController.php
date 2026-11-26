@@ -253,10 +253,12 @@ class NotaItemBuscaController extends Controller
     ): JsonResponse {
         $ordensServico =
             OrdemServico::query()
+                ->with('nota:id,tipo,status')
                 ->select([
                     'id',
                     'cliente_id',
                     'veiculo_cliente_id',
+                    'nota_id',
                     'status',
                     'descricao',
                     'valor',
@@ -340,8 +342,8 @@ class NotaItemBuscaController extends Controller
                                 $ordemServico->id
                             );
 
-                        $nota =
-                            $vinculo?->nota;
+                        // Fonte canonica: OS.nota_id. O item antigo e apenas fallback.
+                        $nota = $ordemServico->nota ?: $vinculo?->nota;
 
                         return [
                             'id' => $ordemServico->id,
@@ -356,7 +358,7 @@ class NotaItemBuscaController extends Controller
 
                             'status' => $ordemServico->status,
 
-                            'disponivel' => ! $vinculo,
+                            'disponivel' => $ordemServico->nota_id === null && ! $vinculo,
 
                             'nota' => $nota
                                     ? [

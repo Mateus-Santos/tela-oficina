@@ -394,7 +394,8 @@ class FinalizarNota
                 $nota,
                 $etapaFinalNota,
                 $userId,
-                'Movimentação automática pela finalização da Nota.'
+                'Movimentação automática pela finalização da Nota.',
+                true // único acesso autorizado à etapa final
             );
 
             /*

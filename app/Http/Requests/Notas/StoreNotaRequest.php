@@ -220,7 +220,14 @@ class StoreNotaRequest extends FormRequest
             'itens.*.itemable_id' => [
                 'required',
                 'integer',
+                'not_in:0',
+            ],
+
+            'itens.*.os_nova_setor_servico_id' => [
+                'nullable',
+                'integer',
                 'min:1',
+                'exists:setor_servicos,id',
             ],
 
             'itens.*.descricao' => [
@@ -267,6 +274,8 @@ class StoreNotaRequest extends FormRequest
                 $this->validarDescontos(
                     $validator
                 );
+
+                $this->validarRascunhosOs($validator);
             }
         );
     }
@@ -505,6 +514,34 @@ class StoreNotaRequest extends FormRequest
                         "itens.{$index}.desconto",
                         'O desconto do item não pode ser maior que o valor total do item.'
                     );
+            }
+        }
+    }
+
+    private function validarRascunhosOs(Validator $validator): void
+    {
+        foreach ((array) $this->input('itens', []) as $index => $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+            $id = (int) ($item['itemable_id'] ?? 0);
+            $temSetor = array_key_exists('os_nova_setor_servico_id', $item);
+            if ($id < 0) {
+                if (($item['itemable_type'] ?? null) !== OrdemServico::class
+                    || !$temSetor || !$item['os_nova_setor_servico_id']
+                    || (int) ($item['quantidade'] ?? 0) !== 1
+                    || !$this->filled('cliente_id')
+                    || !$this->filled('veiculo_cliente_id')) {
+                    $validator->errors()->add(
+                        "itens.{$index}.itemable_id",
+                        'O.S. nova exige cliente, veiculo, setor e quantidade 1.'
+                    );
+                }
+            } elseif ($temSetor) {
+                $validator->errors()->add(
+                    "itens.{$index}.itemable_id",
+                    'Dados de O.S. nova nao podem acompanhar item existente.'
+                );
             }
         }
     }

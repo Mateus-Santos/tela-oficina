@@ -136,6 +136,13 @@ class NotaController extends Controller
                 ]);
         }
 
+        // FEUX: exclusao nao pode criar O.S. orfa nem perder vinculo financeiro.
+        if ($nota->itens()->where('itemable_type', \App\Models\OrdemServico::class)->exists()
+            || $nota->contaReceber()->exists()) {
+            return redirect()->route('notas.show', $nota->id)
+                ->withErrors(['nota' => 'Nota vinculada a O.S. ou financeiro nao pode ser excluida.']);
+        }
+
         $nota->delete();
 
         return redirect()

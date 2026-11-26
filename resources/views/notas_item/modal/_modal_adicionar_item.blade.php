@@ -1,5 +1,5 @@
 <div
-    class="modal fade feux-notas-modal-itens"
+    class="modal fade feux-notas-modal-itens feux-notas-selecao-workspace"
     id="modalAdicionarItem"
     tabindex="-1"
     aria-labelledby="modalAdicionarItemLabel"
@@ -42,6 +42,16 @@
                     <i class="bi bi-search" aria-hidden="true"></i>
                     Pesquise um produto ou uma Ordem de Serviço, selecione o resultado e confira quantidade e valores antes de adicionar.
                 </p>
+
+                <div class="feux-notas-selecao-grid">
+                    <section class="feux-notas-selecao-buscar" aria-label="Escolher produto ou ordem de serviço">
+                        <div class="feux-notas-selecao-passo">
+                            <span class="feux-notas-selecao-passo__numero" aria-hidden="true">01</span>
+                            <div>
+                                <h3>Localize o item</h3>
+                                <p>Escolha o tipo e encontre o produto ou serviço para esta nota.</p>
+                            </div>
+                        </div>
 
                 {{-- =====================================================
                      TIPO
@@ -509,6 +519,16 @@
                     </div>
                 </div>
 
+                    </section>
+                    <section class="feux-notas-selecao-configurar" aria-label="Configurar o item selecionado">
+                        <div class="feux-notas-selecao-passo">
+                            <span class="feux-notas-selecao-passo__numero" aria-hidden="true">02</span>
+                            <div>
+                                <h3>Configure os valores</h3>
+                                <p>Revise descrição, quantidade, preço, desconto e garantia.</p>
+                            </div>
+                        </div>
+
                 {{-- =====================================================
                      ITEM SELECIONADO
                 ====================================================== --}}
@@ -663,6 +683,8 @@
                     </div>
                 </div>
 
+                    </section>
+                </div>
             </div>
 
             <div class="modal-footer">
@@ -695,4 +717,5 @@
 @vite([
     'resources/js/notaitem/os-rapida.js',
     'resources/js/notaitem/produto-rapido.js',
+    'resources/js/notaitem/feux-notas-selecao-workspace.js',
 ])
