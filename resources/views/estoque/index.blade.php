@@ -88,6 +88,13 @@
 
     </div>
 
+    @if(request()->filled('produto_id'))
+        <div class="alert alert-info d-flex justify-content-between align-items-center gap-2 flex-wrap" role="status">
+            <span><i class="bi bi-funnel me-1"></i> Estoque do produto #{{ request('produto_id') }}</span>
+            <a href="{{ route('estoque.index') }}" class="btn btn-sm btn-outline-secondary">Ver todos os produtos</a>
+        </div>
+    @endif
+
     <x-filtros-container
         action="{{ route('estoque.index') }}"
         id="filtros-estoque"
@@ -104,6 +111,9 @@
     >
 
         <x-slot:primary>
+            @if(request()->filled('produto_id'))
+                <input type="hidden" name="produto_id" value="{{ request('produto_id') }}">
+            @endif
 
             <div class="row g-3 align-items-end">
 
@@ -196,6 +206,9 @@
         </x-slot:primary>
 
         <x-slot:advanced>
+            @if(request()->filled('produto_id'))
+                <input type="hidden" name="produto_id" value="{{ request('produto_id') }}">
+            @endif
 
             <div class="row g-3">
 
@@ -386,6 +399,7 @@
 
         @php
             $temFiltros = request()->hasAny([
+                'produto_id',
                 'nome',
                 'codigo',
                 'codigo_fabricante',
@@ -647,7 +661,14 @@
 
                             <td class="text-end">
 
-                                <div class="d-flex justify-content-end gap-2">
+                                <div class="d-flex justify-content-end gap-2 flex-wrap">
+
+                                    <a href="{{ route('estoque.movimentacoes.index', ['produto_id' => $produto->id]) }}"
+                                       class="btn btn-sm btn-outline-secondary"
+                                       title="Ver movimentações deste produto"
+                                       aria-label="Movimentações do produto {{ $produto->nome }}">
+                                        <i class="bi bi-arrow-left-right"></i> Movimentações
+                                    </a>
 
                                     <a
                                         href="{{ route('produtos.show', $produto->id) }}"
