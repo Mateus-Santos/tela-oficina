@@ -1,7 +1,7 @@
 @extends('layouts.layout')
 
 @section('content')
-<section class="container cadastro">
+<section class="container cadastro feux-moderno">
     <h1><i class="bi bi-cash-stack"></i> CONTA A RECEBER #{{ str_pad($contaReceber->id, 6, '0', STR_PAD_LEFT) }}</h1>
 
     @if(session('success'))

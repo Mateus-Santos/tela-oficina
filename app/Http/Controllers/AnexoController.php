@@ -10,6 +10,8 @@ use App\Http\Requests\Anexo\UpdateAnexoRequest;
 use App\Models\Anexo;
 use App\Models\AnexoVinculo;
 use App\Models\Compra;
+use App\Models\Nota;
+use App\Models\OrdemServico;
 use App\Models\ContaPagar;
 use App\Models\ContaPagarSocio;
 use App\Models\ContaReceber;
@@ -43,6 +45,34 @@ class AnexoController extends Controller
                 'success',
                 'Anexo enviado com sucesso!'
             );
+    }
+
+    public function storeNota(
+        StoreAnexoRequest $request, Nota $nota, CriarAnexo $criarAnexo
+    ): RedirectResponse {
+        abort_unless($request->user()?->isAdmin(), 403);
+        if ($nota->status !== 'Aberto') {
+            return redirect()->route('notas.show', $nota)
+                ->with('error', 'Anexos bloqueados para Nota encerrada.');
+        }
+        $criarAnexo->execute($nota, $request->file('arquivo'),
+            $request->validated('tipo'), $request->validated('observacoes'));
+        return redirect()->route('notas.show', $nota)
+            ->with('success', 'Anexo salvo com sucesso.');
+    }
+
+    public function storeOrdemServico(
+        StoreAnexoRequest $request, OrdemServico $ordemservico, CriarAnexo $criarAnexo
+    ): RedirectResponse {
+        abort_unless($request->user()?->isAdmin(), 403);
+        if ($ordemservico->status !== 'aberta') {
+            return redirect()->route('ordemservicos.anexos', $ordemservico)
+                ->with('error', 'Anexos bloqueados para OS encerrada.');
+        }
+        $criarAnexo->execute($ordemservico, $request->file('arquivo'),
+            $request->validated('tipo'), $request->validated('observacoes'));
+        return redirect()->route('ordemservicos.anexos', $ordemservico)
+            ->with('success', 'Anexo salvo com sucesso.');
     }
 
     public function storeContaPagar(
@@ -140,6 +170,14 @@ class AnexoController extends Controller
         $anexavel = $vinculo->vinculavel;
 
         $this->validarAnexavel($anexavel);
+        if ($anexavel instanceof Nota && $anexavel->status !== 'Aberto') {
+            return $this->redirecionarParaAnexavel($anexavel)
+                ->with('error', 'Nota encerrada: anexos nao podem ser alterados.');
+        }
+        if ($anexavel instanceof OrdemServico && $anexavel->status !== 'aberta') {
+            return $this->redirecionarParaAnexavel($anexavel)
+                ->with('error', 'OS encerrada: anexos nao podem ser alterados.');
+        }
 
         if (
             ($anexavel instanceof ContaPagar || $anexavel instanceof ContaPagarSocio)
@@ -247,6 +285,14 @@ class AnexoController extends Controller
         $anexavel = $vinculo->vinculavel;
 
         $this->validarAnexavel($anexavel);
+        if ($anexavel instanceof Nota && $anexavel->status !== 'Aberto') {
+            return $this->redirecionarParaAnexavel($anexavel)
+                ->with('error', 'Nota encerrada: anexos nao podem ser alterados.');
+        }
+        if ($anexavel instanceof OrdemServico && $anexavel->status !== 'aberta') {
+            return $this->redirecionarParaAnexavel($anexavel)
+                ->with('error', 'OS encerrada: anexos nao podem ser alterados.');
+        }
 
         if (
             ($anexavel instanceof ContaPagar || $anexavel instanceof ContaPagarSocio)
@@ -286,7 +332,9 @@ class AnexoController extends Controller
             $anexavel instanceof Compra
             || $anexavel instanceof ContaPagar
             || $anexavel instanceof ContaPagarSocio
-            || $anexavel instanceof ContaReceber,
+            || $anexavel instanceof ContaReceber
+            || $anexavel instanceof Nota
+            || $anexavel instanceof OrdemServico,
             404
         );
     }
@@ -294,6 +342,12 @@ class AnexoController extends Controller
     private function redirecionarParaAnexavel(
         Model $anexavel
     ): RedirectResponse {
+        if ($anexavel instanceof Nota) {
+            return redirect()->route('notas.show', $anexavel);
+        }
+        if ($anexavel instanceof OrdemServico) {
+            return redirect()->route('ordemservicos.anexos', $anexavel);
+        }
         if ($anexavel instanceof Compra) {
             return redirect()
                 ->route(

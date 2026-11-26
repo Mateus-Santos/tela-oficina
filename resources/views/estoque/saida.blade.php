@@ -1,7 +1,7 @@
 @extends('layouts.layout')
 
 @section('content')
-<div class="container cadastro">
+<div class="container cadastro feux-moderno">
     <x-list-header
         title="SAÍDA DE ESTOQUE"
         icon="bi-box-arrow-right"
@@ -68,7 +68,7 @@
                 </div>
             </div>
 
-            <form
+            <form data-feux-form="true"
                 method="POST"
                 action="{{ route('estoque.registrarSaida', $produto) }}"
             >

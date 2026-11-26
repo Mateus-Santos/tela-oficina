@@ -1,0 +1,173 @@
+/* FEUX L07: somente seletor de cliente/veiculo na tela de Notas.
+   Nao altera visibilidade, validacao, eventos ou comportamento Livewire. */
+.cadastro .feux-nota-seletores {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(.85rem, 1.8vw, 1.35rem);
+    margin: 0;
+    text-align: left;
+    min-width: 0;
+
+    > .col-12.col-lg-6 {
+        min-width: 0;
+        max-width: 100%;
+        width: 100%;
+        margin: 0;
+        padding: clamp(.85rem, 1.8vw, 1.35rem);
+        border: 1px solid var(--bs-border-color, #d3d9e0);
+        border-radius: 1rem;
+        background: var(--bs-body-bg, #fff);
+        box-shadow: 0 .3rem 1rem rgba(18, 35, 54, .045);
+        transition: border-color .15s ease, box-shadow .15s ease;
+
+        &:focus-within {
+            border-color: var(--bs-primary, #0d6efd);
+            box-shadow: 0 0 0 .18rem rgba(13, 110, 253, .09);
+        }
+
+        > .form-label {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            width: fit-content;
+            max-width: 100%;
+            margin-bottom: .85rem;
+            font-size: clamp(1rem, 1.5vw, 1.1rem);
+            font-weight: 750;
+            line-height: 1.35;
+        }
+
+        > .form-label > .bi {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            min-width: 2rem;
+            min-height: 2rem;
+            border-radius: .5rem;
+            background: var(--bs-tertiary-bg, #eef3f7);
+        }
+
+        .input-group {
+            min-width: 0;
+            flex-wrap: nowrap;
+            border-radius: .65rem;
+        }
+
+        .input-group:focus-within {
+            outline: 2px solid var(--bs-primary, #0d6efd);
+            outline-offset: 2px;
+        }
+
+        .form-control:not([type='hidden']),
+        .form-select {
+            min-width: 0;
+            min-height: 2.75rem;
+        }
+
+        .border.rounded.bg-light.p-3 {
+            min-width: 0;
+            border-color: var(--bs-success-border-subtle, #a2d5b6) !important;
+            background: var(--bs-success-bg-subtle, #eaf7ee) !important;
+            text-align: left;
+            overflow-wrap: anywhere;
+        }
+
+        .border.rounded.bg-light.p-3 > .d-flex {
+            flex-wrap: wrap;
+            gap: .75rem;
+        }
+
+        .border.rounded.bg-light.p-3 > .d-flex > :first-child {
+            flex: 1 1 12rem;
+            min-width: 0;
+        }
+
+        .busca-selecao {
+            min-width: 0;
+            max-width: 100%;
+            border-radius: .75rem;
+            border-color: var(--bs-border-color, #d3d9e0);
+            box-shadow: 0 .45rem 1.2rem rgba(18, 35, 54, .08);
+        }
+
+        .busca-selecao__resultados {
+            max-height: min(20rem, 42dvh);
+            overscroll-behavior: contain;
+        }
+
+        .busca-selecao__item {
+            display: flex;
+            min-height: 3.2rem;
+            align-items: center;
+            gap: .5rem;
+            text-align: left;
+            white-space: normal;
+            overflow-wrap: anywhere;
+        }
+
+        .busca-selecao__item:hover {
+            background: var(--bs-tertiary-bg, #eef3f7);
+        }
+
+        .busca-selecao__item:focus-visible,
+        button:focus-visible {
+            outline: 3px solid var(--bs-primary, #0d6efd);
+            outline-offset: 2px;
+        }
+
+        .card.border-primary {
+            min-width: 0;
+            border-radius: .8rem;
+            overflow: hidden;
+        }
+
+        .card.border-primary .card-header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .5rem;
+            align-items: center;
+        }
+
+        .card.border-primary .card-body {
+            min-width: 0;
+            text-align: left;
+        }
+
+        .alert, .invalid-feedback, .small, .text-muted {
+            overflow-wrap: anywhere;
+        }
+
+        button.btn {
+            min-height: 2.6rem;
+        }
+    }
+
+    @media (min-width: 992px) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @media (max-width: 575.98px) {
+        > .col-12.col-lg-6 {
+            padding: .85rem;
+
+            .busca-selecao__resultados {
+                max-height: min(16rem, 38dvh);
+            }
+
+            .d-flex.justify-content-between.align-items-center.gap-2.mt-2,
+            .card-body > .d-flex.justify-content-end {
+                flex-wrap: wrap;
+            }
+
+            .btn-sm {
+                min-height: 2.75rem;
+            }
+        }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cadastro .feux-nota-seletores > .col-12.col-lg-6 {
+        transition: none;
+    }
+}

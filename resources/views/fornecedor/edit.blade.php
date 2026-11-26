@@ -2,7 +2,7 @@
 
 @section('content')
 
-<div class="container cadastro">
+<div class="container cadastro feux-moderno">
 
     <x-list-header
         title="EDITAR FORNECEDOR"
@@ -22,7 +22,7 @@
         </div>
     @endif
 
-    <form
+    <form data-feux-form="true"
         method="POST"
         action="{{ route('fornecedores.update', $fornecedor) }}"
     >

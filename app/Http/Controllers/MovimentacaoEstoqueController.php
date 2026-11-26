@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CompraDevolucaoItem;
+use App\Models\CompraItem;
 use App\Models\MovimentacaoEstoque;
 use App\Models\NotasItem;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -19,9 +21,9 @@ class MovimentacaoEstoqueController extends Controller
                 'usuario.pessoa:id,nome',
                 'origem' => function (MorphTo $morphTo) {
                     $morphTo->morphWith([
-                        NotasItem::class => [
-                            'nota:id,status',
-                        ],
+                        NotasItem::class => ['nota:id,status'],
+                        CompraItem::class => ['compra:id'],
+                        CompraDevolucaoItem::class => ['devolucao.compra:id'],
                     ]);
                 },
             ])

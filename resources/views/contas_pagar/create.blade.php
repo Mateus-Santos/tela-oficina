@@ -1,7 +1,7 @@
 @extends('layouts.layout')
 
 @section('content')
-<div class="container cadastro">
+<div class="container cadastro feux-moderno">
     <x-list-header
         title="CADASTRAR CONTA A PAGAR"
         icon="bi-wallet2"
@@ -19,7 +19,7 @@
         </div>
     @endif
 
-    <form
+    <form data-feux-form="true"
         method="POST"
         action="{{ route('contas-pagar.store') }}"
     >

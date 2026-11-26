@@ -19,6 +19,12 @@ class EstoqueController extends Controller
                 'imagens',
             ]);
 
+        // Navegacao da Compra: exibir apenas o produto solicitado, por ID exato.
+        if ($request->filled('produto_id')) {
+            $request->validate(['produto_id' => ['integer', 'min:1']]);
+            $query->whereKey($request->integer('produto_id'));
+        }
+
         if ($request->filled('nome')) {
             $nome = trim(
                 (string) $request->input('nome')

@@ -338,164 +338,48 @@
             }
         }
 
-        async function salvar() {
-            if (salvando) {
-                return;
-            }
-
+        function salvar() {
+            if (salvando) return;
             esconderAlerta();
-
-            const cliente =
-                clienteId();
-
-            const veiculo =
-                veiculoId();
-
-            const setor =
-                setorInput?.value || '';
-
-            const descricao =
-                descricaoInput
-                    ?.value
-                    ?.trim() || '';
-
-            const valor =
-                valorInput?.value || '';
-
-            if (!cliente) {
-                mostrarAlerta(
-                    'Selecione o cliente da Nota.'
-                );
-
+            const cliente = clienteId();
+            const veiculo = veiculoId();
+            const setor = setorInput?.value || '';
+            const descricao = descricaoInput?.value?.trim() || '';
+            const valorTexto = String(valorInput?.value || '');
+            const valor = Number(valorTexto.includes(',')
+                ? valorTexto.replace(/\./g, '').replace(',', '.')
+                : valorTexto);
+            if (!cliente || !veiculo || !setor || !descricao
+                || !Number.isFinite(valor) || valor < 0) {
+                mostrarAlerta('Informe cliente, veiculo, setor, descricao e valor valido.');
                 return;
             }
-
-            if (!veiculo) {
-                mostrarAlerta(
-                    'Selecione o veículo da Nota.'
-                );
-
-                return;
-            }
-
-            if (!setor) {
-                mostrarAlerta(
-                    'Selecione o setor de serviço.'
-                );
-
-                return;
-            }
-
-            if (!descricao) {
-                mostrarAlerta(
-                    'Informe a descrição da O.S.'
-                );
-
-                return;
-            }
-
             salvando = true;
-
             salvarBotao.disabled = true;
-
-            salvarBotao.innerHTML =
-                '<span class="spinner-border spinner-border-sm me-1"></span>Criando...';
-
             try {
-                const response =
-                    await fetch(
-                        '/api/notas-itens/ordens-servico',
-                        {
-                            method:
-                                'POST',
-
-                            headers: {
-                                Accept:
-                                    'application/json',
-
-                                'Content-Type':
-                                    'application/json',
-
-                                'X-CSRF-TOKEN':
-                                    csrfToken(),
-                            },
-
-                            body:
-                                JSON.stringify({
-                                    cliente_id:
-                                        cliente,
-
-                                    veiculo_cliente_id:
-                                        veiculo,
-
-                                    setor_servico_id:
-                                        setor,
-
-                                    descricao,
-
-                                    valor,
-                                }),
-                        }
-                    );
-
-                const resposta =
-                    await response.json();
-
-                if (!response.ok) {
-                    const erros =
-                        resposta.errors || {};
-
-                    const primeiraMensagem =
-                        Object
-                            .values(erros)
-                            .flat()
-                            .at(0);
-
-                    throw new Error(
-                        primeiraMensagem
-                        || resposta.message
-                        || 'Não foi possível criar a O.S.'
-                    );
+                // ID temporario negativo: NENHUMA O.S. e gravada antes da Nota.
+                const id = -(Date.now() + Math.floor(Math.random() * 1000));
+                preencherBuilder({ id, descricao, valor });
+                document.getElementById('btn-adicionar-item')?.click();
+                const linha = Array.from(document.querySelectorAll(
+                    '#container-itens-dinamicos tr[data-item-index]'
+                )).find((tr) => tr.dataset.itemableId === String(id));
+                if (!linha) {
+                    throw new Error('Nao foi possivel adicionar o rascunho a Nota.');
                 }
-
-                const ordemServico =
-                    resposta.data;
-
-                preencherBuilder(
-                    ordemServico
-                );
-
+                const campo = document.createElement('input');
+                campo.type = 'hidden';
+                campo.name = `itens[${linha.dataset.itemIndex}][os_nova_setor_servico_id]`;
+                campo.value = setor;
+                linha.querySelector('td')?.appendChild(campo);
                 limpar();
                 fechar();
-
-                /*
-                 * O builder já possui toda a O.S.
-                 * preenchida. Agora utilizamos o mesmo
-                 * botão de inclusão já existente.
-                 */
-                document
-                    .getElementById(
-                        'btn-adicionar-item'
-                    )
-                    ?.click();
+                // O backend persiste O.S. e item somente na transacao da Nota.
             } catch (error) {
-                console.error(
-                    '[SOS Mecânica] Erro ao criar O.S.:',
-                    error
-                );
-
-                mostrarAlerta(
-                    error.message
-                    || 'Não foi possível criar a O.S.'
-                );
+                mostrarAlerta(error.message || 'Nao foi possivel adicionar O.S.');
             } finally {
                 salvando = false;
-
-                salvarBotao.disabled =
-                    false;
-
-                salvarBotao.innerHTML =
-                    '<i class="bi bi-plus-circle"></i> Criar e adicionar à Nota';
+                salvarBotao.disabled = false;
             }
         }
 

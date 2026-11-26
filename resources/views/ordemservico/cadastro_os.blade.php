@@ -8,7 +8,7 @@
 
 @section('content')
 
-<div class="container cadastro">
+<div class="container cadastro feux-moderno">
 
     <h1>
         <i class="bi bi-clipboard2-plus"></i>
@@ -35,7 +35,7 @@
 
         @endif
 
-        <form
+        <form data-feux-form="true"
             action="{{ route('ordemservicos.store') }}"
             method="POST"
         >

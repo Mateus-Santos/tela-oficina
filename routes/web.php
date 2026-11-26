@@ -272,6 +272,36 @@ Route::middleware([
         )->name('estoque.registrarAjuste');
 
         // Notas
+        // FEUX CENTRAL L01: interface nova, com fallback antigo preservado.
+        // FEUX L03: Central Vue 3. Rotas autenticadas/admin do grupo existente.
+        // Legacy Nota/OS permanece para PDF e contingencia ate aceite funcional.
+        Route::middleware(\App\Http\Middleware\FeuxNotasVueHabilitada::class)->group(function () {
+            Route::get('/notas/painel', [\App\Http\Controllers\NotasVueController::class, 'shell'])
+                ->name('notas.workspace');
+            Route::get('/notas/painel/api/dados', [\App\Http\Controllers\NotasVueController::class, 'dados'])
+                ->name('notas.vue.dados');
+            Route::get('/notas/painel/api/etapas/lote', [\App\Http\Controllers\NotasVueController::class, 'previsualizarLote'])
+                ->name('notas.vue.etapas.lote.preview');
+            Route::post('/notas/painel/api/etapas/lote', [\App\Http\Controllers\NotasVueController::class, 'moverLote'])
+                ->name('notas.vue.etapas.lote.executar');
+            Route::get('/notas/painel/api/opcoes', [\App\Http\Controllers\NotasVueController::class, 'opcoes'])
+                ->name('notas.vue.opcoes');
+            Route::get('/notas/painel/api/{nota}', [\App\Http\Controllers\NotasVueController::class, 'detalhe'])
+                ->whereNumber('nota')->name('notas.vue.detalhe');
+            Route::post('/notas/painel/api', [\App\Http\Controllers\NotasVueController::class, 'criar'])
+                ->name('notas.vue.criar');
+            Route::put('/notas/painel/api/{nota}', [\App\Http\Controllers\NotasVueController::class, 'editar'])
+                ->whereNumber('nota')->name('notas.vue.editar');
+            Route::patch('/notas/painel/api/{nota}/etapa', [\App\Http\Controllers\NotasVueController::class, 'mover'])
+                ->whereNumber('nota')->name('notas.workspace.move');
+            Route::post('/notas/painel/api/{nota}/finalizar', [\App\Http\Controllers\NotasVueController::class, 'finalizar'])
+                ->whereNumber('nota')->name('notas.vue.finalizar');
+            Route::post('/notas/painel/api/{nota}/cancelar', [\App\Http\Controllers\NotasVueController::class, 'cancelar'])
+                ->whereNumber('nota')->name('notas.vue.cancelar');
+            Route::delete('/notas/painel/api/{nota}', [\App\Http\Controllers\NotasVueController::class, 'excluir'])
+                ->whereNumber('nota')->name('notas.vue.excluir');
+        });
+
 
         Route::get(
             '/notas/{id}/pdf',
@@ -297,6 +327,9 @@ Route::middleware([
             '/notas/{nota}/cancelar',
             [NotaController::class, 'cancelar']
         )->name('notas.cancelar');
+
+        Route::get('notas/{nota}/duplicar', [\App\Http\Controllers\DuplicarRegistroController::class, 'nota'])->name('notas.duplicar');
+        Route::post('notas/{nota}/duplicar', [\App\Http\Controllers\DuplicarRegistroController::class, 'duplicarNota'])->name('notas.duplicar.store');
 
         Route::resource(
             'notas',
@@ -405,6 +438,8 @@ Route::middleware([
         )->name(
             'ordemservicos.cancelar'
         );
+
+        Route::get('ordemservicos/{ordemservico}/anexos', [OrdemServicoController::class, 'anexos'])->name('ordemservicos.anexos');
 
         Route::resource(
             'ordemservicos',
@@ -682,6 +717,9 @@ Route::middleware([
             [\App\Http\Controllers\CompraConciliacaoEfetivacaoController::class, 'store']
         )->name('compras.conciliacao.efetivar');
 
+        Route::get('compras/{compra}/duplicar', [\App\Http\Controllers\DuplicarRegistroController::class, 'compra'])->name('compras.duplicar');
+        Route::post('compras/{compra}/duplicar', [\App\Http\Controllers\DuplicarRegistroController::class, 'duplicarCompra'])->name('compras.duplicar.store');
+
         Route::resource(
             'compras',
             CompraController::class
@@ -697,6 +735,8 @@ Route::middleware([
         ]);
 
         // Anexos
+        Route::post('notas/{nota}/anexos', [AnexoController::class, 'storeNota'])->name('notas.anexos.store');
+        Route::post('ordemservicos/{ordemservico}/anexos', [AnexoController::class, 'storeOrdemServico'])->name('ordemservicos.anexos.store');
 
         Route::post(
             'compras/{compra}/anexos',
