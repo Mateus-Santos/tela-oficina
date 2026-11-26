@@ -24,8 +24,9 @@ for(const k of ['nota','os']){
   assert.match(current[k],/aria-label="Limpar filtros de/);
  });
 }
-test('FE07 nota: filtro ID nao inventado e botao de filtrar legivel',()=>{
- assert.ok(!fields(current.nota).includes('id'));
+test('FE07 nota: filtro ID U03 real e botao de filtrar legivel',()=>{
+ assert.equal(fields(current.nota).filter(name=>name==='id').length,1);
+ assert.match(current.nota,/name="id"\s+type="number"\s+min="1"\s+step="1"/);
  assert.match(current.nota,/>\s*Filtrar\s*<\/button>/);
  assert.match(current.nota,/Aberto \(padrão\)/);
  assert.match(current.nota,/value="Todos"/);
