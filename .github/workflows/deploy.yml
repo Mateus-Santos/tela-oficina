@@ -271,6 +271,8 @@ jobs:
           bash -n scripts/deploy.sh
           test -f tests/deploy/test_deploy.sh
           test -f tests/deploy/test_backup_gate.sh
+          test -f scripts/production/preflight_l02c.php
+          php -l scripts/production/preflight_l02c.php
           test -f compose.prod.yml
           test -f docker/production/Dockerfile.app
           test -f docker/production/Dockerfile.php-base
@@ -446,6 +448,7 @@ jobs:
             scripts/production/backup_release.sh \
             scripts/production/storage_release.sh \
             scripts/production/mysql_restore_check.sh \
+            scripts/production/preflight_l02c.php \
             "$REMOTE_USER@$REMOTE_HOST:$DEPLOY_DIR/releases/$TAG/"
 
       - name: Publicar imagens existentes na VPS com rollback

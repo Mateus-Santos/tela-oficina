@@ -40,6 +40,7 @@ test -f "$RELEASE/database_release.sh"
 test -f "$RELEASE/backup_release.sh"
 test -f "$RELEASE/storage_release.sh"
 test -f "$RELEASE/mysql_restore_check.sh"
+test -f "$RELEASE/preflight_l02c.php"
 docker network inspect sos-mecanica_sail >/dev/null
 test "$(docker inspect -f '{{.State.Health.Status}}' sos-mecanica-mysql-1)" = healthy
 test "$(docker inspect -f '{{.State.Health.Status}}' sosmecanica-prod-web-1)" = healthy
@@ -59,6 +60,10 @@ cp -p "$COMPOSE_ANTIGO" "$ROLLBACK"
 
 SOS_IMAGE_TAG="$TAG" docker compose --project-directory "$PROJECT_DIR" \
   -f "$NOVO" config --quiet
+
+echo '========== 1B. PREFLIGHT L02C/NFE NO BANCO REAL (SOMENTE SELECT) =========='
+# Consulta usando o APP ATUAL; se falhar, nenhuma imagem e trocada.
+docker exec -i sosmecanica-prod-app-1 php < "$RELEASE/preflight_l02c.php"
 
 echo '========== 2. BACKUP + RESTAURACAO DE ENSAIO ANTES DO CORTE =========='
 bash "$RELEASE/backup_release.sh" "$TAG"
