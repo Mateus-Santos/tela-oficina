@@ -35,6 +35,28 @@
 @endphp
 
 <x-list-header title="VISUALIZAR COMPRA" icon="bi-cart-check" />
+<div class="d-flex justify-content-end mb-3">
+    <a href="{{ route('compras.duplicar', $compra) }}" class="btn btn-outline-primary">
+        <i class="bi bi-files"></i> Duplicar Compra
+    </a>
+</div>
+
+@php
+    $d04ValorLiquido = app(\App\Services\Compra\ValorDevidoCompra::class)
+        ->valorLiquidoCentavos($compra) / 100;
+    $d04Pendentes = $compra->devolucoes()
+        ->where('modalidade', 'documental')
+        ->where('situacao_financeira', 'pendente')->count();
+@endphp
+@if ($compra->devolucoes()->where('modalidade', 'documental')->exists())
+    <div class="alert alert-info text-start" role="status">
+        NF original: R$ {{ number_format((float) $compra->valor_total, 2, ',', '.') }} ·
+        Valor líquido reconhecido: <strong>R$ {{ number_format($d04ValorLiquido, 2, ',', '.') }}</strong>.
+        @if ($d04Pendentes > 0)
+            <strong class="text-danger">{{ $d04Pendentes }} devolução(ões) com abatimento financeiro PENDENTE.</strong>
+        @endif
+    </div>
+@endif
 
 @if (session('success'))
     <div class="alert alert-success">
@@ -718,14 +740,17 @@
                 </div>
             </div>
 
-            @if ($compra->chave_nf)
+            @if ($compra->chave_nf || $compra->chave_nf_cancelada)
                 <div class="col-12">
                     <div class="text-muted small">
                         Chave de acesso
                     </div>
                     <div class="fw-semibold text-break">
                         <i class="bi bi-upc-scan"></i>
-                        {{ $compra->chave_nf }}
+                        {{ $compra->chave_nf ?: $compra->chave_nf_cancelada }}
+                        @if($compra->status === 'cancelada')
+                            <small class="d-block text-muted">Chave arquivada; liberada para novo cadastro fiscal.</small>
+                        @endif
                     </div>
                 </div>
             @endif

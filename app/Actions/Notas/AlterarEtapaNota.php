@@ -14,26 +14,25 @@ class AlterarEtapaNota
         Nota $nota,
         Etapa $etapa,
         ?int $userId = null,
-        ?string $motivo = null
+        ?string $motivo = null,
+        bool $finalizando = false
     ): Nota {
         return DB::transaction(
             function () use (
                 $nota,
                 $etapa,
                 $userId,
-                $motivo
+                $motivo,
+                $finalizando
             ) {
+                $etapa = Etapa::query()
+                    ->lockForUpdate()
+                    ->findOrFail($etapa->id);
+
                 $nota = Nota::query()
                     ->lockForUpdate()
                     ->with('etapa')
-                    ->findOrFail(
-                        $nota->id
-                    );
-
-                $etapa = Etapa::query()
-                    ->findOrFail(
-                        $etapa->id
-                    );
+                    ->findOrFail($nota->id);
 
                 /*
                  * =====================================================
@@ -73,6 +72,14 @@ class AlterarEtapaNota
                 if (! $etapa->aplica_nota) {
                     throw new InvalidArgumentException(
                         'A etapa selecionada não pode ser utilizada em Notas.'
+                    );
+                }
+
+                /* L03N: etapa final só pode ser alcançada pela Action
+                 * FinalizarNota, que valida estoque, O.S., parcelas e conta. */
+                if ($etapa->tipo === 'final' && ! $finalizando) {
+                    throw new InvalidArgumentException(
+                        'A última etapa exige finalização real. Utilize Finalizar Nota na Central.'
                     );
                 }
 

@@ -44,6 +44,12 @@ class EfetivarConciliacaoCompra
                 return $existente;
             }
 
+            if ($compra->devolucoes()->where('modalidade', 'documental')
+                ->where('situacao_financeira', 'aplicada')->exists()) {
+                throw new InvalidArgumentException(
+                    'Compra ja possui abatimento documental D04; outro abatimento automatico requer conciliacao manual.'
+                );
+            }
             if (empty($dados['confirmacao'])) {
                 throw new InvalidArgumentException('Confirmacao explicita e obrigatoria.');
             }

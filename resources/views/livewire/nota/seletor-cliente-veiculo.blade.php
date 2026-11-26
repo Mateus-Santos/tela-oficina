@@ -1,4 +1,4 @@
-<div class="row g-3 feux-nota-seletores">
+<div class="row g-3 feux-nota-seletores feux-seletor-cliente-veiculo">
 
     {{-- =====================================================
          CLIENTE

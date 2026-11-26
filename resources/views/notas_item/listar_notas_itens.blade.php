@@ -30,6 +30,7 @@
         id="filtros-notas"
         :collapsible="true"
         :expanded="request()->hasAny([
+            'id',
             'veiculo',
             'placa',
             'status',
@@ -188,6 +189,12 @@
         <x-slot:advanced>
 
             <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <label for="nota_codigo" class="form-label">Codigo / ID da Nota</label>
+                    <input id="nota_codigo" name="id" type="number" min="1" step="1"
+                        class="filtros-container__input" inputmode="numeric"
+                        placeholder="Ex.: 123" value="{{ request('id') }}">
+                </div>
 
                 <div class="col-12 col-md-6">
 
@@ -252,7 +259,7 @@
         <span>
             {{ number_format($notas->total(), 0, ',', '.') }}
             {{ $notas->total() === 1 ? 'nota encontrada' : 'notas encontradas' }}.
-            @if (!request()->filled('status'))
+            @if (!request()->filled('status') && !request()->filled('id'))
                 Exibindo somente notas abertas por padrão.
             @endif
         </span>
@@ -261,6 +268,7 @@
     @php
 
         $possuiFiltros = request()->hasAny([
+            'id',
             'cliente',
             'veiculo',
             'placa',
@@ -816,6 +824,11 @@
 
                     @endif
 
+                    @if(auth()->user()?->isAdmin())
+                    <a href="{{ route('notas.duplicar', $nota) }}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-files"></i> Duplicar
+                    </a>
+                    @endif
                     <a
                         href="{{ route(
                             'notas.show',

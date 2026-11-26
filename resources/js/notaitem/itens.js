@@ -1328,11 +1328,13 @@ import BuscaItens from '../busca/busca-itens.js';
                             </span>
 
                             <div class="fw-semibold mt-2">
-                                #${escaparHtml(itemId)}
+                                ${Number(itemId) < 0 ? 'O.S. em rascunho' : '#' + escaparHtml(itemId)}
                             </div>
 
                             <div class="small text-muted mt-1">
-                                Serviço vinculado à Nota
+                                ${Number(itemId) < 0
+                                    ? 'Sera criada quando salvar a Nota'
+                                    : 'Serviço vinculado à Nota'}
                             </div>
                         </div>
 

@@ -242,15 +242,22 @@ class FinalizarNotaTest extends TestCase
         int $veiculoClienteId,
         OrdemServico $ordemServico
     ): Nota {
+        $itemExistente = NotasItem::query()
+            ->where('nota_id', $ordemServico->nota_id)
+            ->where('itemable_type', OrdemServico::class)
+            ->where('itemable_id', $ordemServico->id)
+            ->firstOrFail();
+
         return app(
-            CriarNota::class
-        )->execute([
+            \App\Actions\Notas\AtualizarNota::class
+        )->execute(Nota::findOrFail($ordemServico->nota_id), [
             'cliente_id' => $cliente->id,
             'veiculo_cliente_id' => $veiculoClienteId,
             'km' => 50000,
             'km_proxima_troca_oleo' => 60000,
             'itens' => [
                 [
+                    'id' => $itemExistente->id,
                     'itemable_type' => OrdemServico::class,
                     'itemable_id' => $ordemServico->id,
                     'descricao' => $ordemServico->descricao,
@@ -316,93 +323,16 @@ class FinalizarNotaTest extends TestCase
         $this->criarCategoriaVendasEServicos();
 
         $cliente = $this->criarCliente();
-
-        $nota = $this->criarNota(
-            $cliente,
-            300
+        $veiculoClienteId = $this->criarVeiculoCliente($cliente);
+        $setorServico = $this->criarSetorServico();
+        $ordemServico = $this->criarOrdemServicoWorkflow(
+            $cliente, $veiculoClienteId, $setorServico, 300
         );
-
-        $montadoraId = DB::table(
-            'montadoras'
-        )->insertGetId([
-            'nome' => 'Montadora Teste '.uniqid(),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        $veiculoId = DB::table(
-            'veiculos'
-        )->insertGetId([
-            'nome' => 'Veículo Teste',
-            'montadora_id' => $montadoraId,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        $pessoaId = DB::table(
-            'pessoas'
-        )->insertGetId([
-            'nome' => 'Cliente OS Teste',
-            'cpf' => '98765432109',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        $clienteOsId = DB::table(
-            'clientes'
-        )->insertGetId([
-            'pessoa_id' => $pessoaId,
-            'pontos' => 0,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        $veiculoClienteId = DB::table(
-            'veiculos_clientes'
-        )->insertGetId([
-            'cliente_id' => $clienteOsId,
-            'veiculo_id' => $veiculoId,
-            'placa' => 'ABC1234',
-            'ano' => 2020,
-            'cor' => 'Preto',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        $setorServicoId = DB::table(
-            'setor_servicos'
-        )->insertGetId([
-            'setor' => 'Mecânica',
-            'nivel' => 'Normal',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        $ordemServicoId = DB::table(
-            'ordem_servicos'
-        )->insertGetId([
-            'veiculo_cliente_id' => $veiculoClienteId,
-            'setor_servico_id' => $setorServicoId,
-            'descricao' => 'Serviço teste',
-            'valor' => 300,
-            'status' => 'finalizada',
-            'data_abertura' => now(),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        $item = NotasItem::create([
-            'nota_id' => $nota->id,
-            'itemable_type' => OrdemServico::class,
-            'itemable_id' => $ordemServicoId,
-            'descricao' => 'Serviço teste',
-            'quantidade' => 1,
-            'valor_unitario' => 300,
-            'desconto' => 0,
-            'valor_total' => 300,
-            'garantia_meses' => null,
-            'garantia_km' => null,
-        ]);
+        $nota = Nota::findOrFail($ordemServico->nota_id);
+        $item = $nota->itens()
+            ->where('itemable_type', OrdemServico::class)
+            ->where('itemable_id', $ordemServico->id)
+            ->firstOrFail();
 
         $this->finalizarNota(
             $nota
@@ -477,7 +407,7 @@ class FinalizarNotaTest extends TestCase
         );
 
         $nota->update([
-            'status' => 'Finalizado',
+            'status' => 'Cancelado',
         ]);
 
         $this->expectException(
@@ -1701,6 +1631,7 @@ class FinalizarNotaTest extends TestCase
 
         $nota->update([
             'status' => 'Finalizado',
+            'etapa_id' => Etapa::query()->paraNota()->ativas()->finais()->firstOrFail()->id,
         ]);
 
         $produto->update([

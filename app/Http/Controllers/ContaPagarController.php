@@ -331,6 +331,12 @@ class ContaPagarController extends Controller
 
         $comprasDisponiveis = Compra::query()
             ->with('fornecedor')
+            ->withSum([
+                'devolucoes as d04_total_abatimento' => fn ($q) => $q
+                    ->where('status', 'efetivada')
+                    ->where('modalidade', 'documental')
+                    ->where('situacao_financeira', 'aplicada'),
+            ], 'valor_abatimento')
             ->where(
                 'status',
                 Compra::STATUS_APROVADA
@@ -468,6 +474,12 @@ class ContaPagarController extends Controller
 
         $comprasDisponiveis = Compra::query()
             ->with('fornecedor')
+            ->withSum([
+                'devolucoes as d04_total_abatimento' => fn ($q) => $q
+                    ->where('status', 'efetivada')
+                    ->where('modalidade', 'documental')
+                    ->where('situacao_financeira', 'aplicada'),
+            ], 'valor_abatimento')
             ->where(
                 'status',
                 Compra::STATUS_APROVADA

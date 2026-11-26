@@ -16,7 +16,10 @@ const appScss = content('resources/scss/_app.scss');
 
 test('FEUX mobile: novos componentes mantêm todos os nomes de rotas das duas listagens', () => {
   for (const path of Object.values(paths)) {
-    assert.deepEqual(routeNames(content(path)), routeNames(before(path)));
+    const antigas=routeNames(before(path));
+    // U04: duplicacao de Nota foi adicionada apenas a listagem de Notas.
+    if (path === paths.notas) antigas.add('notas.duplicar');
+    assert.deepEqual(routeNames(content(path)),antigas);
   }
 });
 

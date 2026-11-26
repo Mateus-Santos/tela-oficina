@@ -602,7 +602,17 @@
                                     class="d-flex justify-content-center flex-wrap gap-2"
                                 >
 
+                                    <a href="{{ route('ordemservicos.anexos', $ordemservico) }}"
+                                       class="btn btn-outline-primary btn-sm"
+                                       aria-label="Anexos da OS #{{ $ordemservico->id }}" title="Anexos">
+                                        <i class="bi bi-paperclip"></i>
+                                    </a>
                                     @if($ordemservico->status === 'aberta')
+                                        <a href="{{ route('ordemservicos.edit', $ordemservico) }}"
+                                           class="btn btn-outline-secondary btn-sm"
+                                           aria-label="Editar OS #{{ $ordemservico->id }}" title="Editar OS">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
 
                                         <form
                                             action="{{ route(

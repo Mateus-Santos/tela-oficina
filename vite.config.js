@@ -1,11 +1,13 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
+import vue from '@vitejs/plugin-vue';
 
 export default defineConfig({
     css: {
         preprocessorMaxWorkers: 0,
     },
     plugins: [
+        vue(),
         laravel({
             input: [
                 'resources/css/app.css',
@@ -34,10 +36,19 @@ export default defineConfig({
                 'resources/js/notaitem/form.js',
                 'resources/js/notaitem/itens.js',
                 'resources/js/notaitem/descontos.js',
+                'resources/js/notaitem/feux-notas-lote02.js',
+                'resources/js/notaitem/feux-notas-lote04.js',
+                'resources/js/notaitem/feux-notas-lote05.js',
+                'resources/js/notaitem/feux-notas-lote06.js',
+                'resources/js/notaitem/feux-notas-workspace.js',
+                'resources/js/notaitem/feux-notas-itens-operacao.js',
+                'resources/js/notaitem/feux-notas-selecao-workspace.js',
                 'resources/js/produto/barcode.js',
                 'resources/js/conta-pagar.js',
                 'resources/js/financeiro/socios-parcelas.js',
                 'resources/js/conta-receber.js',
+                'resources/css/notas/vue.css',
+                'resources/js/notas/vue/main.js',
                 'resources/js/nota-show.js',
                 'resources/js/compras/show.js',
                 'resources/js/notaitem/os-rapida.js',
