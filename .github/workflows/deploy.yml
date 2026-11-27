@@ -108,6 +108,8 @@ jobs:
       - name: Conferir Composer e build frontend
         run: |
           composer validate --no-check-publish
+          php -l scripts/production/reconciliar_os_sem_nota.php
+          bash -n scripts/production/regularizar_os_legadas.sh
           npm ci
           npm run build
       - name: Instalar dependencias PHP para regressao
