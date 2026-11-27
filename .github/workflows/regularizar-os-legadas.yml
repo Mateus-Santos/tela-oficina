@@ -1,0 +1,89 @@
+name: SOS Mecanica - Regularizar O.S. legadas
+run-name: 'Regularizar 2 O.S. / ${{ github.ref_name }}'
+on:
+  workflow_dispatch:
+    inputs:
+      confirmacao:
+        description: 'Digite REGULARIZAR_2_OS apos revisar o plano de backup e integridade'
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  regularizar:
+    name: Backup, reparar vinculos e revalidar - production
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    concurrency:
+      group: sosmecanica-docker-production
+      cancel-in-progress: false
+    environment:
+      name: production
+    env:
+      CONFIRMACAO: ${{ inputs.confirmacao }}
+      REMOTE_USER: ${{ vars.REMOTE_USER }}
+      REMOTE_HOST: ${{ vars.REMOTE_HOST }}
+      REMOTE_PORT: ${{ vars.REMOTE_PORT }}
+      DEPLOY_DIR: /home/mateus/deploy/sosmecanica
+    steps:
+      - name: Bloquear outra branch, parametros e confirmacao invalidos
+        run: |
+          set -Eeuo pipefail
+          [[ "$GITHUB_REF" == refs/heads/master ]]
+          [[ "$GITHUB_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$CONFIRMACAO" == REGULARIZAR_2_OS ]]
+          [[ -n "$REMOTE_USER" && -n "$REMOTE_HOST" && "$REMOTE_PORT" =~ ^[0-9]+$ ]]
+      - name: Checkout somente leitura
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Preparar PHP 8.5 para validacao
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          coverage: none
+      - name: Validar scripts sem alterar banco
+        run: |
+          set -Eeuo pipefail
+          bash -n scripts/production/regularizar_os_legadas.sh
+          php -l scripts/production/reconciliar_os_sem_nota.php
+          php -l scripts/production/preflight_l02c.php
+          bash -n scripts/production/backup_release.sh scripts/production/database_release.sh
+      - name: Configurar SSH do GitHub Actions
+        uses: webfactory/ssh-agent@v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
+      - name: Autenticar identidade conhecida do servidor
+        env:
+          HOST_KEY: ${{ secrets.SERVER_SSH_HOST_KEY }}
+        run: |
+          set -Eeuo pipefail
+          test -n "$HOST_KEY"
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$HOST_KEY" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/known_hosts"
+      - name: Enviar scripts versionados sem modificar sistema
+        run: |
+          set -Eeuo pipefail
+          SSH_OPTS=(-p "$REMOTE_PORT" -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts")
+          ssh "${SSH_OPTS[@]}" "$REMOTE_USER@$REMOTE_HOST" \
+            "mkdir -p '$DEPLOY_DIR/releases/$GITHUB_SHA'"
+          scp -P "$REMOTE_PORT" -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            scripts/production/regularizar_os_legadas.sh \
+            scripts/production/reconciliar_os_sem_nota.php \
+            scripts/production/preflight_l02c.php \
+            scripts/production/backup_release.sh \
+            scripts/production/database_release.sh \
+            scripts/production/storage_release.sh \
+            scripts/production/mysql_restore_check.sh \
+            "$REMOTE_USER@$REMOTE_HOST:$DEPLOY_DIR/releases/$GITHUB_SHA/"
+      - name: Auditar, backup restauravel, regularizar e revalidar
+        run: |
+          set -Eeuo pipefail
+          ssh -T -p "$REMOTE_PORT" \
+            -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            "$REMOTE_USER@$REMOTE_HOST" \
+            "bash '$DEPLOY_DIR/releases/$GITHUB_SHA/regularizar_os_legadas.sh' '$GITHUB_SHA'"
