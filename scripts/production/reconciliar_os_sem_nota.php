@@ -73,6 +73,34 @@ if ($linhas->count() === 0) {
     exit(0);
 }
 if ($linhas->count() !== 2) bloqueio('ESPERADAS_EXATAMENTE_2_ORFAS');
+if ($ids !== [3, 61]) bloqueio('IDs_DIVERGENTES_DO_DIAGNOSTICO_3_61');
+
+// Reconciliacao deliberadamente pontual. A O.S. #61 mantem o veiculo 54,
+// cujo unico cliente no vinculo novo e no cadastro legado e 60.
+function clienteEfetivoOrfa(object $os): int {
+    if ((int) $os->id !== 61) return (int) $os->cliente_id;
+    if ((int) $os->cliente_id !== 58 || (int) $os->veiculo_cliente_id !== 54) {
+        bloqueio('OS61_MUDOU_CLIENTE_OU_VEICULO');
+    }
+    $clientes = DB::table('cliente_veiculo_cliente')
+        ->where('veiculo_cliente_id', 54)->distinct()->pluck('cliente_id')
+        ->map(static fn ($v): int => (int) $v)->unique()->sort()->values()->all();
+    if ($clientes !== [60]) bloqueio('OS61_CLIENTES_DO_VEICULO_NAO_SAO_EXATAMENTE_60');
+    if ((int) DB::table('veiculos_clientes')->where('id', 54)->value('cliente_id') !== 60) {
+        bloqueio('OS61_VINCULO_LEGADO_DIVERGENTE');
+    }
+    if (!DB::table('clientes')->where('id', 60)->exists()) bloqueio('CLIENTE_60_INEXISTENTE');
+    return 60;
+}
+
+// Nota #59 ja e finalizada e tem a O.S. #45. Preserva-a; nao anexa a #3 nela.
+if (!DB::table('notas')->where('id', 59)->where('cliente_id', 6)
+    ->where('veiculo_cliente_id', 6)->where('status', 'Finalizado')->exists()
+    || !DB::table('notas_itens')->where('nota_id', 59)->where('itemable_type', $tipo)
+        ->where('itemable_id', 45)->exists()) {
+    bloqueio('NOTA59_OU_ITEM_OS45_MUDOU; NAO_CRIAR_DUPLICIDADE');
+}
+
 if (Etapa::query()->paraNota()->ativas()->iniciais()->count() !== 1) {
     bloqueio('ETAPA_INICIAL_NOTAS_NAO_UNICA');
 }
@@ -81,14 +109,23 @@ foreach ($linhas as $os) {
     $erros = [];
     if ($os->status !== 'aberta' || $os->data_fechamento !== null) $erros[] = 'STATUS_OU_FECHAMENTO';
     if (!$os->cliente_id || !$os->veiculo_cliente_id) $erros[] = 'CLIENTE_VEICULO_AUSENTE';
-    if (!is_numeric($os->valor) || (float) $os->valor <= 0) $erros[] = 'VALOR_NAO_POSITIVO';
-    if ($os->cliente_id && $os->veiculo_cliente_id &&
+    // Nota Aberta com servico R$ 0,00 e permitida; nao gera conta a receber.
+    if (!is_numeric($os->valor) || (float) $os->valor < 0) $erros[] = 'VALOR_INVALIDO';
+    $clienteFinal = clienteEfetivoOrfa($os);
+    if ($clienteFinal > 0 && $os->veiculo_cliente_id &&
         !DB::table('cliente_veiculo_cliente')
-            ->where('cliente_id', $os->cliente_id)
+            ->where('cliente_id', $clienteFinal)
             ->where('veiculo_cliente_id', $os->veiculo_cliente_id)->exists()) {
         $erros[] = 'SEM_VINCULO_CLIENTE_VEICULO';
     }
-    echo 'OS_ID='.$os->id.' STATUS='.$os->status.' ELEGIVEL='.($erros ? 'NAO' : 'SIM')."\n";
+    echo 'OS_ID='.$os->id.' STATUS='.$os->status.' CLIENTE_ATUAL='.$os->cliente_id
+        .' CLIENTE_FINAL='.$clienteFinal.' ELEGIVEL='.($erros ? 'NAO' : 'SIM')."\n";
+    if ((int) $os->id === 61) {
+        echo "PLANO_OS61=ALTERAR_CLIENTE_58_PARA_60; PRESERVAR_VEICULO_54; SEM_ESTOQUE_OU_FINANCEIRO\n";
+    }
+    if ((int) $os->id === 3) {
+        echo "PLANO_OS3=CRIAR_NOTA_ABERTA_PROPRIA; PRESERVAR_NOTA_59_E_OS_45\n";
+    }
     if ($erros) $problemas[] = $os->id.':'.implode('+', $erros);
 }
 if ($problemas) bloqueio('REVISAO_HUMANA_OBRIGATORIA:'.implode(',', $problemas));
@@ -114,13 +151,23 @@ $criadas = DB::transaction(static function () use ($ids, $tipo, $orfas): array {
     foreach ($bloqueadas as $os) {
         if ($os->status !== 'aberta' || $os->data_fechamento !== null
             || !$os->cliente_id || !$os->veiculo_cliente_id
-            || !is_numeric($os->valor) || (float) $os->valor <= 0) {
+            || !is_numeric($os->valor) || (float) $os->valor < 0) {
             throw new RuntimeException('O.S. mudou ou deixou de ser elegivel');
         }
+        $clienteFinal = clienteEfetivoOrfa($os);
         if (!DB::table('cliente_veiculo_cliente')
-            ->where('cliente_id', $os->cliente_id)
+            ->where('cliente_id', $clienteFinal)
             ->where('veiculo_cliente_id', $os->veiculo_cliente_id)->exists()) {
             throw new RuntimeException('Vinculo cliente/veiculo mudou');
+        }
+        if ((int) $os->id === 61) {
+            $alterados = DB::table('ordem_servicos')
+                ->where('id', 61)->where('cliente_id', 58)
+                ->where('veiculo_cliente_id', 54)
+                ->where('status', 'aberta')->whereNull('data_fechamento')
+                ->update(['cliente_id' => 60, 'updated_at' => now()]);
+            if ($alterados !== 1) throw new RuntimeException('OS61 mudou; rollback total');
+            $os->cliente_id = 60;
         }
         if (DB::table('notas_itens')->where('itemable_type', $tipo)
             ->where('itemable_id', $os->id)->exists()) {
@@ -166,6 +213,7 @@ $criadas = DB::transaction(static function () use ($ids, $tipo, $orfas): array {
     if ($orfas()->exists()) throw new RuntimeException('O.S. orfa remanescente');
     return $result;
 }, 3);
+echo "CLIENTE_OS61_CORRIGIDO=58_PARA_60; ALTERACAO_ATOMICA_COM_NOTAS\n";
 foreach ($criadas as $par) {
     echo 'VINCULO_CRIADO=OS_'.$par['os'].'_NOTA_'.$par['nota']."\n";
 }
