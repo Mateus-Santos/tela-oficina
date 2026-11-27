@@ -10,6 +10,24 @@
         create-icon="bi-plus-lg"
     />
 
+    {{-- FEUX COMPRAS V2: atalhos visuais sobre os mesmos filtros GET da listagem. --}}
+    <nav class="feux-compras-v2__filtros mb-3" aria-label="Acesso rápido por situação da compra">
+        <span class="small fw-semibold text-body-secondary me-2">Ver compras:</span>
+        @foreach ([
+            '' => 'Todas',
+            'pendente' => 'Pendentes',
+            'conferindo' => 'Em conferência',
+            'aprovada' => 'Aprovadas',
+            'cancelada' => 'Canceladas',
+        ] as $situacao => $titulo)
+            <a class="feux-compras-v2__atalho {{ request('status', '') === $situacao ? 'is-active' : '' }}"
+               href="{{ route('compras.index', array_merge(request()->except(['page', 'status']), $situacao === '' ? [] : ['status' => $situacao])) }}"
+               @if(request('status', '') === $situacao) aria-current="page" @endif>
+                {{ $titulo }}
+            </a>
+        @endforeach
+    </nav>
+
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <i class="bi bi-check-circle me-2"></i>

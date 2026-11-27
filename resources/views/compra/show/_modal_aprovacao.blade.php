@@ -5,6 +5,7 @@
     aria-labelledby="modalAprovarCompraLabel"
     aria-hidden="true"
     data-valor-total="{{ $compra->valor_total }}"
+    data-feux-aprovacao-v4
 >
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
@@ -34,6 +35,31 @@
                 @csrf
 
                 <div class="modal-body">
+
+                    {{-- FEUX V4: orientacao visual, sem efeito financeiro autonomo. --}}
+                    <section class="feux-aprovacao-v4__resumo mb-3"
+                        aria-labelledby="feux-aprovacao-v4-titulo"
+                        data-feux-aprovacao-resumo
+                        data-divergencia="{{ $compraPossuiDivergencia ? '1' : '0' }}">
+                        <h2 id="feux-aprovacao-v4-titulo" class="h6 mb-3">Resumo antes de aprovar</h2>
+                        <div class="feux-aprovacao-v4__indicadores">
+                            <div><small>Itens na compra</small><strong>{{ $compra->itens->count() }}</strong></div>
+                            <div><small>Itens conferidos</small><strong>{{ $compra->itens->filter(fn ($item) => $item->quantidade_conferida !== null)->count() }}</strong></div>
+                            <div><small>Encaminhamento financeiro</small><strong>{{ $compraPossuiDivergencia ? 'Conciliação D03' : 'Opcional' }}</strong></div>
+                        </div>
+                        <p class="small text-body-secondary mt-3 mb-2">
+                            Aprovar a compra não representa pagamento nem emissão de NF-e.
+                            A entrada em estoque e os pagamentos seguem suas próprias operações.
+                        </p>
+                        <p class="small fw-semibold mb-0" role="status" aria-live="polite"
+                            data-feux-aprovacao-orientacao>
+                            @if ($compraPossuiDivergencia)
+                                Há divergência física: aprove sem gerar conta e encaminhe o ajuste à conciliação D03.
+                            @else
+                                Escolha aprovar sem gerar conta ou configurar parcelas para gerar uma conta a pagar.
+                            @endif
+                        </p>
+                    </section>
 
                     {{-- ETAPA 1: APROVAÇÃO --}}
                     <div

@@ -34,7 +34,7 @@
         <p class="mb-0">Valor líquido já reconhecido: <strong>R$ {{ number_format($valorLiquido, 2, ',', '.') }}</strong></p>
     </div></div>
 
-    <form method="POST" action="{{ route('compras.devolucoes.documental.store', $compra) }}">
+    <form method="POST" data-feux-devolucao-documental action="{{ route('compras.devolucoes.documental.store', $compra) }}">
         @csrf
         <input type="hidden" name="operacao_uuid" value="{{ old('operacao_uuid', $operacaoUuid) }}">
 
@@ -78,7 +78,7 @@
                         $modoPadrao = $saldo['recusado'] > 0 ? 'recusado' : 'estoque';
                     @endphp
                     <div class="col-12 col-xl-6">
-                        <div class="border rounded p-3 h-100">
+                        <div class="border rounded p-3 h-100" data-feux-devolucao-item data-feux-item-id="{{ $item->id }}" data-saldo-estoque="{{ $saldo['estoque'] }}" data-saldo-recusado="{{ $saldo['recusado'] }}">
                             <label class="form-label d-block fw-bold" for="quantidade_{{ $item->id }}">
                                 {{ $item->descricao }} · item #{{ $item->id }}
                             </label>
@@ -89,7 +89,7 @@
                             <div class="mb-2">
                                 <label class="form-label" for="modalidade_{{ $item->id }}">Tratamento</label>
                                 <select class="form-select" name="itens[{{ $item->id }}][modalidade]"
-                                        id="modalidade_{{ $item->id }}" @disabled(!$podeDevolver)>
+                                        id="modalidade_{{ $item->id }}" data-feux-modalidade @disabled(!$podeDevolver)>
                                     <option value="recusado" @selected(old('itens.'.$item->id.'.modalidade', $modoPadrao) === 'recusado')>
                                         Recusado, sem entrada no estoque
                                     </option>
@@ -101,15 +101,25 @@
                             <div>
                                 <label class="form-label" for="quantidade_{{ $item->id }}">Quantidade</label>
                                 <input class="form-control" type="number" min="0" step="0.001"
-                                    id="quantidade_{{ $item->id }}" name="itens[{{ $item->id }}][quantidade]"
+                                    id="quantidade_{{ $item->id }}" data-feux-quantidade name="itens[{{ $item->id }}][quantidade]"
                                     value="{{ old('itens.'.$item->id.'.quantidade', '0') }}"
                                     @disabled(!$podeDevolver)>
                             </div>
+                            <p class="small text-danger mt-2 mb-0 d-none" data-feux-aviso-item role="alert"></p>
                         </div>
                     </div>
                 @endforeach
             </div>
         </div></div>
+
+        <div class="alert alert-light border text-start" role="status" aria-live="polite">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <strong>Prévia das quantidades selecionadas</strong>
+                <span data-feux-devolucao-resumo>Informe os itens para conferir as quantidades.</span>
+            </div>
+            <p class="small text-danger mt-2 mb-0 d-none" data-feux-devolucao-erro></p>
+            <p class="small text-body-secondary mt-2 mb-0">Esta prévia é apenas visual. Saldo, estoque e valores financeiros são sempre validados pelo servidor antes do registro.</p>
+        </div>
 
         <div class="form-check text-start mb-2">
             <input class="form-check-input" id="confirmacao_fisica" name="confirmacao_fisica"
@@ -125,10 +135,14 @@
                 Confirmei a devolução com o fornecedor e entendo que o ajuste de Conta a Pagar pode ficar pendente.
             </label>
         </div>
-        <button class="btn btn-danger" type="submit"
+        <button class="btn btn-danger" data-feux-submit-devolucao type="submit"
             onclick="return confirm('Registrar esta devolução? A saída física será irreversível por esta tela.');">
             Registrar devolução documentada
         </button>
     </form>
 </div>
+@endsection
+
+@section('scripts')
+@vite(['resources/js/compras/devolucoes-documental.js'])
 @endsection

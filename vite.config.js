@@ -51,6 +51,8 @@ export default defineConfig({
                 'resources/js/notas/vue/main.js',
                 'resources/js/nota-show.js',
                 'resources/js/compras/show.js',
+                'resources/js/compras/devolucoes-documental.js',
+                'resources/js/compras/devolucao-operacional.js',
                 'resources/js/notaitem/os-rapida.js',
                 'resources/js/notaitem/produto-rapido.js',
             ],
