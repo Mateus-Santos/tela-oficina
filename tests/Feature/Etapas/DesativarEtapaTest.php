@@ -140,6 +140,31 @@ class DesativarEtapaTest extends TestCase
         $this->assertSame(0, OrdemServico::where('etapa_id', $origem->id)->count());
     }
 
+    /**
+     * Uma Nota ainda em Diagnostico nao pode ser marcada como finalizada.
+     * As Notas efetivamente finalizadas ficam na etapa final; portanto nao
+     * devem ser usadas como registros de Diagnostico para testar realocacao.
+     */
+    public function test_nota_em_diagnostico_nao_pode_receber_status_finalizado_ou_concluido(): void
+    {
+        $diagnostico = Etapa::where('slug', 'diagnostico')->firstOrFail();
+
+        foreach (['Finalizado', 'Concluido'] as $status) {
+            $nota = $this->notaEmDiagnostico();
+            try {
+                $nota->update(['status' => $status]);
+                $this->fail('Era esperado bloquear finalizacao fora da etapa final: '.$status);
+            } catch (\Illuminate\Validation\ValidationException $e) {
+                $this->assertSame(
+                    'Nota finalizada deve permanecer na última etapa operacional.',
+                    $e->errors()['etapa_id'][0] ?? null
+                );
+            }
+            $this->assertSame('Aberto', $nota->fresh()->status);
+            $this->assertSame($diagnostico->id, $nota->fresh()->etapa_id);
+        }
+    }
+
     public function test_excluir_etapa_inativa_vazia_preserva_nomes_no_historico(): void
     {
         $admin = $this->administrador();

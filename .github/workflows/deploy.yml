@@ -16,6 +16,7 @@ on:
           - validar
           - publicar
           - diagnosticar
+          - diagnosticar_l02c
       conta_id:
         description: 'Somente modo diagnosticar: ID tecnico da conta (0 = resumo sem valores individuais)'
         required: false
@@ -108,6 +109,8 @@ jobs:
       - name: Conferir Composer e build frontend
         run: |
           composer validate --no-check-publish
+          php -l scripts/production/reconciliar_os_sem_nota.php
+          bash -n scripts/production/regularizar_os_legadas.sh
           npm ci
           npm run build
       - name: Instalar dependencias PHP para regressao
@@ -154,6 +157,57 @@ jobs:
             echo 'Auditoria de dependencias reprovou. Veja o artefato P03.' >&2
             exit 1
           }
+
+  diagnostico_l02c:
+    name: Diagnostico L02C somente leitura
+    if: github.event_name == 'workflow_dispatch' && inputs.modo == 'diagnosticar_l02c'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    environment:
+      name: production
+    env:
+      REMOTE_USER: ${{ vars.REMOTE_USER }}
+      REMOTE_HOST: ${{ vars.REMOTE_HOST }}
+      REMOTE_PORT: ${{ vars.REMOTE_PORT }}
+    steps:
+      - name: Conferir ambiente
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          [[ "$GITHUB_REF" == refs/heads/master ]]
+          [[ "$REMOTE_PORT" =~ ^[0-9]+$ ]]
+          [[ -n "$REMOTE_USER" && -n "$REMOTE_HOST" ]]
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Validar script
+        run: php -l scripts/production/diagnosticar_l02c_readonly.php
+      - name: Chave SSH
+        uses: webfactory/ssh-agent@v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
+      - name: Host conhecido
+        env:
+          HOST_KEY: ${{ secrets.SERVER_SSH_HOST_KEY }}
+        run: |
+          set -Eeuo pipefail
+          test -n "$HOST_KEY"
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$HOST_KEY" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/known_hosts"
+      - name: Consultar O.S. sem Nota - somente SELECT
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          ssh -T -p "$REMOTE_PORT" \
+            -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            "$REMOTE_USER@$REMOTE_HOST" \
+            'docker exec -i sosmecanica-prod-app-1 php' \
+            < scripts/production/diagnosticar_l02c_readonly.php
 
   diagnostico_financeiro:
     name: Diagnostico read-only de contas e parcelas na VPS
@@ -271,6 +325,8 @@ jobs:
           bash -n scripts/deploy.sh
           test -f tests/deploy/test_deploy.sh
           test -f tests/deploy/test_backup_gate.sh
+          test -f scripts/production/preflight_l02c.php
+          php -l scripts/production/preflight_l02c.php
           test -f compose.prod.yml
           test -f docker/production/Dockerfile.app
           test -f docker/production/Dockerfile.php-base
@@ -446,6 +502,7 @@ jobs:
             scripts/production/backup_release.sh \
             scripts/production/storage_release.sh \
             scripts/production/mysql_restore_check.sh \
+            scripts/production/preflight_l02c.php \
             "$REMOTE_USER@$REMOTE_HOST:$DEPLOY_DIR/releases/$TAG/"
 
       - name: Publicar imagens existentes na VPS com rollback

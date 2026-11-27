@@ -1,0 +1,94 @@
+name: SOS Mecanica - Central de Notas / flag
+run-name: 'Central Vue ${{ inputs.acao }} / ${{ github.ref_name }}'
+on:
+  workflow_dispatch:
+    inputs:
+      acao:
+        description: 'status (somente leitura), ativar, reverter'
+        required: true
+        type: choice
+        options:
+          - status
+          - ativar
+          - reverter
+      confirmacao:
+        description: 'DIAGNOSTICAR, ATIVAR_CENTRAL_NOTAS ou REVERTER_CENTRAL_NOTAS'
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  central_vue:
+    name: Configuracao FEUX - production
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    concurrency:
+      group: sosmecanica-docker-production
+      cancel-in-progress: false
+    environment:
+      name: production
+      url: https://jaimeautomotivo.com.br/notas/painel
+    env:
+      ACAO: ${{ inputs.acao }}
+      CONFIRMACAO: ${{ inputs.confirmacao }}
+      REMOTE_USER: ${{ vars.REMOTE_USER }}
+      REMOTE_HOST: ${{ vars.REMOTE_HOST }}
+      REMOTE_PORT: ${{ vars.REMOTE_PORT }}
+      DEPLOY_DIR: /home/mateus/deploy/sosmecanica
+    steps:
+      - name: Bloquear parametros ou branch inesperados
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          [[ "$GITHUB_REF" == refs/heads/master ]]
+          [[ "$GITHUB_SHA" =~ ^[0-9a-f]{40}$ ]]
+          case "$ACAO:$CONFIRMACAO" in
+            status:DIAGNOSTICAR|ativar:ATIVAR_CENTRAL_NOTAS|reverter:REVERTER_CENTRAL_NOTAS) ;;
+            *) echo 'BLOQUEADO=CONFIRMACAO_INVALIDA' >&2; exit 2;;
+          esac
+          [[ -n "$REMOTE_USER" && -n "$REMOTE_HOST" && "$REMOTE_PORT" =~ ^[0-9]+$ ]]
+      - name: Checkout script versionado
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Validar sintaxe Bash
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          bash -n scripts/production/feux_notas_runtime.sh
+          test -s scripts/production/feux_notas_runtime.sh
+      - name: Carregar identidade SSH do workflow
+        uses: webfactory/ssh-agent@v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
+      - name: Configurar known_hosts predefinido
+        env:
+          HOST_KEY: ${{ secrets.SERVER_SSH_HOST_KEY }}
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          test -n "$HOST_KEY"
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$HOST_KEY" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/known_hosts"
+      - name: Copiar apenas rotina de ativacao da Central
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          SSH_OPTS=(-p "$REMOTE_PORT" -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts")
+          ssh "${SSH_OPTS[@]}" "$REMOTE_USER@$REMOTE_HOST" \
+            "umask 077; mkdir -p '$DEPLOY_DIR/ops/$GITHUB_SHA'"
+          scp -P "$REMOTE_PORT" -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            scripts/production/feux_notas_runtime.sh \
+            "$REMOTE_USER@$REMOTE_HOST:$DEPLOY_DIR/ops/$GITHUB_SHA/feux_notas_runtime.sh"
+      - name: Conferir estado ou alternar Central (sem alterar banco)
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          ssh -T -p "$REMOTE_PORT" -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            "$REMOTE_USER@$REMOTE_HOST" \
+            "bash '$DEPLOY_DIR/ops/$GITHUB_SHA/feux_notas_runtime.sh' '$ACAO'"
+
