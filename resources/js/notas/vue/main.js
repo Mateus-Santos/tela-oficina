@@ -4,4 +4,5 @@ const element = document.getElementById('sos-notas-vue');
 if (element) createApp(NotasApp, {
     api: element.dataset.api,
     base: element.dataset.base,
+    legacyCreate: element.dataset.createLegacy,
 }).mount(element);

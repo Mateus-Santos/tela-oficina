@@ -300,3 +300,28 @@
 @media (prefers-reduced-motion: reduce) {
     .sos-vue-notas-shell .sos-board .sos-lane { transition:none; }
 }
+
+/* FEUX: consulta avancada progressiva; nao substitui as Actions Laravel. */
+.sos-vue-app .sos-vue-head__actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+.sos-vue-app .sos-detail__advanced-link {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  margin: 1rem 0;
+  padding: .85rem;
+  border: 1px solid var(--bs-border-color, #d1d5db);
+  border-radius: .75rem;
+}
+.sos-vue-app .sos-detail__advanced-link p { margin: 0; }
+.sos-vue-app .sos-detail__stock { display: block; margin-top: .25rem; }
+.sos-vue-app .sos-detail__installments { margin: 1rem 0; }
+.sos-vue-app .sos-detail__installment {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem 1rem;
+  justify-content: space-between;
+  padding: .55rem 0;
+  border-bottom: 1px solid var(--bs-border-color, #d1d5db);
+}

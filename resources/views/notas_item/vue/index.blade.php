@@ -6,7 +6,7 @@
 
 @section('content')
 <main class="sos-vue-notas-shell" aria-label="Central de Notas">
-    <div id="sos-notas-vue" data-api="{{ url('/notas/painel/api') }}" data-base="{{ url('/notas/painel') }}">
+    <div id="sos-notas-vue" data-api="{{ url('/notas/painel/api') }}" data-base="{{ url('/notas/painel') }}" data-create-legacy="{{ route('notasitem.create') }}">
         <div class="sos-vue-boot" role="status"><span class="spinner-border spinner-border-sm"></span> Iniciando Central de Notas…</div>
     </div>
 </main>

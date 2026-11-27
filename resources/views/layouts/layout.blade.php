@@ -54,14 +54,20 @@
         <a class="navbar-brand mb-0" href="{{ url('/') }}" aria-label="SOS Mecânica - início">
             <img src="{{ asset('img/New Logo.png') }}" alt="SOS Mecânica" width="160" height="48">
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Alternar menu de navegação">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+            data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown"
+            aria-expanded="false" aria-label="Alternar menu de navegação">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNavDropdown">
             <ul class="navbar-nav ms-auto align-items-xl-center">
                 @guest
                     @foreach([['Home', ''], ['Serviços', '#servicos'], ['Sobre', '#sobre'], ['Localização', '#localizacao'], ['Contato', '#contato']] as $link)
-                        <li class="nav-item"><a class="nav-link {{ $link[1] === '' && request()->is('/') ? 'active' : '' }}" href="{{ url('/') }}{{ $link[1] }}" @if($link[1] === '' && request()->is('/')) aria-current="page" @endif>{{ $link[0] }}</a></li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ $link[1] === '' && request()->is('/') ? 'active' : '' }}"
+                                href="{{ url('/') }}{{ $link[1] }}"
+                                @if($link[1] === '' && request()->is('/')) aria-current="page" @endif>{{ $link[0] }}</a>
+                        </li>
                     @endforeach
                     <li class="nav-item ms-xl-2"><a class="btn btn-success" href="{{ url('/login') }}"><i class="bi bi-box-arrow-in-right"></i> Entrar</a></li>
                     @php
@@ -146,7 +152,8 @@
                             );
                         @endphp
                         <li class="nav-item dropdown">
-                            <button class="nav-link dropdown-toggle {{ $grupoAtivo ? 'active' : '' }}" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <button class="nav-link dropdown-toggle {{ $grupoAtivo ? 'active' : '' }}"
+                                type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="bi {{ $grupo[1] }}" aria-hidden="true"></i> {{ $grupo[0] }}
                             </button>
                             <ul class="dropdown-menu {{ $loop->last ? 'dropdown-menu-end' : '' }}">
@@ -157,19 +164,28 @@
                                             \Illuminate\Support\Str::beforeLast($item[1], '.') . '.*'
                                         );
                                     @endphp
-                                    <li><a href="{{ route($item[1]) }}" class="dropdown-item {{ $itemAtivo ? 'active' : '' }}" @if(request()->routeIs($item[1])) aria-current="page" @endif><i class="bi {{ $item[2] }} me-2" aria-hidden="true"></i>{{ $item[0] }}</a></li>
+                                    <li>
+                                        <a href="{{ route($item[1]) }}" class="dropdown-item {{ $itemAtivo ? 'active' : '' }}"
+                                            @if(request()->routeIs($item[1])) aria-current="page" @endif><i class="bi {{ $item[2] }} me-2" aria-hidden="true"></i>{{ $item[0] }}</a>
+                                    </li>
                                 @endforeach
                             </ul>
                         </li>
                     @endforeach
                     <li class="nav-item dropdown ms-xl-2">
-                        <button class="nav-link dropdown-toggle {{ request()->is('perfil') ? 'active' : '' }}" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <button class="nav-link dropdown-toggle {{ request()->is('perfil') ? 'active' : '' }}"
+                            type="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-person-circle" aria-hidden="true"></i> {{ auth()->user()->name }}
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item {{ request()->is('perfil') ? 'active' : '' }}" href="{{ url('/perfil') }}" @if(request()->is('perfil')) aria-current="page" @endif><i class="bi bi-person-circle me-2" aria-hidden="true"></i>Meu Perfil</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><form action="{{ url('/logout') }}" method="POST">@csrf<button class="dropdown-item btn-sair" type="submit"><i class="bi bi-box-arrow-right me-2"></i>Sair</button></form></li>
+                            <li>
+                                <form action="{{ url('/logout') }}" method="POST">
+                                    @csrf
+                                    <button class="dropdown-item btn-sair" type="submit"><i class="bi bi-box-arrow-right me-2"></i>Sair</button>
+                                </form>
+                            </li>
                         </ul>
                     </li>
                 @endauth
