@@ -35,6 +35,13 @@
 @endphp
 
 <x-list-header title="VISUALIZAR COMPRA" icon="bi-cart-check" />
+<nav class="feux-compras-v2__navegacao mb-4" aria-label="Seções da compra">
+    <a href="#feux-compra-situacao"><i class="bi bi-clipboard-check" aria-hidden="true"></i> Situação</a>
+    <a href="#devolucoes-compra-titulo"><i class="bi bi-arrow-return-left" aria-hidden="true"></i> Devoluções</a>
+    @if($compra->status === 'aprovada')
+        <a href="#feux-compra-integracoes"><i class="bi bi-box-seam" aria-hidden="true"></i> Estoque e financeiro</a>
+    @endif
+</nav>
 <div class="d-flex justify-content-end mb-3">
     <a href="{{ route('compras.duplicar', $compra) }}" class="btn btn-outline-primary">
         <i class="bi bi-files"></i> Duplicar Compra
@@ -90,6 +97,7 @@
 @endif
 
 {{-- STATUS DA COMPRA --}}
+<span id="feux-compra-situacao" class="feux-compras-v2__ancora" tabindex="-1"></span>
 <div class="card shadow-sm mb-4">
     <div class="card-body">
         <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
@@ -163,6 +171,7 @@
 @endif
 
 {{-- INTEGRAÇÕES DA COMPRA --}}
+<span id="feux-compra-integracoes" class="feux-compras-v2__ancora" tabindex="-1"></span>
 @if ($compra->status === 'aprovada')
     <div class="card shadow-sm mb-4">
         <div class="card-body">
@@ -805,8 +814,15 @@
                 <form
                     method="POST"
                     action="{{ route('compras.conferir', $compra) }}"
+                    data-feux-conferencia-v3
                 >
                     @csrf
+                    <div class="alert alert-secondary mt-3 mb-3" role="status" aria-live="polite" data-feux-conferencia-resumo>
+                        Conferência física: informe recebido, avarias e aceite. Divergências exigem justificativa (mínimo de 5 caracteres).
+                    </div>
+                    <p class="small text-body-secondary mb-2">
+                        A prévia abaixo é apenas informativa. A conferência definitiva, o histórico e os limites são validados pelo Laravel.
+                    </p>
             @endif
 
             <div class="table-responsive">
@@ -877,7 +893,7 @@
 
                                 <td>
                                     <strong>
-                                        {{ number_format($quantidade, 3, ',', '.') }}
+                                        <span data-feux-quantidade-nf="{{ $item->quantidade }}">{{ number_format($quantidade, 3, ',', '.') }}</span>
                                     </strong>
                                 </td>
 

@@ -1,34 +1,7 @@
 (function() {
+  // Consultas simples ao DOM nao precisam de wrappers de eventos globais.
+  const select = selector => document.querySelector(selector.trim())
 
-  //Função de selecionar o "icone".
-  const select = (el, all = false) => {
-    el = el.trim()
-    if (all) {
-      return [...document.querySelectorAll(el)]
-    } else {
-      return document.querySelector(el)
-    }
-  }
-
-  //Função para carregamento das telas.
-
-  const on = (type, el, listener, all = false) => {
-    let selectEl = select(el, all)
-    if (selectEl) {
-      if (all) {
-        selectEl.forEach(e => e.addEventListener(type, listener))
-      } else {
-        selectEl.addEventListener(type, listener)
-      }
-    }
-  }
-
-  //Para carregamento das telas.
-
-  const onscroll = (el, listener) => {
-    el.addEventListener('scroll', listener)
-  }
-  
   // Hashes de URLs sao identificadores, nao seletores CSS arbitrarios.
   const targetForHash = (hash) => {
     if (!hash || hash === '#') return null
@@ -67,7 +40,7 @@
       }
     }
     window.addEventListener('load', headerScrolled)
-    onscroll(document, headerScrolled)
+    document.addEventListener('scroll', headerScrolled, { passive: true })
   }
 
   let backtotop = select('.back-to-top')
@@ -80,21 +53,23 @@
       }
     }
     window.addEventListener('load', toggleBacktotop)
-    onscroll(document, toggleBacktotop)
+    document.addEventListener('scroll', toggleBacktotop, { passive: true })
   }
 
   // Nao interceptar links que apontam para outra pagina.
-  on('click', '.scrollto', function(e) {
-    const targetUrl = new URL(this.href, window.location.href)
-    const currentUrl = new URL(window.location.href)
-    if (targetUrl.origin !== currentUrl.origin ||
-        targetUrl.pathname !== currentUrl.pathname ||
-        targetUrl.search !== currentUrl.search ||
-        !targetForHash(targetUrl.hash)) return
+  document.querySelectorAll('.scrollto').forEach(link => {
+    link.addEventListener('click', function (event) {
+      const targetUrl = new URL(this.href, window.location.href)
+      const currentUrl = new URL(window.location.href)
+      if (targetUrl.origin !== currentUrl.origin ||
+          targetUrl.pathname !== currentUrl.pathname ||
+          targetUrl.search !== currentUrl.search ||
+          !targetForHash(targetUrl.hash)) return
 
-    e.preventDefault()
-    scrollto(targetUrl.hash)
-  }, true)
+      event.preventDefault()
+      scrollto(targetUrl.hash)
+    })
+  })
 
   window.addEventListener('load', () => {
     if (targetForHash(window.location.hash)) {

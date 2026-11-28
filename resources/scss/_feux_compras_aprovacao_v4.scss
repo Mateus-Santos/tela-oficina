@@ -1,0 +1,27 @@
+// V4 apenas no modal de aprovacao de compra. Sem efeitos globais.
+#modalAprovarCompra[data-feux-aprovacao-v4] {
+  .feux-aprovacao-v4__resumo {
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    border-radius: .75rem;
+    padding: 1rem;
+    background-color: var(--bs-tertiary-bg, #f8f9fa);
+  }
+  .feux-aprovacao-v4__indicadores {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .75rem;
+  }
+  .feux-aprovacao-v4__indicadores > div {
+    display: flex;
+    flex-direction: column;
+    gap: .15rem;
+    min-width: 0;
+  }
+  .feux-aprovacao-v4__indicadores small {
+    color: var(--bs-secondary-color, #6c757d);
+  }
+  .feux-aprovacao-v4__indicadores strong { overflow-wrap: anywhere; }
+  @media (max-width: 575.98px) {
+    .feux-aprovacao-v4__indicadores { grid-template-columns: 1fr; }
+  }
+}

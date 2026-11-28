@@ -1,0 +1,15 @@
+// Exclusivo da prévia D02 na ficha de compra: não altera tabelas globais.
+form[data-feux-conferencia-v3] {
+  [data-feux-conferencia-resumo] {
+    border-inline-start: .25rem solid currentColor;
+  }
+  tr.feux-conferencia-v3--divergente > td {
+    background-color: rgba(255, 193, 7, .055);
+  }
+  input.is-invalid, textarea.is-invalid {
+    border-width: 2px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  form[data-feux-conferencia-v3] * { scroll-behavior: auto; }
+}

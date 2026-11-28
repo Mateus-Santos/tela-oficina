@@ -17,7 +17,7 @@
             @foreach ($errors->all() as $error) <li>{{ $error }}</li> @endforeach
         </ul></div>
     @endif
-    <form method="POST" action="{{ route('compras.devolucoes.store', $compra) }}">
+    <form method="POST" data-feux-devolucao-operacional action="{{ route('compras.devolucoes.store', $compra) }}">
         @csrf
         <input type="hidden" name="operacao_uuid" value="{{ old('operacao_uuid', $operacaoUuid) }}">
         <div class="card mb-4"><div class="card-body">
@@ -53,23 +53,32 @@
             <div class="row g-3">
                 @foreach ($compra->itens as $item)
                     <div class="col-12 col-lg-6">
-                        <div class="border rounded p-3 h-100">
+                        <div class="border rounded p-3 h-100 feux-compras-v2__item" data-feux-item-operacional data-item-id="{{ $item->id }}" data-limite="{{ $disponiveis[$item->id] }}">
                             <label for="item_{{ $item->id }}" class="form-label fw-semibold d-block">
                                 {{ $item->descricao }} (item #{{ $item->id }})
                             </label>
                             <div class="small text-body-secondary mb-2">
                                 Máximo disponível desta compra: <strong>{{ $disponiveis[$item->id] }}</strong>
                             </div>
-                            <input type="number" class="form-control" id="item_{{ $item->id }}"
+                            <input type="number" class="form-control" id="item_{{ $item->id }}" data-feux-quantidade-operacional
                                    name="itens[{{ $item->id }}]" min="0" step="0.001"
                                    max="{{ $disponiveis[$item->id] }}" inputmode="decimal"
                                    value="{{ old('itens.'.$item->id, '0') }}"
                                    @disabled((float) $disponiveis[$item->id] <= 0)>
+                            <p class="small text-danger d-none mt-2 mb-0" role="alert" data-feux-erro-item></p>
                         </div>
                     </div>
                 @endforeach
             </div>
         </div></div>
+        <div class="alert alert-light border feux-compras-v2__previa" role="status" aria-live="polite">
+            <div class="d-flex flex-wrap justify-content-between gap-2 align-items-center">
+                <strong>Prévia da devolução operacional</strong>
+                <span data-feux-resumo-operacional>Selecione ao menos um item.</span>
+            </div>
+            <p class="small text-danger mb-0 mt-2 d-none" data-feux-erro-global></p>
+            <p class="small text-body-secondary mb-0 mt-2">A prévia não registra estoque nem movimenta Contas a Pagar. O servidor reconfere os limites físicos ao salvar.</p>
+        </div>
         <div class="form-check mb-3">
             <input type="checkbox" class="form-check-input" id="confirmacao_fisica"
                    name="confirmacao_fisica" value="1" required @checked(old('confirmacao_fisica'))>
@@ -78,7 +87,11 @@
                 e estou ciente de que o estoque será reduzido ao registrar.
             </label>
         </div>
-        <button type="submit" class="btn btn-danger">Registrar devolução e baixar estoque</button>
+        <button type="submit" class="btn btn-danger" data-feux-submit-operacional>Registrar devolução e baixar estoque</button>
     </form>
 </div>
+@endsection
+
+@section('scripts')
+@vite(['resources/js/compras/devolucao-operacional.js'])
 @endsection

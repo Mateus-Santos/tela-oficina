@@ -16,6 +16,26 @@
                 </div>
             @endif
         </div>
+        <div class="row g-2 mb-3" aria-label="Resumo do histórico de devoluções">
+            <div class="col-12 col-md-4">
+                <div class="border rounded p-3 h-100">
+                    <div class="small text-body-secondary">Devoluções registradas</div>
+                    <strong class="fs-5">{{ $compra->devolucoes->count() }}</strong>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="border rounded p-3 h-100">
+                    <div class="small text-body-secondary">Documentais</div>
+                    <strong class="fs-5">{{ $compra->devolucoes->where('modalidade', 'documental')->count() }}</strong>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="border rounded p-3 h-100">
+                    <div class="small text-body-secondary">Aguardando conciliação</div>
+                    <strong class="fs-5">{{ $compra->devolucoes->where('modalidade', 'documental')->where('situacao_financeira', 'pendente')->count() }}</strong>
+                </div>
+            </div>
+        </div>
         @forelse ($compra->devolucoes as $devolucao)
             <div class="border rounded p-3 mb-2">
                 <div class="d-flex justify-content-between flex-wrap gap-2">
@@ -23,7 +43,7 @@
                     <span class="badge bg-secondary">{{ $devolucao->status }}</span>
                     @if ($devolucao->modalidade === 'documental')
                         <span class="badge {{ $devolucao->situacao_financeira === 'aplicada' ? 'bg-success' : 'bg-warning text-dark' }}">
-                            Financeiro: {{ $devolucao->situacao_financeira }}
+                            {{ $devolucao->situacao_financeira === 'aplicada' ? 'Abatimento aplicado' : 'Conciliação financeira pendente' }}
                         </span>
                     @else
                         <span class="badge bg-info text-dark">Operacional · sem abatimento financeiro</span>

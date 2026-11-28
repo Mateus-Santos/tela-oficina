@@ -5,7 +5,17 @@ import UiModal from '../../components/sos/UiModal.vue';
 import UiFilterDrawer from '../../components/sos/UiFilterDrawer.vue';
 import NotaCard from './components/NotaCard.vue';
 import NotaForm from './components/NotaForm.vue';
-const props = defineProps({ api: { type: String, required: true }, base: { type: String, required: true } });
+import NotaAnexoForm from './components/NotaAnexoForm.vue';
+import { formatarDataNota } from './validarAnexoNota.mjs';
+const props = defineProps({
+    api: { type: String, required: true },
+    base: { type: String, required: true },
+    legacyCreate: { type: String, default: '' },
+    attachmentsTemplate: { type: String, default: '' },
+    createCliente: { type: String, default: '' },
+    createVeiculo: { type: String, default: '' },
+    createProduto: { type: String, default: '' },
+});
 const statusOptions = [{v:'Aberto',l:'Em aberto'}, {v:'Finalizado',l:'Finalizadas'}, {v:'Cancelado',l:'Canceladas'}, {v:'Todos',l:'Todas'}];
 const types = [{v:'todos',l:'Peças e serviços'}, {v:'pecas',l:'Com peças'}, {v:'servicos',l:'Com serviços'}, {v:'mistas',l:'Mistas'}, {v:'sem_itens',l:'Sem itens'}];
 const initial = new URLSearchParams(window.location.search);
@@ -23,6 +33,7 @@ const batchPreview = ref(null), batchBusy = ref(false), batchError = ref('');
 let batchGeneration = 0;
 
 const categoria = ref(''), parcelas = ref([]), formError = ref('');
+const formDirty = ref(false);
 const somaParcelas = computed(() => Math.round(parcelas.value.reduce((s,p) => s + Number(p.valor || 0), 0) * 100) / 100);
 function dividirParcelas() {
     if (!detalhes.value || !parcelas.value.length) return;
@@ -122,7 +133,7 @@ async function parseError(r) {
     if (r.status === 419) return new Error('Sessão expirada. Faça login novamente.');
     const body = await r.json().catch(() => ({}));
     const errors = Object.values(body.errors || {}).flat();
-    return new Error(errors[0] || body.message || `Erro HTTP ${r.status}`);
+    return new Error(errors.slice(0, 5).join(' · ') || body.message || `Erro HTTP ${r.status}`);
 }
 async function get(url, signal) {
     const r = await fetch(url, {credentials:'same-origin', headers:{Accept:'application/json'}, signal});
@@ -207,18 +218,23 @@ async function openNote(id) {
 function createNote() {
     ++detailGeneration;
     detalhes.value = null;
+    formDirty.value = false;
     formError.value = '';
     modalMode.value='create'; modalOpen.value=true; finalizeOpen.value=false;
 }
 function editNote() {
     if (!detalhes.value?.pode_editar) return;
     ++detailGeneration;
+    formDirty.value = false;
     formError.value = '';
     modalMode.value='edit'; finalizeOpen.value=false;
 }
 function closeNote() {
     // Permitir fechar a consulta em andamento, mas nunca uma gravacao em curso.
     if (pending.value && !(modalMode.value === 'show' && !detalhes.value)) return;
+    if ((modalMode.value === 'create' || modalMode.value === 'edit')
+        && formDirty.value && !window.confirm('Descartar as alterações não salvas desta Nota?')) return;
+    formDirty.value = false;
     ++detailGeneration;
     modalOpen.value=false; detalhes.value=null; finalizeOpen.value=false;
     pending.value=''; formError.value='';
@@ -232,6 +248,7 @@ async function saveNote(body) {
         const data = await mutate(isEdit ? `${props.api}/${detalhes.value.id}` : props.api,
             isEdit?'PUT':'POST',body);
         notify(data.message || 'Nota salva.');
+        formDirty.value = false;
         modalOpen.value=false; detalhes.value=null;
         await loadBoard(true);
         await openNote(data.id);
@@ -427,7 +444,10 @@ onBeforeUnmount(() => { ++boardGeneration; ++detailGeneration; ++batchGeneration
     <div class="sos-vue-app" :aria-busy="loading" @dragend.capture="dropTarget=''">
         <header class="sos-vue-head">
             <div><span class="sos-label">S.O.S MECÂNICA · CENTRAL OPERACIONAL</span><h1>Notas e atendimentos</h1><p>Etapas, clientes, peças e serviços em um só lugar.</p></div>
-            <button type="button" class="sos-btn sos-btn--primary" @click="createNote"><i class="bi bi-plus-lg"/> Nova Nota</button>
+            <div class="sos-vue-head__actions">
+                <a v-if="props.legacyCreate" :href="props.legacyCreate" class="sos-btn sos-btn--secondary"><i class="bi bi-box-arrow-up-right"/> Formulário completo</a>
+                <button type="button" class="sos-btn sos-btn--primary" @click="createNote"><i class="bi bi-plus-lg"/> Nova Nota</button>
+            </div>
         </header>
         <div class="sos-status-line">
             <nav class="sos-tabs" aria-label="Status das notas">
@@ -510,17 +530,44 @@ onBeforeUnmount(() => { ++boardGeneration; ++detailGeneration; ++batchGeneration
         </UiModal>
         <UiModal :open="modalOpen" :title="modalMode==='create'?'Nova Nota': modalMode==='edit'?`Editar Nota #${detalhes?.id}`:`Nota #${detalhes?.id ?? '…'}`" wide @close="closeNote">
             <div v-if="pending && !detalhes && modalMode==='show'" class="sos-skeleton" role="status"><span class="spinner-border"/> {{ pending }}</div>
-            <NotaForm v-else-if="modalMode==='create' || modalMode==='edit'" :key="modalMode+'-'+(detalhes?.id||'nova')" :api="api" :nota="modalMode==='edit'?detalhes:null" :loading="!!pending" :server-error="formError" @cancelar="closeNote" @salvar="saveNote"/>
+            <NotaForm v-else-if="modalMode==='create' || modalMode==='edit'" :key="modalMode+'-'+(detalhes?.id||'nova')" :api="api" :nota="modalMode==='edit'?detalhes:null" :loading="!!pending" :server-error="formError" :cadastros="{cliente:props.createCliente,veiculo:props.createVeiculo,produto:props.createProduto}" @sujo="formDirty=$event" @cancelar="closeNote" @salvar="saveNote"/>
             <div v-else-if="detalhes" class="sos-detail">
                 <p v-if="['Finalizado','Concluido'].includes(detalhes.status) && etapas.some(e=>e.tipo==='final' && String(e.id)===String(detalhes.etapa_id))" class="sos-detail__finished" role="status"><i class="bi bi-check-circle-fill" /> Nota finalizada · última etapa operacional</p>
                 <p v-else-if="['Finalizado','Concluido'].includes(detalhes.status)" class="sos-alert sos-alert--error" role="alert">Nota finalizada com etapa operacional divergente. Execute a auditoria de finalizadas.</p>
                 <div class="sos-detail__main"><div><span class="sos-label">CLIENTE / CONTATO</span><h3>{{ detalhes.cliente }}</h3><div class="sos-contact"><span>{{ detalhes.telefone || 'Telefone não informado' }}</span><a v-if="detalhes.whatsapp" :href="detalhes.whatsapp" target="_blank" rel="noopener noreferrer"><i class="bi bi-whatsapp"/> WhatsApp</a></div></div>
                 <div><span class="sos-label">STATUS / ETAPA</span><p><strong>{{ detalhes.status }}</strong> · {{ detalhes.etapa || 'Sem etapa' }}</p></div></div>
+                <div class="sos-detail__advanced-link">
+                    <p>Precisa de anexos, ajustes de estoque, lançamentos ou outras funções avançadas?</p>
+                    <a :href="detalhes.urls.show_legado" class="sos-btn sos-btn--secondary" target="_blank" rel="noopener noreferrer"><i class="bi bi-box-arrow-up-right"/> Abrir atendimento completo</a>
+                </div>
                 <div class="sos-detail__grid"><div><small>Veículo</small><strong>{{ detalhes.veiculo || 'Não informado' }}</strong></div><div><small>Placa</small><strong>{{ detalhes.placa || '—' }}</strong></div><div><small>KM atual</small><strong>{{ detalhes.km ?? '—' }}</strong></div><div><small>Próxima troca</small><strong>{{ detalhes.km_proxima_troca_oleo ?? '—' }}</strong></div></div>
-                <h3>Itens da Nota</h3><div class="sos-detail__items"><div v-for="i in detalhes.itens" :key="i.id"><div><strong>{{ i.itemable_type.endsWith('OrdemServico') ? `O.S. #${i.itemable_id}` : 'Peça' }}</strong><p>{{ i.descricao }}</p><small>{{ i.quantidade }} × {{ money(i.valor_unitario) }} <span v-if="i.desconto">· desconto {{ money(i.desconto) }}</span></small></div><strong>{{ money(i.valor_total) }}</strong></div></div>
+                <h3>Itens da Nota</h3><div class="sos-detail__items"><div v-for="i in detalhes.itens" :key="i.id"><div><strong>{{ i.itemable_type.endsWith('OrdemServico') ? `O.S. #${i.itemable_id}` : 'Peça' }}</strong><p>{{ i.descricao }}</p><small>{{ i.quantidade }} × {{ money(i.valor_unitario) }} <span v-if="i.desconto">· desconto {{ money(i.desconto) }}</span></small>
+                    <small v-if="i.estoque_atual !== null && i.estoque_atual !== undefined" class="sos-detail__stock">Estoque atual: {{ numbers(i.estoque_atual) }} unidade(s)</small></div><strong>{{ money(i.valor_total) }}</strong></div></div>
                 <p v-if="!detalhes.itens.length" class="sos-empty">Nenhum item.</p>
                 <div class="sos-detail__total"><span>Total da Nota</span><strong>{{ money(detalhes.total) }}</strong></div>
-                <p v-if="detalhes.conta_receber" class="sos-alert"><i class="bi bi-wallet2"/> Conta a receber #{{ detalhes.conta_receber.id }} · {{ detalhes.conta_receber.status }} · recebido {{ money(detalhes.conta_receber.recebido) }}</p>
+                <section v-if="detalhes.conta_receber" class="sos-detail__finance" aria-label="Resumo financeiro da Nota">
+                    <h3><i class="bi bi-wallet2"/> Conta a receber #{{ detalhes.conta_receber.id }}</h3>
+                    <div class="sos-detail__finance-grid">
+                        <div><small>Status informado pelo financeiro</small><strong>{{ detalhes.conta_receber.status }}</strong></div>
+                        <div><small>Valor original</small><strong>{{ money(detalhes.conta_receber.valor_original) }}</strong></div>
+                        <div><small>Recebido</small><strong>{{ money(detalhes.conta_receber.recebido) }}</strong></div>
+                    </div>
+                    <a v-if="detalhes.urls.conta" :href="detalhes.urls.conta" class="sos-btn sos-btn--secondary"><i class="bi bi-box-arrow-up-right"/> Gerenciar na Conta a Receber</a>
+                    <p class="sos-field__hint">Valores informados pelo financeiro oficial; não realizar baixa ou ajuste neste painel.</p>
+                </section>
+                <section v-if="detalhes.conta_receber?.parcelas?.length" class="sos-detail__installments" aria-label="Parcelas da conta a receber">
+                    <h3>Parcelas existentes</h3>
+                    <div v-for="p in detalhes.conta_receber.parcelas" :key="p.numero" class="sos-detail__installment">
+                        <strong>Parcela {{ p.numero }} · {{ money(p.valor) }}</strong>
+                        <span>Vencimento: {{ formatarDataNota(p.data_vencimento) }}</span>
+                    </div>
+                    <p class="sos-field__hint">Consulta somente leitura. Para alterar valores, vencimentos ou recebimentos, utilize a Conta a Receber oficial.</p>
+                </section>
+                <NotaAnexoForm v-if="!finalizeOpen && props.attachmentsTemplate"
+                    :key="'anexos-'+detalhes.id"
+                    :nota-id="detalhes.id" :action-template="props.attachmentsTemplate"
+                    :csrf-token="csrf()" :permitido="detalhes.status === 'Aberto' && detalhes.pode_editar"
+                    :show-url="detalhes.urls.show_legado" :disabled="!!pending" />
                 <section v-if="finalizeOpen" class="sos-finalize">
                     <h3>Confirmar finalização real</h3><p>A Nota só passa para a última etapa depois da confirmação, da validação de estoque, O.S. e financeiro e do registro da finalização.</p>
                     <template v-if="!detalhes.conta_receber"><label class="sos-field">Categoria de entrada<select v-model="categoria"><option value="">Selecione</option><option v-for="c in categorias" :key="c.id" :value="String(c.id)">{{ c.nome }}</option></select></label>
@@ -544,7 +591,7 @@ onBeforeUnmount(() => { ++boardGeneration; ++detailGeneration; ++batchGeneration
                         <button class="sos-btn sos-btn--quiet" type="submit"><i class="bi bi-file-earmark-lock"/> PDF interno</button>
                     </form>
                     <a v-if="detalhes.urls.conta" :href="detalhes.urls.conta" class="sos-btn sos-btn--quiet"><i class="bi bi-wallet2"/> Conta a receber</a>
-                    <a :href="detalhes.urls.show_legado" class="sos-btn sos-btn--quiet" title="Recursos avançados ainda disponíveis durante a transição">Outras operações</a>
+                    <a :href="detalhes.urls.show_legado" class="sos-btn sos-btn--quiet" title="Recursos avançados ainda disponíveis durante a transição">Anexos e operações avançadas</a>
                     <button v-if="detalhes.pode_editar" class="sos-btn sos-btn--secondary" type="button" :disabled="!!pending" @click="editNote"><i class="bi bi-pencil"/> Editar</button>
                     <button v-if="detalhes.pode_finalizar" class="sos-btn sos-btn--primary" type="button" :disabled="!!pending" @click="openFinalizar"><i class="bi bi-check2-circle"/> Finalizar</button>
                     <button v-if="detalhes.pode_cancelar" class="sos-btn sos-btn--danger" type="button" :disabled="!!pending" @click="cancelNote">Cancelar Nota</button>

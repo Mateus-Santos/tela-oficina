@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
-const props = defineProps({ nota: { type: Object, default: null }, api: { type: String, required: true }, loading: Boolean, serverError: { type: String, default: '' } });
-const emit = defineEmits(['salvar', 'cancelar']);
+const props = defineProps({ nota: { type: Object, default: null }, api: { type: String, required: true }, loading: Boolean, serverError: { type: String, default: '' }, cadastros: { type: Object, default: () => ({}) } });
+const emit = defineEmits(['salvar', 'cancelar', 'sujo']);
 const OS = 'App\\Models\\OrdemServico';
 const PRODUTO = 'App\\Models\\Produto';
 const clientes = ref([]), veiculos = ref([]), setores = ref([]), resultados = ref([]);
@@ -15,6 +15,7 @@ const money = n => Number(n ?? 0).toLocaleString('pt-BR', { style: 'currency', c
 const total = computed(() => form.value.itens.reduce((v, i) => v + Math.max(0, Number(i.quantidade) * Number(i.valor_unitario) - Number(i.desconto || 0)), 0));
 const isEdit = computed(() => !!props.nota?.id);
 
+function markDirty() { emit('sujo', true); }
 function initialize() {
     clearTimeout(clientTimer);
     clearTimeout(itemTimer);
@@ -67,12 +68,14 @@ function procurarCliente() {
 function selecionarCliente(c) {
     clearTimeout(clientTimer);
     ++clientToken;
+    markDirty();
     novoCliente.value = c; form.value.cliente_id = c.id;
     buscaCliente.value = c.nome; clientes.value = [];
     form.value.veiculo_cliente_id = null;
     void carregarVeiculos();
 }
 function limparCliente() {
+    markDirty();
     clearTimeout(clientTimer);
     ++clientToken; ++vehicleToken;
     novoCliente.value = null; form.value.cliente_id = null;
@@ -131,6 +134,7 @@ function selecionarItem(item) {
         erro.value = 'Este item já foi incluído.'; return;
     }
     const price = Number(os ? item.valor : item.preco);
+    markDirty();
     form.value.itens.push({ _key: `n-${Date.now()}-${item.id}`,
         itemable_type: type, itemable_id: itemId, descricao: os ? item.descricao : item.nome,
         quantidade: Number(quantidade.value) || 1, valor_unitario: price,
@@ -146,6 +150,7 @@ function adicionarOs() {
         erro.value = 'Informe setor, descrição e valor válido da O.S.'; return;
     }
     const id = draft--;
+    markDirty();
     form.value.itens.push({ _key: `d-${Math.abs(id)}`, itemable_type: OS, itemable_id: id,
         descricao: descricaoOs.value.trim(), quantidade: 1, valor_unitario: Number(valorItem.value),
         desconto: 0, garantia_dias: null, os_nova_setor_servico_id: Number(setorId.value) });
@@ -154,6 +159,7 @@ function adicionarOs() {
 function remover(index) {
     const item = form.value.itens[index];
     if (item.id && item.itemable_type === OS) { erro.value = 'O.S. vinculada não pode ser removida.'; return; }
+    markDirty();
     form.value.itens.splice(index, 1);
 }
 function enviar() {
@@ -181,10 +187,16 @@ function enviar() {
 }
 </script>
 <template>
-    <form class="sos-edit-form" @submit.prevent="enviar">
+    <form class="sos-edit-form" @submit.prevent="enviar" @input.capture="markDirty" @change.capture="markDirty">
         <div v-if="erro || serverError" role="alert" class="sos-alert sos-alert--error">{{ serverError || erro }}</div>
         <section class="sos-form-section">
             <h3>Atendimento</h3>
+            <nav v-if="cadastros.cliente || cadastros.veiculo || cadastros.produto" class="sos-quick-creates" aria-label="Cadastros rápidos oficiais">
+                <span>Precisa cadastrar algo? Abra em outra aba e depois retome esta Nota:</span>
+                <a v-if="cadastros.cliente" :href="cadastros.cliente" target="_blank" rel="noopener noreferrer"><i class="bi bi-person-plus"/> Novo cliente</a>
+                <a v-if="cadastros.veiculo" :href="cadastros.veiculo" target="_blank" rel="noopener noreferrer"><i class="bi bi-car-front"/> Novo veículo</a>
+                <a v-if="cadastros.produto" :href="cadastros.produto" target="_blank" rel="noopener noreferrer"><i class="bi bi-box-seam"/> Novo produto</a>
+            </nav>
             <div class="sos-form-grid">
                 <label class="sos-field sos-field--wide">Cliente
                     <div class="sos-inline"><input v-model="buscaCliente" type="search" placeholder="Digite ao menos 2 letras" autocomplete="off" @input="procurarCliente" :disabled="loading"/><button v-if="novoCliente" class="sos-mini-button" type="button" @click="limparCliente">Limpar</button></div>
@@ -196,6 +208,7 @@ function enviar() {
                 <label class="sos-field">Veículo
                     <select v-model="form.veiculo_cliente_id" :disabled="!form.cliente_id || loading"><option :value="null">Sem veículo</option><option v-for="v in veiculos" :value="v.id" :key="v.id">{{ v.nome }} · {{ v.placa || 'sem placa' }}</option></select>
                 </label>
+                <button type="button" class="sos-mini-button sos-quick-creates__reload" :disabled="!form.cliente_id || loading" @click="carregarVeiculos"><i class="bi bi-arrow-clockwise"/> Atualizar veículos</button>
                 <label class="sos-field">Quilometragem atual <input v-model.number="form.km" type="number" min="0" placeholder="Opcional" :disabled="loading"/></label>
                 <label class="sos-field">Próxima troca de óleo <input v-model.number="form.km_proxima_troca_oleo" type="number" min="0" placeholder="Opcional" :disabled="loading"/></label>
             </div>
