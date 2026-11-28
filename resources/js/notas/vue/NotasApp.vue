@@ -12,6 +12,7 @@ const props = defineProps({
     base: { type: String, required: true },
     legacyCreate: { type: String, default: '' },
     attachmentsTemplate: { type: String, default: '' },
+    buscaItensUrl: { type: String, default: '' },
     createCliente: { type: String, default: '' },
     createVeiculo: { type: String, default: '' },
     createProduto: { type: String, default: '' },
@@ -530,7 +531,7 @@ onBeforeUnmount(() => { ++boardGeneration; ++detailGeneration; ++batchGeneration
         </UiModal>
         <UiModal :open="modalOpen" :title="modalMode==='create'?'Nova Nota': modalMode==='edit'?`Editar Nota #${detalhes?.id}`:`Nota #${detalhes?.id ?? '…'}`" wide @close="closeNote">
             <div v-if="pending && !detalhes && modalMode==='show'" class="sos-skeleton" role="status"><span class="spinner-border"/> {{ pending }}</div>
-            <NotaForm v-else-if="modalMode==='create' || modalMode==='edit'" :key="modalMode+'-'+(detalhes?.id||'nova')" :api="api" :nota="modalMode==='edit'?detalhes:null" :loading="!!pending" :server-error="formError" :cadastros="{cliente:props.createCliente,veiculo:props.createVeiculo,produto:props.createProduto}" @sujo="formDirty=$event" @cancelar="closeNote" @salvar="saveNote"/>
+            <NotaForm v-else-if="modalMode==='create' || modalMode==='edit'" :key="modalMode+'-'+(detalhes?.id||'nova')" :api="api" :nota="modalMode==='edit'?detalhes:null" :loading="!!pending" :server-error="formError" :busca-itens-url="props.buscaItensUrl" :cadastros="{cliente:props.createCliente,veiculo:props.createVeiculo,produto:props.createProduto}" @sujo="formDirty=$event" @cancelar="closeNote" @salvar="saveNote"/>
             <div v-else-if="detalhes" class="sos-detail">
                 <p v-if="['Finalizado','Concluido'].includes(detalhes.status) && etapas.some(e=>e.tipo==='final' && String(e.id)===String(detalhes.etapa_id))" class="sos-detail__finished" role="status"><i class="bi bi-check-circle-fill" /> Nota finalizada · última etapa operacional</p>
                 <p v-else-if="['Finalizado','Concluido'].includes(detalhes.status)" class="sos-alert sos-alert--error" role="alert">Nota finalizada com etapa operacional divergente. Execute a auditoria de finalizadas.</p>
