@@ -3,6 +3,7 @@ import NotasApp from './NotasApp.vue';
 const element = document.getElementById('sos-notas-vue');
 if (element) createApp(NotasApp, {
     api: element.dataset.api,
+    buscaItensUrl: element.dataset.buscaItens,
     base: element.dataset.base,
     legacyCreate: element.dataset.createLegacy,
     attachmentsTemplate: element.dataset.attachmentsTemplate,

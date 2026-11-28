@@ -147,7 +147,9 @@ class NotaItemBuscaController extends Controller
                             'codigo_barras',
                             'like',
                             "%{$busca}%"
-                        );
+                        )
+                        ->orWhereHas('marcaRelacionada', fn ($marca) =>
+                            $marca->where('nome', 'like', "%{$busca}%"));
                 }
             )
             ->orderBy('nome')
