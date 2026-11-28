@@ -325,3 +325,50 @@
   padding: .55rem 0;
   border-bottom: 1px solid var(--bs-border-color, #d1d5db);
 }
+
+/* FEUX V3: Recursos operacionais progressivos da Central Vue 3, isolados. */
+.sos-vue-app .sos-detail__finance,
+.sos-vue-app .sos-note-attachments {
+  border: 1px solid var(--bs-border-color, #d1d5db);
+  border-radius: .75rem;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+.sos-vue-app .sos-detail__finance-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .75rem;
+  margin: .75rem 0 1rem;
+}
+.sos-vue-app .sos-detail__finance-grid > div { display: grid; gap: .2rem; }
+.sos-vue-app .sos-detail__finance-grid small { opacity: .85; }
+.sos-vue-app .sos-detail__finance-grid strong { overflow-wrap: anywhere; }
+.sos-vue-app .sos-quick-creates {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem .85rem;
+  padding: .75rem 0;
+}
+.sos-vue-app .sos-quick-creates a { display: inline-flex; gap: .3rem; align-items: center; }
+.sos-vue-app .sos-quick-creates__reload { align-self: center; }
+.sos-vue-app .sos-note-attachments__fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: .75rem;
+}
+.sos-vue-app .sos-note-attachments__fields .sos-field--wide { grid-column: 1 / -1; }
+.sos-vue-app .sos-note-attachments__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .65rem;
+  margin-top: .75rem;
+}
+.sos-vue-app .sos-note-attachments__disclaimer { font-size: .85rem; margin: .55rem 0; }
+@media (max-width: 720px) {
+  .sos-vue-app .sos-detail__finance-grid { grid-template-columns: 1fr; }
+  .sos-vue-app .sos-note-attachments__fields { grid-template-columns: 1fr; }
+  .sos-vue-app .sos-quick-creates a { min-height: 2.5rem; }
+  .sos-vue-app .sos-note-attachments__actions > * { width: 100%; justify-content: center; }
+}

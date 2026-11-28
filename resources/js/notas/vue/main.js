@@ -5,4 +5,8 @@ if (element) createApp(NotasApp, {
     api: element.dataset.api,
     base: element.dataset.base,
     legacyCreate: element.dataset.createLegacy,
+    attachmentsTemplate: element.dataset.attachmentsTemplate,
+    createCliente: element.dataset.createCliente,
+    createVeiculo: element.dataset.createVeiculo,
+    createProduto: element.dataset.createProduto,
 }).mount(element);
