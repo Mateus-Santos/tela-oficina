@@ -1,0 +1,62 @@
+/* FEUX: contraste em superficies claras.
+   Preserva amarelo da marca sobre fundos escuros. */
+
+.cadastro.feux-moderno {
+    --feux-texto-forte: #243449;
+    --feux-link-legivel: #1855ad;
+    --feux-alerta-legivel: #80520e;
+
+    /* H1 principal ja possui fundo escuro. */
+    :is(h2,h3,h4,h5,h6):not([class*='text-']) {
+        color: var(--feux-texto-forte);
+    }
+
+    a:not(.btn):not(.badge):not(.nav-link):not(.dropdown-item):not(.page-link):not(.feux-compras-v2__atalho):not([class*='text-']) {
+        color: var(--feux-link-legivel);
+    }
+
+    a:not(.btn):not(.badge):not(.nav-link):not(.dropdown-item):not(.page-link):not(.feux-compras-v2__atalho):not([class*='text-']):hover {
+        color: #113d7f;
+        text-decoration: underline;
+    }
+
+    .formulario-secao__descricao,
+    .text-warning {
+        color: var(--feux-alerta-legivel) !important;
+    }
+
+    .btn-outline-warning {
+        --bs-btn-color: #80520e;
+        --bs-btn-border-color: #80520e;
+        --bs-btn-hover-color: #142033;
+        --bs-btn-hover-bg: #f3d267;
+        --bs-btn-hover-border-color: #80520e;
+        --bs-btn-active-color: #142033;
+        --bs-btn-active-bg: #f3d267;
+        --bs-btn-active-border-color: #80520e;
+        --bs-btn-disabled-color: #80520e;
+        --bs-btn-disabled-border-color: #80520e;
+    }
+}
+
+/* Cartoes claros legados. */
+.cadastro .card:not(.bg-dark):not(.text-bg-dark) {
+    :is(h2,h3,h4,h5,h6):not([class*='text-']) {
+        color: #243449;
+    }
+
+    a:not(.btn):not(.badge):not(.nav-link):not(.dropdown-item):not(.page-link):not([class*='text-']) {
+        color: #1855ad;
+    }
+
+    .text-warning {
+        color: #80520e !important;
+    }
+}
+
+/* Preservar legibilidade sobre fundo escuro. */
+.cadastro.feux-moderno
+:is(.bg-dark,.text-bg-dark)
+:is(h2,h3,h4,h5,h6) {
+    color: #fff;
+}

@@ -396,3 +396,14 @@
 .sos-vue-notas-shell .sos-form-resumo-paridade span:last-child { flex-basis:100%; justify-content:flex-end; }
 @media (max-width:1050px) { .sos-vue-notas-shell .sos-item-row { grid-template-columns:repeat(3,minmax(0,1fr)); } }
 @media (max-width:650px) { .sos-vue-notas-shell .sos-item-row { grid-template-columns:repeat(2,minmax(0,1fr)); } .sos-vue-notas-shell .sos-produto-opcao { flex-wrap:wrap; } .sos-vue-notas-shell .sos-produto-opcao > strong:last-child { margin-left:auto; } }
+
+/* FEUX_CONTRASTE_REFERENCIAS_V2 - links e microtipografia no Vue */
+.sos-vue-notas-shell .sos-produtos-resultados .sos-produto-opcao--referencia .sos-produto-opcao__detalhes a,
+.sos-vue-notas-shell .sos-produtos-resultados .sos-produto-opcao--referencia .sos-produto-opcao__detalhes a:visited {
+  color:#1855ad !important; text-decoration:underline; text-underline-offset:2px;
+  font-size:.86rem; font-weight:750; line-height:1.45;
+}
+.sos-vue-notas-shell .sos-produtos-resultados .sos-produto-opcao--referencia .sos-produto-opcao__detalhes a:hover {color:#113d7f !important;}
+.sos-vue-notas-shell .sos-produtos-resultados .sos-produto-opcao--referencia .sos-produto-opcao__detalhes a:focus-visible {outline:3px solid #1855ad;outline-offset:3px;}
+.sos-vue-notas-shell .sos-produtos-resultados .sos-produto-opcao__detalhes small {font-size:.82rem;line-height:1.45;}
+.sos-vue-notas-shell .sos-produtos-resultados .sos-produto-opcao__alerta {color:#80520e !important;font-size:.84rem;line-height:1.45;}
